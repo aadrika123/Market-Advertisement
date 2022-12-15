@@ -1,33 +1,37 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import Header from './Compnents/Header/Header'
+import Sidebar from './Compnents/Sidebar/Sidebar'
+import { BrowserRouter as Router, Routes, Route, Link, Outlet, } from "react-router-dom";
+import Dashboard from './Pages/Dashboard';
+import IndexLodgeHostel from './Pages/Citizen/MarketSection/LodgeHostel/IndexLodgeHostel';
+import IndexBanquetMarriage from './Pages/Citizen/MarketSection/BanquetMarriage/IndexBanquetMarriage';
+import IndexDharamshala from './Pages/Citizen/MarketSection/Dharamshala/IndexDharamshala';
+
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <div className="App">
+    <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <Router>
+
+          <Header />
+          <div className='grid grid-cols-12'>
+            <div className='col-span-2'>
+              <Sidebar />
+            </div>
+            <div className='col-span-10 bg-gray-200 p-4'>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/lodge-hostel" element={<IndexLodgeHostel />} />
+                <Route path="/banquet-marriage" element={<IndexBanquetMarriage />} />
+                <Route path="/dharamshala" element={<IndexDharamshala />} />
+              </Routes>
+            </div>
+          </div>
+        </Router>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    </>
   )
 }
 
