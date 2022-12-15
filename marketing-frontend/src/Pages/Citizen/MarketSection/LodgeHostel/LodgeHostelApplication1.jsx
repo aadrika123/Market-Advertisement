@@ -22,7 +22,7 @@ import { FcElectroDevices } from 'react-icons/fc'
 import { FcHome } from 'react-icons/fc'
 
 
-function WaterFormScreen1(props) {
+function LodgeHostelApplication1(props) {
 
 
     const commonInputStyle = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none shadow-sm`
@@ -30,77 +30,44 @@ function WaterFormScreen1(props) {
     const inputLabelStyle = `form-label inline-block mb-1 text-gray-600 text-sm font-semibold`
 
 
-    const [mobileTowerStatusToggle, setMobileTowerStatusToggle] = useState(false)
-
     const validationSchema = yup.object({
-        wardNo: yup.string().required('Select ward'),
-        ownerShiptype: yup.string().required('Select ownership type'),
-        propertyType: yup.string().required('Select property'),
-
-        mobileTowerStatus: yup.string().required('Select mobile tower status'),
-        hoardingStatus: yup.string().required('Select hoarding status'),
-        petrolPumpStatus: yup.string().required('Select petrol pump status'),
-        waterHarvestingStatus: yup.string().required('Select water harvesting status'),
-        mobileTowerArea: yup.string('enter numbers only').when('mobileTowerStatus', {
-            is: 'yes',
-            then: yup.string().required('Field is required')
-        }).min(1, 'enter minimum ').max(10, 'Enter max 10 digit'),
-        hoardingArea: yup.string().when('hoardingStatus', {
-            is: 'yes',
-            then: yup.string().required('Field is required')
-        }).min(1, 'enter minimum ').max(10, 'Enter max 10 digit'),
-        petrolPumpArea: yup.string().when('petrolPumpStatus', {
-            is: 'yes',
-            then: yup.string().required('Field is required')
-        }).min(1, 'enter minimum ').max(10, 'Enter max 10 digit'),
-        mobileTowerDate: yup.date().when('mobileTowerStatus', {
-            is: 'yes',
-            then: yup.date().required('Field is required')
-        }),
-        hoardingDate: yup.date().when('hoardingStatus', {
-            is: 'yes',
-            then: yup.date().required('Field is required')
-        }),
-        petrolPumpDate: yup.date().when('petrolPumpStatus', {
-            is: 'yes',
-            then: yup.date().required('Field is required')
-        }),
+        applicantName: yup.string().required('Required'),
+        fatherName: yup.string().required('Required'),
+        mobile: yup.string().required('Required').min(10, 'Enter 10 digit number').max(10, 'Enter 10 digit number'),
+        email: yup.string().required('Required'),
+        resWardNo: yup.string().required('Required'),
+        resAddress: yup.string().required('Required'),
+        perWardNo: yup.string().required('Required'),
+        perAddress: yup.string().required('Required'),
 
     })
 
     const navigate = useNavigate()
     const initialValues = {
-        wardNo: '',
+        applicantName: '',
+        fatherName: '',
+        mobile: '',
+        email: '',
+        resWardNo: '',
+        resAddress: '',
+        perWardNo: '',
+        perAddress: ''
     }
 
 
 
     const handleOnChange = (event) => {
-        let name = event.target.name
-        let value = event.target.value
-
-        { name === 'propertyType' && ((value == '1') ? setMobileTowerStatusToggle(true) : setMobileTowerStatusToggle(false)) }
-
-
-        // //allow restricted inputs
-        // { name == 'mobileTowerArea' && formik.setFieldValue("mobileTowerArea", allowFloatInput(value, formik.values.mobileTowerArea, 20)) } //(currentValue,oldValue,max,isCapital)
-        // { name == 'hoardingArea' && formik.setFieldValue("hoardingArea", allowFloatInput(value, formik.values.hoardingArea, 20, true)) }
-        // { name == 'petrolPumpArea' && formik.setFieldValue("petrolPumpArea", allowFloatInput(value, formik.values.petrolPumpArea, 20)) }
-
 
     };
 
     const formik = useFormik({
         initialValues: initialValues,
-        // enableReinitialize: true,
+        enableReinitialize: true,
         onSubmit: (values, resetForm) => {
-            // props.screen1Data(values)
-
-            console.log("Form1 Data", values)
-
+            props.screen1Data(values)
 
         },
-        // validationSchema
+        validationSchema
     })
     return (
         <>
@@ -110,83 +77,94 @@ function WaterFormScreen1(props) {
                 <form onSubmit={formik.handleSubmit} onChange={handleOnChange}>
 
                     <div className="grid grid-cols-1 md:grid-cols-3">
-                        <div className='col-span-4 border-b mx-1 mb-4'>
+                        <div className='col-span-4 border-b mx-1 mb-4 bg-gray-100 rounded-md pt-3 '>
+                            <p className='col-span-4 font-semibold flex text-xl'>
+                                <span className='mx-1 mt-1 pl-4'>
+                                    <FcAbout size={20} /> </span>Basic Information
+                            </p>
+                            <p className='block text-gray-400 text-sm pl-4'>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi, neque!</p>
+
+                            <p className='border-b border-gray-300 ml-3 my-2 mr-10'></p>
+
+                            <div className="col-span-4 grid grid-cols-1 md:grid-cols-2 mt-5">
+                                <div className={`${inputContainerStyle}`}>
+                                    <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Applicant Name</label>
+                                    <input type="text" name="applicantName" className={`${commonInputStyle}`} onChange={formik.handleChange} />
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.applicantName && formik.errors.applicantName ? formik.errors.applicantName : null}</p>
+                                </div>
+
+                                <div className={`${inputContainerStyle}`}>
+                                    <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Father's Name</label>
+                                    <input type="text" name="fatherName" className={`${commonInputStyle} `} onChange={formik.handleChange} />
+
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.fatherName && formik.errors.fatherName ? formik.errors.fatherName : null}</p>
+                                </div>
+                                <div className={`${inputContainerStyle}`}>
+                                    <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Mobile</label>
+                                    <input type="number" name="mobile" className={`${commonInputStyle} `} onChange={formik.handleChange} />
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.mobile && formik.errors.mobile ? formik.errors.mobile : null}</p>
+                                </div>
+
+                                <div className={`${inputContainerStyle}`}>
+                                    <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Email</label>
+                                    <input type="email" name="email" className={`${commonInputStyle} `} onChange={formik.handleChange} />
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.email && formik.errors.email ? formik.errors.email : null}</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className='col-span-4 border-b mx-1 mb-4 ml-4'>
                             <p className='col-span-4 font-semibold flex text-xl'>
                                 <span className='mx-1 mt-1'>
-                                    <FcAbout size={20} /> </span>Basic Information
+                                    <FcHome size={20} /> </span>Residence Address
                             </p>
                             <p className='block text-gray-400 text-sm'>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi, neque!</p>
                         </div>
-                        <div className="col-span-4 grid grid-cols-1 md:grid-cols-3 bg-red-50">
-                            <div className={`${inputContainerStyle}`}>
-                                <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Applicant Name</label>
-                                <input type="text" name="typeofConnection" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} />
-                                <p className='text-red-500 text-xs'>{formik.touched.typeofConnection && formik.errors.typeofConnection ? formik.errors.typeofConnection : null}</p>
-                            </div>
-
-                            <div className={`${inputContainerStyle}`}>
-                                <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Father's Name</label>
-                                <input type="text" name="connectionThrough" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} />
-
-                                <p className='text-red-500 text-xs'>{formik.touched.connectionThrough && formik.errors.connectionThrough ? formik.errors.connectionThrough : null}</p>
-                            </div>
-                            <div className={`${inputContainerStyle}`}>
-                                <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Mobile</label>
-                                <input type="text" name="ownerType" className={`${commonInputStyle} `} onChange={formik.handleChange} />
-                                <p className='text-red-500 text-xs'>{formik.touched.ownerType && formik.errors.ownerType ? formik.errors.ownerType : null}</p>
-                            </div>
-                        </div>
-                        <div className={`${inputContainerStyle}`}>
-                            <label className={`${inputLabelStyle}`}><small className="mt-1 text-sm font-semibold text-red-600 inline ">*</small>Ward No</label>
-                            <select name="wardNo" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} >
-                                <option>Select</option>
-                                <option value="3">3A</option>
-                            </select>
-                            <p className='text-red-500 text-xs'>{formik.touched.wardNo && formik.errors.wardNo ? formik.errors.wardNo : null}</p>
-                        </div>
-                        <div className={`${inputContainerStyle}`}>
-                            <label className={`${inputLabelStyle}`}><small className="block mt-1 text-sm font-semibold text-red-600 inline ">*</small>Email</label>
-                            <input type="text" name="ownerType" className={`${commonInputStyle} `} onChange={formik.handleChange} />
-                            <p className='text-red-500 text-xs'>{formik.touched.ownerType && formik.errors.ownerType ? formik.errors.ownerType : null}</p>
-                        </div>
-
-                        <p className='border-b col-span-4 mx-1 mb-4 font-semibold flex text-base'> <span className='mx-1'> <FcHome size={20} /> </span>Residence Address</p>
 
                         <div className='col-span-4  mx-5'>
                             <div className='grid grid-cols-6 space-x-5'>
                                 <div className="col-span-1">
                                     <label className={`${inputLabelStyle}`}><small className="mt-1 text-sm font-semibold text-red-600 inline ">*</small>Ward No</label>
-                                    <select name="wardNo" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} >
-                                        <option>Select</option>
+                                    <select name="resWardNo" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} >
+                                        <option value="">Select</option>
                                         <option value="3">3A</option>
                                     </select>
-                                    <p className='text-red-500 text-xs'>{formik.touched.wardNo && formik.errors.wardNo ? formik.errors.wardNo : null}</p>
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.resWardNo && formik.errors.resWardNo ? formik.errors.resWardNo : null}</p>
                                 </div>
                                 <div className="col-span-5">
                                     <div className="">
                                         <label className={`${inputLabelStyle}`}><small className="mt-1 text-sm font-semibold text-red-600 inline ">*</small>Address</label>
-                                        <input type="text" name="address" className={`${commonInputStyle}`} onChange={formik.handleChange} />
-                                        <p className='text-red-500 text-xs'>{formik.touched.address && formik.errors.address ? formik.errors.address : null}</p>
+                                        <input type="text" name="resAddress" className={`${commonInputStyle}`} onChange={formik.handleChange} />
+                                        <p className='text-red-500 text-xs absolute'>{formik.touched.resAddress && formik.errors.resAddress ? formik.errors.resAddress : null}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p className='border-b col-span-4 mx-1 my-5 text-base font-semibold flex'> <span className='mx-1'> <RiHomeHeartLine color='#f78f8f' size={20} /> </span>Permanent Address</p>
+
+                        <div className='col-span-4 border-b mx-1 mb-4 ml-4 mt-4'>
+                            <p className='col-span-4 font-semibold flex text-xl'>
+                                <span className='mx-1 mt-1'>
+                                    <RiHomeHeartLine size={20} /> </span>Permanent Address
+                            </p>
+                            <p className='block text-gray-400 text-sm absolute'>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi, neque!</p>
+                        </div>
+
                         <div className='col-span-4  mx-5'>
                             <div className='grid grid-cols-6 space-x-5'>
                                 <div className="col-span-1">
                                     <label className={`${inputLabelStyle}`}><small className="mt-1 text-sm font-semibold text-red-600 inline ">*</small>Ward No</label>
-                                    <select name="wardNo" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} >
-                                        <option>Select</option>
+                                    <select name="perWardNo" className={`${commonInputStyle} cursor-pointer `} onChange={formik.handleChange} >
+                                        <option value="">Select</option>
                                         <option value="3">3A</option>
                                     </select>
-                                    <p className='text-red-500 text-xs'>{formik.touched.wardNo && formik.errors.wardNo ? formik.errors.wardNo : null}</p>
+                                    <p className='text-red-500 text-xs absolute'>{formik.touched.perWardNo && formik.errors.perWardNo ? formik.errors.perWardNo : null}</p>
                                 </div>
                                 <div className="col-span-5">
                                     <div className="">
                                         <label className={`${inputLabelStyle}`}><small className="mt-1 text-sm font-semibold text-red-600 inline ">*</small>Address</label>
-                                        <input type="text" name="address" className={`${commonInputStyle}`} onChange={formik.handleChange} />
-                                        <p className='text-red-500 text-xs'>{formik.touched.address && formik.errors.address ? formik.errors.address : null}</p>
+                                        <input type="text" name="perAddress" className={`${commonInputStyle}`} onChange={formik.handleChange} />
+                                        <p className='text-red-500 text-xs absolute'>{formik.touched.perAddress && formik.errors.perAddress ? formik.errors.perAddress : null}</p>
                                     </div>
                                 </div>
                             </div>
@@ -196,8 +174,8 @@ function WaterFormScreen1(props) {
                         <div className="col-span-4 grid grid-cols-2 pt-10">
                             <div className='md:px-10'></div>
                             <div className='md:px-10 text-right space-x-8'>
-                                <button type="button" onClick={() => navigate("/water")} className=" px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight  rounded  hover:bg-blue-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg transition duration-150 ease-in-out">Back</button>
-                                <button type="submit" className=" px-6 py-2.5 bg-green-600 text-white font-medium text-xs leading-tight  rounded  hover:bg-green-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg transition duration-150 ease-in-out">Save & Next</button>
+                                <button type="button" onClick={() => navigate("#")} className=" px-12 py-2.5 bg-blue-600 text-white font-medium text-sm leading-tight  rounded  hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out">Back</button>
+                                <button type="submit" className=" px-10 py-2.5 bg-green-600 text-white font-medium text-sm leading-tight  rounded  hover:bg-green-700 hover:shadow-lg focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-800 active:shadow-lg transition duration-150 ease-in-out">Save & Next</button>
                             </div>
                         </div>
                         <div className="col-span-4 grid grid-cols-2">
@@ -210,4 +188,4 @@ function WaterFormScreen1(props) {
     )
 }
 
-export default WaterFormScreen1
+export default LodgeHostelApplication1

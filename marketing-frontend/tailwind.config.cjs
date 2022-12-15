@@ -5,6 +5,12 @@ module.exports = {
   ],
   theme: {
     extend: {},
+    fontFamily:{
+      BreeSerif: ["Bree Serif", "serif"],
+      Alice: ["Alice", "serif"],
+    }
   },
   plugins: [],
+
+
 }
