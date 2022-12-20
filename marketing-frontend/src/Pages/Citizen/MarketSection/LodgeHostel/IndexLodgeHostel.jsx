@@ -37,7 +37,8 @@ function IndexLodgeHostel() {
           <div className='bg-sky-50 rounded-t-md shadow-lg px-5 py-2 text-lg font-semibold '>Lodge/Hostel Hall Registratin Application</div>
           <div className='bg-white rounded-b-md shadow-lg p-5 border-t'>
 
-            <Stepper />
+            <div className={`${screenLocation === 3 ? 'hidden' : 'block'}`}><Stepper /></div>
+
 
             <div className={`${screenLocation === 0 ? 'block' : 'hidden'}`}><LodgeHostelApplication1 screen1Data={screen1Data} /></div>
             <div className={`${screenLocation === 1 ? 'block' : 'hidden'}`}><LodgeHostelApplication2 screen2Data={screen2Data} goBack={setScreenLocation} /></div>
