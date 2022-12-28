@@ -6,6 +6,7 @@ import Dashboard from './Pages/Dashboard';
 import IndexLodgeHostel from './Pages/Citizen/MarketSection/LodgeHostel/IndexLodgeHostel';
 import IndexBanquetMarriage from './Pages/Citizen/MarketSection/BanquetMarriage/IndexBanquetMarriage';
 import IndexDharamshala from './Pages/Citizen/MarketSection/Dharamshala/IndexDharamshala';
+import AdvertisementRoutes from './Pages/Advertisement/AdvertisementRoutes';
 
 
 function App() {
@@ -20,16 +21,20 @@ function App() {
             <div className='col-span-2'>
               <Sidebar />
             </div>
-            <div className='col-span-10 bg-gray-300 p-4'>
+            <div className='col-span-10 bg-gray-50 p-4'>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/lodge-hostel" element={<IndexLodgeHostel />} />
                 <Route path="/banquet-marriage" element={<IndexBanquetMarriage />} />
                 <Route path="/dharamshala" element={<IndexDharamshala />} />
               </Routes>
+
+              {/*//////////// Advertisement routes/////////////// */}
+              <AdvertisementRoutes />
             </div>
           </div>
         </Router>
+
       </div>
     </>
   )
