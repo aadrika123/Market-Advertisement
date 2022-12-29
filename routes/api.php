@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Route;
  */
 
 // Self Advertisement Controller
-Route::post('advertisement/self-advert/save', 'Advertisements\SelfAdvetController@store');
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::controller(SelfAdvetController::class)->group(function () {

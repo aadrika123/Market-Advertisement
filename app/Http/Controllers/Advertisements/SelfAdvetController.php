@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\SelfAdvets\StoreRequest;
+use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
+use Exception;
 
 /**
  * | Created On-14-12-2022 
@@ -20,9 +22,20 @@ class SelfAdvetController extends Controller
         $this->_repo = $repo;
     }
 
-    // Store in DB
-    public function store(Request $req)
+    /**
+     * | Apply for Self Advertisements 
+     * | @param request 
+     */
+    public function store(StoreRequest $req)
     {
-        return $this->_repo->store($req);
+        try {
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            $citizenId = ['citizenId', authUser()->id];
+            $req->request->add($citizenId);
+            $selfAdvets->store($req);                   // Model function to store 
+            return responseMsgs(true, "Successfully Submitted the application", "");
+        } catch (Exception $e) {
+            return $e;
+        }
     }
 }
