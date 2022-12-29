@@ -18,11 +18,15 @@ use Illuminate\Support\Facades\Route;
  * | Routers for Advertisement Modules
  * | Created On-14-12-2022 
  * | Created By-Anshu Kumar
+ * | Module Id for Advetisements=04
  */
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    // Self Advertisement Controller
+    /**
+     * | Self Advertisements
+     * | Controller-01
+     */
     Route::controller(SelfAdvetController::class)->group(function () {
-        Route::post('advertisement/self-advert/save', 'store');
+        Route::post('advertisement/self-advert/save', 'store');     // 01
     });
 });
