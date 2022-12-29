@@ -6,6 +6,7 @@ import Dashboard from './Pages/Dashboard';
 import IndexLodgeHostel from './Pages/Citizen/MarketSection/LodgeHostel/IndexLodgeHostel';
 import IndexBanquetMarriage from './Pages/Citizen/MarketSection/BanquetMarriage/IndexBanquetMarriage';
 import IndexDharamshala from './Pages/Citizen/MarketSection/Dharamshala/IndexDharamshala';
+import AdvertisementRoutes from './Pages/Advertisement/AdvertisementRoutes';
 
 
 function App() {
@@ -27,9 +28,13 @@ function App() {
                 <Route path="/banquet-marriage" element={<IndexBanquetMarriage />} />
                 <Route path="/dharamshala" element={<IndexDharamshala />} />
               </Routes>
+
+              {/*//////////// Advertisement routes/////////////// */}
+              <AdvertisementRoutes />
             </div>
           </div>
         </Router>
+
       </div>
     </>
   )

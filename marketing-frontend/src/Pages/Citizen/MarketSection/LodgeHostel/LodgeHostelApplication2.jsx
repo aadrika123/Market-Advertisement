@@ -109,7 +109,7 @@ function LodgeHostelApplication2(props) {
         <form onSubmit={formik.handleSubmit} onChange={handleOnChange}>
 
           <div className="grid grid-cols-1 md:grid-cols-3">
-            <div className='col-span-4 mx-1 mb-4 bg-gray-100 rounded-md pt-3 '>
+            <div className='col-span-4 mx-1 mb-4 bg-gray-100 shadow-lg rounded-md pt-3 '>
               <p className='col-span-4 font-semibold flex text-xl'>
                 <span className='mx-1 mt-1 pl-4'>
                   <FaWpforms size={18} className="mt-0.5" /> </span>Shop Esrablishment Details of Applicant
@@ -313,3 +313,8 @@ function LodgeHostelApplication2(props) {
 }
 
 export default LodgeHostelApplication2
+
+/*
+Exported to -
+1) IndexLodgeHostel.js
+*/
