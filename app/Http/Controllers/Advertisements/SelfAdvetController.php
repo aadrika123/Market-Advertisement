@@ -23,7 +23,7 @@ class SelfAdvetController extends Controller
     {
         try {
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $citizenId = ['citizenId', authUser()->id];
+            $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
             $selfAdvets->store($req);       //<--------------- Model function to store 
             return responseMsgs(true, "Successfully Submitted the application", "", "040101", "1.0", "260ms", 'POST', $req->deviceId ?? "");

@@ -6,6 +6,7 @@
  * | Helper Functions
  */
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
@@ -63,6 +64,15 @@ if (!function_exists('remove_null')) {
 
         $filtered = collect($data)->map(function ($value) {
             return collect($value)->map(function ($val) {
+                if (is_array($val) || $val instanceof stdClass) {   // Check the function is in array form or std class
+                    return collect($val)->map(function ($vals) {
+                        if (is_null($vals)) {
+                            $vals = '';
+                        }
+                        return $vals;
+                    });
+                }
+
                 if (is_null($val)) {
                     $val = '';
                 }

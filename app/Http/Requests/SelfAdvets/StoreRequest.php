@@ -48,7 +48,12 @@ class StoreRequest extends FormRequest
             'displayArea' => 'required|numeric',
             'displayType' => 'required|integer',
             'installationLocation' => 'required|integer',
-            'brandDisplayName' => 'required'
+            'brandDisplayName' => 'required',
+            'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            'tradeLicenseDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            'holdingDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            'gpsDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            'gstDoc' => 'nullable|mimes:png,jpeg,pdf,jpg'
         ];
     }
 

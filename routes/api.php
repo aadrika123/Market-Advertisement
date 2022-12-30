@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Advertisements\SelfAdvetController;
+use App\Http\Controllers\Params\ParamController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,5 +29,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(SelfAdvetController::class)->group(function () {
         Route::post('advertisement/self-advert/save', 'store');     // 01
+    });
+
+    /**
+     * | Param Strings 
+     * | Controller-02
+     */
+    Route::controller(ParamController::class)->group(function () {
+        Route::post('crud/param-strings', 'paramStrings');          // 01
     });
 });

@@ -2,13 +2,21 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\DocumentUpload;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 
 class AdvActiveSelfadvertisement extends Model
 {
     //
     protected $guarded = [];
+    protected $_applicationDate;
+
+    public function __construct()
+    {
+        $this->_applicationDate = Carbon::now()->format('Y-m-d');
+    }
 
     // helper meta reqs
     public function metaReqs($req)
@@ -16,7 +24,7 @@ class AdvActiveSelfadvertisement extends Model
         return [
             'ulb_id' => $req->ulbId,
             'citizen_id' => $req->citizenId,
-            'application_date' => Carbon::now()->format('Y-m-d'),
+            'application_date' => $this->_applicationDate,
             'applicant' => $req->applicantName,
             'license_year' => $req->licenseYear,
             'father' => $req->fatherName,
@@ -45,7 +53,47 @@ class AdvActiveSelfadvertisement extends Model
     // Store Self Advertisements
     public function store($req)
     {
-        $metaReqs = $this->metaReqs($req);
+        $mDocUpload = new DocumentUpload();
+        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
+        $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
+        $metaReqs = array_merge($this->metaReqs($req), $mDocRelPathReq);
+        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
+
+        // Document Upload
+        if ($req->aadharDoc) {          // Aadhar Document
+            $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
+            $docName = $mDocUpload->upload($mRefDocName, $req->aadharDoc, $mRelativePath);          // Micro Service for Uploading Document
+            $metaReqs = array_merge($metaReqs, ['aadhar_path' => $docName]);
+        }
+
+        // Trade License
+        if ($req->tradeLicenseDoc) {
+            $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
+            $docName = $mDocUpload->upload($mRefDocName, $req->tradeLicenseDoc, $mRelativePath);      // Micro Service for Uploading Document
+            $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
+        }
+
+        // Holding No Photo
+        if ($req->holdingDoc) {
+            $mRefDocName = Config::get('constants.HOLDING_RELATIVE_NAME') . '-' . $mDocSuffix;
+            $docName = $mDocUpload->upload($mRefDocName, $req->holdingDoc, $mRelativePath);         // Micro Service for Uploading Document
+            $metaReqs = array_merge($metaReqs, ['holding_no_path' => $docName]);
+        }
+
+        // Gps Photo
+        if ($req->gpsDoc) {
+            $mRefDocName = Config::get('constants.GPS_RELATIVE_NAME') . '-' . $mDocSuffix;
+            $docName = $mDocUpload->upload($mRefDocName, $req->gpsDoc, $mRelativePath);             // Micro Service for Uploading Document
+            $metaReqs = array_merge($metaReqs, ['gps_path' => $docName]);
+        }
+
+        // GST Photo
+        if ($req->gstDoc) {
+            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+            $docName = $mDocUpload->upload($mRefDocName, $req->gstDoc, $mRelativePath);             // Micro Service for Uploading Document
+            $metaReqs = array_merge($metaReqs, ['gst_path' => $docName]);
+        }
+
         AdvActiveSelfadvertisement::create($metaReqs);
     }
 }
