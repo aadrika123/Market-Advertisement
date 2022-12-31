@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vehicles\StoreRequest;
+use App\Models\Advertisements\AdvActiveVehicle;
 use Exception;
-use Illuminate\Http\Request;
 
 class VehicleAdvetController extends Controller
 {
@@ -13,9 +14,22 @@ class VehicleAdvetController extends Controller
      * | Created By-Anshu Kumar
      * | Created for the Movable Vehicles Operations
      */
-    public function store(Request $req)
+    public function store(StoreRequest $req)
     {
         try {
+            // dd($req->all());
+            $advVehicle = new AdvActiveVehicle();
+            $applicationNo = $advVehicle->store($req);               // Store Vehicle 
+            return responseMsgs(
+                true,
+                "Successfully Applied the Application !!",
+                ["ApplicationNo" => $applicationNo],
+                "040301",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
         }

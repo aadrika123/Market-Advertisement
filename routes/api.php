@@ -45,6 +45,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Controller-03
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
-        Route::post('advertisements/movable-vehicle/save', 'store');    // 01
+        Route::post('advertisement/movable-vehicle/save', 'store');    // 01
     });
 });
