@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Advertisements\SelfAdvetController;
+use App\Http\Controllers\Advertisements\VehicleAdvetController;
 use App\Http\Controllers\Params\ParamController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,5 +38,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
+    });
+
+    /**
+     * | Movable Vehicles 
+     * | Controller-03
+     */
+    Route::controller(VehicleAdvetController::class)->group(function () {
+        Route::post('advertisements/movable-vehicle/save', 'store');    // 01
     });
 });

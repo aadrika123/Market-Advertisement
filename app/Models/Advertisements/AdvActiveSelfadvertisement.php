@@ -55,9 +55,11 @@ class AdvActiveSelfadvertisement extends Model
     {
         $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
         $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
-        $metaReqs = array_merge($this->metaReqs($req), $mDocRelPathReq);
+        $mClientIpAddress = ['ip_address' => getClientIpAddress()];
+        $mApplicationNo = ['application_no' => 'SELF-' . $req->applicantName];              // Generate Application No
+        $metaReqs = array_merge($this->metaReqs($req), $mDocRelPathReq, $mClientIpAddress, $mApplicationNo);  // Add Relative Path as Request and Client Ip Address
         $metaReqs = $this->uploadDocument($req, $metaReqs);
-        AdvActiveSelfadvertisement::create($metaReqs);
+        return AdvActiveSelfadvertisement::create($metaReqs)->application_no;
     }
 
     /**
