@@ -50,15 +50,26 @@ class AdvActiveSelfadvertisement extends Model
         ];
     }
 
-    // Store Self Advertisements
+    // Store Self Advertisements(1)
     public function store($req)
     {
-        $mDocUpload = new DocumentUpload();
         $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
         $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
         $metaReqs = array_merge($this->metaReqs($req), $mDocRelPathReq);
-        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
+        $metaReqs = $this->uploadDocument($req, $metaReqs);
+        AdvActiveSelfadvertisement::create($metaReqs);
+    }
 
+    /**
+     * | Document Upload (1.1)
+     * | @param request $req
+     * | @param metaReqs more Fileds Required For Meta Reqs
+     * */
+    public function uploadDocument($req, $metaReqs)
+    {
+        $mDocUpload = new DocumentUpload();
+        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
+        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
         // Document Upload
         if ($req->aadharDoc) {          // Aadhar Document
             $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
@@ -69,7 +80,7 @@ class AdvActiveSelfadvertisement extends Model
         // Trade License
         if ($req->tradeLicenseDoc) {
             $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->tradeLicenseDoc, $mRelativePath);      // Micro Service for Uploading Document
+            $docName = $mDocUpload->upload($mRefDocName, $req->tradeLicenseDoc, $mRelativePath);     // Micro Service for Uploading Document
             $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
         }
 
@@ -94,6 +105,6 @@ class AdvActiveSelfadvertisement extends Model
             $metaReqs = array_merge($metaReqs, ['gst_path' => $docName]);
         }
 
-        AdvActiveSelfadvertisement::create($metaReqs);
+        return $metaReqs;
     }
 }
