@@ -39,6 +39,7 @@ class AdvActiveVehicle extends Model
             'entity_name' => $req->entityName,
             'trade_license_no' => $req->tradeLicenseNo,
             'gst_no' => $req->gstNo,
+            'vehicle_name' => $req->vehicleName,
             'vehicle_no' => $req->vehicleNo,
             'vehicle_type' => $req->vehicleType,
             'brand_display' => $req->brandDisplayed,
@@ -47,7 +48,8 @@ class AdvActiveVehicle extends Model
             'side_area' => $req->sideArea,
             'top_area' => $req->topArea,
             'display_type' => $req->displayType,
-            'citizen_id' => $req->citizenId
+            'citizen_id' => $req->citizenId,
+            'ulb_id' => $req->ulbId
         ];
         return $metaReqs;
     }

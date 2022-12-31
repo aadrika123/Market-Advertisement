@@ -17,7 +17,6 @@ class VehicleAdvetController extends Controller
     public function store(StoreRequest $req)
     {
         try {
-            // dd($req->all());
             $advVehicle = new AdvActiveVehicle();
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
@@ -25,7 +24,10 @@ class VehicleAdvetController extends Controller
             return responseMsgs(
                 true,
                 "Successfully Applied the Application !!",
-                ["ApplicationNo" => $applicationNo],
+                [
+                    "status" => true,
+                    "ApplicationNo" => $applicationNo
+                ],
                 "040301",
                 "1.0",
                 "",
