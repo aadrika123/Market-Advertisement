@@ -19,6 +19,8 @@ class VehicleAdvetController extends Controller
         try {
             // dd($req->all());
             $advVehicle = new AdvActiveVehicle();
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
             $applicationNo = $advVehicle->store($req);               // Store Vehicle 
             return responseMsgs(
                 true,
