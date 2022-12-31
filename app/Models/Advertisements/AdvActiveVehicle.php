@@ -70,6 +70,8 @@ class AdvActiveVehicle extends Model
 
     /**
      * | Document Upload(1.1)
+     * | @param Client User Requested Data
+     * | @param metaReqs More Added Filtered Data
      */
     public function uploadDocument($req, $metaReqs)
     {
