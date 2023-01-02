@@ -3,28 +3,31 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PrivateLand\StoreRequest;
-use App\Models\Advertisements\AdvActivePrivateland;
+use App\Http\Requests\Agency\StoreRequest;
+use App\Models\Advertisements\AdvActiveAgency;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 /**
- * | Created On-02-01-2022 
+ * | Created On-02-01-20222 
  * | Created By-Anshu Kumar
- * | Private Land Operations
+ * | Agency Operations
  */
-
-class PrivateLandController extends Controller
+class AgencyController extends Controller
 {
     /**
-     * | Apply For Private Land Advertisement
+     * | Store 
+     * | @param StoreRequest Request
      */
     public function store(StoreRequest $req)
     {
         try {
-            $privateLand = new AdvActivePrivateland();
+            $agency = new AdvActiveAgency();
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
-            $applicationNo = $privateLand->store($req);       //<--------------- Model function to store 
+            DB::beginTransaction();
+            $applicationNo = $agency->store($req);       //<--------------- Model function to store 
+            DB::commit();
             return responseMsgs(
                 true,
                 "Successfully Submitted the application !!",
@@ -32,20 +35,21 @@ class PrivateLandController extends Controller
                     'status' => true,
                     'ApplicationNo' => $applicationNo
                 ],
-                "040401",
+                "040501",
                 "1.0",
-                "260ms",
+                "",
                 'POST',
                 $req->deviceId ?? ""
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(
-                false,
+                true,
                 $e->getMessage(),
                 "",
-                "040401",
+                "040501",
                 "1.0",
-                "200ms",
+                "",
                 "POST",
                 $req->deviceId ?? ""
             );

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Advertisements\AgencyController;
 use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
@@ -55,5 +56,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(PrivateLandController::class)->group(function () {
         Route::post('advertisement/private-land/save', 'store'); // 01
+    });
+
+    /**
+     * | Agency 
+     * | Controller-05 
+     */
+    Route::controller(AgencyController::class)->group(function () {
+        Route::post('advertisements/agency/save', 'store');             // 01
     });
 });
