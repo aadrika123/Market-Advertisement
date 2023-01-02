@@ -14,6 +14,7 @@ return [
     "OWNER_BOOK_RELATIVE_NAME" => "OWNER-BOOK",
     "DRIVING_LICENSE_RELATIVE_NAME" => "DRIVING-LICENSE",
     "INSURANCE_RELATIVE_NAME" => "INSURANCE",
+    "BRAND_DISPLAY_RELATIVE_NAME" => "BRAND-DISPLAY",
 
     "SELF_ADVET" => [
         "RELATIVE_PATH" => "Uploads/SelfAdvets"
@@ -21,5 +22,9 @@ return [
 
     "VEHICLE_ADVET" => [
         "RELATIVE_PATH" => "Uploads/VehicleAdvets"
+    ],
+
+    "LAND_ADVET" => [
+        "RELATIVE_PATH" => "Uploads/LandAdvets"
     ]
 ];

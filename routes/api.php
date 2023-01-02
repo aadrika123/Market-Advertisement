@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
 use App\Http\Controllers\Params\ParamController;
@@ -46,5 +47,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
         Route::post('advertisement/movable-vehicle/save', 'store');    // 01
+    });
+
+    /**
+     * | Private Lands
+     * | Controller-04 
+     */
+    Route::controller(PrivateLandController::class)->group(function () {
+        Route::post('advertisement/private-land/save', 'store'); // 01
     });
 });
