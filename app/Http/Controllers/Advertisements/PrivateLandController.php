@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PrivateLand\StoreRequest;
 use App\Models\Advertisements\AdvActivePrivateland;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class PrivateLandController extends Controller
     /**
      * | Apply For Private Land Advertisement
      */
-    public function store(Request $req)
+    public function store(StoreRequest $req)
     {
         try {
             $privateLand = new AdvActivePrivateland();
