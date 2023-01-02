@@ -18,6 +18,8 @@ class AdvActiveAgencydirector extends Model
 
     /** 
      * | Store
+     * | @param request $req
+     * | @param agencyId Agency Id
      * */
     public function store($req, $agencyId)
     {
