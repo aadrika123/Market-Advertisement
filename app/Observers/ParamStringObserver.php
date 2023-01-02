@@ -10,7 +10,18 @@ use App\Models\Param\RefAdvParamstring;
  */
 class ParamStringObserver
 {
+    // Saved Function
     public function saved(RefAdvParamstring $paramString)
+    {
+    }
+
+    // Updated
+    public function updated(RefAdvParamstring $paramString)
+    {
+    }
+
+    // Deleted
+    public function deleted(RefAdvParamstring $paramString)
     {
     }
 }
