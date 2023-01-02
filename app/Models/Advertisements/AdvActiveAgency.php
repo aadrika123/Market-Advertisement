@@ -24,6 +24,7 @@ class AdvActiveAgency extends Model
     public function metaReqs($req)
     {
         $metaReqs = [
+            'application_date' => $this->_applicationDate,
             'entity_type' => $req->entityType,
             'entity_name' => $req->entityName,
             'address' => $req->address,
