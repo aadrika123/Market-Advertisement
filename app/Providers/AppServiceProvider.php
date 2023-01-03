@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Param\RefAdvParamstring;
-use App\Observers\ParamStringObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +23,5 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        RefAdvParamstring::observe(ParamStringObserver::class);
     }
 }

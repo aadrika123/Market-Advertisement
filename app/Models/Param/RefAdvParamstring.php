@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class RefAdvParamstring extends Model
 {
     use HasFactory;
+    protected $guarded = [];
 
     // Get all Masters 
     public function masters($ulbId)
