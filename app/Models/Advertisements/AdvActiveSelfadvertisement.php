@@ -5,6 +5,7 @@ namespace App\Models\Advertisements;
 use App\MicroServices\DocumentUpload;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 
 class AdvActiveSelfadvertisement extends Model
@@ -53,60 +54,43 @@ class AdvActiveSelfadvertisement extends Model
     // Store Self Advertisements(1)
     public function store($req)
     {
-        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
-        $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
         $mClientIpAddress = ['ip_address' => getClientIpAddress()];
         $mApplicationNo = ['application_no' => 'SELF-' . $req->applicantName];              // Generate Application No
-        $metaReqs = array_merge($this->metaReqs($req), $mDocRelPathReq, $mClientIpAddress, $mApplicationNo);  // Add Relative Path as Request and Client Ip Address
-        $metaReqs = $this->uploadDocument($req, $metaReqs);
-        return AdvActiveSelfadvertisement::create($metaReqs)->application_no;
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge($this->metaReqs($req), $mClientIpAddress, $mApplicationNo);  // Add Relative Path as Request and Client Ip Address
+        $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $mApplicationNo;
     }
 
     /**
      * | Document Upload (1.1)
-     * | @param request $req
-     * | @param metaReqs more Fileds Required For Meta Reqs
+     * | @param tempId Temprory Id
+     * | @param documents Uploading Documents
      * */
-    public function uploadDocument($req, $metaReqs)
+    public function uploadDocument($tempId, $documents)
     {
-        $mDocUpload = new DocumentUpload();
+        $mAdvDocument = new AdvActiveSelfadvetdocument();
+        $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
-        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
-        // Document Upload
-        if ($req->aadharDoc) {          // Aadhar Document
-            $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->aadharDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['aadhar_path' => $docName]);
-        }
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+            $mDocumentId = $document['id'];
+            $mDocRelativeName = $document['relativeName'];
+            $mImage = $document['image'];
+            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
 
-        // Trade License
-        if ($req->tradeLicenseDoc) {
-            $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->tradeLicenseDoc, $mRelativePath);     // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
-        }
+            $docUploadReqs = [
+                'tempId' => $tempId,
+                'docTypeCode' => 'Test-Code',
+                'documentId' => $mDocumentId,
+                'relativePath' => $mRelativePath,
+                'docName' => $mDocName
+            ];
+            $docUploadReqs = new Request($docUploadReqs);
 
-        // Holding No Photo
-        if ($req->holdingDoc) {
-            $mRefDocName = Config::get('constants.HOLDING_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->holdingDoc, $mRelativePath);         // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['holding_no_path' => $docName]);
-        }
-
-        // Gps Photo
-        if ($req->gpsDoc) {
-            $mRefDocName = Config::get('constants.GPS_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->gpsDoc, $mRelativePath);             // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['gps_path' => $docName]);
-        }
-
-        // GST Photo
-        if ($req->gstDoc) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->gstDoc, $mRelativePath);             // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['gst_path' => $docName]);
-        }
-
-        return $metaReqs;
+            $mAdvDocument->store($docUploadReqs);
+        });
     }
 }

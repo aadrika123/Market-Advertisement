@@ -42,4 +42,11 @@ class ParamController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+    // Document Masters for Advertisements
+    public function documentMstrs()
+    {
+        $documents = json_decode(file_get_contents(storage_path() . "/local-db/advDocumentMstrs.json", true));
+        return $documents;
+    }
 }

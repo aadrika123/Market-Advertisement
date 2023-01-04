@@ -40,6 +40,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
+        Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
     });
 
     /**

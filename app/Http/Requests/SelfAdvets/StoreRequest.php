@@ -49,11 +49,10 @@ class StoreRequest extends FormRequest
             'displayType' => 'required|integer',
             'installationLocation' => 'required|integer',
             'brandDisplayName' => 'required',
-            'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'tradeLicenseDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'holdingDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'gpsDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'gstDoc' => 'nullable|mimes:png,jpeg,pdf,jpg'
+            'documents' => 'required|array',
+            'documents.*.id' => 'required|integer',
+            'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents.*.relativeName' => 'required|string'
         ];
     }
 

@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SelfAdvets\StoreRequest;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 /**
  * | Created On-14-12-2022 
  * | Created By-Anshu Kumar
  * | Created for Operations on Self Advertisements
+ * | Workflow ID=129
  */
 
 class SelfAdvetController extends Controller
@@ -25,7 +27,9 @@ class SelfAdvetController extends Controller
             $selfAdvets = new AdvActiveSelfadvertisement();
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+            DB::beginTransaction();
             $applicationNo = $selfAdvets->store($req);       //<--------------- Model function to store 
+            DB::commit();
             return responseMsgs(
                 true,
                 "Successfully Submitted the application !!",
@@ -40,6 +44,7 @@ class SelfAdvetController extends Controller
                 $req->deviceId ?? ""
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "040101", "1.0", "260ms", 'POST', $req->deviceId ?? "");
         }
     }
