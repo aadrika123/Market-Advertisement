@@ -3,6 +3,7 @@
 namespace App\Models\Advertisements;
 
 use App\MicroServices\DocumentUpload;
+use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Config;
 
 class AdvActiveSelfadvertisement extends Model
 {
-    //
+    use WorkflowTrait;
     protected $guarded = [];
     protected $_applicationDate;
 
@@ -23,9 +24,6 @@ class AdvActiveSelfadvertisement extends Model
     public function metaReqs($req)
     {
         return [
-            'ulb_id' => $req->ulbId,
-            'citizen_id' => $req->citizenId,
-            'application_date' => $this->_applicationDate,
             'applicant' => $req->applicantName,
             'license_year' => $req->licenseYear,
             'father' => $req->fatherName,
@@ -54,15 +52,34 @@ class AdvActiveSelfadvertisement extends Model
     // Store Self Advertisements(1)
     public function store($req)
     {
-        $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $mApplicationNo = ['application_no' => 'SELF-' . random_int(100000, 999999)];              // Generate Application No
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);               // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mApplicationNo = ['application_no' => 'SELF-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
         $mDocuments = $req->documents;
 
-        $metaReqs = array_merge($this->metaReqs($req), $mClientIpAddress, $mApplicationNo);  // Add Relative Path as Request and Client Ip Address
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress
+            ],
+            $this->metaReqs($req),
+            $mApplicationNo,
+            $ulbWorkflowReqs
+        );                                                                                              // Add Relative Path as Request and Client Ip Address etc.
         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 
-        return $mApplicationNo;
+        return $mApplicationNo['application_no'];
     }
 
     /**
