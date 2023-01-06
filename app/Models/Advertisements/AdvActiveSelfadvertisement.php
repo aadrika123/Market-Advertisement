@@ -55,7 +55,7 @@ class AdvActiveSelfadvertisement extends Model
     public function store($req)
     {
         $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $mApplicationNo = ['application_no' => 'SELF-' . $req->applicantName];              // Generate Application No
+        $mApplicationNo = ['application_no' => 'SELF-' . random_int(100000, 999999)];              // Generate Application No
         $mDocuments = $req->documents;
 
         $metaReqs = array_merge($this->metaReqs($req), $mClientIpAddress, $mApplicationNo);  // Add Relative Path as Request and Client Ip Address
@@ -75,6 +75,7 @@ class AdvActiveSelfadvertisement extends Model
         $mAdvDocument = new AdvActiveSelfadvetdocument();
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
+
         collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
             $mDocumentId = $document['id'];
             $mDocRelativeName = $document['relativeName'];

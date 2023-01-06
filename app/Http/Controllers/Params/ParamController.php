@@ -12,14 +12,17 @@ use Illuminate\Support\Facades\Http;
 
 class ParamController extends Controller
 {
-    // String Parameters
+    /**
+     * | String Parameters values
+     * | @param request $req
+     */
     public function paramStrings(Request $req)
     {
         try {
             $mUlbId = $req->ulbId;
-            $data = json_decode(Cache::get('adv_param_strings' . $mUlbId));       // Get Value from Redis Cache
+            $data = json_decode(Cache::get('adv_param_strings' . $mUlbId));       // Get Value from Redis Cache Memory
             $bearer = $req->bearerToken();
-            if (!$data) {
+            if (!$data) {                                                         // If Cache Memory is not available
                 $data = array();
                 $baseUrl = Config::get('constants.BASE_URL');
                 $mParamString = new RefAdvParamstring();
@@ -43,10 +46,24 @@ class ParamController extends Controller
         }
     }
 
-    // Document Masters for Advertisements
+    /**
+     * | Get Document Masters from our localstorage db
+     */
     public function documentMstrs()
     {
+        $startTime = microtime(true);
         $documents = json_decode(file_get_contents(storage_path() . "/local-db/advDocumentMstrs.json", true));
-        return $documents;
+        $documents = remove_null($documents);
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+        return responseMsgs(
+            true,
+            "Document Masters",
+            $documents,
+            "040202",
+            "1.0",
+            $executionTime . " Sec",
+            "POST"
+        );
     }
 }
