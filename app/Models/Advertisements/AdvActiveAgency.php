@@ -52,7 +52,7 @@ class AdvActiveAgency extends Model
         $directors = $req->directors;
         $metaReqs = $this->metaReqs($req);
         $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $applicationNo = ['application_no' => "AGENCY-" . $req->entityName];
+        $applicationNo = ['application_no' => "AGENCY-" . random_int(100000, 999999)];
         $metaReqs = array_merge($metaReqs, $applicationNo, $mClientIpAddress);     // Final Merged Meta Requests
         $agencyDirector = new AdvActiveAgencydirector();
         $agencyId = AdvActiveAgency::create($metaReqs)->id;

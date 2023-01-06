@@ -36,6 +36,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/inbox', 'inbox');      // 03 ( Application Inbox Lists )
         Route::post('advertisement/self-advert/outbox', 'outbox');    // 04 ( Application Outbox Lists )
         Route::post('advertisement/self-advert/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
     });
 
     /**

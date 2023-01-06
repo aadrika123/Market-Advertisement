@@ -8,6 +8,7 @@ use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * | Created On-14-12-2022 
@@ -21,7 +22,7 @@ class SelfAdvetController extends Controller
 {
     /**
      * | Apply for Self Advertisements 
-     * | @param request 
+     * | @param StoreRequest 
      */
     public function store(StoreRequest $req)
     {
@@ -53,9 +54,15 @@ class SelfAdvetController extends Controller
 
     /**
      * | Application Update 
+     * | @param Request $req
      */
-    public function update(Request $req)
+    public function edit(Request $req)
     {
+        $documents = collect($req->documents)->first();
+        if (empty($documents)) {
+            return 'Collection is Empty';
+        }
+        return 'Not Empty';
     }
 
     /**
@@ -75,7 +82,81 @@ class SelfAdvetController extends Controller
     /**
      * | Application Details
      */
-    public function details()
+    public function details(Request $req)
     {
+        // Validation
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(
+                false,
+                $validator->errors(),
+                "",
+                "040105",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+        try {
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            $details = $selfAdvets->details($req->id);          // Model function to get Details of the application
+            return responseMsgs(
+                true,
+                "Application Details",
+                remove_null($details),
+                "040105",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040105",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    /**
+     * | Get Applied Applications by Logged In Citizen
+     */
+    public function getCitizenApplications(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            $applications = $selfAdvets->getCitizenApplications($citizenId);
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                remove_null($applications->toArray()),
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
     }
 }

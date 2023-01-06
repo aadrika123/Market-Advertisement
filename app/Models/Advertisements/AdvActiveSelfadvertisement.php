@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 class AdvActiveSelfadvertisement extends Model
 {
@@ -110,5 +111,35 @@ class AdvActiveSelfadvertisement extends Model
 
             $mAdvDocument->store($docUploadReqs);
         });
+    }
+
+    /**
+     * | Get Citizen Applied applications
+     * | @param citizenId
+     */
+    public function getCitizenApplications($citizenId)
+    {
+        return AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status'
+            )
+            ->get();
+    }
+
+    /**
+     * | Get Application Details by id
+     */
+    public function details($id)
+    {
+        return DB::table('adv_active_selfadvertisements')
+            ->where('adv_active_selfadvertisements.id', $id)
+            ->first();
     }
 }

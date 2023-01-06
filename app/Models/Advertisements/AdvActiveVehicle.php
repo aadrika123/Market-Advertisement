@@ -64,7 +64,7 @@ class AdvActiveVehicle extends Model
         $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
         $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
         $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $applicationNo = ['application_no' => "VEHICLE-" . $req->applicant];
+        $applicationNo = ['application_no' => "VEHICLE-" . random_int(100000, 999999)];
         $metaReqs = array_merge($metaReqs, $applicationNo, $mDocRelPathReq, $mClientIpAddress);     // Final Merged Meta Requests
         $metaReqs = $this->uploadDocument($req, $metaReqs);             // Current Objection function to Upload Document
         return AdvActiveVehicle::create($metaReqs)->application_no;

@@ -66,7 +66,7 @@ class AdvActivePrivateland extends Model
         $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
         $mDocRelPathReq = ['doc_relative_path' => $mRelativePath];
         $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $applicationNo = ['application_no' => "LAND-" . $req->applicant];
+        $applicationNo = ['application_no' => "LAND-" . random_int(100000, 999999)];
         $metaReqs = array_merge($metaReqs, $applicationNo, $mDocRelPathReq, $mClientIpAddress);     // Final Merged Meta Requests
         $metaReqs = $this->uploadDocument($req, $metaReqs);             // Current Objection function to Upload Document
         return AdvActivePrivateland::create($metaReqs)->application_no;
