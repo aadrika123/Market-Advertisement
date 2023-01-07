@@ -34,7 +34,7 @@ class PrivateLandController extends Controller
                 ],
                 "040401",
                 "1.0",
-                "260ms",
+                "",
                 'POST',
                 $req->deviceId ?? ""
             );
@@ -45,7 +45,7 @@ class PrivateLandController extends Controller
                 "",
                 "040401",
                 "1.0",
-                "200ms",
+                "",
                 "POST",
                 $req->deviceId ?? ""
             );

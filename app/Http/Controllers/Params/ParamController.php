@@ -40,9 +40,27 @@ class ParamController extends Controller
 
                 Cache::put('adv_param_strings' . $mUlbId, json_encode($data));  // Set Key on Param Strings
             }
-            return responseMsgs(true, "Param Strings", $data, "040201", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(
+                true,
+                "Param Strings",
+                $data,
+                "040201",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040201", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040201",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
         }
     }
 

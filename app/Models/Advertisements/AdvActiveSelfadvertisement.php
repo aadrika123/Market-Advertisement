@@ -130,6 +130,7 @@ class AdvActiveSelfadvertisement extends Model
                 'old_application_no',
                 'payment_status'
             )
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -138,8 +139,39 @@ class AdvActiveSelfadvertisement extends Model
      */
     public function details($id)
     {
-        return DB::table('adv_active_selfadvertisements')
+        $details = array();
+        $details = DB::table('adv_active_selfadvertisements')
+            ->select(
+                'adv_active_selfadvertisements.*',
+                'u.ulb_name',
+                'p.string_parameter as m_license_year',
+                'w.ward_name as ward_no',
+                'pw.ward_name as permanent_ward_no',
+                'ew.ward_name as entity_ward_no',
+                'dp.string_parameter as m_display_type',
+                'il.string_parameter as m_installation_location'
+            )
             ->where('adv_active_selfadvertisements.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_selfadvertisements.license_year')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_selfadvertisements.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_selfadvertisements.permanent_ward_id')
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_selfadvertisements.entity_ward_id')
+            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
+            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
             ->first();
+        $details = json_decode(json_encode($details), true);
+
+        $documents = DB::table('adv_active_selfadvetdocuments')
+            ->select(
+                'adv_active_selfadvetdocuments.*',
+                'd.document_name',
+                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+            )
+            ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+            ->where('temp_id', $id)
+            ->get();
+        $details['documents'] = remove_null($documents->toArray());
+        return $details;
     }
 }

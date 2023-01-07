@@ -42,13 +42,13 @@ class SelfAdvetController extends Controller
                 ],
                 "040101",
                 "1.0",
-                "260ms",
+                "",
                 'POST',
                 $req->deviceId ?? ""
             );
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040101", "1.0", "260ms", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040101", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -102,7 +102,7 @@ class SelfAdvetController extends Controller
         }
         try {
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $details = $selfAdvets->details($req->id);          // Model function to get Details of the application
+            $details = collect($selfAdvets->details($req->id));          // Model function to get Details of the application
             return responseMsgs(
                 true,
                 "Application Details",
