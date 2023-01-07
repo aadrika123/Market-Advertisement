@@ -136,6 +136,7 @@ class AdvActiveSelfadvertisement extends Model
 
     /**
      * | Get Application Details by id
+     * | @param SelfAdvertisements id
      */
     public function details($id)
     {
@@ -160,7 +161,7 @@ class AdvActiveSelfadvertisement extends Model
             ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
             ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
             ->first();
-        $details = json_decode(json_encode($details), true);
+        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
 
         $documents = DB::table('adv_active_selfadvetdocuments')
             ->select(

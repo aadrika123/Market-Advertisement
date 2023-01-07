@@ -48,7 +48,16 @@ class SelfAdvetController extends Controller
             );
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040101", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040101",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
         }
     }
 
