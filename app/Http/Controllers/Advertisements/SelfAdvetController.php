@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Advertisements;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SelfAdvets\StoreRequest;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
+use App\Traits\WorkflowTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,12 @@ use Illuminate\Support\Facades\Validator;
 
 class SelfAdvetController extends Controller
 {
+    use WorkflowTrait;
+    protected $_modelObj;
+    public function __construct()
+    {
+        $this->_modelObj = new AdvActiveSelfadvertisement();
+    }
     /**
      * | Apply for Self Advertisements 
      * | @param StoreRequest 
@@ -76,16 +83,77 @@ class SelfAdvetController extends Controller
 
     /**
      * | Inbox List
+     * | @param Request $req
      */
-    public function inbox()
+    public function inbox(Request $req)
     {
+        try {
+            $selfAdvets = $this->_modelObj;
+            $bearerToken = $req->bearerToken();
+            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
+                return $workflowRole['wf_role_id'];
+            });
+            $inboxList = $selfAdvets->inbox($roleIds);
+            return responseMsgs(
+                true,
+                "Inbox Applications",
+                remove_null($inboxList->toArray()),
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
     }
 
     /**
      * | Outbox List
      */
-    public function outbox()
+    public function outbox(Request $req)
     {
+        try {
+            $selfAdvets = $this->_modelObj;
+            $bearerToken = $req->bearerToken();
+            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
+                return $workflowRole['wf_role_id'];
+            });
+            $outboxList = $selfAdvets->outbox($roleIds);
+            return responseMsgs(
+                true,
+                "Outbox Lists",
+                remove_null($outboxList->toArray()),
+                "040104",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040104",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
     }
 
     /**

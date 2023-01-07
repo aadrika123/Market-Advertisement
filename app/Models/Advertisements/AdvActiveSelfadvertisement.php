@@ -175,4 +175,49 @@ class AdvActiveSelfadvertisement extends Model
         $details['documents'] = remove_null($documents->toArray());
         return $details;
     }
+
+    /**
+     * | Get Application Inbox List by Role Ids
+     * | @param roleIds $roleIds
+     */
+    public function inbox($roleIds)
+    {
+        $inbox = DB::table('adv_active_selfadvertisements')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status'
+            )
+            ->orderByDesc('id')
+            ->whereIn('current_role_id', $roleIds)
+            ->get();
+        return $inbox;
+    }
+
+    /**
+     * | Get Application Outbox List by Role Ids
+     */
+    public function outbox($roleIds)
+    {
+        $outbox = DB::table('adv_active_selfadvertisements')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status'
+            )
+            ->orderByDesc('id')
+            ->whereNotIn('current_role_id', $roleIds)
+            ->get();
+        return $outbox;
+    }
 }

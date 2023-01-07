@@ -31,4 +31,18 @@ trait WorkflowTrait
 
         return $workflows;
     }
+
+    /**
+     * | Get Roles by Logged In user Id
+     * | @param userId Logged In UserId
+     */
+    public function getRoleByUserId($bearer)
+    {
+        $baseUrl = Config::get('constants.BASE_URL');
+        $roles = Http::withHeaders([
+            "Authorization" => "Bearer $bearer",
+            "contentType" => "application/json"
+        ])->post($baseUrl . 'api/role-by-user')->json();
+        return $roles['data'];
+    }
 }
