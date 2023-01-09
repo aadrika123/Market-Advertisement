@@ -3,7 +3,8 @@ import { Route, Routes } from 'react-router-dom'
 import SelfAdvertisementIndexForm from './SelfAdvertisement/SelfAdvertisementIndexForm'
 import MovableVehicleIndexForm from './MovableVehicle/MovableVehicleIndexForm'
 import PrivateLandIndexForm from './PrivateLand/PrivateLandIndexForm'
-import AgencyIndexForm from './AgencyRegistration/AgencyIndexForm'
+import AgencyDetailIndexForm from './Agency/AgencyDetailIndexForm'
+import AdvertisementDashboard from './AdvertisementDashboard'
 
 
 function AdvertisementRoutes() {
@@ -12,10 +13,11 @@ function AdvertisementRoutes() {
             <div>
                 <Routes>
                     {/*//////////// Advertisement routes/////////////// */}
+                    <Route path="/advertDashboard" element={<AdvertisementDashboard />} />
                     <Route path="/selfAdvrt" element={<SelfAdvertisementIndexForm />} />
                     <Route path="/movableVehicle" element={<MovableVehicleIndexForm />} />
                     <Route path="/privateLand" element={<PrivateLandIndexForm />} />
-                    <Route path="/agency" element={<AgencyIndexForm />} />
+                    <Route path="/agency" element={<AgencyDetailIndexForm />} />
                 </Routes>
             </div>
         </>

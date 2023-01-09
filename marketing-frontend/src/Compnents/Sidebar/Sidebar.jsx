@@ -7,6 +7,7 @@ function Sidebar() {
         { "id": 0, "name": "Lodge Hostel", "path": "/lodge-hostel" },
         { "id": 1, "name": "Banquet Marriage", "path": "/banquet-marriage" },
         { "id": 2, "name": "Dharamshala", "path": "/dharamshala" },
+        { "id": 3, "name": "Advertisement", "path": "/advertDashboard" },
     ]
 
     return (
