@@ -9,5 +9,4 @@ namespace App\Repositories\SelfAdvets;
  */
 interface iSelfAdvetRepo
 {
-    public function store($req);            // Store Data In Self Advertisements
 }

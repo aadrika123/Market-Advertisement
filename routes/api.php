@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Advertisements\AgencyController;
+use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
+use App\Http\Controllers\Advertisements\VehicleAdvetController;
+use App\Http\Controllers\Params\ParamController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,13 +22,53 @@ use Illuminate\Support\Facades\Route;
  * | Routers for Advertisement Modules
  * | Created On-14-12-2022 
  * | Created By-Anshu Kumar
+ * | Module Id for Advetisements=04
  */
 
-// Self Advertisement Controller
-Route::post('advertisement/self-advert/save', 'Advertisements\SelfAdvetController@store');
-
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    /**
+     * | Self Advertisements
+     * | Controller-01
+     */
     Route::controller(SelfAdvetController::class)->group(function () {
-        Route::post('advertisement/self-advert/save', 'store');
+        Route::post('advertisement/self-advert/save', 'store');       // 01 ( Save Application )
+        Route::post('advertisement/self-advert/edit', 'edit');        // 02 ( Edit Application )
+        Route::post('advertisement/self-advert/inbox', 'inbox');      // 03 ( Application Inbox Lists )
+        Route::post('advertisement/self-advert/outbox', 'outbox');    // 04 ( Application Outbox Lists )
+        Route::post('advertisement/self-advert/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+    });
+
+    /**
+     * | Param Strings 
+     * | Controller-02
+     */
+    Route::controller(ParamController::class)->group(function () {
+        Route::post('crud/param-strings', 'paramStrings');          // 01
+        Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
+    });
+
+    /**
+     * | Movable Vehicles 
+     * | Controller-03
+     */
+    Route::controller(VehicleAdvetController::class)->group(function () {
+        Route::post('advertisement/movable-vehicle/save', 'store');    // 01
+    });
+
+    /**
+     * | Private Lands
+     * | Controller-04 
+     */
+    Route::controller(PrivateLandController::class)->group(function () {
+        Route::post('advertisement/private-land/save', 'store'); // 01
+    });
+
+    /**
+     * | Agency 
+     * | Controller-05 
+     */
+    Route::controller(AgencyController::class)->group(function () {
+        Route::post('advertisements/agency/save', 'store');             // 01
     });
 });

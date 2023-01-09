@@ -1,0 +1,34 @@
+{
+    "SelfAdvertisements":[
+        {
+            "id":2,
+            "document_name":"Aadhar Document",
+            "workflow_id":129,
+            "relative_name":"AADHAR"
+        },
+        {
+            "id":4,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":129,
+            "relative_name":"TRADE"
+        },
+        {
+            "id":7,
+            "document_name":"Holding No Document",
+            "workflow_id":129,
+            "relative_name":"HOLDING"
+        },
+        {
+            "id":11,
+            "document_name":"GPS Document",
+            "workflow_id":129,
+            "relative_name":"GPS"
+        },
+        {
+            "id":16,
+            "document_name":"GST No Document",
+            "workflow_id":129,
+            "relative_name":"GST"
+        }
+    ]
+}
