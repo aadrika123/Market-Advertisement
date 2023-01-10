@@ -236,4 +236,23 @@ class SelfAdvetController extends Controller
             );
         }
     }
+
+    /**
+     * | Escalate or De Escalate Applications
+     */
+    public function escalate(Request $req)
+    {
+        // Validation
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        try {
+            $selfAdvet = $this->_modelObj;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }

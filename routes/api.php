@@ -5,6 +5,7 @@ use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
 use App\Http\Controllers\Params\ParamController;
+use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/outbox', 'outbox');    // 04 ( Application Outbox Lists )
         Route::post('advertisement/self-advert/details', 'details');  // 05 ( Get Application Details By Application ID )
         Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advertisement/self-advert/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
+        Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
     });
 
     /**
