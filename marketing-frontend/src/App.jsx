@@ -21,7 +21,7 @@ function App() {
             <div className='col-span-2'>
               <Sidebar />
             </div>
-            <div className='col-span-10 bg-gray-200 p-4'>
+            <div className='col-span-10 bg-violet-50 p-4'>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/lodge-hostel" element={<IndexLodgeHostel />} />

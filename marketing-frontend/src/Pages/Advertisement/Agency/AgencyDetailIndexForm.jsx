@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import AdvertisementApiList from '../../../Compnents/AdvertisementApiList'
 import AdvrtSuccessScreen from '../AdvrtSuccessScreen'
-import PrivateLandDocForm from './PrivateLandDocForm'
-import PrivateLandForm from './PrivateLandForm'
-import ReviewPrivateLandApplication from './ReviewPrivateLandApplication'
+import AgencyDetailForm from './AgencyDetailForm'
+import AgencyDetailDocForm from './AgencyDetailDocForm'
+import ReviewAgencyApplication from './ReviewAgencyApplication'
 import axios from 'axios'
 import ApiHeader from '../../../Compnents/ApiHeader'
+import AgencyDirectorDetail from './AgencyDirectorDetail'
+
 
 function PrivateLandIndexForm() {
 
@@ -21,7 +23,7 @@ function PrivateLandIndexForm() {
     const [responseScreen, setresponseScreen] = useState()
 
 
-    const { api_postPrivateLandApplication } = AdvertisementApiList()
+    const { api_postAgencyApplication } = AdvertisementApiList()
 
     const backFun = (formIndex) => {
         let tempFormIndex = formIndex
@@ -41,7 +43,7 @@ function PrivateLandIndexForm() {
             setAnimateform3('pl-20 translate-x-full')
         }
         if (tempFormIndex == 4) {
-            setFormIndex(4)
+            setFormIndex(3)
             setAnimateform3('translate-x-0')
             setAnimateform4('pl-20 translate-x-full')
         }
@@ -93,51 +95,43 @@ function PrivateLandIndexForm() {
     const submitButtonToggle = () => {
 
         console.log('final form ready to submit...', allFormData)
-        submitPrivateLandForm()
+        submitAgencyForm()
     }
 
-    const submitPrivateLandForm = () => {
+    const submitAgencyForm = () => {
         const requestBody = {
-            ulbId: allFormData?.privateLand?.ulb,
+            ulbId: allFormData?.agency?.ulb,
             deviceId: "privateLand",
-            applicant: allFormData?.privateLand?.applicantName,
-            father: allFormData?.privateLand?.fatherName,
-            email: allFormData?.privateLand?.email,
-            residenceAddress: allFormData?.privateLand?.residenceAddress,
-            wardId: allFormData?.privateLand?.residenceWardNo,
-            permanentAddress: allFormData?.privateLand?.permanentAddress,
-            permanentWardId: allFormData?.privateLand?.permanentWardNo,
-            mobileNo: allFormData?.privateLand?.mobileNo,
-            aadharNo: allFormData?.privateLand?.aadharNo,
-            licenseFrom: allFormData?.privateLand?.licenseFrom,
-            licenseTo: allFormData?.privateLand?.licenseTo,
-            holdingNo: allFormData?.privateLand?.holdingNo,
-            tradeLicenseNo: allFormData?.privateLand?.tradeLicenseNo,
-            gstNo: allFormData?.privateLand?.gstNo,
-            entityName: allFormData?.privateLand?.entityName,
-            entityAddress: allFormData?.privateLand?.entityAddress,
-            entityWardId: allFormData?.privateLand?.entityWard,
-            brandDisplayName: allFormData?.privateLand?.brandDisplayeName,
-            brandDisplayAddress: allFormData?.privateLand?.brandDisplayeAddress,
-            brandDisplayHoldingNo: allFormData?.privateLand?.holdingNoBrandDisplay,
-            displayArea: allFormData?.privateLand?.totalDisplayArea,
-            displayType: allFormData?.privateLand?.displayType,
-            noOfHoardings: allFormData?.privateLand?.noOfHoarding,
-            longitude: allFormData?.privateLand?.longitude,
-            latitude: allFormData?.privateLand?.latitude,
-            installationLocation: allFormData?.privateLand?.installationLocation,
+            entityType: allFormData?.agency?.entityType,
+            entityName: allFormData?.agency?.entityName,
+            address: allFormData?.agency?.address,
+            mobileNo: allFormData?.agency?.mobileNo,
+            officeTelephone: allFormData?.agency?.officialTelephone,
+            fax: allFormData?.agency?.fax,
+            email: allFormData?.agency?.email,
+            panNo: allFormData?.agency?.panNo,
+            gstNo: allFormData?.agency?.gstNo,
+            blacklisted: 0,
+            pendingCourtCase: 1,
+            pendingAmount: allFormData?.agency?.pendingAmount,
+            directors: allFormData?.agencyDirector,
 
-            aadharDoc: allFormData?.privateLandDoc?.aadharDoc,
-            tradeDoc: allFormData?.privateLandDoc?.tradeLicenseDoc,
-            gpsDoc: allFormData?.privateLandDoc?.gpsMappedCamera,
-            holdingDoc: allFormData?.privateLandDoc?.holdingNoDoc,
-            gstDoc: allFormData?.privateLandDoc?.gstNoDoc,
-            brandDisplayDoc: allFormData?.privateLandDoc?.brandDisplayPermissionDoc,
+
+            // gstDoc: allFormData?.agency?.ulb,
+            // itReturnDoc1: allFormData?.agency?.ulb,
+            // itReturnDoc2: allFormData?.agency?.ulb,
+            // officeAddressDoc: allFormData?.agency?.ulb,
+            // panDoc: allFormData?.agency?.ulb,
+            // director1AadharDoc: allFormData?.agency?.ulb,
+            // director2AadharDoc: allFormData?.agency?.ulb,
+            // director3AadharDoc: allFormData?.agency?.ulb,
+            // director4AadharDoc: allFormData?.agency?.ulb,
+            // affidivitDoc: allFormData?.agency?.ulb,
 
         }
 
         console.log('request body...', requestBody)
-        axios.post(`${api_postPrivateLandApplication}`, requestBody, ApiHeader())
+        axios.post(`${api_postAgencyApplication}`, requestBody, ApiHeader())
             .then(function (response) {
                 console.log('response after data submitted', response.data.data)
                 setresponseScreen(response.data.data)
@@ -162,25 +156,26 @@ function PrivateLandIndexForm() {
 
     return (
         <>
-            <div>
+            <div className='overflow-x-hidden'>
                 <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
                     <div className='flex flex-row '>
-                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Private Land</h1>
+                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Agency Registration</h1>
                     </div>
                     <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
                     <div className='flex flex-row float-right'>
                         {/* {FirmStep == 1 && */}
-                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
+                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{4 - formIndex}
                         </strong> more screen</span>
                         <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
                     </div>
 
                 </div>
-                <div className={`${animateform1} transition-all relative`}><PrivateLandForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform1} transition-all relative`}><AgencyDetailForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform2} transition-all relative `}><AgencyDirectorDetail allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
-                <div className={`${animateform2} transition-all relative`}><PrivateLandDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform3} transition-all relative`}><AgencyDetailDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
 
-                <div className={`${animateform3} transition-all relative `}><ReviewPrivateLandApplication allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform4} transition-all relative `}><ReviewAgencyApplication allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>
