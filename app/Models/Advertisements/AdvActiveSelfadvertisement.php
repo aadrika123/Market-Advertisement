@@ -150,7 +150,8 @@ class AdvActiveSelfadvertisement extends Model
                 'pw.ward_name as permanent_ward_no',
                 'ew.ward_name as entity_ward_no',
                 'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location'
+                'il.string_parameter as m_installation_location',
+                'r.role_name as m_current_role'
             )
             ->where('adv_active_selfadvertisements.id', $id)
             ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
@@ -160,9 +161,10 @@ class AdvActiveSelfadvertisement extends Model
             ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_selfadvertisements.entity_ward_id')
             ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
             ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
+            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_selfadvertisements.current_role_id')
             ->first();
-        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
 
+        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
         $documents = DB::table('adv_active_selfadvetdocuments')
             ->select(
                 'adv_active_selfadvetdocuments.*',
