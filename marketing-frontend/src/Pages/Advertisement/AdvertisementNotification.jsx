@@ -12,13 +12,13 @@ function AdvertisementNotification() {
             id: "2",
             notification: "License has been approved",
             applicationNo: "SELF1234567",
-            action: '',
+            action: 'pay',
         },
         {
             id: "3",
             notification: "License has been approved",
             applicationNo: "SELF1234567",
-            action: '',
+            action: 'pay',
         },
 
     ])
@@ -40,7 +40,7 @@ function AdvertisementNotification() {
                             {items.notification} <br /> <span className='text-xs font-bold'>APPLICATION NO. :- {items.applicationNo}</span>
                         </h1>
                         {items.action != null || items.action != undefined || items.action != '' &&
-                            <button type="button" class="text-xs ml-16 mt-2 lg:ml-20 md:ml-20 px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0">pay</button>}
+                            <button type="button" class="text-xs ml-16 mt-2 lg:ml-20 md:ml-20 px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0">{items.action}</button>}
 
                     </div>
                 ))}

@@ -13,11 +13,13 @@ function SelfAdvertisementForm1(props) {
     const [masterData, setmasterData] = useState()
     const [ulbList, setulbList] = useState()
     const [reviewIdName, setreviewIdName] = useState({})
+
     const [licenseId, setlicenseId] = useState()
     const [licenseList, setlicenseList] = useState('hidden')
+
     const [searchByHolding, setsearchByHolding] = useState('hidden')
-    // const [showApplication, setshowApplication] = useState('hidden')
-    const [holdingNo, setholdingNo] = useState('')
+    const [searchholdingNo, setsearchholdingNo] = useState('')
+
     const [searchByHoldingList, setsearchByHoldingList] = useState('hidden')
 
     const [dummyList, setdummyList] = useState([
@@ -138,30 +140,30 @@ function SelfAdvertisementForm1(props) {
 
     console.log("review name by id in form", reviewIdName)
 
+    //////storing  trade license value in a state  to search the applicant////
     const getLicenseData = (licenseId) => {
         console.log("license Id", licenseId)
         setlicenseId(licenseId)
         setlicenseList('hidden')
-        // searchLicenseByHolding('hidden')
         setsearchByHolding('hidden')
-
     }
     console.log("license data...", licenseId)
 
 
-
+    ////list of table of  trade licenses by user login  , table is hidden default////
     const showTradeLicenseList = () => {
         licenseList == 'hidden' ? setlicenseList('') : setlicenseList('hidden')
     }
 
+    // find licence if not in list 
     const findHolding = () => {
         showTradeLicenseList()
         searchByHolding == 'hidden' ? setsearchByHolding('') : setsearchByHolding('hidden')
 
     }
-
+    //  serach license by holding
     const searchLicenseByHolding = () => {
-        console.log("holding no.", holdingNo)
+        console.log("holding no.", searchholdingNo)
         setsearchByHoldingList('')
 
     }
@@ -226,7 +228,8 @@ function SelfAdvertisementForm1(props) {
                                 <td className={`${labelStyle}`}>{items?.ownerName}</td>
                                 <td className={`${labelStyle}`}>{items?.licenseIssueDate}</td>
                                 {/* <td><input type='checkbox' name='check' onChange={() => getLicenseData(items.id)} /></td> */}
-                                <td><input type='checkbox' name='check' onChange={() => getLicenseData(items?.tradeLicenseNo)} /></td>
+                                {/* <td><input type='checkbox' name='check' onChange={() => getLicenseData(items?.tradeLicenseNo)} /></td> */}
+                                <td><button type='button' onClick={() => getLicenseData(items?.tradeLicenseNo)}>select</button></td>
                             </tr>
                         ))}
 
@@ -240,7 +243,7 @@ function SelfAdvertisementForm1(props) {
             <div className={`${searchByHolding}   p-2 w-11/12 mx-auto`}>
                 <div className='flex flex-row  ml-3'>
                     <h1 className={`${labelStyle} lg:text-center md:text-center `}>Enter Holding No.</h1>
-                    <input name='holdingField' className={`ml-2 h-6 md:h-8 w-[10rem] md:w-[13rem] mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2`} placeholder='Enter Holding No.' onChange={(e) => setholdingNo(e.target.value)} />
+                    <input name='holdingField' className={`ml-2 h-6 md:h-8 w-[10rem] md:w-[13rem] mt-4 bg-white rounded-l leading-5 shadow-md   text-xs px-2`} placeholder='Enter Holding No.' onChange={(e) => setsearchholdingNo(e.target.value)} />
                     <button type='button' className=' text-xs mt-4 bg-indigo-500 px-2 h-8  rounded-r leading-5 text-white' onClick={searchLicenseByHolding}>search</button>
                 </div>
                 <div className={`${searchByHoldingList} mt-4`}>
