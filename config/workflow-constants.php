@@ -6,4 +6,5 @@
  */
 return [
     "SELF_ADVERTISENTS" => "129",
+    "ADVERTISMENT_MODULE_ID"=>"5",
 ];

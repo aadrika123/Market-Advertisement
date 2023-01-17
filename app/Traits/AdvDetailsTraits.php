@@ -35,11 +35,27 @@ trait AdvDetailsTraits
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
             ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
             ['displayString' => 'M Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
-            ['displayString' => 'M Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']],
-            ['displayString' => 'M Current Role', 'key' => 'mCurrentRole', 'value' => $data['m_current_role']]
+            ['displayString' => 'M Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']]
+            // ['displayString' => 'M Current Role', 'key' => 'mCurrentRole', 'value' => $data['m_current_role']]
          ]);
     }
+    
 
+    
+    /**
+     * | Get Card Details
+     */
+    public function generateCardDetails($data)
+    {
+        return new Collection([            
+            ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+         ]);
+    }
 
       /**
      * | Generate Owner Details

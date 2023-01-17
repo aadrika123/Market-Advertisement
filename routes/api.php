@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
  * | Routers for Advertisement Modules
  * | Created On-14-12-2022 
  * | Created By-Anshu Kumar
- * | Module Id for Advetisements=04
+ * | Module Id for Advetisements=05
  */
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -40,6 +40,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
         Route::post('advertisement/self-advert/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
         Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
+        Route::post('advertisement/self-advert/level', 'postNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
+        Route::post('advertisement/self-advert/get-licence-by-userid', 'getLicence');  // 11 ( Get Licence By User ID )
+        Route::post('advertisement/self-advert/get-licence-by-holding-no', 'getLicenceByHoldingNo');  // 11 ( Get Licence By Holding No )
+        Route::post('advertisement/self-advert/get-licence-details-by-licence-no', 'getLicenceDetailso');  // 12 ( Get Licence Details By Licence No )
+        Route::post('advertisement/self-advert/advertisement-upload-document', 'uploadDocuments');  // 13 ( Get Uploaded Document By Advertisement ID )
     });
 
     /**
