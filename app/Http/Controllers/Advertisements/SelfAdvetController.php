@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
+use App\Traits\AdvDetailsTraits;
+use Illuminate\Database\Eloquent\Collection;
+
 /**
  * | Created On-14-12-2022 
  * | Created By-Anshu Kumar
@@ -22,6 +25,7 @@ use Illuminate\Support\Facades\Validator;
 class SelfAdvetController extends Controller
 {
     use WorkflowTrait;
+    use AdvDetailsTraits;
     protected $_modelObj;
     public function __construct()
     {
@@ -159,49 +163,38 @@ class SelfAdvetController extends Controller
     /**
      * | Application Details
      */
+
     public function details(Request $req)
     {
-        // Validation
-        $validator = Validator::make($req->all(), [
-            'id' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return responseMsgs(
-                false,
-                $validator->errors(),
-                "",
-                "040105",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+        $selfAdvets = new AdvActiveSelfadvertisement();
+        $data = array();
+        $fullDetailsData = array();
+        if ($req->id) {
+            $data = $selfAdvets->details($req->id);  
         }
-        try {
-            $selfAdvets = new AdvActiveSelfadvertisement();
-            $details = collect($selfAdvets->details($req->id));          // Model function to get Details of the application
-            return responseMsgs(
-                true,
-                "Application Details",
-                remove_null($details),
-                "040105",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
-        } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040105",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
-        }
+
+        // Basic Details
+        $basicDetails = $this->generateBasicDetails($data);      // Trait function to get Basic Details
+        $basicElement = [
+            'headerTitle' => "Basic Details",
+            "data" => $basicDetails
+        ];
+        
+        // Uploads Documents Details
+       
+        $uploadDocuments = $this->generateUploadDocDetails($data['documents']);
+        $uploadDocs = [
+            'headerTitle' => 'Upload Documents',
+            'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
+            'tableData' => $uploadDocuments
+        ];
+
+        $fullDetailsData['application_no'] = $data['application_no'];
+        $fullDetailsData['apply_date'] = $data['application_date'];
+        
+        $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement, $uploadDocs]);
+      
+        return $fullDetailsData;
     }
 
     /**
