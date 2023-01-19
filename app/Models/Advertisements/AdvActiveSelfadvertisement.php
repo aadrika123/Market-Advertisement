@@ -76,7 +76,10 @@ class AdvActiveSelfadvertisement extends Model
             $this->metaReqs($req),
             $mApplicationNo,
             $ulbWorkflowReqs
-        );                                                                                              // Add Relative Path as Request and Client Ip Address etc.
+        );
+        // echo "<pre>";
+        // print_r($metaReqs);
+        // die;                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 

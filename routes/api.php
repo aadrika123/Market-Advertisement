@@ -42,10 +42,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
         Route::post('advertisement/self-advert/level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
-        Route::post('advertisement/self-advert/get-licence-by-userid', 'getLicence');  // 11 ( Get Licence By User ID )
-        Route::post('advertisement/self-advert/get-licence-by-holding-no', 'getLicenceByHoldingNo');  // 11 ( Get Licence By Holding No )
-        Route::post('advertisement/self-advert/get-licence-details-by-licence-no', 'getLicenceDetailso');  // 12 ( Get Licence Details By Licence No )
+        Route::post('advertisement/self-advert/get-license-by-userid', 'getLicense');  // 11 ( Get License By User ID )
+        Route::post('advertisement/self-advert/get-license-by-holding-no', 'getLicenseByHoldingNo');  // 11 ( Get License By Holding No )
+        Route::post('advertisement/self-advert/get-license-details-by-license-no', 'getLicenseDetailso');  // 12 ( Get License Details By Licence No )
         Route::post('advertisement/self-advert/advertisement-upload-document', 'uploadDocuments');  // 13 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 13 ( Get Uploaded Document By Advertisement ID )
     });
 
     /**

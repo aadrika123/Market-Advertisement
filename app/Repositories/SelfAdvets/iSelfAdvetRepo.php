@@ -9,4 +9,5 @@ namespace App\Repositories\SelfAdvets;
  */
 interface iSelfAdvetRepo
 {
+    public function specialInbox($workflowIds);
 }

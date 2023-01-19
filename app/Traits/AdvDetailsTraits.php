@@ -73,5 +73,26 @@ trait AdvDetailsTraits
         });
     }
 
+
+    /**
+   * | Generate License Details
+   */
+  public function generateLicenseDetails($data)
+  {
+    return new Collection([            
+        ['displayString' => 'Appication No', 'key' => 'applicantNo', 'value' => $data->application_no],
+        ['displayString' => 'Appication Date', 'key' => 'appicationDate', 'value' => $data->application_date],
+        ['displayString' => 'Licence No', 'key' => 'licenseNo', 'value' => $data->license_no],
+        ['displayString' => 'Valid From', 'key' => 'validFrom', 'value' => $data->valid_from],
+        ['displayString' => 'Valid Upto', 'key' => 'validUpto', 'value' => $data->valid_upto],
+        ['displayString' => 'Years', 'key' => 'licenceForYears', 'value' => $data->licence_for_years],
+        ['displayString' => 'Firm Name', 'key' => 'firmName', 'value' => $data->firm_name],
+        ['displayString' => 'Owner Name', 'key' => 'premisesOwnerName', 'value' => $data->premises_owner_name],
+        ['displayString' => 'Address', 'key' => 'address', 'value' => $data->address],
+        ['displayString' => 'Landmark', 'key' => 'landmark', 'value' => $data->landmark],
+        ['displayString' => 'Pin Code', 'key' => 'pinCOde', 'value' => $data->pin_code],
+     ]);
+  }
+
    
 }

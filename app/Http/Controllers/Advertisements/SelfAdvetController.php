@@ -14,8 +14,11 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Traits\AdvDetailsTraits;
 use Illuminate\Database\Eloquent\Collection;
-use App\Models\WorkflowTrack;
+use App\Models\Workflows\WorkflowTrack;
 use Illuminate\Support\Facades\Config;
+use App\Models\Workflows\WfWardUser;
+use App\Repositories\SelfAdvets\iSelfAdvetRepo;
+
 
 /**
  * | Created On-14-12-2022 
@@ -30,9 +33,15 @@ class SelfAdvetController extends Controller
     use WorkflowTrait;
     use AdvDetailsTraits;
     protected $_modelObj;
-    public function __construct()
+
+    protected $Repository;
+
+    protected $_workflowIds;
+    public function __construct(iSelfAdvetRepo $self_repo)
     {
         $this->_modelObj = new AdvActiveSelfadvertisement();
+        $this->_workflowIds = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+        $this->Repository = $self_repo;
     }
     /**
      * | Apply for Self Advertisements 
@@ -169,43 +178,38 @@ class SelfAdvetController extends Controller
 
     public function details(Request $req)
     {
-        $selfAdvets = new AdvActiveSelfadvertisement();
-        $data = array();
-        $fullDetailsData = array();
-        if ($req->id) {
-            $data = $selfAdvets->details($req->id);
+        try {
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            // $data = array();
+            $fullDetailsData = array();
+            if ($req->applicationId) {
+                $data = $selfAdvets->details($req->applicationId);
+            }
+
+            // Basic Details
+            $basicDetails = $this->generateBasicDetails($data); // Trait function to get Basic Details
+            $basicElement = [
+                'headerTitle' => "Basic Details",
+                "data" => $basicDetails
+            ];
+
+            $cardDetails = $this->generateCardDetails($data);
+            $cardElement = [
+                'headerTitle' => "About Advertisment",
+                'data' => $cardDetails
+            ];
+            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
+            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+
+            $fullDetailsData = remove_null($fullDetailsData);
+
+            $fullDetailsData['application_no'] = $data['application_no'];
+            $fullDetailsData['apply_date'] = $data['application_date'];
+
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
         }
-
-        // Basic Details
-        $basicDetails = $this->generateBasicDetails($data);      // Trait function to get Basic Details
-        $basicElement = [
-            'headerTitle' => "Basic Details",
-            "data" => $basicDetails
-        ];
-
-        $cardDetails = $this->generateCardDetails($data);
-        $cardElement = [
-            'headerTitle' => "About Advertisment",
-            'data' => $cardDetails
-        ];
-        $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
-
-        // Uploads Documents Details
-
-        // $uploadDocuments = $this->generateUploadDocDetails($data['documents']);
-        // $uploadDocs = [
-        //     'headerTitle' => 'Upload Documents',
-        //     'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
-        //     'tableData' => $uploadDocuments
-        // ];
-
-        $fullDetailsData['application_no'] = $data['application_no'];
-        $fullDetailsData['apply_date'] = $data['application_date'];
-
-        $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
-
-        $data1['data'] = $fullDetailsData;
-        return $data1;
     }
 
     /**
@@ -250,12 +254,12 @@ class SelfAdvetController extends Controller
     {
         $request->validate([
             "escalateStatus" => "required|int",
-            "advId" => "required|int",
+            "applicationId" => "required|int",
         ]);
         try {
             $userId = auth()->user()->id;
-            $adv_id = $request->advId;
-            $data = AdvActiveSelfadvertisement::find($adv_id);
+            $applicationId = $request->applicationId;
+            $data = AdvActiveSelfadvertisement::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
@@ -270,13 +274,13 @@ class SelfAdvetController extends Controller
     {
         $request->validate([
             'comment' => 'required',
-            'advId' => 'required|integer',
+            'applicationId' => 'required|integer',
             'senderRoleId' => 'nullable|integer'
         ]);
 
         try {
             $workflowTrack = new WorkflowTrack();
-            $adv = AdvActiveSelfadvertisement::find($request->advId);                // Advertisment Details
+            $adv = AdvActiveSelfadvertisement::find($request->applicationId);                // Advertisment Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
             DB::beginTransaction();
@@ -339,33 +343,36 @@ class SelfAdvetController extends Controller
         }
     }
 
-    public function getLicence(Request $req){
+    public function getLicense(Request $req)
+    {
         $validator = Validator::make($req->all(), [
-                'user_id' => 'required|integer'
-            ]);
-            if ($validator->fails()) {
-                return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
-            }
-            try {
-                $tradeLicence = new TradeLicence();
-                $licenceList = $tradeLicence->select('id','license_no')->where('user_id', $req->user_id)
-                    ->get();
-                    return responseMsgs(
-                        true,
-                        "Licences",
-                        remove_null($licenceList->toArray()),
-                        "040106",
-                        "1.0",
-                        "",
-                        "POST",
-                        $req->deviceId ?? ""
-                    );
-            } catch (Exception $e) {
-                return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
-            }
+            'user_id' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        try {
+            $tradeLicence = new TradeLicence();
+            // $licenceList = $tradeLicence->select('id','license_no')->where('user_id', $req->user_id)
+            //     ->get();
+            $licenseList = $tradeLicence->getLicenceByUserId($req->user_id);
+            return responseMsgs(
+                true,
+                "Licenses",
+                remove_null($licenseList->toArray()),
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
     }
 
-    public function getLicenceByHoldingNo(Request $req){
+    public function getLicenseByHoldingNo(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'holding_no' => 'required|string'
         ]);
@@ -373,25 +380,27 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
         }
         try {
-            $tradeLicence = new TradeLicence();
-            $licenceList = $tradeLicence->select('id','license_no')->where('holding_no', $req->holding_no)
-                ->get();
-                return responseMsgs(
-                    true,
-                    "Licences",
-                    remove_null($licenceList->toArray()),
-                    "040106",
-                    "1.0",
-                    "",
-                    "POST",
-                    $req->deviceId ?? ""
-                );
+            $tradeLicense = new TradeLicence();
+            // $licenceList = $tradeLicence->select('id', 'license_no')->where('holding_no', $req->holding_no)
+            //     ->get();
+            $licenseList = $tradeLicense->getLicenceByHoldingNo($req->holding_no);
+            return responseMsgs(
+                true,
+                "Licenses",
+                remove_null($licenseList->toArray()),
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
-    public function uploadDocuments(Request $req){
+    public function uploadDocuments(Request $req)
+    {
         $selfAdvets = new AdvActiveSelfadvertisement();
         $data = array();
         $fullDetailsData = array();
@@ -417,7 +426,58 @@ class SelfAdvetController extends Controller
         return $data1;
     }
 
-    public function specialInbox(Request $req){
-        return ["message" => "success"];
+    public function specialInbox(Request $req)
+    {
+        try {
+            $mWfWardUser = new WfWardUser();
+            $userId = authUser()->id;
+            $ulbId = authUser()->ulb_id;
+
+            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
+            $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
+                return $item->ward_id;
+            });
+
+            // print_r($wardId);
+            
+            $advData = $this->Repository->specialInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
+                ->where('is_escalate', 1)
+                ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
+                // ->whereIn('ward_mstr_id', $wardId)
+                ->get();
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "010107", "1.0", "251ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    public function getDetailsByLicenseNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'license_no' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        $mtradeLicense = new TradeLicence();
+        $data = array();
+        if ($req->license_no) {
+            $data = $mtradeLicense->getDetailsByLicenceNo($req->license_no);
+        }
+        if (!empty($data)) {
+            // $licenseDetails = $this->generateLicenseDetails($data);
+            $licenseElement = [
+                'status' => true,
+                'headerTitle' => "License Details",
+                'data' => $data
+            ];
+        } else {
+            $licenseElement = [
+                'status' => false,
+                'headerTitle' => "License Details",
+                'data' => "Invalid License No"
+            ];
+        }
+        return $licenseElement;
     }
 }
