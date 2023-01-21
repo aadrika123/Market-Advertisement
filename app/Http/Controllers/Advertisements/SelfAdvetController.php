@@ -212,6 +212,34 @@ class SelfAdvetController extends Controller
         }
     }
 
+
+    public function getRoleDetails(Request $request)
+    {
+        $ulbId = auth()->user()->ulb_id;
+        $request->validate([
+            'workflowId' => 'required|int'
+
+        ]);
+        $roleDetails = DB::table('wf_workflowrolemaps')
+            ->select(
+                'wf_workflowrolemaps.id',
+                'wf_workflowrolemaps.workflow_id',
+                'wf_workflowrolemaps.wf_role_id',
+                'wf_workflowrolemaps.forward_role_id',
+                'wf_workflowrolemaps.backward_role_id',
+                'wf_workflowrolemaps.is_initiator',
+                'wf_workflowrolemaps.is_finisher',
+                'r.role_name as forward_role_name',
+                'rr.role_name as backward_role_name'
+            )
+            ->leftJoin('wf_roles as r', 'wf_workflowrolemaps.forward_role_id', '=', 'r.id')
+            ->leftJoin('wf_roles as rr', 'wf_workflowrolemaps.backward_role_id', '=', 'rr.id')
+            ->where('workflow_id', $request->workflowId)
+            ->where('wf_role_id', $request->wfRoleId)
+            ->first();
+        return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
+    }
+
     /**
      * | Forward or Backward Application
      */
@@ -319,10 +347,14 @@ class SelfAdvetController extends Controller
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
             $applications = $selfAdvets->getCitizenApplications($citizenId);
+            $totalApplication=$applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
             return responseMsgs(
                 true,
                 "Applied Applications",
-                remove_null($applications->toArray()),
+                $data1,
                 "040106",
                 "1.0",
                 "",
@@ -343,6 +375,11 @@ class SelfAdvetController extends Controller
         }
     }
 
+
+    
+    /**
+     * | Get License By User ID
+     */
     public function getLicense(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -371,6 +408,10 @@ class SelfAdvetController extends Controller
         }
     }
 
+     
+    /**
+     * | Get License By Holding No
+     */
     public function getLicenseByHoldingNo(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -399,28 +440,33 @@ class SelfAdvetController extends Controller
         }
     }
 
-    public function uploadDocuments(Request $req)
+     
+    /**
+     * | Get Uploaded Document by application ID
+     */
+    public function uploadDocumentsView(Request $req)
     {
         $selfAdvets = new AdvActiveSelfadvertisement();
         $data = array();
         $fullDetailsData = array();
-        if ($req->id) {
-            $data = $selfAdvets->details($req->id);
+        if ($req->applicationId) {
+            $data = $selfAdvets->details($req->applicationId);
         }
-
+        // return $data;
+        
         // Uploads Documents Details
-
-        $uploadDocuments = $this->generateUploadDocDetails($data['documents']);
-        $uploadDocs = [
-            'headerTitle' => 'Upload Documents',
-            'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
-            'tableData' => $uploadDocuments
-        ];
+        //  $uploadDocuments = $this->generateUploadDocDetails($data);
+        // $uploadDocs = [
+        //     'headerTitle' => 'Upload Documents',
+        //     'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
+        //     'tableData' => $uploadDocuments
+        // ];
 
         $fullDetailsData['application_no'] = $data['application_no'];
         $fullDetailsData['apply_date'] = $data['application_date'];
+        $fullDetailsData['documents'] = $data['documents'];
 
-        $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$uploadDocs]);
+        // $fullDetailsData['fullDetailsData']['uploadDocument'] = new Collection($uploadDocs);
 
         $data1['data'] = $fullDetailsData;
         return $data1;

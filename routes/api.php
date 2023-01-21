@@ -40,13 +40,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
         Route::post('advertisement/self-advert/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
         Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
-        Route::post('advertisement/self-advert/level', 'postNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advertisement/self-advert/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/self-advert/get-license-by-userid', 'getLicense');  // 11 ( Get License By User ID )
         Route::post('advertisement/self-advert/get-license-by-holding-no', 'getLicenseByHoldingNo');  // 11 ( Get License By Holding No )
         Route::post('advertisement/self-advert/get-license-details-by-license-no', 'getLicenseDetailso');  // 12 ( Get License Details By Licence No )
-        Route::post('advertisement/self-advert/advertisement-upload-document', 'uploadDocuments');  // 13 ( Get Uploaded Document By Advertisement ID )
-        Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 13 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advertisement/self-advert/advertisement-document-view', 'uploadDocumentsView');  // 13 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 14 ( Get Uploaded Document By Advertisement ID )
     });
 
     /**
@@ -63,7 +63,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Controller-03
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
-        Route::post('advertisement/movable-vehicle/save', 'store');    // 01
+        Route::post('advertisement/movable-vehicle/save', 'store');    // 01 ( Save Application )
+        Route::post('advertisement/movable-vehicle/edit', 'edit');    // 02 ( Edit Application )
+        Route::post('advertisement/movable-vehicle/inbox', 'inbox');    // 03 ( Application Inbox Lists )
+        Route::post('advertisement/movable-vehicle/outbox', 'outbox');    // 04 ( Application Outbox Lists )
+        Route::post('advertisement/movable-vehicle/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('advertisement/movable-vehicle/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advertisement/movable-vehicle/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
+        Route::post('advertisement/movable-vehicle/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
+        Route::post('advertisement/movable-vehicle/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advertisement/movable-vehicle/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
+        Route::post('advertisement/movable-vehicle/vehicle-document-view', 'uploadDocumentsView');  // 13 ( Get Uploaded Document By Application ID )
     });
 
     /**
@@ -80,5 +90,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(AgencyController::class)->group(function () {
         Route::post('advertisements/agency/save', 'store');             // 01
+        Route::post('advertisements/agency/inbox', 'inbox');             // 03 ( Application Inbox Lists )
+        Route::post('advertisements/agency/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('advertisement/agency/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advertisement/agency/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
+        Route::post('advertisement/agency/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
     });
 });

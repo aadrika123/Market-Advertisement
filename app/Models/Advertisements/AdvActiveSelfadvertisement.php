@@ -55,7 +55,7 @@ class AdvActiveSelfadvertisement extends Model
     {
         $bearerToken = $req->bearerToken();
         $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);               // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mApplicationNo = ['application_no' => 'SELF-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -76,10 +76,7 @@ class AdvActiveSelfadvertisement extends Model
             $this->metaReqs($req),
             $mApplicationNo,
             $ulbWorkflowReqs
-        );
-        // echo "<pre>";
-        // print_r($metaReqs);
-        // die;                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 

@@ -32,4 +32,32 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
     }
+
+    public function specialVehicleInbox($workflowIds){
+        $specialInbox = DB::table('adv_active_vehicles')
+        ->select(
+            'id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+        )
+        ->orderByDesc('id');
+        // ->whereIn('workflow_id', $workflowIds);
+    return $specialInbox;
+    }
+
+    
+    public function specialAgencyInbox($workflowIds){
+        $specialInbox = DB::table('adv_active_agencies')
+        ->select(
+            'id',
+            'application_no',
+            'application_date',
+            'entity_name',
+        )
+        ->orderByDesc('id');
+        // ->whereIn('workflow_id', $workflowIds);
+    return $specialInbox;
+    }
 }

@@ -10,4 +10,6 @@ namespace App\Repositories\SelfAdvets;
 interface iSelfAdvetRepo
 {
     public function specialInbox($workflowIds);
+    public function specialVehicleInbox($workflowIds);
+    public function specialAgencyInbox($workflowIds);
 }
