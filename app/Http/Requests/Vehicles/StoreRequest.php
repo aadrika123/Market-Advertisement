@@ -49,12 +49,17 @@ class StoreRequest extends FormRequest
             'rearArea' => 'required|numeric',
             'topArea' => 'required|numeric',
             'displayType' => 'required|integer',
-            'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'tradeDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'vehiclePhotoDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'ownerBookDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'insuranceDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
-            'gstDoc' => 'nullable|mimes:png,jpeg,pdf,jpg'
+            // 'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'tradeDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            // 'vehiclePhotoDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            // 'ownerBookDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            // 'insuranceDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            // 'gstDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
+            // 'drivingLicenseNo' => 'nullable|mimes:png,jpeg,pdf,jpg'
+            'documents' => 'required|array',
+            'documents.*.id' => 'required|integer',
+            'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents.*.relativeName' => 'required|string'
         ];
     }
 

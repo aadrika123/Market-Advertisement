@@ -5,10 +5,18 @@ namespace App\Models\Advertisements;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
+use App\MicroServices\DocumentUpload;
+use Illuminate\Support\Facades\DB;
+use App\Traits\WorkflowTrait;
+use Illuminate\Http\Request;
+
 
 class AdvActiveAgency extends Model
 {
     use HasFactory;
+    
+    use WorkflowTrait;
     protected $guarded = [];
     protected $_applicationDate;
 
@@ -50,18 +58,195 @@ class AdvActiveAgency extends Model
     public function store($req)
     {
         $directors = $req->directors;
+        $bearerToken = $req->bearerToken();
         $metaReqs = $this->metaReqs($req);
-        $mClientIpAddress = ['ip_address' => getClientIpAddress()];
-        $applicationNo = ['application_no' => "AGENCY-" . random_int(100000, 999999)];
-        $metaReqs = array_merge($metaReqs, $applicationNo, $mClientIpAddress);     // Final Merged Meta Requests
+
+        $workflowId = Config::get('workflow-constants.AGENCY');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress
+            ],
+            $this->metaReqs($req),
+            $mApplicationNo,
+            $ulbWorkflowReqs
+        ); 
+
         $agencyDirector = new AdvActiveAgencydirector();
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
+        $mDocuments = $req->documents;
+        $this->uploadDocument($agencyId, $mDocuments);
+
         // Store Director Details
-        collect($directors)->map(function ($director) use ($agencyId, $agencyDirector) {
+        $mDocService = new DocumentUpload;
+        $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+        collect($directors)->map(function ($director) use ($agencyId, $agencyDirector, $mDocService, $mRelativePath) {
+            // $mDocRelativeName = "AADHAR";
+            // $mImage = $director['aadhar'];
+            // $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
             $agencyDirector->store($director, $agencyId);       // Model function to store
         });
 
-        return $applicationNo;
+        return $mApplicationNo['application_no'];
+    }
+
+      /**
+     * | Document Upload (1.1)
+     * | @param tempId Temprory Id
+     * | @param documents Uploading Documents
+     * */
+    public function uploadDocument($tempId, $documents)
+    {
+        $mAdvDocument = new AdvActiveSelfadvetdocument();
+        $mDocService = new DocumentUpload;
+        $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+            $mDocumentId = $document['id'];
+            $mDocRelativeName = $document['relativeName'];
+            $mImage = $document['image'];
+            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+
+            $docUploadReqs = [
+                'tempId' => $tempId,
+                'docTypeCode' => 'Test-Code',
+                'documentId' => $mDocumentId,
+                'relativePath' => $mRelativePath,
+                'docName' => $mDocName
+            ];
+            $docUploadReqs = new Request($docUploadReqs);
+
+            $mAdvDocument->store($docUploadReqs);
+        });
+    }
+
+
+    /**
+     * | Get Application Details by id
+     * | @param Agencies id
+     */
+    public function details($id)
+    {
+        $details = array();
+        $details = DB::table('adv_active_agencies')
+            ->select(
+                'adv_active_agencies.*',
+                'u.ulb_name',
+                // 'p.string_parameter as m_license_year',
+                // 'w.ward_name as ward_no',
+                // 'pw.ward_name as permanent_ward_no',
+                // 'ew.ward_name as entity_ward_no',
+                // 'dp.string_parameter as m_display_type',
+                // 'il.string_parameter as m_installation_location',
+                // 'r.role_name as m_current_role'
+            )
+            ->where('adv_active_agencies.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agencies.ulb_id')
+            // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
+            // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
+            // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')
+            // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_agencies.entity_ward_id')
+            // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_agencies.display_type')
+            // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_agencies.installation_location')
+            // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_agencies.current_role_id')
+            ->first();
+
+        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
+        $directors = DB::table('adv_active_agencydirectors')
+            ->select(
+                'adv_active_agencydirectors.*',
+                DB::raw("CONCAT(adv_active_agencydirectors.relative_path,'/',adv_active_agencydirectors.doc_name) as document_path")
+            )
+            ->where('agency_id', $id)
+            ->get();
+        $details['directors'] = remove_null($directors->toArray());
+        return $details;
+    }
+
+
+     /**
+     * | Get Application Inbox List by Role Ids
+     * | @param roleIds $roleIds
+     */
+    public function inbox($roleIds)
+    {
+        $inbox = DB::table('adv_active_agencies')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'address'
+            )
+            ->orderByDesc('id')
+            ->whereIn('current_role_id', $roleIds)
+            ->get();
+        return $inbox;
+    }
+
+    
+    /**
+     * | Get Citizen Applied applications
+     * | @param citizenId
+     */
+    public function getCitizenApplications($citizenId)
+    {
+        return AdvActiveAgency::where('citizen_id', $citizenId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'address',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    
+    /**
+     * | Get Application Outbox List by Role Ids
+     */
+    public function outbox($roleIds)
+    {
+        $outbox = DB::table('adv_active_agencies')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'address',
+            )
+            ->orderByDesc('id')
+            ->whereNotIn('current_role_id', $roleIds)
+            ->get();
+        return $outbox;
+    }
+
+    public function viewUploadedDocuments($id){
+        $documents = DB::table('adv_active_selfadvetdocuments')
+            ->select(
+                'adv_active_selfadvetdocuments.*',
+                'd.document_name',
+                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+            )
+            ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+            ->where('temp_id', $id)
+            ->get();
+        $details['documents'] = remove_null($documents->toArray());
+        return $details;
     }
 }

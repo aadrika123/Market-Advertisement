@@ -26,5 +26,9 @@ return [
 
     "LAND_ADVET" => [
         "RELATIVE_PATH" => "Uploads/LandAdvets"
+    ],
+
+    "AGENCY_ADVET" => [
+        "RELATIVE_PATH" => "Uploads/AgencyAdvets"
     ]
 ];

@@ -30,5 +30,125 @@
             "workflow_id":129,
             "relative_name":"GST"
         }
+    ],
+    "MovableVehicle":[
+        {
+            "id":17,
+            "document_name":"Aadhar Document",
+            "workflow_id":131,
+            "relative_name":"AADHAR"
+        },
+        {
+            "id":18,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":131,
+            "relative_name":"TRADE"
+        },
+        {
+            "id":19,
+            "document_name":"Vehicle Photograph",
+            "workflow_id":131,
+            "relative_name":"VEHICLE"
+        },
+        {
+            "id":20,
+            "document_name":"Owner Book",
+            "workflow_id":131,
+            "relative_name":"OWNERBOOK"
+        },
+        {
+            "id":21,
+            "document_name":"Driving License",
+            "workflow_id":131,
+            "relative_name":"DRIVINGLICENSE"
+        },
+        {
+            "id":22,
+            "document_name":"Insurance Photo",
+            "workflow_id":131,
+            "relative_name":"INSURANCE"
+        },
+        {
+            "id":23,
+            "document_name":"GST No Document",
+            "workflow_id":131,
+            "relative_name":"GST"
+        }
+    ],
+    "Agency":[
+        {
+            "id":24,
+            "document_name":"GST No Document",
+            "workflow_id":132,
+            "relative_name":"GST"
+        },
+        {
+            "id":25,
+            "document_name":"IT Return Last Year",
+            "workflow_id":132,
+            "relative_name":"IT RETURN LAST YEAR"
+        },
+        {
+            "id":26,
+            "document_name":"IT Return Previous Last Year",
+            "workflow_id":132,
+            "relative_name":"IT RETURN PREVIOUS LAST YEAR"
+        },
+        {
+            "id":27,
+            "document_name":"Office Address Photograph",
+            "workflow_id":132,
+            "relative_name":"OFFICE ADDRESS"
+        },
+        {
+            "id":28,
+            "document_name":"PAN No Document",
+            "workflow_id":132,
+            "relative_name":"PAN"
+        },
+        {
+            "id":29,
+            "document_name":"Affidavit Photograph",
+            "workflow_id":132,
+            "relative_name":"AFFIDAVIT"
+        }
+    ],
+    "PrivateLands":[
+        {
+            "id":30,
+            "document_name":"Aadhar Document",
+            "workflow_id":133,
+            "relative_name":"AADHAR"
+        },
+        {
+            "id":31,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":133,
+            "relative_name":"TRADE"
+        },
+        {
+            "id":32,
+            "document_name":"GPS Map Camera Photograph",
+            "workflow_id":133,
+            "relative_name":"GPS MAP CAMERA"
+        },
+        {
+            "id":33,
+            "document_name":"Holding No Document",
+            "workflow_id":133,
+            "relative_name":"HOLDING"
+        },
+        {
+            "id":34,
+            "document_name":"GST No Document",
+            "workflow_id":133,
+            "relative_name":"GST"
+        },
+        {
+            "id":35,
+            "document_name":"Brand Display Permission",
+            "workflow_id":133,
+            "relative_name":"BRAND DISPLAY"
+        }
     ]
 }

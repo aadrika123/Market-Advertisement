@@ -42,7 +42,12 @@ class StoreRequest extends FormRequest
             'directors' => 'required|array',
             'directors.*.name' => 'required|string',
             'directors.*.mobile' => 'required|numeric|digits:10',
-            'directors.*.email' => 'required|email'
+            'directors.*.email' => 'required|email',
+            // 'directors.*.aadhar' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents' => 'required|array',
+            'documents.*.id' => 'required|integer',
+            'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents.*.relativeName' => 'required|string'
         ];
     }
 
