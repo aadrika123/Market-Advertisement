@@ -78,7 +78,7 @@ function ReviewMovableApplication(props) {
 
                             <div className=''>
                                 <p className={`${labelStyle}`}>Entity Name</p>
-                                <span className={`${inputStyle}`}>{props?.reviewIdNameData?.movableVehicle?.entityName}</span>
+                                <span className={`${inputStyle}`}>{props?.allFormData?.movableVehicle?.entityName}</span>
                             </div>
                             <div className=''>
                                 <p className={`${labelStyle}`}>GST No</p>
@@ -130,21 +130,24 @@ function ReviewMovableApplication(props) {
                         </div>
                     </div>
                     {/* document */}
-                    {/* <div className='col-span-4 border border-dashed border-violet-800 -mt-[35rem]'>
-                    <h1 className='text-center p-3 mb-2 bg-white text-gray-600 font-sans font-semibold '>DOCUMENTS UPLOADED</h1>
+                    <div className='col-span-4 border border-dashed border-violet-800 -mt-[35rem]'>
+                        <h1 className='text-center p-3 mb-2 bg-white text-gray-600 font-sans font-semibold '>DOCUMENTS UPLOADED</h1>
 
-                    <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 p-2 ml-12'>
-                        {props?.allFormData?.movableVehicleDoc?.map((data, index) => (
-                            <div className=''>
-
-                                <p className={`${labelStyle}`}>Aadhar Document</p>
-                                <div className='flex -mt-2'>
-                                    <span className={`${inputStyle} flex-1`}>new-product.png</span>
-                                    <span className={`mt-4  flex-1`}><img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={` w-8`} /></span>
+                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 p-2 ml-12'>
+                            {/* {props?.allFormData?.movableVehicleDoc?.map((data, index) => (
+                                <div className=''>
+                                    {data?.map((data) => (
+                                        <div>
+                                            <p className={`${labelStyle}`}>{data.relativeName}</p>
+                                            <div className='flex -mt-2'>
+                                                <span className={`${inputStyle} flex-1`}>{data.image}</span>
+                                                <span className={`mt-4  flex-1`}><img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={` w-8`} /></span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        ))}
-                        <div className=''>
+                            ))} */}
+                            {/* <div className=''>
                             <p className={`${labelStyle}`}>Trade License</p>
                             <div className='flex -mt-2'>
                                 <span className={`${inputStyle} flex-1`}>new-product.png</span>
@@ -178,9 +181,9 @@ function ReviewMovableApplication(props) {
                                 <span className={`${inputStyle} flex-1`}>new-product.png</span>
                                 <span className={`mt-4 flex-1 `}><img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={` w-8`} /></span>
                             </div>
+                        </div> */}
                         </div>
                     </div>
-                </div> */}
                 </div>
                 <div className="grid grid-cols-12 w-full p-3">
                     <div className='md:pl-0 col-span-6'>

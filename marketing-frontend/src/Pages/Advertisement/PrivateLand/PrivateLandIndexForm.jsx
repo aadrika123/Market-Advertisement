@@ -6,6 +6,9 @@ import PrivateLandForm from './PrivateLandForm'
 import ReviewPrivateLandApplication from './ReviewPrivateLandApplication'
 import axios from 'axios'
 import ApiHeader from '../../../Compnents/ApiHeader'
+import Loader from '../Loader'
+import { toast, ToastContainer } from 'react-toastify'
+import BackButton from '../BackButton'
 
 function PrivateLandIndexForm() {
 
@@ -19,10 +22,16 @@ function PrivateLandIndexForm() {
     const [colorCode, setcolorCode] = useState(false)
     const [allFormData, setAllFormData] = useState({})
     const [responseScreen, setresponseScreen] = useState()
+    const [reviewData, setreviewData] = useState({})
+    const [show, setshow] = useState(false)
+
+    const showLoader = (val) => {
+        setshow(val);
+    }
+
 
 
     const { api_postPrivateLandApplication } = AdvertisementApiList()
-
     const backFun = (formIndex) => {
         let tempFormIndex = formIndex
         if (tempFormIndex == 1) { //backward by current form index 2
@@ -73,33 +82,49 @@ function PrivateLandIndexForm() {
 
 
     //activating notification if no owner or no floor added
-    const notify = (toastData, actionFlag) => {
+    const notify = (toastData, type) => {
         toast.dismiss();
-        { actionFlag == 'success' && toast.success(toastData) }
-        { actionFlag == 'notice' && toast.warn(toastData) }
-        { actionFlag == 'error' && toast.error(toastData) }
+        if (type == 'success') {
+            toast.success(toastData)
+        }
+        if (type == 'error') {
+            toast.error(toastData)
+        }
     };
 
 
+
     ///////////{*** COLLECTING ALL FORM DATA***}/////////
-    const collectAllFormData = (key, formData) => {
+    const collectAllFormData = (key, formData, reviewIdName) => {
         console.log('prev of all Data', allFormData)
+        console.log("review name by id in index...", reviewIdName)
         setAllFormData({ ...allFormData, [key]: formData })
+
+        if (key == 'selfAdvertisement') {
+            console.log("data collecting by key", key, 'formData', formData, 'reviewData', reviewIdName)
+            setreviewData({ ...reviewData, [key]: reviewIdName })
+        }
+        else {
+            console.log('data not in review ===', key, '===', formData, 'preview...', reviewIdName)
+            setreviewData({ ...reviewData, [key]: formData })
+        }
     }
     console.log("all form data in index", allFormData)
+    console.log("all form data in index for doc", allFormData?.selfAdvertisementDoc?.[0])
+
 
 
     ///// SUBMIT FORM /////
     const submitButtonToggle = () => {
-
         console.log('final form ready to submit...', allFormData)
         submitPrivateLandForm()
     }
 
     const submitPrivateLandForm = () => {
         const requestBody = {
-            ulbId: allFormData?.privateLand?.ulb,
-            deviceId: "privateLand",
+            // ulbId: allFormData?.privateLand?.ulb,
+            ulbId: 2,
+            // deviceId: "privateLand",
             applicant: allFormData?.privateLand?.applicantName,
             father: allFormData?.privateLand?.fatherName,
             email: allFormData?.privateLand?.email,
@@ -127,12 +152,7 @@ function PrivateLandIndexForm() {
             latitude: allFormData?.privateLand?.latitude,
             installationLocation: allFormData?.privateLand?.installationLocation,
 
-            aadharDoc: allFormData?.privateLandDoc?.aadharDoc,
-            tradeDoc: allFormData?.privateLandDoc?.tradeLicenseDoc,
-            gpsDoc: allFormData?.privateLandDoc?.gpsMappedCamera,
-            holdingDoc: allFormData?.privateLandDoc?.holdingNoDoc,
-            gstDoc: allFormData?.privateLandDoc?.gstNoDoc,
-            brandDisplayDoc: allFormData?.privateLandDoc?.brandDisplayPermissionDoc,
+            documents: allFormData?.privateLandDoc?.[0]
 
         }
 
@@ -148,6 +168,7 @@ function PrivateLandIndexForm() {
                 notify('failed to submit', 'error')
 
             })
+        console.log("form index", formIndex)
     }
 
     console.log("response screen", responseScreen)
@@ -162,7 +183,12 @@ function PrivateLandIndexForm() {
 
     return (
         <>
-            <div>
+            <div className=''>
+                <Loader show={show} />
+            </div>
+            <ToastContainer position="top-right"
+                autoClose={2000} />
+            <div className='overflow-x-clip '>
                 <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
                     <div className='flex flex-row '>
                         <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Private Land</h1>
@@ -176,11 +202,14 @@ function PrivateLandIndexForm() {
                     </div>
 
                 </div>
-                <div className={`${animateform1} transition-all relative`}><PrivateLandForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className='p-2'>
+                    <BackButton />
+                </div>
+                <div className={`${animateform1} transition-all relative`}><PrivateLandForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
 
-                <div className={`${animateform2} transition-all relative`}><PrivateLandDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform2} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><PrivateLandDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
 
-                <div className={`${animateform3} transition-all relative `}><ReviewPrivateLandApplication allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform3} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><ReviewPrivateLandApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>

@@ -1,10 +1,7 @@
 import axios from 'axios';
-import { useFormik } from 'formik';
-import { values } from 'lodash';
 import React, { useEffect, useState } from 'react'
 import AdvertisementApiList from '../../../Compnents/AdvertisementApiList';
 import ApiHeader from '../../../Compnents/ApiHeader';
-import AdvertisementDocument from '../AdvertisementDocument';
 import SelfAdvertisementDocTable from './SelfAdvertisementDocTable';
 import SelfAdvrtInformationScreen from './SelfAdvrtInformationScreen';
 // import * as yup from 'yup'
@@ -22,22 +19,7 @@ function SelfAdvertisementDocForm(props) {
     };
     console.log("all data doc", collectDoc)
 
-    // const validationSchema = yup.object({
-    //     aadharDoc: yup.mixed(),
-    //     tradeLicenseDoc: yup.mixed(),
-    //     photoWithGps: yup.mixed(),
-    //     holdingNoDoc: yup.mixed(),
-    //     gstDocPhoto: yup.mixed(),
-    //     proceedingPhoto1: yup.mixed(),
-    //     proceedingPhoto2: yup.mixed(),
-    //     proceedingPhoto3: yup.mixed(),
-    //     uploadExtraDoc1: yup.mixed(),
-    //     uploadExtraDoc2: yup.mixed(),
-    // })
-
-
     const handleDocument = () => {
-        // alert("save")
         props.collectFormDataFun('selfAdvertisementDoc', [collectDoc])
         props?.nextFun(2)
     }
@@ -62,18 +44,17 @@ function SelfAdvertisementDocForm(props) {
 
     return (
         <>
-            {/* <AdvertisementDocument openDocviewModal={openDocviewModal} /> */}
+
             {/* upload document */}
-            <div className='-mt-[44rem]'>
-                {/* <form onSubmit={formik.handleSubmit} onChange={handleOnChange} encType="multipart/form-data"> */}
-                <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 mt-3'>
+
+            <div className=''>
+                <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 '>
                     <div className='col-span-8 p-1 border border-dashed border-violet-800'>
                         <div className="p-1">
                             <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1 bg-white">
                                 <div>
                                     <h1 className='text-left  text-lg ml-12 text-gray-600 font-sans font-semibold '>Document</h1>
                                 </div>
-
                                 <div>
                                     <h1 className='text-center text-lg ml-4 text-gray-600 font-sans font-semibold'>Preview</h1>
                                 </div>
@@ -105,7 +86,6 @@ function SelfAdvertisementDocForm(props) {
                         </div>
                     </div>
                 </div>
-                {/* </form> */}
             </div>
         </>
     )

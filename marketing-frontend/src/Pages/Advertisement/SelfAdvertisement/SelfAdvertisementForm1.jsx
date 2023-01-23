@@ -7,6 +7,7 @@ import axios from 'axios';
 import * as yup from 'yup'
 import FindTradeLicense from '../FindTradeLicense';
 import Modal from 'react-modal';
+import BackButton from '../BackButton';
 
 
 
@@ -25,13 +26,15 @@ const customStyles = {
 Modal.setAppElement('#root');
 
 function SelfAdvertisementForm1(props) {
-    const { api_getAdvertMasterData, api_getUlbList } = AdvertisementApiList()
+    const { api_getAdvertMasterData, api_getUlbList, api_getTradeLicenseDetails } = AdvertisementApiList()
     const [masterData, setmasterData] = useState()
     const [ulbList, setulbList] = useState()
     const [reviewIdName, setreviewIdName] = useState({})
+    const [storeUlbValue, setstoreUlbValue] = useState()
 
     const [licenseId, setlicenseId] = useState()
     const [liceneData, setlicenseData] = useState()
+    const [liceneDetails, setlicenseDetails] = useState()
 
     const [modalIsOpen, setIsOpen] = useState(true);
     const openModal = () => setIsOpen(true)
@@ -44,47 +47,48 @@ function SelfAdvertisementForm1(props) {
     const validationSchema = yup.object({
         ulb: yup.string().required('select ulb'),
         licenseYear: yup.string().required('select license year'),
-        applicantName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
+        // applicantName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
         fatherName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
         email: yup.string(),
         residenceAddress: yup.string().required('This field is Required'),
         residenceWardNo: yup.string().required('This field is Required'),
         permanentAddress: yup.string().required('This field is Required'),
         permanentWardNo: yup.string().required('This field is Required'),
-        mobileNo: yup.string().required('Enter mobile no.').min(10, 'Enter 10 digit number').max(10, 'Enter 10 digit number'),
-        aadharNo: yup.string().required('This field is Required'),
-        entityName: yup.string().required('This field is Required'),
-        entityAddress: yup.string().required('This field is Required'),
+        // mobileNo: yup.string().required('Enter mobile no.').min(10, 'Enter 10 digit number').max(10, 'Enter 10 digit number'),
+        aadharNo: yup.string().required('Enter aadhar').min(12, 'Enter 12 digit number').max(12, 'Enter 12 digit number'),
+        // entityName: yup.string().required('This field is Required'),
+        // entityAddress: yup.string().required('This field is Required'),
         entityWardNo: yup.string().required('This field is Required'),
         installationLocation: yup.string().required('This field is Required'),
         brandDisplayName: yup.string().required('This field is Required'),
-        holdingNo: yup.string().required('This field is Required'),
+        // holdingNo: yup.string().required('This field is Required'),
         tradeLicenseNo: yup.string().required('This field is Required'),
         gstNo: yup.string().required('This field is Required'),
-        displayArea: yup.string().required('This field is Required'),
+        displayArea: yup.string().required('Enter Number'),
         displayType: yup.string().required('This field is Required'),
-        longitude: yup.string().required('This field is Required'),
-        latitude: yup.string().required('This field is Required'),
+        longitude: yup.string().required('Enter Number'),
+        latitude: yup.string().required('Enter Number'),
     })
 
     const initialValues = {
         ulb: '',
         licenseYear: '',
-        applicantName: '',
+        applicantName: liceneDetails?.applicant_name,
         fatherName: '',
         email: '',
         residenceAddress: '',
         residenceWardNo: '',
         permanentAddress: '',
         permanentWardNo: '',
-        mobileNo: '',
+        mobileNo: liceneDetails?.mobile,
         aadharNo: '',
-        entityName: '',
-        entityAddress: '',
-        entityWardNo: '',
+        entityName: liceneDetails?.entity_name,
+        entityAddress: liceneDetails?.entity_address,
+        // entityWardNo: liceneDetails?.ward_id,
+        entityWardNo: 1,
         installationLocation: '',
         brandDisplayName: '',
-        holdingNo: '',
+        holdingNo: liceneDetails?.holding_no,
         tradeLicenseNo: liceneData?.licenseDataById,
         gstNo: '',
         displayArea: '',
@@ -98,11 +102,9 @@ function SelfAdvertisementForm1(props) {
         enableReinitialize: true,
         onSubmit: values => {
             // alert(JSON.stringify(values, null, 2));
-
             console.log("self Advertisement", values)
             props.collectFormDataFun('selfAdvertisement', values, reviewIdName)
             props?.nextFun(1)
-
         },
         validationSchema
     });
@@ -115,10 +117,13 @@ function SelfAdvertisementForm1(props) {
         let name = e.target.name
         let value = e.target.value
 
-        { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo == null ? setshowApplication('hidden') : setshowApplication('')) }
+        { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
 
         { name == 'ulb' && getMasterDataFun(value) }
-        console.log("ulb id...", value)
+
+        { name == 'ulb' && setstoreUlbValue(value) }
+        console.log("ulb id 1 ...", value)
+
 
         // {****** collection names By Id ******}//
         if (e.target.type == 'select-one') {
@@ -130,6 +135,7 @@ function SelfAdvertisementForm1(props) {
     };
 
     console.log("review name by id in form", reviewIdName)
+    console.log("loader", props.showLoader)
 
 
     ///////////{*** GETTING ULB DATA***}/////////
@@ -148,6 +154,7 @@ function SelfAdvertisementForm1(props) {
     }
     console.log("ulb list", ulbList)
 
+    console.log("ulb value...", storeUlbValue)
 
     ///////////{*** GETTING MASTER DATA***}/////////
     const getMasterDataFun = (ulbId) => {
@@ -173,8 +180,38 @@ function SelfAdvertisementForm1(props) {
         setlicenseData({ ...liceneData, [key]: formData })
     }
 
+
+    ///////////{***DETAILS BY TRADE LICENSE NO. ***}/////////
+    useEffect(() => {
+        getTradeLicenseDetails()
+    }, [liceneData?.licenseDataById])
+    const getTradeLicenseDetails = () => {
+        props.showLoader(true);
+        const requestBody = {
+            license_no: liceneData?.licenseDataById,
+            // license_no: "919191",
+            // deviceId: "selfAdvert",
+        }
+        axios.post(`${api_getTradeLicenseDetails}`, requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('trade license details... 1', response)
+                setlicenseDetails(response.data.data)
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+            })
+            .catch(function (error) {
+                console.log('errorrr.... ', error);
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+
+            })
+    }
+
     console.log(" master data...", masterData)
     console.log(" License full data", liceneData?.licenseDataById)
+    console.log(" trade License details", liceneDetails)
 
     return (
         <>
@@ -185,343 +222,344 @@ function SelfAdvertisementForm1(props) {
                 style={customStyles}
                 contentLabel="Example Modal"
                 shouldCloseOnOverlayClick={false}
-
             >
 
-                <div class=" rounded-lg shadow-xl border-2 border-gray-50 mx-auto px-0" style={{ 'width': '60vw', 'height': '100%' }}>
-                    <FindTradeLicense closeFun={closeModal} collectDataFun={collectData} />
+                <div class=" rounded-lg shadow-xl border-2 border-gray-50 mx-auto px-0 " style={{ 'width': '80vw', 'height': '100%' }}>
+                    <FindTradeLicense showLoader={props.showLoader} closeFun={closeModal} collectDataFun={collectData} />
                 </div>
 
             </Modal>
 
             <form onSubmit={formik.handleSubmit} onChange={handleOnChange}>
                 <div>
-                    <div class="flex flex-wrap flex-row w-7/12 ">
-                        <div class="flex-shrink max-w-full px-4 w-full lg:w-1/3">
-                            <p className={`${labelStyle} lg:text-center md:text-center`}>Trade License No<span className='text-red-600'> *</span></p>
-                        </div>
-                        <div class="flex flex-row max-w-full px-4 w-2/12 lg:w-1/3 ">
-                            <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem] mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 -ml-20 bg-gray-50`} disabled
-                                onChange={formik.handleChange}
-                                value={formik.values.tradeLicenseNo}
-                            />
-                        </div>
-                    </div>
-
-                    {/* {formik.values.tradeLicenseNo != null && */}
-                    < div className={``}>
-                        <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 mt-3'>
-                            <div className='col-span-4  border border-dashed border-violet-800'>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}> Ulb <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select className={`${inputStyle} bg-white`} {...formik.getFieldProps('ulb')} >
-                                            <option>select </option>
-                                            {ulbList?.map((items) => (
-                                                <option value={items?.id}>{items?.ulb_name}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.ulb && formik.errors.ulb ? formik.errors.ulb : null}</p>
-                                    </div>
+                    <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto -mt-4'>
+                        <div className='col-span-6 '>
+                            <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
+                                <div className=' col-span-3'>
+                                    <p className={`mt-5 text-gray-600 text-sm -ml-8`}>Trade License No.</p>
                                 </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}> License Year <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select className={`${inputStyle} bg-white`} {...formik.getFieldProps('licenseYear')} >
-                                            <option>select </option>
-                                            {masterData?.paramCategories?.LicenseYear?.map((items) => (
-                                                <option value={items?.id}>{items?.string_parameter}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.licenseYear && formik.errors.licenseYear ? formik.errors.licenseYear : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Applicant <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.applicantName}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.applicantName && formik.errors.applicantName ? formik.errors.applicantName : null}</p>
-                                    </div>
-                                </div>
-
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Father Name<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='fatherName' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.fatherName}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.fatherName && formik.errors.fatherName ? formik.errors.fatherName : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>E-mail <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='email' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.email}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.email && formik.errors.email ? formik.errors.email : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Residence Address <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='residenceAddress' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.residenceAddress}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.residenceAddress && formik.errors.residenceAddress ? formik.errors.residenceAddress : null}</p>
-                                    </div>
-                                </div>
-
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Ward No <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select {...formik.getFieldProps('residenceWardNo')} className={`${inputStyle} bg-white`} >
-                                            <option>select </option>
-                                            {masterData?.wards?.map((items) => (
-                                                <option value={items?.id}>{items?.ward_name}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.residenceWardNo && formik.errors.residenceWardNo ? formik.errors.residenceWardNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Permanent Address <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='permanentAddress' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.permanentAddress}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.permanentAddress && formik.errors.permanentAddress ? formik.errors.permanentAddress : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Ward No <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select  {...formik.getFieldProps('permanentWardNo')} className={`${inputStyle} bg-white`} >
-                                            <option>select </option>
-                                            {masterData?.wards?.map((items) => (
-                                                <option value={items?.id}>{items?.ward_name}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.permanentWardNo && formik.errors.permanentWardNo ? formik.errors.permanentWardNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Mobile No.<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='mobileNo' placeholder='' className={`${inputStyle} `}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.mobileNo}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.mobileNo && formik.errors.mobileNo ? formik.errors.mobileNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Aadhar No <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='aadharNo' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.aadharNo}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.aadharNo && formik.errors.aadharNo ? formik.errors.aadharNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8 mb-6'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Entity Name<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='entityName' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.entityName}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.entityName && formik.errors.entityName ? formik.errors.entityName : null}</p>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <div className='col-span-4 p-1 border border-dashed border-violet-800'>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Entity Address<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='entityAddress' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.entityAddress}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.entityAddress && formik.errors.entityAddress ? formik.errors.entityAddress : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Entity Ward No <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select type="text" name='entityWardNo' placeholder='' className={`${inputStyle} bg-white`}{...formik.getFieldProps('entityWardNo')} >
-                                            <option>select </option>
-                                            {masterData?.wards?.map((items) => (
-                                                <option value={items?.id}>{items?.ward_name}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.entityWardNo && formik.errors.entityWardNo ? formik.errors.entityWardNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Installation Location <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select {...formik.getFieldProps('installationLocation')} className={`${inputStyle} bg-white`} >
-                                            <option>select </option>
-                                            {masterData?.paramCategories?.InstallationLocation?.map((items) => (
-                                                <option value={items?.id}>{items?.string_parameter}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.installationLocation && formik.errors.installationLocation ? formik.errors.installationLocation : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Brand Display Name<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='brandDisplayName' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.brandDisplayName}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.brandDisplayName && formik.errors.brandDisplayName ? formik.errors.brandDisplayName : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Holding No.<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='holdingNo' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.holdingNo}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.holdingNo && formik.errors.holdingNo ? formik.errors.holdingNo : null}</p>
-                                    </div>
-                                </div>
-                                {/* <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Trade License No<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='tradeLicenseNo' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.tradeLicenseNo}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.tradeLicenseNo && formik.errors.tradeLicenseNo ? formik.errors.tradeLicenseNo : null}</p>
-                                    </div>
-                                </div> */}
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>GST No. <span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='gstNo' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.gstNo}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.gstNo && formik.errors.gstNo ? formik.errors.gstNo : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Display Area<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='displayArea' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.displayArea}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.displayArea && formik.errors.displayArea ? formik.errors.displayArea : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Display Type<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <select {...formik.getFieldProps('displayType')} className={`${inputStyle} bg-white`} >
-                                            <option>select </option>
-                                            {masterData?.paramCategories?.DisplayType?.map((items) => (
-                                                <option value={items?.id}>{items?.string_parameter}</option>
-                                            ))}
-                                        </select>
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.displayType && formik.errors.displayType ? formik.errors.displayType : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Longitude  <span className='text-red-600'>*</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='longitude' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.longitude}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.longitude && formik.errors.longitude ? formik.errors.longitude : null}</p>
-                                    </div>
-                                </div>
-                                <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                    <div className='col-span-1'>
-                                        <p className={`${labelStyle}`}>Latitude<span className='text-red-600'> *</span></p>
-                                    </div>
-                                    <div className='col-span-2'>
-                                        <input type="text" name='latitude' placeholder='' className={`${inputStyle}`}
-                                            onChange={formik.handleChange}
-                                            value={formik.values.latitude}
-                                        />
-                                        <p className='text-red-500 text-xs absolute'>{formik.touched.latitude && formik.errors.latitude ? formik.errors.latitude : null}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='col-span-4 hidden md:block lg:block'>
-                                <div className='-mt-20'>
-                                    <SelfAdvrtInformationScreen />
+                                <div className=' col-span-3'>
+                                    <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} disabled
+                                        onChange={formik.handleChange}
+                                        value={formik.values.tradeLicenseNo}
+                                    />
                                 </div>
                             </div>
                         </div>
-                        <div className=' '>
-                            <div className='float-right p-2'>
-                                <button type="submit" className="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-green-500 border border-green-500 hover:text-white hover:bg-green-600 hover:ring-0 hover:border-green-600 focus:bg-green-600 focus:border-green-600 focus:outline-none focus:ring-0">Save & Next</button>
-
+                        <div className='col-span-6  -ml-0 md:-ml-24 lg:-ml-20'>
+                            <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
+                                <div className=' col-span-3'>
+                                    <p className={`mt-6 text-gray-600 text-sm -ml-14`}>Urban Local Bodies (ULB)</p>
+                                </div>
+                                <div className=' col-span-3'>
+                                    <select className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} {...formik.getFieldProps('ulb')} >
+                                        <option>select </option>
+                                        {ulbList?.map((items) => (
+                                            <option value={items?.id}>{items?.ulb_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {/* } */}
+
+                    {storeUlbValue == undefined &&
+                        <div className='p-6 mt-8'>
+                            <h1 className='text-center text-gray-500 text-2xl'>select <span className='font-bold'>ULB</span> to proceed further with the application</h1>
+                            <img src='https://img.freepik.com/free-vector/dropdown-menu-concept-illustration_114360-4047.jpg?w=740&t=st=1674129515~exp=1674130115~hmac=a941e2b3ea5a5a49d3bdd425e263fffd9f6bdebe70c2ac93b3d2eeb6b02017dc' className='h-96 mx-auto mt-8' />
+                        </div>
+                    }
+
+                    {storeUlbValue != undefined &&
+                        <div className={``}>
+                            <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 mt-3'>
+                                <div className='col-span-4  border border-dashed border-violet-800'>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}> License Year <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select className={`${inputStyle} bg-white`} {...formik.getFieldProps('licenseYear')} >
+                                                <option>select </option>
+                                                {masterData?.paramCategories?.LicenseYear?.map((items) => (
+                                                    <option value={items?.id}>{items?.string_parameter}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.licenseYear && formik.errors.licenseYear ? formik.errors.licenseYear : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Applicant <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`} disabled
+                                                onChange={formik.handleChange}
+                                                value={formik.values.applicantName}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.applicantName && formik.errors.applicantName ? formik.errors.applicantName : null}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Father Name<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='fatherName' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.fatherName}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.fatherName && formik.errors.fatherName ? formik.errors.fatherName : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>E-mail <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='email' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.email}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.email && formik.errors.email ? formik.errors.email : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Residence Address <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='residenceAddress' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.residenceAddress}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.residenceAddress && formik.errors.residenceAddress ? formik.errors.residenceAddress : null}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Ward No <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select {...formik.getFieldProps('residenceWardNo')} className={`${inputStyle} bg-white`} >
+                                                <option>select </option>
+                                                {masterData?.wards?.map((items) => (
+                                                    <option value={items?.id}>{items?.ward_name}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.residenceWardNo && formik.errors.residenceWardNo ? formik.errors.residenceWardNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Permanent Address <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='permanentAddress' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.permanentAddress}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.permanentAddress && formik.errors.permanentAddress ? formik.errors.permanentAddress : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Ward No <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select  {...formik.getFieldProps('permanentWardNo')} className={`${inputStyle} bg-white`} >
+                                                <option>select </option>
+                                                {masterData?.wards?.map((items) => (
+                                                    <option value={items?.id}>{items?.ward_name}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.permanentWardNo && formik.errors.permanentWardNo ? formik.errors.permanentWardNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Mobile No.<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='mobileNo' placeholder='' className={`${inputStyle} `} disabled
+                                                onChange={formik.handleChange}
+                                                value={formik.values.mobileNo}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.mobileNo && formik.errors.mobileNo ? formik.errors.mobileNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Aadhar No <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='aadharNo' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.aadharNo}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.aadharNo && formik.errors.aadharNo ? formik.errors.aadharNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8 mb-6'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Entity Name<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='entityName' placeholder='' className={`${inputStyle}`}
+                                                disabled
+                                                onChange={formik.handleChange}
+                                                value={formik.values.entityName}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.entityName && formik.errors.entityName ? formik.errors.entityName : null}</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div className='col-span-4 p-1 border border-dashed border-violet-800'>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Entity Address<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='entityAddress' placeholder='' className={`${inputStyle}`} disabled
+                                                onChange={formik.handleChange}
+                                                value={formik.values.entityAddress}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.entityAddress && formik.errors.entityAddress ? formik.errors.entityAddress : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Entity Ward No <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select type="text" name='entityWardNo'  placeholder='' className={`${inputStyle} bg-white`}{...formik.getFieldProps('entityWardNo')}  >
+                                                <option>select </option>
+                                                {masterData?.wards?.map((items) => (
+                                                    <option value={items?.id}>{items?.ward_name}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.entityWardNo && formik.errors.entityWardNo ? formik.errors.entityWardNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Installation Location <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select {...formik.getFieldProps('installationLocation')} className={`${inputStyle} bg-white`} >
+                                                <option>select </option>
+                                                {masterData?.paramCategories?.InstallationLocation?.map((items) => (
+                                                    <option value={items?.id}>{items?.string_parameter}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.installationLocation && formik.errors.installationLocation ? formik.errors.installationLocation : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Brand Display Name<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='brandDisplayName' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.brandDisplayName}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.brandDisplayName && formik.errors.brandDisplayName ? formik.errors.brandDisplayName : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Holding No.<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='holdingNo' placeholder='' className={`${inputStyle}`} disabled
+                                                onChange={formik.handleChange}
+                                                value={formik.values.holdingNo}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.holdingNo && formik.errors.holdingNo ? formik.errors.holdingNo : null}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>GST No. <span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='gstNo' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.gstNo}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.gstNo && formik.errors.gstNo ? formik.errors.gstNo : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Display Area<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='displayArea' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.displayArea}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.displayArea && formik.errors.displayArea ? formik.errors.displayArea : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Display Type<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <select {...formik.getFieldProps('displayType')} className={`${inputStyle} bg-white`} >
+                                                <option>select </option>
+                                                {masterData?.paramCategories?.DisplayType?.map((items) => (
+                                                    <option value={items?.id}>{items?.string_parameter}</option>
+                                                ))}
+                                            </select>
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.displayType && formik.errors.displayType ? formik.errors.displayType : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Longitude  <span className='text-red-600'>*</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='longitude' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.longitude}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.longitude && formik.errors.longitude ? formik.errors.longitude : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Latitude<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='latitude' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.latitude}
+                                            />
+                                            <p className='text-red-500 text-xs absolute'>{formik.touched.latitude && formik.errors.latitude ? formik.errors.latitude : null}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='col-span-4 hidden md:block lg:block'>
+                                    <div className='-mt-20'>
+                                        <SelfAdvrtInformationScreen />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className=' '>
+                                <div className='float-right p-2'>
+                                    <button type="submit" className="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-green-500 border border-green-500 hover:text-white hover:bg-green-600 hover:ring-0 hover:border-green-600 focus:bg-green-600 focus:border-green-600 focus:outline-none focus:ring-0">Save & Next</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
 
             </form>

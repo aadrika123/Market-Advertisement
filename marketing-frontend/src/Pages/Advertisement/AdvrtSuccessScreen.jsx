@@ -1,11 +1,12 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 function AdvrtSuccessScreen(props) {
 
     console.log("data in response screen", props?.responseScreenData)
     return (
         <div>
-           
+
 
 
             <div className='   '>
@@ -25,9 +26,11 @@ function AdvrtSuccessScreen(props) {
                             <h1 className='text-center text-sm text-gray-500 font-bold'> Application No. :- {props?.responseScreenData?.ApplicationNo}</h1>
                         </div>
                         <div className='mx-auto flex flex-row space-x-4'>
-                            <button class="w-32 text-xs p-3 mt-10 font-medium tracking-wide text-white capitalize transition-colors duration-200 transform bg-sky-400 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600" onClick={() => navigate(`/selfAdvrt`)}>
-                              back
-                            </button>
+                            <Link to='/advertDashboard'>
+                                <button class="w-32 text-xs p-3 mt-10 font-medium tracking-wide text-white capitalize transition-colors duration-200 transform bg-sky-400 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600" onClick={() => navigate(`/selfAdvrt`)}>
+                                    back
+                                </button>
+                            </Link>
                             {/* <button class="w-32 text-xs mt-10 font-medium tracking-wide text-white capitalize transition-colors duration-200 transform bg-sky-400 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600" onClick={() => navigate('/dashboardEntry')}>
                                 Dashboard
                             </button> */}

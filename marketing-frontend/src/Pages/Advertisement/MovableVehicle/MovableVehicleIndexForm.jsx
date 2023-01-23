@@ -6,6 +6,9 @@ import MovableVehicleForm from './MovableVehicleForm'
 import ReviewMovableApplication from './ReviewMovableApplication'
 import axios from 'axios'
 import ApiHeader from '../../../Compnents/ApiHeader'
+import BackButton from '../BackButton'
+import Loader from '../Loader';
+import { ToastContainer } from 'react-toastify'
 
 
 function MovableVehicleIndexForm() {
@@ -21,7 +24,11 @@ function MovableVehicleIndexForm() {
   const [allFormData, setAllFormData] = useState({})
   const [responseScreen, setresponseScreen] = useState()
   const [reviewData, setreviewData] = useState({})
+  const [show, setshow] = useState(false)
 
+  const showLoader = (val) => {
+    setshow(val);
+  }
 
 
   const { api_postMovableVehicleApplication } = AdvertisementApiList()
@@ -76,11 +83,14 @@ function MovableVehicleIndexForm() {
 
 
   //activating notification if no owner or no floor added
-  const notify = (toastData, actionFlag) => {
+  const notify = (toastData, type) => {
     toast.dismiss();
-    { actionFlag == 'success' && toast.success(toastData) }
-    { actionFlag == 'notice' && toast.warn(toastData) }
-    { actionFlag == 'error' && toast.error(toastData) }
+    if (type == 'success') {
+      toast.success(toastData)
+    }
+    if (type == 'error') {
+      toast.error(toastData)
+    }
   };
 
 
@@ -91,7 +101,7 @@ function MovableVehicleIndexForm() {
     setAllFormData({ ...allFormData, [key]: formData })
 
 
-    if (key == 'selfAdvertisement') {
+    if (key == 'movableVehicle') {
       console.log("data collecting by key", key, 'formData', formData, 'reviewData', reviewIdName)
       setreviewData({ ...reviewData, [key]: reviewIdName })
     }
@@ -112,7 +122,8 @@ function MovableVehicleIndexForm() {
 
   const submitMovableVehicleForm = () => {
     const requestBody = {
-      ulbId: allFormData?.movableVehicle?.ulb,
+      // ulbId: allFormData?.movableVehicle?.ulb,
+      ulbId: 2,
       deviceId: "movableVehicle",
       applicant: allFormData?.movableVehicle?.applicantName,
       father: allFormData?.movableVehicle?.fatherName,
@@ -138,27 +149,10 @@ function MovableVehicleIndexForm() {
       topArea: allFormData?.movableVehicle?.topArea,
       displayType: allFormData?.movableVehicle?.displayType,
 
-      aadharDoc: allFormData?.movableVehicleDoc?.aadharDoc,
-      tradeDoc: allFormData?.movableVehicleDoc?.tradeLicenseDoc,
-      vehiclePhotoDoc: allFormData?.movableVehicleDoc?.vehiclePhoto,
-      ownerBookDoc: allFormData?.movableVehicleDoc?.ownerBook,
-      drivingLicenseDoc: allFormData?.movableVehicleDoc?.drivingLicense,
-      insuranceDoc: allFormData?.movableVehicleDoc?.insurancePhoto,
-      gstDoc: allFormData?.movableVehicleDoc?.gstNoPhoto,
+      documents: allFormData?.movableVehicleDoc?.[0]
 
     }
-
     console.log('request body...', requestBody)
-
-    // let token = '4488|gPfHYbujCw4bayISKb2vewyGODpH0CAPckESj9Cb';
-    // console.log("token in geotagging", token)
-    // const header = {
-    //   headers: {
-    //     "Authorization": `Bearer ${token}`,
-    //     'Content-type': 'multipart/form-data',
-    //     "Accept": 'application/json',
-    //   }
-    // }
     axios.post(`${api_postMovableVehicleApplication}`, requestBody, ApiHeader())
       .then(function (response) {
         console.log('response after data submitted', response.data.data)
@@ -182,24 +176,34 @@ function MovableVehicleIndexForm() {
   }
 
   return (
-    <div>
-      <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
-        <div className='flex flex-row '>
-          <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Movable Vehicle</h1>
-        </div>
-        <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
-        <div className='flex flex-row float-right'>
-          {FirmStep == 1 &&
-            <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
-            </strong> more screen</span>}
-          <img src='https://cdn-icons-png.flaticon.com/512/1917/1917802.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
-        </div>
-
+    <>
+      <div className=''>
+        <Loader show={show} />
       </div>
-      <div className={`${animateform1} transition-all relative`}><MovableVehicleForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-      <div className={`${animateform2} transition-all relative`}><MovableVehicleDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-      <div className={`${animateform3} transition-all relative `}><ReviewMovableApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
-    </div>
+      <ToastContainer position="top-right"
+        autoClose={2000} />
+      <div className='overflow-x-clip'>
+        <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
+          <div className='flex flex-row '>
+            <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Movable Vehicle</h1>
+          </div>
+          <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
+          <div className='flex flex-row float-right'>
+            {FirmStep == 1 &&
+              <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
+              </strong> more screen</span>}
+            <img src='https://cdn-icons-png.flaticon.com/512/1917/1917802.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
+          </div>
+
+        </div>
+        <div className='p-2'>
+          <BackButton />
+        </div>
+        <div className={`${animateform1} transition-all relative`}><MovableVehicleForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+        <div className={`${animateform2} transition-all relative  lg:-mt-[46rem] md:-mt-[46rem]`}><MovableVehicleDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+        <div className={`${animateform3} transition-all relative `}><ReviewMovableApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+      </div>
+    </>
   )
 }
 

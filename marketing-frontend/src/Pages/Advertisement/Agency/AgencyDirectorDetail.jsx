@@ -93,10 +93,10 @@ function AgencyDirectorDetail(props) {
     return (
         <>
             {/* DIRECTORS INFORMATION */}
-            <div className='-mt-[32rem] '>
+            <div className=''>
                 <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto'>
                     <div className='col-span-8  p-2 border border-dashed border-violet-800 h-auto'>
-                        <h1 className='text-md font-semibold text-gray-700 ml-2'>DIRECTOR INFORMATION</h1>
+                        <h1 className='text-md font-semibold text-gray-700 ml-2 bg-white p-2'>DIRECTOR INFORMATION</h1>
                         <form onSubmit={formik.handleSubmit} >
                             <div className={`  mt-2 ${formToggleStatus ? ' md:h-[96px]' : 'bg-white'}`}>
 

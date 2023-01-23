@@ -8,6 +8,7 @@ function Sidebar() {
         { "id": 1, "name": "Banquet Marriage", "path": "/banquet-marriage" },
         { "id": 2, "name": "Dharamshala", "path": "/dharamshala" },
         { "id": 3, "name": "Advertisement", "path": "/advertDashboard" },
+        { "id": 4, "name": "Agency Dashboard", "path": "/agencyDashboard" },
     ]
 
     return (
