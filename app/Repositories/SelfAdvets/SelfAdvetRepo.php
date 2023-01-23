@@ -60,4 +60,17 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         // ->whereIn('workflow_id', $workflowIds);
     return $specialInbox;
     }
+
+    public function specialPrivateLandInbox($workflowIds){
+        $specialInbox = DB::table('adv_active_privatelands')
+        ->select(
+            'id',
+            'application_no',
+            'application_date',
+            'entity_name',
+        )
+        ->orderByDesc('id');
+        // ->whereIn('workflow_id', $workflowIds);
+    return $specialInbox;
+    }
 }

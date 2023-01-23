@@ -190,4 +190,68 @@ trait AdvDetailsTraits
             ['displayString' => 'Pending Amount', 'key' => 'pending_amount', 'value' => $data['pending_amount']],
         ]);
     }
+
+
+    
+
+    /**
+     * |-----------------------------------------------
+     * |================ Bikash Kumar =================
+     * |================ 23-01-2023 ===================
+     * |================ Private Land =================
+     * |-----------------------------------------------
+     * */
+
+
+
+    /**
+     * | Get Basic Details
+     */
+    public function generatePrivateLandBasicDetails($data)
+    {
+        return new Collection([
+            ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
+            ['displayString' => 'Applicant', 'key' => 'applicant', 'value' => $data['applicant']],
+            ['displayString' => 'Applicant', 'key' => 'applicant', 'value' => $data['applicant']],
+            ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
+            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
+            ['displayString' => 'Ward ID', 'key' => 'wardId', 'value' => $data['ward_id']],
+            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
+            ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
+            ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Licence From', 'key' => 'lLicenseFrom', 'value' => $data['license_from']],
+            ['displayString' => 'Licence To', 'key' => 'lLicenseTo', 'value' => $data['license_to']],
+            ['displayString' => 'No Of Hording', 'key' => 'noOfHording', 'value' => $data['no_of_hoardings']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+            ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst_no']],
+            ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
+            ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
+            ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
+            ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']]
+        ]);
+    }
+
+
+
+    /**
+     * | Get Card Details
+     */
+    public function generatePrivateLandCardDetails($data)
+    {
+        return new Collection([
+            ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Appication Date', 'key' => 'appicationDate', 'value' => $data['application_date']],
+            ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
+            ['displayString' => 'Permanent Address', 'key' => 'permanentAddress', 'value' => $data['permanent_address']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+        ]);
+    }
 }

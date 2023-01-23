@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Config;
 use App\Models\Workflows\WfWardUser;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 
+// use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
+
 
 /**
  * | Created On-14-12-2022 
@@ -180,6 +182,7 @@ class SelfAdvetController extends Controller
     {
         try {
             $selfAdvets = new AdvActiveSelfadvertisement();
+            // $forwardBackward = new WorkflowMap;
             // $data = array();
             $fullDetailsData = array();
             if ($req->applicationId) {
@@ -195,11 +198,21 @@ class SelfAdvetController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Advertisment",
+                'headerTitle' => "About Advertisement",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+
+            // return ($data);
+
+            $metaReqs['customFor'] = 'Slef Advertisement';
+            $metaReqs['wfRoleId'] = $data['current_role_id'];
+            $metaReqs['workflowId'] = $data['workflow_id'];
+
+            $req->request->add($metaReqs);
+            $forwardBackward = $this->getRoleDetails($req);
+            $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
 
             $fullDetailsData = remove_null($fullDetailsData);
 
@@ -246,7 +259,7 @@ class SelfAdvetController extends Controller
     public function postNextLevel(Request $request)
     {
         $request->validate([
-            'advId' => 'required|integer',
+            'applicationId' => 'required|integer',
             'senderRoleId' => 'required|integer',
             'receiverRoleId' => 'required|integer',
             'comment' => 'required',
@@ -255,14 +268,14 @@ class SelfAdvetController extends Controller
         try {
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
-            $adv = AdvActiveSelfadvertisement::find($request->advId);
-            $adv->current_role = $request->receiverRoleId;
+            $adv = AdvActiveSelfadvertisement::find($request->applicationId);
+            $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['workflowId'] = $adv->workflow_id;
             $metaReqs['refTableDotId'] = "adv_active_selfadvertisments.id";
-            $metaReqs['refTableIdValue'] = $request->advId;
+            $metaReqs['refTableIdValue'] = $request->applicationId;
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
@@ -347,7 +360,7 @@ class SelfAdvetController extends Controller
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
             $applications = $selfAdvets->getCitizenApplications($citizenId);
-            $totalApplication=$applications->count();
+            $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
@@ -376,7 +389,7 @@ class SelfAdvetController extends Controller
     }
 
 
-    
+
     /**
      * | Get License By User ID
      */
@@ -408,7 +421,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-     
+
     /**
      * | Get License By Holding No
      */
@@ -440,7 +453,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-     
+
     /**
      * | Get Uploaded Document by application ID
      */
@@ -452,24 +465,57 @@ class SelfAdvetController extends Controller
         if ($req->applicationId) {
             $data = $selfAdvets->details($req->applicationId);
         }
-        // return $data;
-        
-        // Uploads Documents Details
-        //  $uploadDocuments = $this->generateUploadDocDetails($data);
-        // $uploadDocs = [
-        //     'headerTitle' => 'Upload Documents',
-        //     'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
-        //     'tableData' => $uploadDocuments
-        // ];
 
         $fullDetailsData['application_no'] = $data['application_no'];
         $fullDetailsData['apply_date'] = $data['application_date'];
         $fullDetailsData['documents'] = $data['documents'];
 
-        // $fullDetailsData['fullDetailsData']['uploadDocument'] = new Collection($uploadDocs);
 
         $data1['data'] = $fullDetailsData;
         return $data1;
+    }
+
+
+    /**
+     * | Workflow Upload Document by application ID
+     */
+    public function workflowUploadDocument(Request $req)
+    {
+        try {
+            $validate = validator::make(
+                $req->all(),
+                [
+                    'applicationId' => 'required|integer',
+                    'document' => 'required|mimes:png,jpeg,pdf,jpg',
+                    'docMstrId' => 'required|integer',
+                    'docRefName' => 'required|string'
+                ]
+            );
+            if ($validate->fails()) {
+                return response()->json(["error" => 'validation_error', "message" => $validate->errors()], 422);
+            }
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            $selfAdvets->workflowUploadDocument($req);
+
+            return responseMsgs(true, "Document Uploaded Successfully", '', "010106", "1.0", "353ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), $req->all());
+        }
+    }
+
+    /**
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function workflowViewDocuments(Request $req)
+    {
+        $selfAdvets = new AdvActiveSelfadvertisement();
+        $data = array();
+        $fullDetailsData = array();
+        if ($req->applicationId) {
+            $data = $selfAdvets->details($req->applicationId);
+        }
+
+        return responseMsgs(true, "Data Fetched", remove_null($data['documents']), "010107", "1.0", "251ms", "POST", "");
     }
 
     public function specialInbox(Request $req)
@@ -485,7 +531,7 @@ class SelfAdvetController extends Controller
             });
 
             // print_r($wardId);
-            
+
             $advData = $this->Repository->specialInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_selfadvertisements.ulb_id', $ulbId)

@@ -53,12 +53,16 @@ class StoreRequest extends FormRequest
             'latitude' => 'required|numeric',
             'installationLocation' => 'required',
             'ulbId' => 'required|integer',
-            'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'tradeDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'gpsDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'holdingDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'gstDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            'brandDisplayDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'tradeDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'gpsDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'holdingDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'gstDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'brandDisplayDoc' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents' => 'required|array',
+            'documents.*.id' => 'required|integer',
+            'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents.*.relativeName' => 'required|string'
         ];
     }
 

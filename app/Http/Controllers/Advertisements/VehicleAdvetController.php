@@ -192,6 +192,14 @@ class VehicleAdvetController extends Controller
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
+            $metaReqs['customFor'] = 'Movable Vehical Advertisement';
+            $metaReqs['wfRoleId'] = $data['current_roles'];
+            $metaReqs['workflowId'] = $data['workflow_id'];
+
+            $req->request->add($metaReqs);
+            $forwardBackward = $this->getRoleDetails($req);
+            $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
+
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
@@ -203,6 +211,35 @@ class VehicleAdvetController extends Controller
         }
     }
 
+
+    
+
+    public function getRoleDetails(Request $request)
+    {
+        $ulbId = auth()->user()->ulb_id;
+        $request->validate([
+            'workflowId' => 'required|int'
+
+        ]);
+        $roleDetails = DB::table('wf_workflowrolemaps')
+            ->select(
+                'wf_workflowrolemaps.id',
+                'wf_workflowrolemaps.workflow_id',
+                'wf_workflowrolemaps.wf_role_id',
+                'wf_workflowrolemaps.forward_role_id',
+                'wf_workflowrolemaps.backward_role_id',
+                'wf_workflowrolemaps.is_initiator',
+                'wf_workflowrolemaps.is_finisher',
+                'r.role_name as forward_role_name',
+                'rr.role_name as backward_role_name'
+            )
+            ->leftJoin('wf_roles as r', 'wf_workflowrolemaps.forward_role_id', '=', 'r.id')
+            ->leftJoin('wf_roles as rr', 'wf_workflowrolemaps.backward_role_id', '=', 'rr.id')
+            ->where('workflow_id', $request->workflowId)
+            ->where('wf_role_id', $request->wfRoleId)
+            ->first();
+        return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
+    }
 
     
     /**
@@ -261,7 +298,7 @@ class VehicleAdvetController extends Controller
             $mAdvActiveVehicle->current_roles= $request->receiverRoleId;
             $mAdvActiveVehicle->save();
 
-            $metaReqs['moduleId'] = Config::get('workflow-constants.MOVABLE_VEHICLE_MODULE_ID');
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['workflowId'] = $mAdvActiveVehicle->workflow_id;
             $metaReqs['refTableDotId'] = "adv_active_vehicles.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
@@ -314,7 +351,7 @@ class VehicleAdvetController extends Controller
         try {
             $workflowTrack = new WorkflowTrack();
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);                // Advertisment Details
-            $mModuleId = Config::get('workflow-constants.MOVABLE_VEHICLE_MODULE_ID');
+            $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
             DB::beginTransaction();
             // Save On Workflow Track For Level Independent
@@ -381,17 +418,10 @@ class VehicleAdvetController extends Controller
         }
         // Uploads Documents Details
 
-        $uploadDocuments = $this->generateUploadDocDetails($data['documents']);
-        $uploadDocs = [
-            'headerTitle' => 'Upload Documents',
-            'tableHead' => ["#", "Document Name", "Verified By", "Verified On", "Document Path"],
-            'tableData' => $uploadDocuments
-        ];
-
         $fullDetailsData['application_no'] = $data['application_no'];
         $fullDetailsData['apply_date'] = $data['application_date'];
+        $fullDetailsData['documents'] = $data['documents'];
 
-        $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$uploadDocs]);
 
         $data1['data'] = $fullDetailsData;
         return $data1;

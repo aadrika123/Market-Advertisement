@@ -12,4 +12,6 @@ interface iSelfAdvetRepo
     public function specialInbox($workflowIds);
     public function specialVehicleInbox($workflowIds);
     public function specialAgencyInbox($workflowIds);
+
+    public function specialPrivateLandInbox($workflowIds);
 }

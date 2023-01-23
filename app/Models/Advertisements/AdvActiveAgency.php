@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use App\MicroServices\DocumentUpload;
 use Illuminate\Support\Facades\DB;
 use App\Traits\WorkflowTrait;
+use Illuminate\Http\Request;
 
 
 class AdvActiveAgency extends Model
@@ -86,6 +87,9 @@ class AdvActiveAgency extends Model
         $agencyDirector = new AdvActiveAgencydirector();
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
+        $mDocuments = $req->documents;
+        $this->uploadDocument($agencyId, $mDocuments);
+
         // Store Director Details
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
@@ -97,6 +101,36 @@ class AdvActiveAgency extends Model
         });
 
         return $mApplicationNo['application_no'];
+    }
+
+      /**
+     * | Document Upload (1.1)
+     * | @param tempId Temprory Id
+     * | @param documents Uploading Documents
+     * */
+    public function uploadDocument($tempId, $documents)
+    {
+        $mAdvDocument = new AdvActiveSelfadvetdocument();
+        $mDocService = new DocumentUpload;
+        $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+            $mDocumentId = $document['id'];
+            $mDocRelativeName = $document['relativeName'];
+            $mImage = $document['image'];
+            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+
+            $docUploadReqs = [
+                'tempId' => $tempId,
+                'docTypeCode' => 'Test-Code',
+                'documentId' => $mDocumentId,
+                'relativePath' => $mRelativePath,
+                'docName' => $mDocName
+            ];
+            $docUploadReqs = new Request($docUploadReqs);
+
+            $mAdvDocument->store($docUploadReqs);
+        });
     }
 
 
@@ -142,6 +176,27 @@ class AdvActiveAgency extends Model
         return $details;
     }
 
+
+     /**
+     * | Get Application Inbox List by Role Ids
+     * | @param roleIds $roleIds
+     */
+    public function inbox($roleIds)
+    {
+        $inbox = DB::table('adv_active_agencies')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'address'
+            )
+            ->orderByDesc('id')
+            ->whereIn('current_role_id', $roleIds)
+            ->get();
+        return $inbox;
+    }
+
     
     /**
      * | Get Citizen Applied applications
@@ -159,5 +214,39 @@ class AdvActiveAgency extends Model
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    
+    /**
+     * | Get Application Outbox List by Role Ids
+     */
+    public function outbox($roleIds)
+    {
+        $outbox = DB::table('adv_active_agencies')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'address',
+            )
+            ->orderByDesc('id')
+            ->whereNotIn('current_role_id', $roleIds)
+            ->get();
+        return $outbox;
+    }
+
+    public function viewUploadedDocuments($id){
+        $documents = DB::table('adv_active_selfadvetdocuments')
+            ->select(
+                'adv_active_selfadvetdocuments.*',
+                'd.document_name',
+                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+            )
+            ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+            ->where('temp_id', $id)
+            ->get();
+        $details['documents'] = remove_null($documents->toArray());
+        return $details;
     }
 }

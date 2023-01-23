@@ -113,6 +113,31 @@ class AdvActiveSelfadvertisement extends Model
         });
     }
 
+
+    /**
+     * | Document Upload (1.1)
+     * | @param applicationId Application Id
+     * | @param document Uploading Document
+     * */
+    public function workflowUploadDocument($req)
+    {
+        // return $req;
+        $mAdvDocument = new AdvActiveSelfadvetdocument();
+        $mDocService = new DocumentUpload;
+        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
+
+        $mDocName = $mDocService->upload($req->docRefName, $req->document, $mRelativePath);
+        $docUploadReqs = [
+            'tempId' => $req->applicationId,
+            'docTypeCode' => 'Test-Code',
+            'documentId' => $req->docMstrId,
+            'relativePath' => $mRelativePath,
+            'docName' => $mDocName
+        ];
+        $docUploadReqs = new Request($docUploadReqs);
+        $mAdvDocument->store($docUploadReqs);
+    }
+
     /**
      * | Get Citizen Applied applications
      * | @param citizenId

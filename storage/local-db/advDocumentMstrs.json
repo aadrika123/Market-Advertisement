@@ -112,5 +112,43 @@
             "workflow_id":132,
             "relative_name":"AFFIDAVIT"
         }
+    ],
+    "PrivateLands":[
+        {
+            "id":30,
+            "document_name":"Aadhar Document",
+            "workflow_id":133,
+            "relative_name":"AADHAR"
+        },
+        {
+            "id":31,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":133,
+            "relative_name":"TRADE"
+        },
+        {
+            "id":32,
+            "document_name":"GPS Map Camera Photograph",
+            "workflow_id":133,
+            "relative_name":"GPS MAP CAMERA"
+        },
+        {
+            "id":33,
+            "document_name":"Holding No Document",
+            "workflow_id":133,
+            "relative_name":"HOLDING"
+        },
+        {
+            "id":34,
+            "document_name":"GST No Document",
+            "workflow_id":133,
+            "relative_name":"GST"
+        },
+        {
+            "id":35,
+            "document_name":"Brand Display Permission",
+            "workflow_id":133,
+            "relative_name":"BRAND DISPLAY"
+        }
     ]
 }
