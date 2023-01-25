@@ -7,7 +7,9 @@ import ReviewAgencyApplication from './ReviewAgencyApplication'
 import axios from 'axios'
 import ApiHeader from '../../../Compnents/ApiHeader'
 import AgencyDirectorDetail from './AgencyDirectorDetail'
-
+import BackButton from '../BackButton';
+import Loader from '../Loader';
+import { ToastContainer } from 'react-toastify'
 
 function PrivateLandIndexForm() {
 
@@ -21,6 +23,12 @@ function PrivateLandIndexForm() {
     const [colorCode, setcolorCode] = useState(false)
     const [allFormData, setAllFormData] = useState({})
     const [responseScreen, setresponseScreen] = useState()
+    const [reviewData, setreviewData] = useState({})
+    const [show, setshow] = useState(false)
+
+    const showLoader = (val) => {
+        setshow(val);
+    }
 
 
     const { api_postAgencyApplication } = AdvertisementApiList()
@@ -75,32 +83,51 @@ function PrivateLandIndexForm() {
 
 
     //activating notification if no owner or no floor added
-    const notify = (toastData, actionFlag) => {
+    const notify = (toastData, type) => {
         toast.dismiss();
-        { actionFlag == 'success' && toast.success(toastData) }
-        { actionFlag == 'notice' && toast.warn(toastData) }
-        { actionFlag == 'error' && toast.error(toastData) }
+        if (type == 'success') {
+            toast.success(toastData)
+        }
+        if (type == 'error') {
+            toast.error(toastData)
+        }
     };
 
 
     ///////////{*** COLLECTING ALL FORM DATA***}/////////
-    const collectAllFormData = (key, formData) => {
+    // const collectAllFormData = (key, formData) => {
+    //     console.log('prev of all Data', allFormData)
+    //     setAllFormData({ ...allFormData, [key]: formData })
+    // }
+    // console.log("all form data in index", allFormData)
+    ///////////{*** COLLECTING ALL FORM DATA***}/////////
+    const collectAllFormData = (key, formData, reviewIdName) => {
         console.log('prev of all Data', allFormData)
+        console.log("review name by id in index...", reviewIdName)
         setAllFormData({ ...allFormData, [key]: formData })
+
+        if (key == 'agencyForm') {
+            console.log("data collecting by key", key, 'formData', formData, 'reviewData', reviewIdName)
+            setreviewData({ ...reviewData, [key]: reviewIdName })
+        }
+        else {
+            console.log('data not in review ===', key, '===', formData, 'preview...', reviewIdName)
+            setreviewData({ ...reviewData, [key]: formData })
+        }
     }
     console.log("all form data in index", allFormData)
-
+    console.log("all form data in index for doc", allFormData?.selfAdvertisementDoc?.[0])
 
     ///// SUBMIT FORM /////
     const submitButtonToggle = () => {
-
         console.log('final form ready to submit...', allFormData)
         submitAgencyForm()
     }
 
     const submitAgencyForm = () => {
         const requestBody = {
-            ulbId: allFormData?.agency?.ulb,
+            // ulbId: allFormData?.agency?.ulb,
+            ulbId: 2,
             deviceId: "privateLand",
             entityType: allFormData?.agency?.entityType,
             entityName: allFormData?.agency?.entityName,
@@ -115,6 +142,7 @@ function PrivateLandIndexForm() {
             pendingCourtCase: 1,
             pendingAmount: allFormData?.agency?.pendingAmount,
             directors: allFormData?.agencyDirector,
+            documents: allFormData?.agencyDoc?.[0]
 
 
             // gstDoc: allFormData?.agency?.ulb,
@@ -140,7 +168,6 @@ function PrivateLandIndexForm() {
             .catch(function (error) {
                 console.log('errorrr.... ', error);
                 notify('failed to submit', 'error')
-
             })
     }
 
@@ -156,7 +183,12 @@ function PrivateLandIndexForm() {
 
     return (
         <>
-            <div className='overflow-x-hidden'>
+            <div className=''>
+                <Loader show={show} />
+            </div>
+            <ToastContainer position="top-right"
+                autoClose={2000} />
+            <div className='overflow-x-clip'>
                 <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
                     <div className='flex flex-row '>
                         <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Agency Registration</h1>
@@ -168,14 +200,16 @@ function PrivateLandIndexForm() {
                         </strong> more screen</span>
                         <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
                     </div>
-
                 </div>
-                <div className={`${animateform1} transition-all relative`}><AgencyDetailForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-                <div className={`${animateform2} transition-all relative `}><AgencyDirectorDetail allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className='p-2'>
+                    <BackButton />
+                </div>
+                <div className={`${animateform1} transition-all relative`}><AgencyDetailForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform2} transition-all relative -mt-[40.5rem]  `}><AgencyDirectorDetail allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
-                <div className={`${animateform3} transition-all relative`}><AgencyDetailDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform3} transition-all relative -mt-[41rem]`}><AgencyDetailDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
 
-                <div className={`${animateform4} transition-all relative `}><ReviewAgencyApplication allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform4} transition-all relative -mt-[40.5rem]`}><ReviewAgencyApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>

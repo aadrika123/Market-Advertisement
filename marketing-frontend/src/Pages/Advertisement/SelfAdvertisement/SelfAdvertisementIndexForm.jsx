@@ -8,18 +8,23 @@ import axios from 'axios'
 import ReviewSelfAdvertForm from './ReviewSelfAdvertForm'
 import AdvrtSuccessScreen from '../AdvrtSuccessScreen';
 import ApiHeader from '../../../Compnents/ApiHeader'
-
-
+import BackButton from '../BackButton';
+import Loader from '../Loader';
 
 function SelfAdvertisementIndexForm() {
     const [formIndex, setFormIndex] = useState(1) //formindex specifies type of form  at index 1 ...
     const [animateform1, setAnimateform1] = useState('translate-x-0') //slide animation control state for self advertisement form
-    const [animateform2, setAnimateform2] = useState('pl-20 translate-x-full')//slide animation control state for document form
+    const [animateform2, setAnimateform2] = useState('pl-20 translate-x-full ')//slide animation control state for document form
     const [animateform4, setAnimateform4] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
     const [animateform3, setAnimateform3] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
     const [allFormData, setAllFormData] = useState([])
     const [responseScreen, setresponseScreen] = useState()
     const [reviewData, setreviewData] = useState({})
+    const [show, setshow] = useState(false)
+
+    const showLoader = (val) => {
+        setshow(val);
+    }
 
 
     const { api_postSelfAdvertApplication } = AdvertisementApiList()
@@ -104,7 +109,6 @@ function SelfAdvertisementIndexForm() {
 
     ///// SUBMIT FORM /////
     const submitButtonToggle = () => {
-        // alert("submitted")
         console.log('final form ready to submit...', allFormData)
         submitSelfAdvertForm()
     }
@@ -112,7 +116,7 @@ function SelfAdvertisementIndexForm() {
     const submitSelfAdvertForm = () => {
         const requestBody = {
             // ulbId: allFormData?.selfAdvertisement?.ulb,
-            ulbId: 1,
+            ulbId: 2,
             deviceId: "selfAdvert",
             applicantName: allFormData?.selfAdvertisement?.applicantName,
             licenseYear: allFormData?.selfAdvertisement?.licenseYear,
@@ -164,9 +168,11 @@ function SelfAdvertisementIndexForm() {
         )
     }
 
-
     return (
         <>
+            <div className=''>
+                <Loader show={show} />
+            </div>
             <ToastContainer position="top-right"
                 autoClose={2000} />
             <div className='overflow-x-clip '>
@@ -176,17 +182,18 @@ function SelfAdvertisementIndexForm() {
                     </div>
                     <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
                     <div className='flex flex-row float-right'>
-
                         <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
                         </strong> more screen</span>
                         <img src='https://cdn-icons-png.flaticon.com/512/2376/2376320.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
                     </div>
                 </div>
+                <div className='p-2'>
+                    <BackButton />
+                </div>
 
-
-                <div className={`${animateform1} transition-all relative `}><SelfAdvertisementForm1 collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-                <div className={`${animateform2} transition-all relative `}><SelfAdvertisementDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-                <div className={`${animateform3} transition-all relative `}><ReviewSelfAdvertForm reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform1} transition-all relative `}><SelfAdvertisementForm1 showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform2} transition-all relative  md:-mt-[43.5rem] lg:-mt-[43.5rem]`}><SelfAdvertisementDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform3} transition-all relative -mt-[8.5rem]`}><ReviewSelfAdvertForm reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
             </div>
         </>
     )

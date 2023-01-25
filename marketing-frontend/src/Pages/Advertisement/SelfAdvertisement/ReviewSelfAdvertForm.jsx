@@ -9,7 +9,7 @@ function ReviewSelfAdvertForm(props) {
     const submitForm = () => {
         props.submitFun()
     }
-    console.log("data in review form...", props?.allFormData)
+    console.log("data in review form...", props?.allFormData?.selfAdvertisementDoc  )
     console.log("select data in review form ...", props?.reviewIdNameData)
 
     return (
@@ -130,14 +130,19 @@ function ReviewSelfAdvertForm(props) {
 
                         <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 p-2 ml-12'>
                             {props?.allFormData?.selfAdvertisementDoc?.map((data, index) => (
-                                <div className=''>
 
-                                    <p className={`${labelStyle}`}>Aadhar Document</p>
-                                    <div className='flex -mt-2'>
-                                        <span className={`${inputStyle} flex-1`}>new-product.png</span>
-                                        <span className={`mt-4  flex-1`}><img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={` w-8`} /></span>
-                                    </div>
+                                <div className=''>
+                                    {/* {data?.map((data) => ( */}
+                                        <>
+                                            <p className={`${labelStyle}`}>{data?.relativeName} Document</p>
+                                            <div className='flex -mt-2'>
+                                                <span className={`${inputStyle} flex-1`}>{data?.image}</span>
+                                                <span className={`mt-4  flex-1`}><img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={` w-8`} /></span>
+                                            </div>
+                                        </>
+                                    {/* ))} */}
                                 </div>
+
                             ))}
                             <div className=''>
                                 <p className={`${labelStyle}`}>Trade License</p>

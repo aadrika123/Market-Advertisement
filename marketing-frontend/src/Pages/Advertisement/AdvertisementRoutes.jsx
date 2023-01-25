@@ -5,6 +5,7 @@ import MovableVehicleIndexForm from './MovableVehicle/MovableVehicleIndexForm'
 import PrivateLandIndexForm from './PrivateLand/PrivateLandIndexForm'
 import AgencyDetailIndexForm from './Agency/AgencyDetailIndexForm'
 import AdvertisementDashboard from './AdvertisementDashboard'
+import AgencyDashboard from './Agency/AgencyDashboard'
 
 
 function AdvertisementRoutes() {
@@ -18,6 +19,7 @@ function AdvertisementRoutes() {
                     <Route path="/movableVehicle" element={<MovableVehicleIndexForm />} />
                     <Route path="/privateLand" element={<PrivateLandIndexForm />} />
                     <Route path="/agency" element={<AgencyDetailIndexForm />} />
+                    <Route path="/agencyDashboard" element={<AgencyDashboard />} />
                 </Routes>
             </div>
         </>
