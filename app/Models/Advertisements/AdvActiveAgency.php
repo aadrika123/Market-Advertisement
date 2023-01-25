@@ -46,6 +46,7 @@ class AdvActiveAgency extends Model
             'pending_court_case' => $req->pendingCourtCase,
             'pending_amount' => $req->pendingAmount,
             'citizen_id' => $req->citizenId,
+            'user_id' => $req->userId,
             'ulb_id' => $req->ulbId
         ];
         return $metaReqs;

@@ -46,7 +46,8 @@ class AdvActiveSelfadvertisement extends Model
             'display_area' => $req->displayArea,
             'display_type' => $req->displayType,
             'installation_location' => $req->installationLocation,
-            'brand_display_name' => $req->brandDisplayName
+            'brand_display_name' => $req->brandDisplayName,
+            'user_id'=>$req->userId
         ];
     }
 
@@ -246,5 +247,27 @@ class AdvActiveSelfadvertisement extends Model
             ->whereNotIn('current_role_id', $roleIds)
             ->get();
         return $outbox;
+    }
+
+
+      /**
+     * | Get Citizen Applied applications
+     * | @param citizenId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActiveSelfadvertisement::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status'
+            )
+            ->orderByDesc('id')
+            ->get();
     }
 }

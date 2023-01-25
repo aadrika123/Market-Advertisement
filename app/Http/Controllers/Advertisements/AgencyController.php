@@ -48,8 +48,13 @@ class AgencyController extends Controller
     {
         try {
             $agency = new AdvActiveAgency();
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
+            if( authUser()->user_type=='JSK'){
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            }else{
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
             DB::beginTransaction();
             $applicationNo = $agency->store($req);       //<--------------- Model function to store 
             DB::commit();

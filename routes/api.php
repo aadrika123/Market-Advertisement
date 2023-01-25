@@ -37,7 +37,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/inbox', 'inbox');      // 03 ( Application Inbox Lists )
         Route::post('advertisement/self-advert/outbox', 'outbox');    // 04 ( Application Outbox Lists )
         Route::post('advertisement/self-advert/details', 'details');  // 05 ( Get Application Details By Application ID )
-        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List By CityZen )
         Route::post('advertisement/self-advert/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
         Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
         Route::post('advertisement/self-advert/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
@@ -49,6 +49,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 14 ( Get Uploaded Document By Advertisement ID )
         Route::post('advertisement/self-advert/workflow-view-documents', 'workflowViewDocuments');  // 15 ( View Uploaded Document By Advertisement ID )
         Route::post('advertisement/self-advert/workflow-upload-document', 'workflowUploadDocument');  // 16 ( Workflow Upload Document )
+        Route::post('advertisement/self-advert/approval-rejection', 'finalApprovalRejection');          // 17 ( Approve or Reject )
+        Route::post('advertisement/self-advert/approved-list', 'approvedList');          // 18 ( Approved list for Citizen)
+        Route::post('advertisement/self-advert/rejected-list', 'rejectedList');          // 19 ( Rejected list for Citizen)
+        Route::post('advertisement/self-advert/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/self-advert/jsk-approved-list', 'jskApprovedList');          // 21 ( Approved list for JSK)
+        Route::post('advertisement/self-advert/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)    
     });
 
     /**
@@ -100,10 +106,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Controller-05 
      */
     Route::controller(AgencyController::class)->group(function () {
-        Route::post('advertisements/agency/save', 'store');             // 01   ( Save Application )
-        Route::post('advertisements/agency/inbox', 'inbox');             // 03 ( Application Inbox Lists )
+        Route::post('advertisement/agency/save', 'store');             // 01   ( Save Application )
+        Route::post('advertisement/agency/inbox', 'inbox');             // 03 ( Application Inbox Lists )
         Route::post('advertisement/agency/outbox', 'outbox');    // 04 ( Application Outbox Lists )
-        Route::post('advertisements/agency/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('advertisement/agency/details', 'details');  // 05 ( Get Application Details By Application ID )
         Route::post('advertisement/agency/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
         Route::post('advertisement/agency/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
         Route::post('advertisement/agency/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
