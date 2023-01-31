@@ -75,7 +75,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
     }
 
     public function specialAgencyLicenseInbox($workflowIds){
-        $specialInbox = DB::table('adv_agency_licenses')
+        $specialInbox = DB::table('adv_active_agency_licenses')
         ->select(
             'id',
             'application_no',

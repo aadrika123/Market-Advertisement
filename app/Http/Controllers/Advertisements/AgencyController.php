@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Agency\StoreRequest;
 use App\Http\Requests\Agency\StoreLicenceRequest;
 use App\Models\Advertisements\AdvActiveAgency;
-use App\Models\Advertisements\AdvAgencyLicense;
+use App\Models\Advertisements\AdvActiveAgencyLicense;
 use App\Models\Advertisements\AdvTypologyMstr;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -506,7 +506,7 @@ class AgencyController extends Controller
     public function saveForLicence(StoreLicenceRequest $req)
     {
         try {
-            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
             if (authUser()->user_type == 'JSK') {
                 $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
@@ -515,7 +515,7 @@ class AgencyController extends Controller
                 $req->request->add($citizenId);
             }
             DB::beginTransaction();
-            $LicenseNo = $mAdvAgencyLicense->licenceStore($req);       //<--------------- Model function to store 
+            $LicenseNo = $mAdvActiveAgencyLicense->licenceStore($req);       //<--------------- Model function to store 
             DB::commit();
             return responseMsgs(
                 true,
@@ -554,13 +554,13 @@ class AgencyController extends Controller
     public function licenseInbox(Request $req)
     {
         try {
-            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvAgencyLicense->inbox($roleIds);
+            $inboxList = $mAdvActiveAgencyLicense->inbox($roleIds);
             return responseMsgs(
                 true,
                 "Inbox Applications",
@@ -593,13 +593,13 @@ class AgencyController extends Controller
     public function licenseOutbox(Request $req)
     {
         try {
-            $mAdvAgencyLicense = new AdvAgencyLicense;
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvAgencyLicense->outbox($roleIds);
+            $outboxList = $mAdvActiveAgencyLicense->outbox($roleIds);
             return responseMsgs(
                 true,
                 "Outbox Lists",
@@ -633,11 +633,11 @@ class AgencyController extends Controller
     public function licenseDetails(Request $req)
     {
         try {
-            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
             // $data = array();
             $fullDetailsData = array();
             if ($req->applicationId) {
-                $data = $mAdvAgencyLicense->details($req->applicationId);
+                $data = $mAdvActiveAgencyLicense->details($req->applicationId);
             }
 
             // return $data;
@@ -690,8 +690,8 @@ class AgencyController extends Controller
     {
         try {
             $citizenId = authUser()->id;
-            $mAdvAgencyLicense = new AdvAgencyLicense();
-            $applications = $mAdvAgencyLicense->getCitizenApplications($citizenId);
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            $applications = $mAdvActiveAgencyLicense->getCitizenApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -734,7 +734,7 @@ class AgencyController extends Controller
         try {
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
-            $data = AdvAgencyLicense::find($applicationId);
+            $data = AdvActiveAgencyLicense::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
@@ -763,7 +763,7 @@ class AgencyController extends Controller
 
             $advData = $this->Repository->specialAgencyLicenseInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_agency_licenses.ulb_id', $ulbId)
+                ->where('adv_active_agency_licenses.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
             return responseMsgs(true, "Data Fetched", remove_null($advData), "010107", "1.0", "251ms", "POST", "");
@@ -787,13 +787,13 @@ class AgencyController extends Controller
         try {
             // Hording License Application Update Current Role Updation
             DB::beginTransaction();
-            $adv = AdvAgencyLicense::find($request->applicationId);
+            $adv = AdvActiveAgencyLicense::find($request->applicationId);
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['workflowId'] = $adv->workflow_id;
-            $metaReqs['refTableDotId'] = "adv_agency_licenses.id";
+            $metaReqs['refTableDotId'] = "adv_active_agency_licenses.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
             $request->request->add($metaReqs);
 
@@ -819,21 +819,21 @@ class AgencyController extends Controller
 
         try {
             $workflowTrack = new WorkflowTrack();
-            $mAdvAgencyLicense = AdvAgencyLicense::find($request->applicationId);                // Agency License Details
+            $mAdvActiveAgencyLicense = AdvActiveAgencyLicense::find($request->applicationId);                // Agency License Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
             DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
-                'workflowId' => $mAdvAgencyLicense->workflow_id,
+                'workflowId' => $mAdvActiveAgencyLicense->workflow_id,
                 'moduleId' => $mModuleId,
-                'refTableDotId' => "adv_agency_licenses.id",
-                'refTableIdValue' => $mAdvAgencyLicense->id,
+                'refTableDotId' => "adv_active_agency_licenses.id",
+                'refTableIdValue' => $mAdvActiveAgencyLicense->id,
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
             if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvAgencyLicense->user_id]);
+                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvActiveAgencyLicense->user_id]);
             }
 
             $request->request->add($metaReqs);
@@ -854,13 +854,13 @@ class AgencyController extends Controller
      */
     public function licenseUploadDocumentsView(Request $req)
     {
-        $mAdvAgencyLicense = new AdvAgencyLicense();
+        $AdvActiveAgencyLicense = new AdvActiveAgencyLicense();
         
         $data = array();
         $fullDetailsData = array();
         $workflowId = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         if ($req->applicationId) {
-            $data = $mAdvAgencyLicense->viewUploadedDocuments($req->applicationId,$workflowId);
+            $data = $AdvActiveAgencyLicense->viewUploadedDocuments($req->applicationId,$workflowId);
         }
         // return $data;
 
