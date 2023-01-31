@@ -4,6 +4,7 @@
 /public/storage
 /storage/*.key
 /vendor
+/razorpay-php
 .env
 .env.backup
 .env.production

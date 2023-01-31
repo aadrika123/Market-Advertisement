@@ -167,7 +167,7 @@ class PrivateLandController extends Controller
             // $data = array();
             $fullDetailsData = array();
             if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->details($req->applicationId);
+                $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
             }
 
             // return $data;
@@ -406,7 +406,7 @@ class PrivateLandController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $mAdvActivePrivateland->details($req->applicationId);
+            $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
         }
 
         $fullDetailsData['application_no'] = $data['application_no'];

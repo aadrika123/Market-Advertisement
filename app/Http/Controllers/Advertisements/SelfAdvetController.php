@@ -195,8 +195,9 @@ class SelfAdvetController extends Controller
             // $forwardBackward = new WorkflowMap;
             // $data = array();
             $fullDetailsData = array();
+            $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
-                $data = $selfAdvets->details($req->applicationId);
+                $data = $selfAdvets->details($req->applicationId,$workflowId);
             }
 
             // Basic Details
@@ -473,7 +474,7 @@ class SelfAdvetController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId);
+            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
 
         $fullDetailsData['application_no'] = $data['application_no'];
@@ -522,7 +523,7 @@ class SelfAdvetController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId);
+            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
 
         return responseMsgs(true, "Data Fetched", remove_null($data['documents']), "010107", "1.0", "251ms", "POST", "");
@@ -597,9 +598,11 @@ class SelfAdvetController extends Controller
                 'roleId' => 'required',
                 'applicationId' => 'required|integer',
                 'status' => 'required|integer',
-                'payment_amount' => 'required',
+                // 'payment_amount' => 'required',
 
             ]);
+
+
             // Check if the Current User is Finisher or Not         
            $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find( $req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveSelfadvertisement->workflow_id);                                 // Get Finisher using Trait
@@ -611,6 +614,9 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
+                
+                $payment_amount = ['payment_amount' => 1000];
+                $req->request->add($payment_amount);
                 // Selfadvertisement Application replication
 
                 $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
@@ -640,6 +646,9 @@ class SelfAdvetController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                
+                $payment_amount = ['payment_amount' =>0];
+                $req->request->add($payment_amount);
                 // Selfadvertisement Application replication
                 $rejectedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
@@ -833,7 +842,7 @@ class SelfAdvetController extends Controller
 
             return responseMsgs(
                 true,
-                "Approved Application List",
+                "Rejected Application List",
                 $data1,
                 "040103",
                 "1.0",

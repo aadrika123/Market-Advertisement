@@ -55,7 +55,8 @@ class AdvActiveVehicle extends Model
             'top_area' => $req->topArea,
             'display_type' => $req->displayType,
             'citizen_id' => $req->citizenId,
-            'ulb_id' => $req->ulbId
+            'ulb_id' => $req->ulbId,
+            'user_id' => $req->userId
         ];
         return $metaReqs;
     }
@@ -188,8 +189,9 @@ class AdvActiveVehicle extends Model
         $mAdvDocument = new AdvActiveSelfadvetdocument();
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
+        $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
             $mDocumentId = $document['id'];
             $mDocRelativeName = $document['relativeName'];
             $mImage = $document['image'];
@@ -200,7 +202,8 @@ class AdvActiveVehicle extends Model
                 'docTypeCode' => 'Test-Code',
                 'documentId' => $mDocumentId,
                 'relativePath' => $mRelativePath,
-                'docName' => $mDocName
+                'docName' => $mDocName,
+                'workflowId' => $workflowId
             ];
             $docUploadReqs = new Request($docUploadReqs);
 
@@ -226,7 +229,7 @@ class AdvActiveVehicle extends Model
     }
 
 
-    public function details($id){
+    public function details($id,$workflowId){
         $details = array();
         $details = DB::table('adv_active_vehicles')
             ->select(
@@ -259,7 +262,7 @@ class AdvActiveVehicle extends Model
                 DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
             )
             ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-            ->where('temp_id', $id)
+            ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
             ->get();
         $details['documents'] = remove_null($documents->toArray());
         return $details;
@@ -281,6 +284,29 @@ class AdvActiveVehicle extends Model
                 'entity_name',
                 'vehicle_no',
                 'vehicle_name',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
+
+
+    
+      /**
+     * | Get Jsk Applied applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActiveSelfadvertisement::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status'
             )
             ->orderByDesc('id')
             ->get();

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Advertisements;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicles\StoreRequest;
 use App\Models\Advertisements\AdvActiveVehicle;
+use App\Models\Advertisements\AdvVehicle;
+use App\Models\Advertisements\AdvRejectedVehicle;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Workflows\WorkflowTrack;
 use App\Models\Workflows\WfWardUser;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
+
+use Carbon\Carbon;
 
 
 use App\Traits\WorkflowTrait;
@@ -47,8 +51,15 @@ class VehicleAdvetController extends Controller
         // echo $workflow_id = $this->_workflowIds;
         try {
             $advVehicle = new AdvActiveVehicle();
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
+            // $citizenId = ['citizenId' => authUser()->id];
+            // $req->request->add($citizenId);
+            if( authUser()->user_type=='JSK'){
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            }else{
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
             $applicationNo = $advVehicle->store($req);               // Store Vehicle 
             return responseMsgs(
                 true,
@@ -172,7 +183,7 @@ class VehicleAdvetController extends Controller
             // $data = array();
             $fullDetailsData = array();
             if ($req->applicationId) {
-                $data = $mvehicleAdvets->details($req->applicationId);
+                $data = $mvehicleAdvets->details($req->applicationId,$this->_workflowIds);
             }
 
             // return $data;
@@ -414,7 +425,7 @@ class VehicleAdvetController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId);
+            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
         // Uploads Documents Details
 
@@ -425,6 +436,289 @@ class VehicleAdvetController extends Controller
 
         $data1['data'] = $fullDetailsData;
         return $data1;
+    }
+
+
+    
+    
+    /**
+     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
+     * | Rating-
+     * | Status- Open
+     */
+    public function finalApprovalRejection(Request $req)
+    {
+        try {
+            $req->validate([
+                'roleId' => 'required',
+                'applicationId' => 'required|integer',
+                'status' => 'required|integer',
+                // 'payment_amount' => 'required',
+
+            ]);
+
+            // Check if the Current User is Finisher or Not         
+           $mAdvActiveVehicle = AdvActiveVehicle::find( $req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mAdvActiveVehicle->workflow_id);                                 // Get Finisher using Trait
+            $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
+            if ($refGetFinisher->role_id != $req->roleId) {
+                return responseMsgs(false, " Access Forbidden", "");
+            }
+
+            DB::beginTransaction();
+            // Approval
+            if ($req->status == 1) {
+
+                $payment_amount = ['payment_amount' =>1000];
+                $req->request->add($payment_amount);
+                
+                // approved Vehicle Application replication
+
+                $approvedVehicle = $mAdvActiveVehicle->replicate();
+                $approvedVehicle->setTable('adv_vehicles');
+                $temp_id=$approvedVehicle->temp_id = $mAdvActiveVehicle->id;
+                $approvedVehicle->payment_amount = $req->payment_amount;
+                $approvedVehicle->approve_date =Carbon::now();
+                $approvedVehicle->save();
+
+                // Save in vehicle Advertisement Renewal
+                $approvedVehicle = $mAdvActiveVehicle->replicate();
+                $approvedVehicle->approve_date =Carbon::now();
+                $approvedVehicle->setTable('adv_vehicle_renewals');
+                $approvedVehicle->vechcleadvet_id = $temp_id;
+                $approvedVehicle->save();
+
+                
+                $mAdvActiveVehicle->delete();
+
+                // Update in adv_vehicles (last_renewal_id)
+
+                DB::table('adv_vehicles')
+                ->where('temp_id', $temp_id)
+                ->update(['last_renewal_id' => $approvedVehicle->id]);
+
+                $msg = "Application Successfully Approved !!";
+            }
+            // Rejection
+            if ($req->status == 0) {
+
+                $payment_amount = ['payment_amount' =>0];
+                $req->request->add($payment_amount);
+
+
+                // Vehicles advertisement Application replication
+                $rejectedVehicle = $mAdvActiveVehicle->replicate();
+                $rejectedVehicle->setTable('adv_rejected_vehicles');
+                $rejectedVehicle->temp_id = $mAdvActiveVehicle->id;
+                $rejectedVehicle->rejected_date =Carbon::now();
+                $rejectedVehicle->save();
+                $mAdvActiveVehicle->delete();
+                $msg = "Application Successfully Rejected !!";
+            }
+            DB::commit();
+            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Approve Application List for Citzen
+     * | @param Request $req
+     */
+    public function approvedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvVehicle = new AdvVehicle();
+            $applications = $mAdvVehicle->approvedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for Citizen
+     * | @param Request $req
+     */
+    public function rejectedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $applications = $mAdvRejectedVehicle->rejectedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+
+    /**
+     * | Get Applied Applications by Logged In JSK
+     */
+    public function getJSKApplications(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $applications = $mAdvActiveVehicle->getJSKApplications($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+    /**
+     * | Approve Application List for JSK
+     * | @param Request $req
+     */
+    public function jskApprovedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvVehicle = new AdvVehicle();
+            $applications = $mAdvVehicle->jskApprovedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for JSK
+     * | @param Request $req
+     */
+    public function jskRejectedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $applications = $mAdvRejectedVehicle->jskRejectedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Rejected Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
     }
 
 

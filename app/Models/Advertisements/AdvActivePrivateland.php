@@ -177,8 +177,9 @@ class AdvActivePrivateland extends Model
         $mAdvDocument = new AdvActiveSelfadvetdocument();
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
+        $workflowId = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
             $mDocumentId = $document['id'];
             $mDocRelativeName = $document['relativeName'];
             $mImage = $document['image'];
@@ -189,7 +190,8 @@ class AdvActivePrivateland extends Model
                 'docTypeCode' => 'Test-Code',
                 'documentId' => $mDocumentId,
                 'relativePath' => $mRelativePath,
-                'docName' => $mDocName
+                'docName' => $mDocName,
+                'workflowId'=> $workflowId
             ];
             $docUploadReqs = new Request($docUploadReqs);
 
@@ -201,7 +203,7 @@ class AdvActivePrivateland extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function details($id)
+    public function details($id,$workflowId)
     {
         $details = array();
         $details = DB::table('adv_active_privatelands')
@@ -235,7 +237,7 @@ class AdvActivePrivateland extends Model
                 DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
             )
             ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-            ->where('temp_id', $id)
+            ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
             ->get();
         $details['documents'] = remove_null($documents->toArray());
         return $details;

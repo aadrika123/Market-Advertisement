@@ -5,16 +5,17 @@ namespace App\Models\Advertisements;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AdvRejectedSelfadvertisement extends Model
+class AdvRejectedVehicle extends Model
 {
     use HasFactory;
 
+    
      /**
      * | Get Application Reject List by Role Ids
      */
     public function rejectedList($citizenId)
     {
-        return AdvRejectedSelfadvertisement::where('citizen_id', $citizenId)
+        return AdvRejectedVehicle::where('citizen_id', $citizenId)
             ->select(
                 'id',
                 'temp_id',
@@ -22,9 +23,9 @@ class AdvRejectedSelfadvertisement extends Model
                 'application_date',
                 'applicant',
                 'entity_name',
-                'entity_address',
-                'old_application_no',
-                'payment_status',
+                // 'entity_address',
+                // 'old_application_no',
+                // 'payment_status',
                 'rejected_date',
             )
             ->orderByDesc('temp_id')
@@ -36,7 +37,7 @@ class AdvRejectedSelfadvertisement extends Model
      */
     public function jskRejectedList($userId)
     {
-        return AdvRejectedSelfadvertisement::where('user_id', $userId)
+        return AdvRejectedVehicle::where('user_id', $userId)
             ->select(
                 'id',
                 'temp_id',
@@ -44,9 +45,9 @@ class AdvRejectedSelfadvertisement extends Model
                 'application_date',
                 'applicant',
                 'entity_name',
-                'entity_address',
-                'old_application_no',
-                'payment_status',
+                // 'entity_address',
+                // 'old_application_no',
+                // 'payment_status',
                 'rejected_date',
             )
             ->orderByDesc('temp_id')

@@ -23,4 +23,9 @@ return [
     */
     "PRIVATE_LANDS"=>"133",
     "PRIVATE_LANDS_WORKFLOWS"=>"250",
+    /**
+    * | ---------- Agency Hording License -----------
+    */
+    "AGENCY_HORDING"=>"134",
+    "AGENCY_HORDING_WORKFLOWS"=>"251",
 ];

@@ -82,6 +82,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/movable-vehicle/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/movable-vehicle/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/movable-vehicle/vehicle-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('advertisement/movable-vehicle/approval-rejection', 'finalApprovalRejection');          // 17 ( Approve or Reject )
+        Route::post('advertisement/movable-vehicle/approved-list', 'approvedList');          // 18 ( Approved list for Citizen)
+        Route::post('advertisement/movable-vehicle/rejected-list', 'rejectedList');          // 19 ( Rejected list for Citizen)
+        Route::post('advertisement/movable-vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/movable-vehicle/jsk-approved-list', 'jskApprovedList');          // 21 ( Approved list for JSK)
+        Route::post('advertisement/movable-vehicle/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)  
     });
 
     /**
@@ -116,5 +122,18 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/agency/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/agency/agency-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
+
+        /*------------ Apply For Hording License -------------------*/
+        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 12 ( Get Typology List )
+        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 11 ( Save Application For Licence )
+        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 12 ( Application Inbox Lists )
+        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 13 ( Application Outbox Lists )
+        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 14 ( Get Application Details By Application ID )
+        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 15 ( Get Applied Applications List )
+        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 16 ( Escalate or De-escalate Application )
+        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 17 ( Special Inbox Applications )
+        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 18 ( Forward or Backward Application )
+        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 19 ( Independent Comment )
+        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
     });
 });
