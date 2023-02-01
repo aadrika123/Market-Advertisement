@@ -1,12 +1,12 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import AdvertisementApiList from '../../Compnents/AdvertisementApiList'
-import ApiHeader from '../../Compnents/ApiHeader'
-import Loader from './Loader'
+import AdvertisementApiList from '../../../Compnents/AdvertisementApiList'
+import ApiHeader from '../../../Compnents/ApiHeader'
 
-function ViewAppliedApplication(props) {
 
-    const { api_getAppliedApplicationDetail, api_getAppliedDocumentList } = AdvertisementApiList()
+function ViewAgencyApplicationFullDetails(props) {
+
+    const { api_getAgencyApplicationFullDetail, api_getAgencyAppliedDocumentList } = AdvertisementApiList()
 
     let labelStyle = "mt-6 -ml-7 text-xs text-gray-600 font-semibold"
     let inputStyle = "mt-6 -ml-7 mb-2 text-sm text-gray-800 text-left font-bold"
@@ -18,7 +18,7 @@ function ViewAppliedApplication(props) {
     let show = props.showLoader
     const applicationId = props.data
 
-    console.log("application id..1",applicationId)
+    console.log("application id..1", applicationId)
 
     ///////////{*** GET APPLICATION LIST***}/////////
     useEffect(() => {
@@ -31,7 +31,7 @@ function ViewAppliedApplication(props) {
             applicationId: applicationId,
             // deviceId: "selfAdvert",
         }
-        axios.post(`${api_getAppliedApplicationDetail}`, requestBody, ApiHeader())
+        axios.post(`${api_getAgencyApplicationFullDetail}`, requestBody, ApiHeader())
             .then(function (response) {
                 console.log('application view details 1', response)
                 setapplicationDetail(response.data.data)
@@ -46,20 +46,20 @@ function ViewAppliedApplication(props) {
                 }, 500);
             })
     }
-    console.log("details of application...1", applicationDetail?.fullDetailsData
+    console.log("details of application agency...1", applicationDetail?.fullDetailsData
     )
 
     ///////////{*** GET UPLOADED DOCUMENT***}/////////
     useEffect(() => {
         getAppliedDocumentList()
     }, [])
-    const getAppliedDocumentList = () => {  
+    const getAppliedDocumentList = () => {
         props.showLoader(true)
         const requestBody = {
             applicationId: props?.data,
             // deviceId: "selfAdvert",
         }
-        axios.post(`${api_getAppliedDocumentList}`, requestBody, ApiHeader())
+        axios.post(`${api_getAgencyAppliedDocumentList}`, requestBody, ApiHeader())
             .then(function (response) {
                 console.log('document list', response.data.data)
                 setdocumentList(response.data.data)
@@ -141,4 +141,4 @@ function ViewAppliedApplication(props) {
     )
 }
 
-export default ViewAppliedApplication
+export default ViewAgencyApplicationFullDetails

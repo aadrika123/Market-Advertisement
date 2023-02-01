@@ -18,9 +18,6 @@ function PrivateLandIndexForm() {
     const [animateform2, setAnimateform2] = useState('pl-20 translate-x-full')//slide animation control state for document form
     const [animateform4, setAnimateform4] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
     const [animateform3, setAnimateform3] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
-    const [FirmStep, setFirmStep] = useState(1)
-    const [regCurrentStep, setRegCurrentStep] = useState(1)
-    const [colorCode, setcolorCode] = useState(false)
     const [allFormData, setAllFormData] = useState({})
     const [responseScreen, setresponseScreen] = useState()
     const [reviewData, setreviewData] = useState({})
@@ -144,18 +141,6 @@ function PrivateLandIndexForm() {
             directors: allFormData?.agencyDirector,
             documents: allFormData?.agencyDoc?.[0]
 
-
-            // gstDoc: allFormData?.agency?.ulb,
-            // itReturnDoc1: allFormData?.agency?.ulb,
-            // itReturnDoc2: allFormData?.agency?.ulb,
-            // officeAddressDoc: allFormData?.agency?.ulb,
-            // panDoc: allFormData?.agency?.ulb,
-            // director1AadharDoc: allFormData?.agency?.ulb,
-            // director2AadharDoc: allFormData?.agency?.ulb,
-            // director3AadharDoc: allFormData?.agency?.ulb,
-            // director4AadharDoc: allFormData?.agency?.ulb,
-            // affidivitDoc: allFormData?.agency?.ulb,
-
         }
 
         console.log('request body...', requestBody)
@@ -199,10 +184,10 @@ function PrivateLandIndexForm() {
                         <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{4 - formIndex}
                         </strong> more screen</span>
                         <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
+                        <div className=''>
+                            <BackButton />
+                        </div>
                     </div>
-                </div>
-                <div className='p-2'>
-                    <BackButton />
                 </div>
                 <div className={`${animateform1} transition-all relative`}><AgencyDetailForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
                 <div className={`${animateform2} transition-all relative -mt-[40.5rem]  `}><AgencyDirectorDetail allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>

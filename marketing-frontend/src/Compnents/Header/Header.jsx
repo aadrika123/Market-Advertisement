@@ -5,7 +5,9 @@ function Header() {
         <>
             <div className='bg-white border-b h-16 shadow-lg'>
 
-                <div>Citizen Side</div>
+                <div>
+                    
+                </div>
             </div>
         </>
     )

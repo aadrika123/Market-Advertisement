@@ -1,12 +1,26 @@
 import React, { useState } from "react";
-import AgencyNotification from "./AgencyNotification";
-import { BarGraphComponent } from "./BarGraphComponent";
-import { PieChartComponent } from "./PieChartComponent";
+import { Link } from "react-router-dom";
+import Loader from "../../Loader";
+import AgencyNotification from "../AgencyNotification";
+import { BarGraphComponent } from "../BarGraphComponent";
+import { PieChartComponent } from "../PieChartComponent";
+import HoardingApprovedApplication from "./HoardingApprovedApplication";
+import HoardingPendingList from "./HoardingPendingList";
+import HoardingRejectedApplication from "./HoardingRejectedApplication";
 
 
 function AgencyDashboard() {
+
+    const [tabIndex, settabIndex] = useState(0)
+    const [show, setshow] = useState(false)
+
+
+    const showLoader = (val) => {
+        setshow(val);
+    }
     return (
         <>
+            <Loader show={show} />
             <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto ">
                 <div className="col-span-6">
                     <div className="bg-white rounded leading-5 shadow-lg">
@@ -23,8 +37,9 @@ function AgencyDashboard() {
                                 <h1 className="font-bold text-3xl text-gray-600 ">Agency Dashboard</h1>
                                 <h1 className="text-md text-gray-500 mt-2 p-1  ">Lorem ipsum dolor sit amet consectetur adipisicing elit. Labore cum nam error quia, id maiores vero, suscipit blanditiis cupiditate reiciendis praesentium illum voluptate? </h1>
                                 <span className=""></span>
-
-                                <button className="float-right mt-4 py-2 px-4 inline-block text-center shadow-lg  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0">Apply Hoarding</button>
+                                <Link to='/hoarding'>
+                                    <button className="float-right mt-4 py-2 px-4 inline-block text-center shadow-lg  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0">Apply Hoarding</button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -32,7 +47,7 @@ function AgencyDashboard() {
                 <div className="col-span-6">
                     <div >
                         <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg">
+                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" >
                                 <div className="">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4  rounded-full text-pink-500 bg-pink-100 dark:bg-pink-900 dark:bg-opacity-40 ">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
@@ -43,22 +58,9 @@ function AgencyDashboard() {
                                     <h1 className="text-gray-500 text-lg ">0</h1>
                                 </div>
                             </div>
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg">
+                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={() => settabIndex(1)}>
                                 <div className="">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-indigo-500 bg-indigo-100 dark:bg-indigo-900  dark:bg-opacity-40 ">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3 p-2">
-                                    <h1 className="text-gray-500 text-lg font-semibold">Renewal</h1>
-                                    <h1 className="text-gray-500 text-lg ">0</h1>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg">
-                                <div className="">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-green-500 bg-green-100 dark:bg-green-900 dark:bg-opacity-40  ">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
                                     </svg>
                                 </div>
@@ -67,14 +69,27 @@ function AgencyDashboard() {
                                     <h1 className="text-gray-500 text-lg ">0</h1>
                                 </div>
                             </div>
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg">
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={() => settabIndex(2)}>
+                                <div className="">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-green-500 bg-green-100 dark:bg-green-900 dark:bg-opacity-40  ">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3 p-2">
+                                    <h1 className="text-gray-500 text-lg font-semibold">Approved Applications</h1>
+                                    <h1 className="text-gray-500 text-lg ">0</h1>
+                                </div>
+                            </div>
+                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={() => settabIndex(3)}>
                                 <div className="">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-yellow-500 bg-yellow-100 dark:bg-yellow-900 dark:bg-opacity-40">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
                                     </svg>
                                 </div>
                                 <div className="ml-3 p-2">
-                                    <h1 className="text-gray-500 text-lg font-semibold">Approved Applications</h1>
+                                    <h1 className="text-gray-500 text-lg font-semibold">Rejected Applications</h1>
                                     <h1 className="text-gray-500 text-lg ">0</h1>
                                 </div>
                             </div>
@@ -84,17 +99,18 @@ function AgencyDashboard() {
             </div>
 
             {/* notification */}
-            <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto mt-4 ">
+            <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container mt-4 mx-auto ">
                 <div className="col-span-8">
                     <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4">
 
                         {/* graph */}
                         <div className="col-span-6 ">
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-white rounded leading-5 shadow-lg ">
-                                <div className="p-4 opacity-95"><BarGraphComponent /></div>
+                                <div className="p-1  opacity-95"><BarGraphComponent /></div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-white rounded leading-5 shadow-lg mt-4 ">
-                                <div className=" opacity-90"><PieChartComponent /></div>
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-red-300 rounded leading-5 shadow-lg mt-4 ">
+                                {/* <div className=" opacity-90"><PieChartComponent /></div> */}
+                                {/* <HoardingPendingList /> */}
                             </div>
                         </div>
 
@@ -186,13 +202,30 @@ function AgencyDashboard() {
                                     </div>
                                 </div>
                             </div>
-
-                            { /* /////////// renew list /////////// */}
-                            {/* <div className="flex bg-white rounded leading-5 shadow-lg mt-4 h-52">
-                                1
-                            </div> */}
                         </div>
                     </div>
+
+
+                    <div className={`${tabIndex == 1 ? 'bg-indigo-300 z-20 drop-shadow-xl overflow-auto ' : 'bg-white'} transition-all ease-in-out `}  >
+                        <h1 className={`${tabIndex == 1 ? 'text-white' : 'text-gray-500'} text-lg font-semibold px-2 mt-4 border-b`}>Pending Applications</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  rounded leading-5 shadow-md ">
+                            <HoardingPendingList showLoader={showLoader} />
+                        </div>
+                    </div>
+
+                    <div className={`${tabIndex == 2 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
+                        <h1 className={`${tabIndex == 2 ? 'text-white' : 'text-gray-500'} text-lg font-semibold px-2 mt-4 border-b`}>Approved Applications</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  rounded leading-5 shadow-md ">
+                            <HoardingApprovedApplication showLoader={showLoader} />
+                        </div>
+                    </div>
+                    <div className={`${tabIndex == 3 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
+                        <h1 className={`${tabIndex == 3 ? 'text-white' : 'text-gray-500'} text-lg font-semibold px-2 mt-4 border-b`}>Rejected Applications</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  rounded leading-5 shadow-md ">
+                            <HoardingRejectedApplication showLoader={showLoader} />
+                        </div>
+                    </div>
+
                 </div>
                 <div className="col-span-4 bg-white rounded leading-5 shadow-lg  h-screen" >
                     <AgencyNotification />

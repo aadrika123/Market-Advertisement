@@ -26,9 +26,10 @@ const customStyles = {
 Modal.setAppElement('#root');
 
 function SelfAdvertisementForm1(props) {
-    const { api_getAdvertMasterData, api_getUlbList, api_getTradeLicenseDetails } = AdvertisementApiList()
+    const { api_getAdvertMasterData, api_getUlbList, api_getWardList, api_getTradeLicenseDetails } = AdvertisementApiList()
     const [masterData, setmasterData] = useState()
     const [ulbList, setulbList] = useState()
+    const [wardList, setwardList] = useState()
     const [reviewIdName, setreviewIdName] = useState({})
     const [storeUlbValue, setstoreUlbValue] = useState()
 
@@ -47,22 +48,22 @@ function SelfAdvertisementForm1(props) {
     const validationSchema = yup.object({
         ulb: yup.string().required('select ulb'),
         licenseYear: yup.string().required('select license year'),
-        // applicantName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
+        applicantName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
         fatherName: yup.string().required('Enter owner name').max(50, 'Enter maximum 50 characters'),
         email: yup.string(),
         residenceAddress: yup.string().required('This field is Required'),
         residenceWardNo: yup.string().required('This field is Required'),
         permanentAddress: yup.string().required('This field is Required'),
         permanentWardNo: yup.string().required('This field is Required'),
-        // mobileNo: yup.string().required('Enter mobile no.').min(10, 'Enter 10 digit number').max(10, 'Enter 10 digit number'),
+        mobileNo: yup.string().required('Enter mobile no.').min(10, 'Enter 10 digit number').max(10, 'Enter 10 digit number'),
         aadharNo: yup.string().required('Enter aadhar').min(12, 'Enter 12 digit number').max(12, 'Enter 12 digit number'),
-        // entityName: yup.string().required('This field is Required'),
-        // entityAddress: yup.string().required('This field is Required'),
+        entityName: yup.string().required('This field is Required'),
+        entityAddress: yup.string().required('This field is Required'),
         entityWardNo: yup.string().required('This field is Required'),
         installationLocation: yup.string().required('This field is Required'),
         brandDisplayName: yup.string().required('This field is Required'),
         // holdingNo: yup.string().required('This field is Required'),
-        tradeLicenseNo: yup.string().required('This field is Required'),
+        // tradeLicenseNo: yup.string().required('This field is Required'),
         gstNo: yup.string().required('This field is Required'),
         displayArea: yup.string().required('Enter Number'),
         displayType: yup.string().required('This field is Required'),
@@ -73,23 +74,22 @@ function SelfAdvertisementForm1(props) {
     const initialValues = {
         ulb: '',
         licenseYear: '',
-        applicantName: liceneDetails?.applicant_name,
+        applicantName: '',
         fatherName: '',
         email: '',
         residenceAddress: '',
         residenceWardNo: '',
         permanentAddress: '',
         permanentWardNo: '',
-        mobileNo: liceneDetails?.mobile,
+        mobileNo: '',
         aadharNo: '',
-        entityName: liceneDetails?.entity_name,
-        entityAddress: liceneDetails?.entity_address,
-        // entityWardNo: liceneDetails?.ward_id,
-        entityWardNo: 1,
+        entityName: '',
+        entityAddress: '',
+        entityWardNo: '',
         installationLocation: '',
         brandDisplayName: '',
-        holdingNo: liceneDetails?.holding_no,
-        tradeLicenseNo: liceneData?.licenseDataById,
+        holdingNo: '',
+        tradeLicenseNo: '',
         gstNo: '',
         displayArea: '',
         displayType: '',
@@ -99,9 +99,7 @@ function SelfAdvertisementForm1(props) {
 
     const formik = useFormik({
         initialValues: initialValues,
-        enableReinitialize: true,
         onSubmit: values => {
-            // alert(JSON.stringify(values, null, 2));
             console.log("self Advertisement", values)
             props.collectFormDataFun('selfAdvertisement', values, reviewIdName)
             props?.nextFun(1)
@@ -112,14 +110,14 @@ function SelfAdvertisementForm1(props) {
     const handleOnChange = (e) => {
         console.log("target type", e.target.type)
         console.log("check box name", e.target.name)
-        // console.log('input type', e.target[e.target.selectedIndex].text)
 
         let name = e.target.name
         let value = e.target.value
 
-        { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
+        // { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
 
         { name == 'ulb' && getMasterDataFun(value) }
+        { name == 'ulb' && getWardListFun(value) }
 
         { name == 'ulb' && setstoreUlbValue(value) }
         console.log("ulb id 1 ...", value)
@@ -156,11 +154,29 @@ function SelfAdvertisementForm1(props) {
 
     console.log("ulb value...", storeUlbValue)
 
+    ///////////{*** GETTING WARD LIST***}/////////
+    const getWardListFun = (ulbId) => {
+        const requestBody = {
+            // ulbId: ulbId,
+            ulbId: 2,
+        }
+        axios.post('http://192.168.0.16:8000/api/workflow/getWardByUlb', requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('ward list', response.data.data)
+                setwardList(response.data.data)
+            })
+            .catch(function (error) {
+                console.log('errorrr.... ', error);
+            })
+    }
+    console.log("ward master data...", wardList)
+
     ///////////{*** GETTING MASTER DATA***}/////////
     const getMasterDataFun = (ulbId) => {
         const requestBody = {
             // ulbId: ulbId,
             ulbId: 1,
+
             deviceId: "selfAdvert",
         }
         axios.post(`${api_getAdvertMasterData}`, requestBody, ApiHeader())
@@ -215,7 +231,7 @@ function SelfAdvertisementForm1(props) {
 
     return (
         <>
-            <Modal
+            {/* <Modal
                 isOpen={modalIsOpen}
                 onAfterOpen={afterOpenModal}
                 onRequestClose={closeModal}
@@ -228,28 +244,28 @@ function SelfAdvertisementForm1(props) {
                     <FindTradeLicense showLoader={props.showLoader} closeFun={closeModal} collectDataFun={collectData} />
                 </div>
 
-            </Modal>
+            </Modal> */}
 
             <form onSubmit={formik.handleSubmit} onChange={handleOnChange}>
                 <div>
                     <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto -mt-4'>
-                        <div className='col-span-6 '>
+                        {/* <div className='col-span-6 '>
                             <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                                 <div className=' col-span-3'>
                                     <p className={`mt-5 text-gray-600 text-sm -ml-8`}>Trade License No.</p>
                                 </div>
                                 <div className=' col-span-3'>
-                                    <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} disabled
+                                    <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} 
                                         onChange={formik.handleChange}
                                         value={formik.values.tradeLicenseNo}
                                     />
                                 </div>
                             </div>
-                        </div>
-                        <div className='col-span-6  -ml-0 md:-ml-24 lg:-ml-20'>
+                        </div> */}
+                        <div className='col-span-6 '>
                             <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                                 <div className=' col-span-3'>
-                                    <p className={`mt-6 text-gray-600 text-sm -ml-14`}>Urban Local Bodies (ULB)</p>
+                                    <p className={`mt-6 text-gray-600 text-sm -ml-7 `}>Urban Local Bodies (ULB)</p>
                                 </div>
                                 <div className=' col-span-3'>
                                     <select className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} {...formik.getFieldProps('ulb')} >
@@ -293,7 +309,7 @@ function SelfAdvertisementForm1(props) {
                                             <p className={`${labelStyle}`}>Applicant <span className='text-red-600'> *</span></p>
                                         </div>
                                         <div className='col-span-2'>
-                                            <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`} disabled
+                                            <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.applicantName}
                                             />
@@ -345,7 +361,7 @@ function SelfAdvertisementForm1(props) {
                                         <div className='col-span-2'>
                                             <select {...formik.getFieldProps('residenceWardNo')} className={`${inputStyle} bg-white`} >
                                                 <option>select </option>
-                                                {masterData?.wards?.map((items) => (
+                                                {wardList?.map((items) => (
                                                     <option value={items?.id}>{items?.ward_name}</option>
                                                 ))}
                                             </select>
@@ -371,7 +387,7 @@ function SelfAdvertisementForm1(props) {
                                         <div className='col-span-2'>
                                             <select  {...formik.getFieldProps('permanentWardNo')} className={`${inputStyle} bg-white`} >
                                                 <option>select </option>
-                                                {masterData?.wards?.map((items) => (
+                                                {wardList?.map((items) => (
                                                     <option value={items?.id}>{items?.ward_name}</option>
                                                 ))}
                                             </select>
@@ -383,7 +399,7 @@ function SelfAdvertisementForm1(props) {
                                             <p className={`${labelStyle}`}>Mobile No.<span className='text-red-600'> *</span></p>
                                         </div>
                                         <div className='col-span-2'>
-                                            <input type="text" name='mobileNo' placeholder='' className={`${inputStyle} `} disabled
+                                            <input type="text" name='mobileNo' placeholder='' className={`${inputStyle} `}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.mobileNo}
                                             />
@@ -408,7 +424,7 @@ function SelfAdvertisementForm1(props) {
                                         </div>
                                         <div className='col-span-2'>
                                             <input type="text" name='entityName' placeholder='' className={`${inputStyle}`}
-                                                disabled
+
                                                 onChange={formik.handleChange}
                                                 value={formik.values.entityName}
                                             />
@@ -423,7 +439,7 @@ function SelfAdvertisementForm1(props) {
                                             <p className={`${labelStyle}`}>Entity Address<span className='text-red-600'> *</span></p>
                                         </div>
                                         <div className='col-span-2'>
-                                            <input type="text" name='entityAddress' placeholder='' className={`${inputStyle}`} disabled
+                                            <input type="text" name='entityAddress' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.entityAddress}
                                             />
@@ -435,9 +451,9 @@ function SelfAdvertisementForm1(props) {
                                             <p className={`${labelStyle}`}>Entity Ward No <span className='text-red-600'> *</span></p>
                                         </div>
                                         <div className='col-span-2'>
-                                            <select type="text" name='entityWardNo'  placeholder='' className={`${inputStyle} bg-white`}{...formik.getFieldProps('entityWardNo')}  >
+                                            <select type="text" name='entityWardNo' placeholder='' className={`${inputStyle} bg-white`}{...formik.getFieldProps('entityWardNo')}  >
                                                 <option>select </option>
-                                                {masterData?.wards?.map((items) => (
+                                                {wardList?.map((items) => (
                                                     <option value={items?.id}>{items?.ward_name}</option>
                                                 ))}
                                             </select>
@@ -475,7 +491,7 @@ function SelfAdvertisementForm1(props) {
                                             <p className={`${labelStyle}`}>Holding No.<span className='text-red-600'> *</span></p>
                                         </div>
                                         <div className='col-span-2'>
-                                            <input type="text" name='holdingNo' placeholder='' className={`${inputStyle}`} disabled
+                                            <input type="text" name='holdingNo' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.holdingNo}
                                             />
@@ -519,6 +535,18 @@ function SelfAdvertisementForm1(props) {
                                                 ))}
                                             </select>
                                             <p className='text-red-500 text-xs absolute'>{formik.touched.displayType && formik.errors.displayType ? formik.errors.displayType : null}</p>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                                        <div className='col-span-1'>
+                                            <p className={`${labelStyle}`}>Trade License No.<span className='text-red-600'> *</span></p>
+                                        </div>
+                                        <div className='col-span-2'>
+                                            <input type="text" name='tradeLicenseNo' placeholder='' className={`${inputStyle}`}
+                                                onChange={formik.handleChange}
+                                                value={formik.values.tradeLicenseNo}
+                                            />
+                                            {/* <p className='text-red-500 text-xs absolute'>{formik.touched.tradeLicenseNo && formik.errors.tradeLicenseNo ? formik.errors.tradeLicenseNo : null}</p> */}
                                         </div>
                                     </div>
                                     <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>

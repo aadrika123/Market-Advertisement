@@ -47,21 +47,21 @@ function PrivateLandForm(props) {
         ulb: '',
         licenseFrom: '',
         licenseTo: '',
-        applicantName: liceneDetails?.applicant_name,
+        applicantName: '',
         fatherName: '',
         email: '',
         residenceAddress: '',
         residenceWardNo: '',
         permanentAddress: '',
         permanentWardNo: '',
-        mobileNo: liceneDetails?.mobile,
+        mobileNo: '',
         aadharNo: '',
-        holdingNo: liceneDetails?.holding_no,
-        tradeLicenseNo: liceneData?.licenseDataById,
+        holdingNo: '',
+        tradeLicenseNo: '',
         gstNo: '',
-        entityName: liceneDetails?.entity_name,
-        entityAddress: liceneDetails?.entity_address,
-        entityWard: 1,
+        entityName: '',
+        entityAddress: '',
+        entityWard: '',
         brandDisplayeName: '',
         brandDisplayeAddress: '',
         totalDisplayArea: '',
@@ -73,27 +73,19 @@ function PrivateLandForm(props) {
         holdingNoBrandDisplay: '',
     }
 
-
     const formik = useFormik({
         initialValues: initialValues,
-        enableReinitialize: true,
         onSubmit: values => {
-            // alert(JSON.stringify(values, null, 2));
             console.log("Private Land", values, reviewIdName)
             props.collectFormDataFun('privateLand', values, reviewIdName)
             props?.nextFun(1)
-
-
         },
     });
 
     const handleChange = (e) => {
         let name = e.target.name
         let value = e.target.value
-
-        { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
-
-
+        // { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
         { name == 'ulb' && getMasterDataFun(value) }
         { name == 'ulb' && setstoreUlbValue(value) }
         console.log("ulb id...", value)
@@ -144,8 +136,6 @@ function PrivateLandForm(props) {
             })
     }
 
-
-
     ///////////{*** COLLECTING TRADE LICENSE DATA***}/////////
     const collectData = (key, formData) => {
         console.log('trade license data.......', formData)
@@ -189,7 +179,7 @@ function PrivateLandForm(props) {
 
     return (
         <>
-            <Modal
+            {/* <Modal
                 isOpen={modalIsOpen}
                 onAfterOpen={afterOpenModal}
                 onRequestClose={closeModal}
@@ -202,12 +192,12 @@ function PrivateLandForm(props) {
                     <FindTradeLicense showLoader={props.showLoader} closeFun={closeModal} collectDataFun={collectData} />
                 </div>
 
-            </Modal>
+            </Modal> */}
 
             <form onSubmit={formik.handleSubmit} onChange={handleChange}>
                 <div>
                     <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto -mt-4'>
-                        <div className='col-span-6 '>
+                        {/* <div className='col-span-6 '>
                             <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                                 <div className=' col-span-3'>
                                     <p className={`mt-5 text-gray-600 text-sm -ml-8`}>Trade License No.</p>
@@ -219,11 +209,11 @@ function PrivateLandForm(props) {
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className='col-span-6  -ml-0 md:-ml-24 lg:-ml-20'>
                             <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                                 <div className=' col-span-3'>
-                                    <p className={`mt-6 text-gray-600 text-sm -ml-14`}>Urban Local Bodies (ULB)</p>
+                                    <p className={`mt-6 text-gray-600 text-sm -ml-7`}>Urban Local Bodies (ULB)</p>
                                 </div>
                                 <div className=' col-span-3'>
                                     <select className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} {...formik.getFieldProps('ulb')} >
@@ -248,20 +238,6 @@ function PrivateLandForm(props) {
                         <div>
                             <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 mt-3'>
                                 <div className='col-span-4 p-1 border border-dashed border-violet-800'>
-                                    {/* <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
-                                        <div className='col-span-1'>
-                                            <p className={`${labelStyle}`}> Ulb <span className='text-red-600'>*</span></p>
-                                        </div>
-                                        <div className='col-span-2'>
-                                            <select className={`${inputStyle} bg-white`} {...formik.getFieldProps('ulb')} >
-                                                <option>select </option>
-                                                {ulbList?.map((items) => (
-                                                    <option value={items?.id}>{items?.ulb_name}{items?.id}</option>
-                                                ))}
-                                            </select>
-                                            <p className='text-red-500 text-xs absolute'>{formik.touched.ulb && formik.errors.ulb ? formik.errors.ulb : null}</p>
-                                        </div>
-                                    </div> */}
                                     <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle} `}> License From <span className='text-red-600'> *</span></p>
@@ -271,7 +247,6 @@ function PrivateLandForm(props) {
                                                 onChange={formik.handleChange}
                                                 value={formik.values.licenseFrom}
                                             />
-
                                         </div>
                                     </div>
                                     <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>

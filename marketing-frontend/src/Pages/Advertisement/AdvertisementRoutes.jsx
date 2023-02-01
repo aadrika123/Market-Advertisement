@@ -5,7 +5,10 @@ import MovableVehicleIndexForm from './MovableVehicle/MovableVehicleIndexForm'
 import PrivateLandIndexForm from './PrivateLand/PrivateLandIndexForm'
 import AgencyDetailIndexForm from './Agency/AgencyDetailIndexForm'
 import AdvertisementDashboard from './AdvertisementDashboard'
-import AgencyDashboard from './Agency/AgencyDashboard'
+import HoardingIndex from './Agency/Hoarding/HoardingIndex'
+import PaymentScreen from './PaymentScreen'
+import SelfApprovalIndexForm from './SelfPrintable/SelfApprovalIndexForm'
+import AgencyDashboard from './Agency/AgencyDashboard/AgencyDashboard'
 
 
 function AdvertisementRoutes() {
@@ -20,6 +23,9 @@ function AdvertisementRoutes() {
                     <Route path="/privateLand" element={<PrivateLandIndexForm />} />
                     <Route path="/agency" element={<AgencyDetailIndexForm />} />
                     <Route path="/agencyDashboard" element={<AgencyDashboard />} />
+                    <Route path="/hoarding" element={<HoardingIndex />} />
+                    <Route path="/paymentScreen" element={<PaymentScreen />} />
+                    <Route path="/approvalLetter" element={<SelfApprovalIndexForm />} />
                 </Routes>
             </div>
         </>

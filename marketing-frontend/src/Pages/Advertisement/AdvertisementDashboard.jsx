@@ -11,6 +11,7 @@ import { Tooltip } from '@material-tailwind/react';
 import SelfAdvertPendingApplicationList from './SelfAdvertisement/SelfAdvertPendingApplicationList';
 import MovablePendingApplicationList from './MovableVehicle/MovablePendingApplicationList';
 import PrivateLandPendingApplications from './PrivateLand/PrivateLandPendingApplications';
+import AgencyPendingApplication from './Agency/AgencyPendingApplication';
 
 
 const customStyles = {
@@ -109,14 +110,14 @@ function AdvertisementDashboard() {
             </div>
 
             {/***** section 2 ******/}
-            <div className={` grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 container mx-auto gap-4 mb-2 mt-1 p-3`}>
+            <div className={` grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  gap-4 mb-2 mt-1 p-3`}>
                 <div className='col-span-3 p-3 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl ' >
                     <div className=''>
                         <div className='text-indigo-500'>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 mx-auto ">
                                 <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
                             </svg>
-                           
+
                         </div>
                         <h1 className='text-lg text-center font-semibold  text-gray-700 '>Self Advertisement</h1>
                         <p className='text-xs text-center text-gray-600'>You Can Get License To Advertise Your Business Name <br /> On Your Shop</p>
@@ -173,7 +174,7 @@ function AdvertisementDashboard() {
                     <div className='border-b border-violet-500'>
                         <div className='flex justify-start  h-18 bg-white rounded leading-5  w-full  shadow-lg'>
                             <div className='p-2  '>
-                                <h1 className=' text-lg  font-semibold text-gray-500 '>Pending Applications</h1>
+                                <h1 className=' text-lg  font-semibold text-gray-500'>Applications</h1>
                                 {/* <h1 className='text-xs  text-gray-500 '>You Can Get License To Advertise Your Business Name </h1> */}
                             </div>
                             <div className='p-2 flex space-x-8'>
@@ -228,20 +229,22 @@ function AdvertisementDashboard() {
                     </div>
                     {tabIndex == 1 &&
                         <div>
-                            <h1 className='bg-white p-2 mb-4 shadow-md  text-lg  font-semibold text-gray-500 '>Self Advertisement Pending Application</h1>
                             <SelfAdvertPendingApplicationList showLoader={showLoader} />
                         </div>
                     }
                     {tabIndex == 2 &&
                         <div>
-                            <h1 className='bg-white p-2 mb-4 shadow-md  text-lg  font-semibold text-gray-500 '>Movable Vehicle Pending Application</h1>
                             <MovablePendingApplicationList showLoader={showLoader} />
                         </div>
                     }
-                      {tabIndex == 3 &&
+                    {tabIndex == 3 &&
                         <div>
-                            <h1 className='bg-white p-2 mb-4 shadow-md  text-lg  font-semibold text-gray-500 '>Private Land Pending Application</h1>
                             <PrivateLandPendingApplications showLoader={showLoader} />
+                        </div>
+                    }
+                    {tabIndex == 4 &&
+                        <div>
+                            <AgencyPendingApplication showLoader={showLoader} />
                         </div>
                     }
                 </div>

@@ -175,6 +175,7 @@ function SelfAdvertisementIndexForm() {
             </div>
             <ToastContainer position="top-right"
                 autoClose={2000} />
+
             <div className='overflow-x-clip '>
                 <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200  '>
                     <div className='flex flex-row '>
@@ -185,11 +186,12 @@ function SelfAdvertisementIndexForm() {
                         <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
                         </strong> more screen</span>
                         <img src='https://cdn-icons-png.flaticon.com/512/2376/2376320.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
+                        <div className=''>
+                            <BackButton />
+                        </div>
                     </div>
                 </div>
-                <div className='p-2'>
-                    <BackButton />
-                </div>
+
 
                 <div className={`${animateform1} transition-all relative `}><SelfAdvertisementForm1 showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
                 <div className={`${animateform2} transition-all relative  md:-mt-[43.5rem] lg:-mt-[43.5rem]`}><SelfAdvertisementDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>

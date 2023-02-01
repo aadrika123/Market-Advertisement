@@ -1,25 +1,24 @@
-import React, { useState } from 'react'
-import AdvertisementApiList from '../../../Compnents/AdvertisementApiList'
-import AdvrtSuccessScreen from '../AdvrtSuccessScreen'
-import PrivateLandDocForm from './PrivateLandDocForm'
-import PrivateLandForm from './PrivateLandForm'
-import ReviewPrivateLandApplication from './ReviewPrivateLandApplication'
 import axios from 'axios'
-import ApiHeader from '../../../Compnents/ApiHeader'
-import Loader from '../Loader'
-import { toast, ToastContainer } from 'react-toastify'
-import BackButton from '../BackButton'
-
-function PrivateLandIndexForm() {
+import React, { useState } from 'react'
+import AdvrtSuccessScreen from '../../AdvrtSuccessScreen'
+import { ToastContainer } from 'react-toastify'
+import Loader from '../../Loader'
+import ApiHeader from '../../../../Compnents/ApiHeader'
+import BackButton from '../../BackButton'
+import HoardingForm1 from './HoardingForm1'
+import HoardingForm2 from './HoardingForm2'
+import HoardingForm3 from './HoardingForm3'
+import HoardingFormDoc from './HoardingFormDoc'
+import AdvertisementApiList from '../../../../Compnents/AdvertisementApiList'
+import HoardingReview from './HoardingReview'
+function HoardingIndex() {
 
     const [formIndex, setFormIndex] = useState(1) //formindex specifies type of form  at index 1 ...
     const [animateform1, setAnimateform1] = useState('translate-x-0') //slide animation control state for self advertisement form
     const [animateform2, setAnimateform2] = useState('pl-20 translate-x-full')//slide animation control state for document form
-    const [animateform4, setAnimateform4] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
     const [animateform3, setAnimateform3] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
-    const [FirmStep, setFirmStep] = useState(1)
-    const [regCurrentStep, setRegCurrentStep] = useState(1)
-    const [colorCode, setcolorCode] = useState(false)
+    const [animateform4, setAnimateform4] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
+    const [animateform5, setAnimateform5] = useState('pl-20  translate-x-full')//slide animation control state for ElectricityWaterDetails form
     const [allFormData, setAllFormData] = useState({})
     const [responseScreen, setresponseScreen] = useState()
     const [reviewData, setreviewData] = useState({})
@@ -30,8 +29,8 @@ function PrivateLandIndexForm() {
     }
 
 
+    const { api_postHoardingApplication } = AdvertisementApiList()
 
-    const { api_postPrivateLandApplication } = AdvertisementApiList()
     const backFun = (formIndex) => {
         let tempFormIndex = formIndex
         if (tempFormIndex == 1) { //backward by current form index 2
@@ -50,9 +49,14 @@ function PrivateLandIndexForm() {
             setAnimateform3('pl-20 translate-x-full')
         }
         if (tempFormIndex == 4) {
-            setFormIndex(4)
+            setFormIndex(3)
             setAnimateform3('translate-x-0')
             setAnimateform4('pl-20 translate-x-full')
+        }
+        if (tempFormIndex == 5) {
+            setFormIndex(4)
+            setAnimateform4('translate-x-0')
+            setAnimateform5('pl-20 translate-x-full')
         }
 
     }
@@ -78,6 +82,11 @@ function PrivateLandIndexForm() {
             setAnimateform3('-translate-x-full right-80')
             setAnimateform4('pl-0 translate-x-0')
         }
+        if (tempFormIndex == 5) {
+            setFormIndex(5)
+            setAnimateform4('-translate-x-full right-80')
+            setAnimateform5('pl-0 translate-x-0')
+        }
     }
 
 
@@ -92,15 +101,12 @@ function PrivateLandIndexForm() {
         }
     };
 
-
-
-    ///////////{*** COLLECTING ALL FORM DATA***}/////////
     const collectAllFormData = (key, formData, reviewIdName) => {
         console.log('prev of all Data', allFormData)
         console.log("review name by id in index...", reviewIdName)
         setAllFormData({ ...allFormData, [key]: formData })
 
-        if (key == 'selfAdvertisement') {
+        if (key == 'hoarding1') {
             console.log("data collecting by key", key, 'formData', formData, 'reviewData', reviewIdName)
             setreviewData({ ...reviewData, [key]: reviewIdName })
         }
@@ -112,52 +118,54 @@ function PrivateLandIndexForm() {
     console.log("all form data in index", allFormData)
     console.log("all form data in index for doc", allFormData?.selfAdvertisementDoc?.[0])
 
-
-
     ///// SUBMIT FORM /////
     const submitButtonToggle = () => {
         console.log('final form ready to submit...', allFormData)
-        submitPrivateLandForm()
+        submitHoardingApplication()
     }
 
-    const submitPrivateLandForm = () => {
+    const submitHoardingApplication = () => {
         const requestBody = {
-            // ulbId: allFormData?.privateLand?.ulb,
+            // ulbId: allFormData?.agency?.ulb,
             ulbId: 2,
             // deviceId: "privateLand",
-            applicant: allFormData?.privateLand?.applicantName,
-            father: allFormData?.privateLand?.fatherName,
-            email: allFormData?.privateLand?.email,
-            residenceAddress: allFormData?.privateLand?.residenceAddress,
-            wardId: allFormData?.privateLand?.residenceWardNo,
-            permanentAddress: allFormData?.privateLand?.permanentAddress,
-            permanentWardId: allFormData?.privateLand?.permanentWardNo,
-            mobileNo: allFormData?.privateLand?.mobileNo,
-            aadharNo: allFormData?.privateLand?.aadharNo,
-            licenseFrom: allFormData?.privateLand?.licenseFrom,
-            licenseTo: allFormData?.privateLand?.licenseTo,
-            holdingNo: allFormData?.privateLand?.holdingNo,
-            tradeLicenseNo: allFormData?.privateLand?.tradeLicenseNo,
-            gstNo: allFormData?.privateLand?.gstNo,
-            entityName: allFormData?.privateLand?.entityName,
-            entityAddress: allFormData?.privateLand?.entityAddress,
-            entityWardId: allFormData?.privateLand?.entityWard,
-            brandDisplayName: allFormData?.privateLand?.brandDisplayeName,
-            brandDisplayAddress: allFormData?.privateLand?.brandDisplayeAddress,
-            brandDisplayHoldingNo: allFormData?.privateLand?.holdingNoBrandDisplay,
-            displayArea: allFormData?.privateLand?.totalDisplayArea,
-            displayType: allFormData?.privateLand?.displayType,
-            noOfHoardings: allFormData?.privateLand?.noOfHoarding,
-            longitude: allFormData?.privateLand?.longitude,
-            latitude: allFormData?.privateLand?.latitude,
-            installationLocation: allFormData?.privateLand?.installationLocation,
-
-            documents: allFormData?.privateLandDoc?.[0]
+            accountNo: allFormData?.hoarding1?.accountNo,
+            applicationNo: allFormData?.hoarding1?.applicationNo,
+            bankName: allFormData?.hoarding1?.bankName,
+            city: allFormData?.hoarding1?.city,
+            dateGranted: allFormData?.hoarding1?.dateGranted,
+            district: allFormData?.hoarding1?.district,
+            ifscCode: allFormData?.hoarding1?.ifscCode,
+            permitExpiredIssue: allFormData?.hoarding1?.permitExpireDate,
+            permitDateIssue: allFormData?.hoarding1?.permitIssueDate,
+            permitNo: allFormData?.hoarding1?.permitNumber,
+            roadStreetAddress: allFormData?.hoarding1?.roadStreetAddress,
+            totalCharge: allFormData?.hoarding1?.totalFeeCharged,
+            wardId: allFormData?.hoarding1?.wardNo,
+            zoneId: allFormData?.hoarding1?.zone,
+            typology: allFormData?.hoarding2?.checked,
+            displayArea: allFormData?.hoarding3?.displayArea,
+            displayLandMark: allFormData?.hoarding3?.displayLandmark,
+            displayLocation: allFormData?.hoarding3?.displayLocation,
+            displayStreet: allFormData?.hoarding3?.displayStreet,
+            illumination: allFormData?.hoarding3?.illumination,
+            indicateFacing: allFormData?.hoarding3?.indicateFace,
+            material: allFormData?.hoarding3?.material,
+            heigth: allFormData?.hoarding3?.mediaHeight,
+            length: allFormData?.hoarding3?.mediaLength,
+            size: allFormData?.hoarding3?.mediaSize,
+            propertyOwnerAddress: allFormData?.hoarding3?.ownerAddress,
+            propertyOwnerCity: allFormData?.hoarding3?.ownerCity,
+            propertyOwnerName: allFormData?.hoarding3?.ownerName,
+            propertyOwnerMobileNo: allFormData?.hoarding3?.ownerPhoneNo,
+            propertyOwnerPincode: allFormData?.hoarding3?.ownerPinCode,
+            propertyType: allFormData?.hoarding3?.propertyType,
+            documents: allFormData?.hoardingDoc?.[0]
 
         }
 
         console.log('request body...', requestBody)
-        axios.post(`${api_postPrivateLandApplication}`, requestBody, ApiHeader())
+        axios.post(`${api_postHoardingApplication}`, requestBody, ApiHeader())
             .then(function (response) {
                 console.log('response after data submitted', response.data.data)
                 setresponseScreen(response.data.data)
@@ -166,9 +174,7 @@ function PrivateLandIndexForm() {
             .catch(function (error) {
                 console.log('errorrr.... ', error);
                 notify('failed to submit', 'error')
-
             })
-        console.log("form index", formIndex)
     }
 
     console.log("response screen", responseScreen)
@@ -180,40 +186,41 @@ function PrivateLandIndexForm() {
         )
     }
 
-
     return (
         <>
+
             <div className=''>
                 <Loader show={show} />
             </div>
             <ToastContainer position="top-right"
                 autoClose={2000} />
-            <div className='overflow-x-clip '>
+            <div className='overflow-x-clip'>
                 <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
                     <div className='flex flex-row '>
-                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Private Land</h1>
+                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Hoarding</h1>
                     </div>
                     <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
                     <div className='flex flex-row float-right'>
                         {/* {FirmStep == 1 && */}
-                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
+                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600'>{5 - formIndex}
                         </strong> more screen</span>
+                        <BackButton />
                         <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
-                        <div className=''>
-                            <BackButton />
-                        </div>
                     </div>
+
                 </div>
 
-                <div className={`${animateform1} transition-all relative`}><PrivateLandForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform1} transition-all relative`}><HoardingForm1 showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform2} transition-all relative -mt-[40.5rem]  `}><HoardingForm2 allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
-                <div className={`${animateform2} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><PrivateLandDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${animateform3} transition-all relative -mt-[50rem]`}><HoardingForm3 collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
 
-                <div className={`${animateform3} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><ReviewPrivateLandApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform4} transition-all relative -mt-[40.5rem]`}><HoardingFormDoc reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform5} transition-all relative -mt-[40.5rem]`}><HoardingReview reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>
     )
 }
 
-export default PrivateLandIndexForm
+export default HoardingIndex

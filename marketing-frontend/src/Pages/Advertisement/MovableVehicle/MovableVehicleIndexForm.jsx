@@ -193,12 +193,13 @@ function MovableVehicleIndexForm() {
               <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
               </strong> more screen</span>}
             <img src='https://cdn-icons-png.flaticon.com/512/1917/1917802.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
+            <div className=''>
+              <BackButton />
+            </div>
           </div>
 
         </div>
-        <div className='p-2'>
-          <BackButton />
-        </div>
+
         <div className={`${animateform1} transition-all relative`}><MovableVehicleForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
         <div className={`${animateform2} transition-all relative  lg:-mt-[46rem] md:-mt-[46rem]`}><MovableVehicleDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
         <div className={`${animateform3} transition-all relative `}><ReviewMovableApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>

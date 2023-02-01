@@ -45,17 +45,17 @@ function MovableVehicleForm(props) {
     ulb: '',
     licenseFrom: '',
     licenseTo: '',
-    applicantName: liceneDetails?.applicant_name,
+    applicantName: '',
     fatherName: '',
     email: '',
     residenceAddress: '',
     residenceWardNo: '',
     permanentAddress: '',
     permanentWardNo: '',
-    mobileNo: liceneDetails?.mobile,
+    mobileNo: '',
     aadharNo: '',
-    entityName: liceneDetails?.entity_name,
-    tradeLicenseNo: liceneData?.licenseDataById,
+    entityName: '',
+    tradeLicenseNo: '',
     gstNo: '',
     vehicleNo: '',
     vehicleName: '',
@@ -70,10 +70,8 @@ function MovableVehicleForm(props) {
 
   const formik = useFormik({
     initialValues: initialValues,
-    enableReinitialize: true,
 
     onSubmit: values => {
-      // alert(JSON.stringify(values, null, 2));
       console.log("movable vehicle", values, reviewIdName)
       props.collectFormDataFun('movableVehicle', values, reviewIdName)
       props?.nextFun(1)
@@ -83,9 +81,7 @@ function MovableVehicleForm(props) {
   const handleChange = (e) => {
     let name = e.target.name
     let value = e.target.value
-
-    { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
-
+    // { name == 'tradeLicenseNo' && formik.setFieldValue("tradeLicenseNo", formik.values.tradeLicenseNo) }
     { name == 'ulb' && getMasterDataFun(value) }
     { name == 'ulb' && setstoreUlbValue(value) }
     console.log("ulb id...", value)
@@ -176,7 +172,7 @@ function MovableVehicleForm(props) {
 
   return (
     <>
-      <Modal
+      {/* <Modal
         isOpen={modalIsOpen}
         onAfterOpen={afterOpenModal}
         onRequestClose={closeModal}
@@ -190,28 +186,28 @@ function MovableVehicleForm(props) {
           <FindTradeLicense showLoader={props.showLoader} closeFun={closeModal} collectDataFun={collectData} />
         </div>
 
-      </Modal>
+      </Modal> */}
 
       <form onSubmit={formik.handleSubmit} onChange={handleChange}>
         <div>
           <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto -mt-4'>
-            <div className='col-span-6 '>
+            {/* <div className='col-span-6 '>
               <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                 <div className=' col-span-3'>
                   <p className={`mt-5 text-gray-600 text-sm -ml-8`}>Trade License No.</p>
                 </div>
                 <div className=' col-span-3'>
-                  <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} disabled
+                  <input type="text" name='tradeLicenseNo' placeholder='' className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} 
                     onChange={formik.handleChange}
                     value={formik.values.tradeLicenseNo}
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className='col-span-6  -ml-0 md:-ml-24 lg:-ml-20'>
               <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 w-10/12  container mx-auto'>
                 <div className=' col-span-3'>
-                  <p className={`mt-6 text-gray-600 text-sm -ml-14`}>Urban Local Bodies (ULB)</p>
+                  <p className={`mt-6 text-gray-600 text-sm -ml-7`}>Urban Local Bodies (ULB)</p>
                 </div>
                 <div className=' col-span-3'>
                   <select className={`h-6 md:h-8 w-[10rem] md:w-[13rem]  mt-4 bg-white rounded-l leading-5 shadow-md text-xs px-2 bg-gray-50`} {...formik.getFieldProps('ulb')} >
@@ -265,7 +261,7 @@ function MovableVehicleForm(props) {
                       <p className={`${labelStyle}`}> Applicant<span className='text-red-600'> *</span></p>
                     </div>
                     <div className='col-span-2'>
-                      <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`} disabled
+                      <input type="text" name='applicantName' placeholder='' className={`${inputStyle}`}
                         onChange={formik.handleChange}
                         value={formik.values.applicantName}
                       />
@@ -336,7 +332,7 @@ function MovableVehicleForm(props) {
                       <p className={`${labelStyle}`}>Mobile<span className='text-red-600'> *</span></p>
                     </div>
                     <div className='col-span-2'>
-                      <input type="text" name='mobileNo' placeholder='' className={`${inputStyle}`} disabled
+                      <input type="text" name='mobileNo' placeholder='' className={`${inputStyle}`}
                         onChange={formik.handleChange}
                         value={formik.values.mobileNo}
                       />
@@ -369,7 +365,7 @@ function MovableVehicleForm(props) {
                       <p className={`${labelStyle}`}>Entity Name<span className='text-red-600'> *</span></p>
                     </div>
                     <div className='col-span-2'>
-                      <input type="text" name='entityName' placeholder='' className={`${inputStyle}`} disabled
+                      <input type="text" name='entityName' placeholder='' className={`${inputStyle}`}
                         onChange={formik.handleChange}
                         value={formik.values.entityName}
                       />
@@ -433,6 +429,17 @@ function MovableVehicleForm(props) {
                       <input type="text" name='brandDisplayedInVehicle' placeholder='' className={`${inputStyle} flex-1`}
                         onChange={formik.handleChange}
                         value={formik.values.brandDisplayedInVehicle}
+                      />
+                    </div>
+                  </div>
+                  <div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 ml-8'>
+                    <div className='col-span-1'>
+                      <p className={`${labelStyle} flex-1`}>Trade License No.<span className='text-red-600'> *</span></p>
+                    </div>
+                    <div className='col-span-2'>
+                      <input type="text" name='tradeLicenseNo' placeholder='' className={`${inputStyle} flex-1`}
+                        onChange={formik.handleChange}
+                        value={formik.values.tradeLicenseNo}
                       />
                     </div>
                   </div>
