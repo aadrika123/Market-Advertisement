@@ -27,8 +27,8 @@ class StoreLicenceRequest extends FormRequest
     public function rules()
     {
         return [
-            'districtId' => 'required|numeric',
-            'cityId' => 'required|integer',
+            'district' => 'required|string',
+            'city' => 'required|string',
             'wardId' => 'required|integer',
             'zoneId' => 'required|integer',
             'permitNo' => 'required|string',
@@ -46,8 +46,8 @@ class StoreLicenceRequest extends FormRequest
             // 'registrationNo' => 'required|string',
             // 'omdId' => 'required|string',
             // 'applicantEmail' => 'required|email',
-            // 'applicantCity' => 'required|integer',
-            // 'applicantState' => 'required|integer',
+            // 'applicantCity' => 'required|string',
+            // 'applicantState' => 'required|string',
             // 'applicantMobileNo' => 'required|numeric',
             // 'applicantPermanentAddress' => 'required|string',
             // 'applicantPermanentCity' => 'required|integer',
@@ -56,7 +56,7 @@ class StoreLicenceRequest extends FormRequest
             'propertyType' => 'required|string',
             'propertyOwnerName' => 'required|string',
             'propertyOwnerAddress' => 'required|string',
-            'propertyOwnerCityId' => 'required|string',
+            'propertyOwnerCity' => 'required|string',
             'propertyOwnerPincode' => 'required|numeric|digits:6',
             'propertyOwnerMobileNo' => 'required|numeric|digits:10',
             'displayArea' => 'required|string',

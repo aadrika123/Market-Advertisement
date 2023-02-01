@@ -252,4 +252,21 @@ class AdvActiveAgency extends Model
         $details['documents'] = remove_null($documents->toArray());
         return $details;
     }
+
+    
+      /**
+     * | Get Jsk Applied applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActiveAgency::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date'
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

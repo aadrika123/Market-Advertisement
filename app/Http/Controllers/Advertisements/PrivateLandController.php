@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Advertisements;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PrivateLand\StoreRequest;
 use App\Models\Advertisements\AdvActivePrivateland;
+use App\Models\Advertisements\AdvPrivateland;
+use App\Models\Advertisements\AdvRejectedPrivateland;
 use Exception;
 
 use Illuminate\Http\Request;
@@ -18,6 +20,9 @@ use App\Traits\WorkflowTrait;
 use App\Models\Workflows\WorkflowTrack;
 use App\Models\Workflows\WfWardUser;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
+
+
+use Carbon\Carbon;
 
 /**
  * | Created On-02-01-2022 
@@ -417,6 +422,307 @@ class PrivateLandController extends Controller
         $data1['data'] = $fullDetailsData;
         return $data1;
     }
+
+    
+
+    
+    
+    /**
+     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
+     * | Rating-
+     * | Status- Open
+     */
+    public function finalApprovalRejection(Request $req)
+    {
+        try {
+            $req->validate([
+                'roleId' => 'required',
+                'applicationId' => 'required|integer',
+                'status' => 'required|integer',
+                // 'payment_amount' => 'required',
+
+            ]);
+
+            // Check if the Current User is Finisher or Not         
+           $mAdvActivePrivateland = AdvActivePrivateland::find( $req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mAdvActivePrivateland->workflow_id);                                 // Get Finisher using Trait
+            $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
+            if ($refGetFinisher->role_id != $req->roleId) {
+                return responseMsgs(false, " Access Forbidden", "");
+            }
+
+            DB::beginTransaction();
+            // Approval
+            if ($req->status == 1) {
+
+                $payment_amount = ['payment_amount' =>1000];
+                $req->request->add($payment_amount);
+                
+                // approved Private Land Application replication
+
+                $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                $approvedPrivateland->setTable('adv_vehicles');
+                $temp_id=$approvedPrivateland->temp_id = $mAdvActivePrivateland->id;
+                $approvedPrivateland->payment_amount = $req->payment_amount;
+                $approvedPrivateland->approve_date =Carbon::now();
+                $approvedPrivateland->save();
+
+                // Save in Priate Land Application Advertisement Renewal
+                $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                $approvedPrivateland->approve_date =Carbon::now();
+                $approvedPrivateland->setTable('adv_vehicle_renewals');
+                $approvedPrivateland->vechcleadvet_id = $temp_id;
+                $approvedPrivateland->save();
+
+                
+                $mAdvActivePrivateland->delete();
+
+                // Update in adv_vehicles (last_renewal_id)
+
+                DB::table('adv_vehicles')
+                ->where('temp_id', $temp_id)
+                ->update(['last_renewal_id' => $approvedPrivateland->id]);
+
+                $msg = "Application Successfully Approved !!";
+            }
+            // Rejection
+            if ($req->status == 0) {
+
+                $payment_amount = ['payment_amount' =>0];
+                $req->request->add($payment_amount);
+
+
+                // Vehicles advertisement Application replication
+                $rejectedPrivateland = $mAdvActivePrivateland->replicate();
+                $rejectedPrivateland->setTable('adv_rejected_vehicles');
+                $rejectedPrivateland->temp_id = $mAdvActivePrivateland->id;
+                $rejectedPrivateland->rejected_date =Carbon::now();
+                $rejectedPrivateland->save();
+                $mAdvActivePrivateland->delete();
+                $msg = "Application Successfully Rejected !!";
+            }
+            DB::commit();
+            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Approve Application List for Citzen
+     * | @param Request $req
+     */
+    public function approvedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvPrivateland = new AdvPrivateland();
+            $applications = $mAdvPrivateland->approvedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for Citizen
+     * | @param Request $req
+     */
+    public function rejectedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $applications = $mAdvRejectedPrivateland->rejectedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+
+    /**
+     * | Get Applied Applications by Logged In JSK
+     */
+    public function getJSKApplications(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvPrivateland = new AdvPrivateland();
+            $applications = $mAdvPrivateland->getJSKApplications($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+    /**
+     * | Approve Application List for JSK
+     * | @param Request $req
+     */
+    public function jskApprovedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvPrivateland = new AdvPrivateland();
+            $applications = $mAdvPrivateland->jskApprovedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for JSK
+     * | @param Request $req
+     */
+    public function jskRejectedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $applications = $mAdvRejectedPrivateland->jskRejectedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Rejected Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
 
 
 

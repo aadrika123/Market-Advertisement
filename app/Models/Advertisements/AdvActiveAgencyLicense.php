@@ -28,8 +28,8 @@ class AdvActiveAgencyLicense extends Model
     public function licenceMetaReqs($req)
     {
         $metaReqs = [            
-            'district_id' => $req->districtId,
-            'city_id' => $req->cityId,
+            'district' => $req->district,
+            'city' => $req->city,
             'ward_id' => $req->wardId,
             'zone_id' => $req->zoneId,
             'permit_no' => $req->permitNo,
@@ -57,7 +57,7 @@ class AdvActiveAgencyLicense extends Model
             'property_type' => $req->propertyType,
             'property_owner_name' => $req->propertyOwnerName,
             'property_owner_address' => $req->propertyOwnerAddress,
-            'property_owner_city_id' => $req->propertyOwnerCityId,
+            'property_owner_city' => $req->propertyOwnerCity,
             'property_owner_pincode' => $req->propertyOwnerPincode,
             'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
             'display_area' => $req->displayArea,

@@ -82,12 +82,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/movable-vehicle/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/movable-vehicle/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/movable-vehicle/vehicle-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/movable-vehicle/approval-rejection', 'finalApprovalRejection');          // 17 ( Approve or Reject )
-        Route::post('advertisement/movable-vehicle/approved-list', 'approvedList');          // 18 ( Approved list for Citizen)
-        Route::post('advertisement/movable-vehicle/rejected-list', 'rejectedList');          // 19 ( Rejected list for Citizen)
+        Route::post('advertisement/movable-vehicle/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
+        Route::post('advertisement/movable-vehicle/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
+        Route::post('advertisement/movable-vehicle/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
         Route::post('advertisement/movable-vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/movable-vehicle/jsk-approved-list', 'jskApprovedList');          // 21 ( Approved list for JSK)
-        Route::post('advertisement/movable-vehicle/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)  
+        Route::post('advertisement/movable-vehicle/jsk-approved-list', 'jskApprovedList');          // 15 ( Approved list for JSK)
+        Route::post('advertisement/movable-vehicle/jsk-rejected-list', 'jskRejectedList');          // 16 ( Rejected list for JSK)  
     });
 
     /**
@@ -105,6 +105,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/private-land/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/private-land/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/private-land/private-land-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('advertisement/private-land/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
+        Route::post('advertisement/private-land/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
+        Route::post('advertisement/private-land/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
     });
 
     /**
@@ -112,6 +115,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Controller-05 
      */
     Route::controller(AgencyController::class)->group(function () {
+        Route::post('advertisement/agency/get-agency-details', 'agencyDetails');             //  ( Agency Details )
+
         Route::post('advertisement/agency/save', 'store');             // 01   ( Save Application )
         Route::post('advertisement/agency/inbox', 'inbox');             // 03 ( Application Inbox Lists )
         Route::post('advertisement/agency/outbox', 'outbox');    // 04 ( Application Outbox Lists )
@@ -122,9 +127,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advertisement/agency/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
         Route::post('advertisement/agency/agency-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/movable-vehicle/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
-        Route::post('advertisement/movable-vehicle/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
-        Route::post('advertisement/movable-vehicle/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
+        Route::post('advertisement/agency/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
+        Route::post('advertisement/agency/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
+        Route::post('advertisement/agency/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
     
         /*------------ Apply For Hording License -------------------*/
         Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 15 ( Get Typology List )
@@ -138,8 +143,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 23 ( Forward or Backward Application )
         Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 24 ( Independent Comment )
         Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 25 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/movable-vehicle/license-approval-rejection', 'licenseFinalApprovalRejection');          // 17 ( Approve or Reject )
-        Route::post('advertisement/movable-vehicle/license-approved-list', 'licenseApprovedList');          // 26 ( License Approved list for Citizen)
-        Route::post('advertisement/movable-vehicle/license-rejected-list', 'licenseRejectedList');          // 27 ( License Rejected list for Citizen)
+        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 17 ( Approve or Reject )
+        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 26 ( License Approved list for Citizen)
+        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 27 ( License Rejected list for Citizen)
     });
 });
