@@ -20,9 +20,9 @@ class ParamController extends Controller
     {
         try {
             $mUlbId = $req->ulbId;
-            $data = json_decode(Cache::get('adv_param_strings' . $mUlbId));       // Get Value from Redis Cache Memory
+            $data = json_decode(Cache::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
             $bearer = $req->bearerToken();
-            if (!$data) {                                                         // If Cache Memory is not available
+            if (!$data) {                                                        // If Cache Memory is not available
                 $data = array();
                 $baseUrl = Config::get('constants.BASE_URL');
                 $mParamString = new RefAdvParamstring();

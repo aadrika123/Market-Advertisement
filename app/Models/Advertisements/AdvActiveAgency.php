@@ -46,6 +46,7 @@ class AdvActiveAgency extends Model
             'pending_court_case' => $req->pendingCourtCase,
             'pending_amount' => $req->pendingAmount,
             'citizen_id' => $req->citizenId,
+            'user_id' => $req->userId,
             'ulb_id' => $req->ulbId
         ];
         return $metaReqs;
@@ -113,8 +114,9 @@ class AdvActiveAgency extends Model
         $mAdvDocument = new AdvActiveSelfadvetdocument();
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+        $workflowId = Config::get('workflow-constants.AGENCY_WORKFLOWS');
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath) {
+        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath,$workflowId) {
             $mDocumentId = $document['id'];
             $mDocRelativeName = $document['relativeName'];
             $mImage = $document['image'];
@@ -125,7 +127,8 @@ class AdvActiveAgency extends Model
                 'docTypeCode' => 'Test-Code',
                 'documentId' => $mDocumentId,
                 'relativePath' => $mRelativePath,
-                'docName' => $mDocName
+                'docName' => $mDocName,
+                'workflowId'=>$workflowId
             ];
             $docUploadReqs = new Request($docUploadReqs);
 
@@ -236,7 +239,7 @@ class AdvActiveAgency extends Model
         return $outbox;
     }
 
-    public function viewUploadedDocuments($id){
+    public function viewUploadedDocuments($id,$workflowId){
         $documents = DB::table('adv_active_selfadvetdocuments')
             ->select(
                 'adv_active_selfadvetdocuments.*',
@@ -244,9 +247,26 @@ class AdvActiveAgency extends Model
                 DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
             )
             ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-            ->where('temp_id', $id)
+            ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
             ->get();
         $details['documents'] = remove_null($documents->toArray());
         return $details;
+    }
+
+    
+      /**
+     * | Get Jsk Applied applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActiveAgency::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date'
+            )
+            ->orderByDesc('id')
+            ->get();
     }
 }

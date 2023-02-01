@@ -73,4 +73,21 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         // ->whereIn('workflow_id', $workflowIds);
     return $specialInbox;
     }
+
+    public function specialAgencyLicenseInbox($workflowIds){
+        $specialInbox = DB::table('adv_active_agency_licenses')
+        ->select(
+            'id',
+            'application_no',
+            'application_date',
+            'license_no',
+            'bank_name',
+            'account_no',
+            'ifsc_code',
+            'total_charge'
+        )
+        ->orderByDesc('id');
+        // ->whereIn('workflow_id', $workflowIds);
+    return $specialInbox;
+    }
 }

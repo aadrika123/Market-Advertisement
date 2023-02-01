@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Advertisements;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SelfAdvets\StoreRequest;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
+use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Advertisements\AdvRejectedSelfadvertisement;
 use App\Models\TradeLicence;
 use App\Traits\WorkflowTrait;
 use Exception;
@@ -18,6 +20,7 @@ use App\Models\Workflows\WorkflowTrack;
 use Illuminate\Support\Facades\Config;
 use App\Models\Workflows\WfWardUser;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
+use Carbon\Carbon;
 
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
@@ -53,8 +56,15 @@ class SelfAdvetController extends Controller
     {
         try {
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
+            // $citizenId = ['citizenId' => authUser()->id];
+            if( authUser()->user_type=='JSK'){
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            }else{
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+            // $req->request->add($citizenId);
             DB::beginTransaction();
             $applicationNo = $selfAdvets->store($req);       //<--------------- Model function to store 
             DB::commit();
@@ -185,8 +195,9 @@ class SelfAdvetController extends Controller
             // $forwardBackward = new WorkflowMap;
             // $data = array();
             $fullDetailsData = array();
+            $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
-                $data = $selfAdvets->details($req->applicationId);
+                $data = $selfAdvets->details($req->applicationId,$workflowId);
             }
 
             // Basic Details
@@ -463,7 +474,7 @@ class SelfAdvetController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId);
+            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
 
         $fullDetailsData['application_no'] = $data['application_no'];
@@ -512,7 +523,7 @@ class SelfAdvetController extends Controller
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId);
+            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
 
         return responseMsgs(true, "Data Fetched", remove_null($data['documents']), "010107", "1.0", "251ms", "POST", "");
@@ -572,4 +583,285 @@ class SelfAdvetController extends Controller
         }
         return $licenseElement;
     }
+
+
+    
+    /**
+     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
+     * | Rating-
+     * | Status- Open
+     */
+    public function finalApprovalRejection(Request $req)
+    {
+        try {
+            $req->validate([
+                'roleId' => 'required',
+                'applicationId' => 'required|integer',
+                'status' => 'required|integer',
+                // 'payment_amount' => 'required',
+
+            ]);
+
+
+            // Check if the Current User is Finisher or Not         
+           $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find( $req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mAdvActiveSelfadvertisement->workflow_id);                                 // Get Finisher using Trait
+            $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
+            if ($refGetFinisher->role_id != $req->roleId) {
+                return responseMsgs(false, " Access Forbidden", "");
+            }
+
+            DB::beginTransaction();
+            // Approval
+            if ($req->status == 1) {
+                
+                $payment_amount = ['payment_amount' => 1000];
+                $req->request->add($payment_amount);
+                // Selfadvertisement Application replication
+
+                $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                $approvedSelfadvertisement->setTable('adv_selfadvertisements');
+                $temp_id=$approvedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
+                $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                $approvedSelfadvertisement->approve_date =Carbon::now();
+                $approvedSelfadvertisement->save();
+
+                // Save in self Advertisement Renewal
+                $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                $approvedSelfadvertisement->approve_date =Carbon::now();
+                $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                $approvedSelfadvertisement->selfadvet_id = $temp_id;
+                $approvedSelfadvertisement->save();
+
+                
+                $mAdvActiveSelfadvertisement->delete();
+
+                // Update in adv_selfadvertisements (last_renewal_id)
+
+                DB::table('adv_selfadvertisements')
+                ->where('temp_id', $temp_id)
+                ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+
+                $msg = "Application Successfully Approved !!";
+            }
+            // Rejection
+            if ($req->status == 0) {
+                
+                $payment_amount = ['payment_amount' =>0];
+                $req->request->add($payment_amount);
+                // Selfadvertisement Application replication
+                $rejectedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
+                $rejectedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
+                $rejectedSelfadvertisement->rejected_date =Carbon::now();
+                $rejectedSelfadvertisement->save();
+                $mAdvActiveSelfadvertisement->delete();
+                $msg = "Application Successfully Rejected !!";
+            }
+            DB::commit();
+            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Approve Application List for Citzen
+     * | @param Request $req
+     */
+    public function approvedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvSelfadvertisements = new AdvSelfadvertisement();
+            $applications = $mAdvSelfadvertisements->approvedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for Citizen
+     * | @param Request $req
+     */
+    public function rejectedList(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
+            $applications = $mAdvRejectedSelfadvertisement->rejectedList($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+
+    /**
+     * | Get Applied Applications by Logged In JSK
+     */
+    public function getJSKApplications(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $selfAdvets = new AdvActiveSelfadvertisement();
+            $applications = $selfAdvets->getJSKApplications($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+    
+    /**
+     * | Approve Application List for JSK
+     * | @param Request $req
+     */
+    public function jskApprovedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvSelfadvertisements = new AdvSelfadvertisement();
+            $applications = $mAdvSelfadvertisements->jskApprovedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
+
+    /**
+     * | Reject Application List for JSK
+     * | @param Request $req
+     */
+    public function jskRejectedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
+            $applications = $mAdvRejectedSelfadvertisement->jskRejectedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+
+            return responseMsgs(
+                true,
+                "Rejected Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+    
 }

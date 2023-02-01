@@ -14,4 +14,5 @@ interface iSelfAdvetRepo
     public function specialAgencyInbox($workflowIds);
 
     public function specialPrivateLandInbox($workflowIds);
+    public function specialAgencyLicenseInbox($workflowIds);
 }

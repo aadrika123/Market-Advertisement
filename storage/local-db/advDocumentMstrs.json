@@ -150,5 +150,73 @@
             "workflow_id":133,
             "relative_name":"BRAND DISPLAY"
         }
+    ],
+    "AgencyHordingLicense":[
+        {
+            "id":36,
+            "document_name":"Director Information Document",
+            "workflow_id":134,
+            "relative_name":"DIRECTOR INFORMATION"
+        },
+        {
+            "id":37,
+            "document_name":"Building Permit/Property Tax",
+            "workflow_id":134,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX"
+        },
+        {
+            "id":38,
+            "document_name":"Pan No Document",
+            "workflow_id":134,
+            "relative_name":"PAN NO"
+        },
+        {
+            "id":39,
+            "document_name":"Service Tax No",
+            "workflow_id":134,
+            "relative_name":"SERVICE TAX NO"
+        },
+        {
+            "id":40,
+            "document_name":"Certificate of Structural Engineer Ownership Details",
+            "workflow_id":134,
+            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS"
+        },
+        {
+            "id":41,
+            "document_name":"Agreement Between The Building Owner And Advertising Agency",
+            "workflow_id":134,
+            "relative_name":"AGREEMENT BETWEEN THE AGENCY AND BUILDING OWNER"
+        },
+        {
+            "id":42,
+            "document_name":"Coordinates of OMD with GPS Location",
+            "workflow_id":134,
+            "relative_name":"COORDINATE OF OMD WITH GPS LOCATION"
+        },
+        {
+            "id":43,
+            "document_name":"Site Photograph Document",
+            "workflow_id":134,
+            "relative_name":"SITE PHOTOGRAPH"
+        },
+        {
+            "id":44,
+            "document_name":"Sketch Plan of The Site",
+            "workflow_id":134,
+            "relative_name":"SKTECH PLAN OF SITE"
+        },
+        {
+            "id":45,
+            "document_name":"Pending Dues Document",
+            "workflow_id":134,
+            "relative_name":"PENDING DUES"
+        },
+        {
+            "id":46,
+            "document_name":"Architectural Drawing",
+            "workflow_id":134,
+            "relative_name":"ARCHITECTURAL DRAWING"
+        }
     ]
 }

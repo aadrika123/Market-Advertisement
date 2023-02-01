@@ -20,7 +20,8 @@ class AdvActiveSelfadvetdocument extends Model
             'doc_type_code' => $req->docTypeCode,
             'document_id' => $req->documentId,
             'relative_path' => $req->relativePath,
-            'doc_name' => $req->docName
+            'doc_name' => $req->docName,
+            'workflow_id' => $req->workflowId
         ];
     }
     /**
