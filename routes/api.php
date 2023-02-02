@@ -64,6 +64,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
         Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
+        Route::post('advertisements/document-verification', 'documentVerification');
+        Route::post('advertisements/upload-document', 'uploadDocument');
     });
 
     /**
@@ -108,6 +110,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/private-land/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
         Route::post('advertisement/private-land/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
         Route::post('advertisement/private-land/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
+        Route::post('advertisement/private-land/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/private-land/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
+        Route::post('advertisement/private-land/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
     });
 
     /**
@@ -130,21 +135,28 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
         Route::post('advertisement/agency/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
         Route::post('advertisement/agency/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
-    
+        Route::post('advertisement/agency/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/agency/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
+        Route::post('advertisement/agency/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
+ 
         /*------------ Apply For Hording License -------------------*/
-        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 15 ( Get Typology List )
-        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 16 ( Save Application For Licence )
-        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 17 ( Application Inbox Lists )
-        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 18 ( Application Outbox Lists )
-        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 19 ( Get Application Details By Application ID )
-        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 20 ( Get Applied Applications List )
-        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 21 ( Escalate or De-escalate Application )
-        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 22 ( Special Inbox Applications )
-        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 23 ( Forward or Backward Application )
-        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 24 ( Independent Comment )
-        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 25 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 17 ( Approve or Reject )
-        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 26 ( License Approved list for Citizen)
-        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 27 ( License Rejected list for Citizen)
+        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 18 ( Get Typology List )
+        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 19 ( Save Application For Licence )
+        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 20 ( Application Inbox Lists )
+        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 21 ( Application Outbox Lists )
+        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 22 ( Get Application Details By Application ID )
+        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 23 ( Get Applied Applications List )
+        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 24 ( Escalate or De-escalate Application )
+        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 25 ( Special Inbox Applications )
+        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 26 ( Forward or Backward Application )
+        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 27 ( Independent Comment )
+        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 28 ( Get Uploaded Document By Application ID )
+        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 29 ( Approve or Reject )
+        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 30 ( License Approved list for Citizen)
+        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 31 ( License Rejected list for Citizen)
+        Route::post('advertisement/agency/license-get-jsk-applications', 'licenseGetJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/agency/license-jsk-approved-list', 'licenseJskApprovedList');          // 32 ( Approved list for JSK)
+        Route::post('advertisement/agency/license-jsk-rejected-list', 'licenseJskRejectedList');          // 33 ( Rejected list for JSK)  
+ 
     });
 });

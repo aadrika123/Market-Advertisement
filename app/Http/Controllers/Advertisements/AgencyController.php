@@ -61,10 +61,8 @@ class AgencyController extends Controller
             $citizenId = authUser()->id;
             $mAdvAgency = new AdvAgency();
             $agencydetails = $mAdvAgency->agencyDetails($citizenId);
-            // $totalApplication = $agencydetails->count();
             remove_null($agencydetails);
             $data1['data'] = $agencydetails;
-            // $data1['arrayCount'] =  $totalApplication;
             return responseMsgs(
                 true,
                 "Agency Details",
@@ -477,11 +475,8 @@ class AgencyController extends Controller
         if ($req->applicationId) {
             $data = $mAdvActiveAgency->viewUploadedDocuments($req->applicationId,$this->_workflowIds);
         }
-        // return $data;
-
-        // $fullDetailsData['application_no'] = $data['application_no'];
-        // $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData['documents'] = $data['documents'];
+        
+        $fullDetailsData = $data['documents'];
 
 
         $data1['data'] = $fullDetailsData;
@@ -1223,7 +1218,7 @@ class AgencyController extends Controller
 
         // $fullDetailsData['application_no'] = $data['application_no'];
         // $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData['documents'] = $data['documents'];
+        $fullDetailsData = $data['documents'];
 
 
         $data1['data'] = $fullDetailsData;
@@ -1399,8 +1394,134 @@ class AgencyController extends Controller
     }
 
 
+
+     
+
+    /**
+     * | Get Applied License Applications by Logged In JSK
+     */
+    public function licenseGetJSKApplications(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            $applications = $mAdvActiveAgencyLicense->getJSKApplications($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040106",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
     
+    /**
+     * | Approve License Application List for JSK
+     * | @param Request $req
+     */
+    public function licenseJskApprovedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->jskApprovedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Approved Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
     
 
+    /**
+     * | Reject License Application List for JSK
+     * | @param Request $req
+     */
+    public function licenseJskRejectedList(Request $req)
+    {
+        try {
+            $userId = authUser()->id;
+            $mAdvRejectedAgencyLicense = new AdvRejectedAgencyLicense();
+            $applications = $mAdvRejectedAgencyLicense->jskRejectedList($userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if($data1['arrayCount']==0){
+                $data1 = null;
+            }
+
+            return responseMsgs(
+                true,
+                "Rejected Application List",
+                $data1,
+                "040103",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040103",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
 
 }

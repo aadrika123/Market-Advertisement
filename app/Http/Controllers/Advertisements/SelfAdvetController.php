@@ -477,9 +477,9 @@ class SelfAdvetController extends Controller
             $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
 
-        $fullDetailsData['application_no'] = $data['application_no'];
-        $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData['documents'] = $data['documents'];
+        // $fullDetailsData['application_no'] = $data['application_no'];
+        // $fullDetailsData['apply_date'] = $data['application_date'];
+        $fullDetailsData = $data['documents'];
 
 
         $data1['data'] = $fullDetailsData;

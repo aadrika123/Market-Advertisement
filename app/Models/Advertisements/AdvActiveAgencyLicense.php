@@ -71,6 +71,7 @@ class AdvActiveAgencyLicense extends Model
             'illumination' => $req->illumination,
             'indicate_facing' => $req->indicateFacing,
             'typology' => $req->typology,
+            'user_id' => $req->userId,
         ];
         return $metaReqs;
     }
@@ -346,17 +347,47 @@ class AdvActiveAgencyLicense extends Model
     }
 
     public function viewUploadedDocuments($id,$workflowId){
+        // $documents = DB::table('adv_active_selfadvetdocuments')
+        //     ->select(
+        //         'adv_active_selfadvetdocuments.*',
+        //         'd.document_name',
+        //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+        //     )
+        //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+        //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
+        //     ->get();
+        // $details['documents'] = remove_null($documents->toArray());
+        // return $details;
         $documents = DB::table('adv_active_selfadvetdocuments')
-            ->select(
-                'adv_active_selfadvetdocuments.*',
-                'd.document_name',
-                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
-            )
-            ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-            ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-            ->get();
-        $details['documents'] = remove_null($documents->toArray());
-        return $details;
+        ->select(
+            'adv_active_selfadvetdocuments.*',
+            'd.document_name as doc_type',
+            DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
+        )
+        ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+        ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
+        ->get();
+    $details['documents'] = remove_null($documents->toArray());
+    return $details;
     }
+
+    
+    
+      /**
+     * | Get Jsk Applied License  applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActiveAgencyLicense::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date'
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
+
 
 }

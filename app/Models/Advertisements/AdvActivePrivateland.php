@@ -56,7 +56,8 @@ class AdvActivePrivateland extends Model
             'latitude' => $req->latitude,
             'installation_location' => $req->installationLocation,
             'citizen_id' => $req->citizenId,
-            'ulb_id' => $req->ulbId
+            'ulb_id' => $req->ulbId,
+            'user_id'=>$req->userId
         ];
         return $metaReqs;
     }
@@ -233,8 +234,8 @@ class AdvActivePrivateland extends Model
         $documents = DB::table('adv_active_selfadvetdocuments')
             ->select(
                 'adv_active_selfadvetdocuments.*',
-                'd.document_name',
-                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+                'd.document_name as doc_type',
+                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
             )
             ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
             ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
@@ -294,6 +295,23 @@ class AdvActivePrivateland extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    
+      /**
+     * | Get Jsk Applied applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActivePrivateland::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date'
             )
             ->orderByDesc('id')
             ->get();

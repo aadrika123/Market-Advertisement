@@ -54,8 +54,15 @@ class PrivateLandController extends Controller
     {
         try {
             $privateLand = new AdvActivePrivateland();
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
+            // $citizenId = ['citizenId' => authUser()->id];
+            // $req->request->add($citizenId);
+            if( authUser()->user_type=='JSK'){
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            }else{
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
             $applicationNo = $privateLand->store($req);       //<--------------- Model function to store 
             return responseMsgs(
                 true,
@@ -414,9 +421,9 @@ class PrivateLandController extends Controller
             $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
         }
 
-        $fullDetailsData['application_no'] = $data['application_no'];
-        $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData['documents'] = $data['documents'];
+        // $fullDetailsData['application_no'] = $data['application_no'];
+        // $fullDetailsData['apply_date'] = $data['application_date'];
+        $fullDetailsData = $data['documents'];
 
 
         $data1['data'] = $fullDetailsData;
@@ -461,7 +468,7 @@ class PrivateLandController extends Controller
                 // approved Private Land Application replication
 
                 $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                $approvedPrivateland->setTable('adv_vehicles');
+                $approvedPrivateland->setTable('adv_privatelands');
                 $temp_id=$approvedPrivateland->temp_id = $mAdvActivePrivateland->id;
                 $approvedPrivateland->payment_amount = $req->payment_amount;
                 $approvedPrivateland->approve_date =Carbon::now();
@@ -470,16 +477,16 @@ class PrivateLandController extends Controller
                 // Save in Priate Land Application Advertisement Renewal
                 $approvedPrivateland = $mAdvActivePrivateland->replicate();
                 $approvedPrivateland->approve_date =Carbon::now();
-                $approvedPrivateland->setTable('adv_vehicle_renewals');
-                $approvedPrivateland->vechcleadvet_id = $temp_id;
+                $approvedPrivateland->setTable('adv_privateland_renewals');
+                $approvedPrivateland->privateland_id = $temp_id;
                 $approvedPrivateland->save();
 
                 
                 $mAdvActivePrivateland->delete();
 
-                // Update in adv_vehicles (last_renewal_id)
+                // Update in adv_privatelands (last_renewal_id)
 
-                DB::table('adv_vehicles')
+                DB::table('adv_privatelands')
                 ->where('temp_id', $temp_id)
                 ->update(['last_renewal_id' => $approvedPrivateland->id]);
 
@@ -492,9 +499,9 @@ class PrivateLandController extends Controller
                 $req->request->add($payment_amount);
 
 
-                // Vehicles advertisement Application replication
+                // Privateland advertisement Application replication
                 $rejectedPrivateland = $mAdvActivePrivateland->replicate();
-                $rejectedPrivateland->setTable('adv_rejected_vehicles');
+                $rejectedPrivateland->setTable('adv_rejected_privatelands');
                 $rejectedPrivateland->temp_id = $mAdvActivePrivateland->id;
                 $rejectedPrivateland->rejected_date =Carbon::now();
                 $rejectedPrivateland->save();
@@ -603,8 +610,8 @@ class PrivateLandController extends Controller
     {
         try {
             $userId = authUser()->id;
-            $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->getJSKApplications($userId);
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $applications = $mAdvActivePrivateland->getJSKApplications($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;

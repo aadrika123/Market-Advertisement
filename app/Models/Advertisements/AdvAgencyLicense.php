@@ -388,7 +388,7 @@ class AdvAgencyLicense extends Model
                 'application_date',
                 // 'entity_address',
                 // 'old_application_no',
-                'payment_status',
+                // 'payment_status',
                 'payment_amount',
                 'approve_date',
             )

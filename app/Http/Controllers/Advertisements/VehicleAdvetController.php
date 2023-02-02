@@ -429,9 +429,9 @@ class VehicleAdvetController extends Controller
         }
         // Uploads Documents Details
 
-        $fullDetailsData['application_no'] = $data['application_no'];
-        $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData['documents'] = $data['documents'];
+        // $fullDetailsData['application_no'] = $data['application_no'];
+        // $fullDetailsData['apply_date'] = $data['application_date'];
+        $fullDetailsData = $data['documents'];
 
 
         $data1['data'] = $fullDetailsData;
