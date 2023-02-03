@@ -55,4 +55,26 @@ class AdvVehicle extends Model
             ->orderByDesc('temp_id')
             ->get();
     }
+
+    /**
+     * | Get Application Details FOr Payments
+     */
+    public function detailsForPayments($id)
+    {
+        return AdvVehicle::where('id', $id)
+            ->select(
+                'id',
+                'temp_id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'payment_status',
+                'payment_amount',
+                'approve_date',
+                'ulb_id',
+                'workflow_id',
+            )
+            ->first();
+    }
 }

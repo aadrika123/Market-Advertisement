@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Config;
 use App\Models\Workflows\WfWardUser;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
@@ -55,12 +56,13 @@ class SelfAdvetController extends Controller
     public function store(StoreRequest $req)
     {
         try {
+            $startTime = microtime(true);
             $selfAdvets = new AdvActiveSelfadvertisement();
             // $citizenId = ['citizenId' => authUser()->id];
-            if( authUser()->user_type=='JSK'){
+            if (authUser()->user_type == 'JSK') {
                 $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
-            }else{
+            } else {
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
@@ -68,6 +70,8 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             $applicationNo = $selfAdvets->store($req);       //<--------------- Model function to store 
             DB::commit();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Successfully Submitted the application !!",
@@ -75,9 +79,9 @@ class SelfAdvetController extends Controller
                     'status' => true,
                     'ApplicationNo' => $applicationNo
                 ],
-                "040101",
+                "050101",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 'POST',
                 $req->deviceId ?? ""
             );
@@ -87,7 +91,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040101",
+                "050101",
                 "1.0",
                 "",
                 'POST',
@@ -116,18 +120,21 @@ class SelfAdvetController extends Controller
     public function inbox(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $selfAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $selfAdvets->inbox($roleIds);
+            $inboxList = $selfAdvets->inbox($roleIds);            
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Inbox Applications",
                 remove_null($inboxList->toArray()),
-                "040103",
+                "050103",
                 "1.0",
                 "",
                 "POST",
@@ -138,7 +145,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040103",
+                "050103",
                 "1.0",
                 "",
                 'POST',
@@ -153,20 +160,23 @@ class SelfAdvetController extends Controller
     public function outbox(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $selfAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $selfAdvets->outbox($roleIds);
+            $outboxList = $selfAdvets->outbox($roleIds);         
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Outbox Lists",
                 remove_null($outboxList->toArray()),
-                "040104",
+                "050104",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -175,7 +185,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040104",
+                "050104",
                 "1.0",
                 "",
                 'POST',
@@ -191,13 +201,14 @@ class SelfAdvetController extends Controller
     public function details(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $selfAdvets = new AdvActiveSelfadvertisement();
             // $forwardBackward = new WorkflowMap;
             // $data = array();
             $fullDetailsData = array();
             $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
-                $data = $selfAdvets->details($req->applicationId,$workflowId);
+                $data = $selfAdvets->details($req->applicationId, $workflowId);
             }
 
             // Basic Details
@@ -229,8 +240,9 @@ class SelfAdvetController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
-
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
         }
@@ -277,6 +289,7 @@ class SelfAdvetController extends Controller
         ]);
 
         try {
+            $startTime = microtime(true);
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
@@ -292,7 +305,10 @@ class SelfAdvetController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "010109", "1.0", "286ms", "POST", $request->deviceId);
+                    
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $request->all());
@@ -309,13 +325,16 @@ class SelfAdvetController extends Controller
             "applicationId" => "required|int",
         ]);
         try {
+            $startTime = microtime(true);
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
             $data = AdvActiveSelfadvertisement::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Advertisment is Escalated' : "Advertisment is removed from Escalated", '', "010106", "1.0", "353ms", "POST", $request->deviceId);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Advertisment is Escalated' : "Advertisment is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
         }
@@ -331,6 +350,7 @@ class SelfAdvetController extends Controller
         ]);
 
         try {
+            $startTime = microtime(true);
             $workflowTrack = new WorkflowTrack();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);                // Advertisment Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -353,7 +373,10 @@ class SelfAdvetController extends Controller
             $workflowTrack->saveTrack($request);
 
             DB::commit();
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "010108", "1.0", "", "POST", "");
+            
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "");
@@ -368,6 +391,7 @@ class SelfAdvetController extends Controller
     public function getCitizenApplications(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
             $applications = $selfAdvets->getCitizenApplications($citizenId);
@@ -375,13 +399,15 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Applied Applications",
                 $data1,
-                "040106",
+                "050106",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -390,7 +416,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040106",
+                "050106",
                 "1.0",
                 "",
                 "POST",
@@ -410,25 +436,28 @@ class SelfAdvetController extends Controller
             'user_id' => 'required|integer'
         ]);
         if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $validator->errors(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
         }
         try {
+            $startTime = microtime(true);
             $tradeLicence = new TradeLicence();
             // $licenceList = $tradeLicence->select('id','license_no')->where('user_id', $req->user_id)
             //     ->get();
             $licenseList = $tradeLicence->getLicenceByUserId($req->user_id);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Licenses",
                 remove_null($licenseList->toArray()),
-                "040106",
+                "050111",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -445,22 +474,25 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
         }
         try {
+            $startTime = microtime(true);
             $tradeLicense = new TradeLicence();
             // $licenceList = $tradeLicence->select('id', 'license_no')->where('holding_no', $req->holding_no)
             //     ->get();
             $licenseList = $tradeLicense->getLicenceByHoldingNo($req->holding_no);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Licenses",
                 remove_null($licenseList->toArray()),
-                "040106",
+                "050111",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -519,19 +551,23 @@ class SelfAdvetController extends Controller
      */
     public function workflowViewDocuments(Request $req)
     {
+        $startTime = microtime(true);
         $selfAdvets = new AdvActiveSelfadvertisement();
         $data = array();
         $fullDetailsData = array();
         if ($req->applicationId) {
             $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data['documents']), "010107", "1.0", "251ms", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data['documents']), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
     public function specialInbox(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
             $ulbId = authUser()->ulb_id;
@@ -548,7 +584,9 @@ class SelfAdvetController extends Controller
                 ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "010107", "1.0", "251ms", "POST", "");
+                $endTime = microtime(true);
+                $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
         }
@@ -585,7 +623,7 @@ class SelfAdvetController extends Controller
     }
 
 
-    
+
     /**
      * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
      * | Rating-
@@ -593,18 +631,17 @@ class SelfAdvetController extends Controller
      */
     public function finalApprovalRejection(Request $req)
     {
+        $req->validate([
+            'roleId' => 'required',
+            'applicationId' => 'required|integer',
+            'status' => 'required|integer',
+            // 'payment_amount' => 'required',
+
+        ]);
         try {
-            $req->validate([
-                'roleId' => 'required',
-                'applicationId' => 'required|integer',
-                'status' => 'required|integer',
-                // 'payment_amount' => 'required',
-
-            ]);
-
-
+            $startTime = microtime(true);
             // Check if the Current User is Finisher or Not         
-           $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find( $req->applicationId);
+            $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveSelfadvertisement->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
             if ($refGetFinisher->role_id != $req->roleId) {
@@ -614,55 +651,57 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-                
+
                 $payment_amount = ['payment_amount' => 1000];
                 $req->request->add($payment_amount);
                 // Selfadvertisement Application replication
 
                 $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $approvedSelfadvertisement->setTable('adv_selfadvertisements');
-                $temp_id=$approvedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
+                $temp_id = $approvedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
                 $approvedSelfadvertisement->payment_amount = $req->payment_amount;
-                $approvedSelfadvertisement->approve_date =Carbon::now();
+                $approvedSelfadvertisement->approve_date = Carbon::now();
                 $approvedSelfadvertisement->save();
 
                 // Save in self Advertisement Renewal
                 $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
-                $approvedSelfadvertisement->approve_date =Carbon::now();
+                $approvedSelfadvertisement->approve_date = Carbon::now();
                 $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
                 $approvedSelfadvertisement->selfadvet_id = $temp_id;
                 $approvedSelfadvertisement->save();
 
-                
+
                 $mAdvActiveSelfadvertisement->delete();
 
                 // Update in adv_selfadvertisements (last_renewal_id)
 
                 DB::table('adv_selfadvertisements')
-                ->where('temp_id', $temp_id)
-                ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+                    ->where('temp_id', $temp_id)
+                    ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
 
                 $msg = "Application Successfully Approved !!";
             }
             // Rejection
             if ($req->status == 0) {
-                
-                $payment_amount = ['payment_amount' =>0];
+
+                $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
                 // Selfadvertisement Application replication
                 $rejectedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
                 $rejectedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
-                $rejectedSelfadvertisement->rejected_date =Carbon::now();
+                $rejectedSelfadvertisement->rejected_date = Carbon::now();
                 $rejectedSelfadvertisement->save();
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, $msg, "", '050117', 01, "$executionTime Sec", 'Post', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false,  $e->getMessage(), "", '050117', 01, "", 'Post', $req->deviceId);
         }
     }
 
@@ -673,6 +712,7 @@ class SelfAdvetController extends Controller
     public function approvedList(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->approvedList($citizenId);
@@ -680,14 +720,15 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Approved Application List",
                 $data1,
-                "040103",
+                "050118",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -696,7 +737,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040103",
+                "050118",
                 "1.0",
                 "",
                 'POST',
@@ -704,7 +745,7 @@ class SelfAdvetController extends Controller
             );
         }
     }
-    
+
 
     /**
      * | Reject Application List for Citizen
@@ -713,6 +754,7 @@ class SelfAdvetController extends Controller
     public function rejectedList(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $applications = $mAdvRejectedSelfadvertisement->rejectedList($citizenId);
@@ -720,14 +762,15 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
-                "Approved Application List",
+                "Rejected Application List",
                 $data1,
-                "040103",
+                "050119",
                 "1.0",
-                "",
+                " $executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -736,7 +779,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040103",
+                "050119",
                 "1.0",
                 "",
                 'POST',
@@ -745,7 +788,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-    
+
 
     /**
      * | Get Applied Applications by Logged In JSK
@@ -753,6 +796,7 @@ class SelfAdvetController extends Controller
     public function getJSKApplications(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $userId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
             $applications = $selfAdvets->getJSKApplications($userId);
@@ -760,13 +804,15 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Applied Applications",
                 $data1,
-                "040106",
+                "050120",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -775,7 +821,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040106",
+                "050120",
                 "1.0",
                 "",
                 "POST",
@@ -784,7 +830,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-    
+
     /**
      * | Approve Application List for JSK
      * | @param Request $req
@@ -792,6 +838,7 @@ class SelfAdvetController extends Controller
     public function jskApprovedList(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $userId = authUser()->id;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->jskApprovedList($userId);
@@ -799,14 +846,15 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Approved Application List",
                 $data1,
-                "040103",
+                "050121",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -815,7 +863,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040103",
+                "050121",
                 "1.0",
                 "",
                 'POST',
@@ -823,7 +871,7 @@ class SelfAdvetController extends Controller
             );
         }
     }
-    
+
 
     /**
      * | Reject Application List for JSK
@@ -832,21 +880,23 @@ class SelfAdvetController extends Controller
     public function jskRejectedList(Request $req)
     {
         try {
+            $startTime = microtime(true);
             $userId = authUser()->id;
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $applications = $mAdvRejectedSelfadvertisement->jskRejectedList($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
-
+            $data1['arrayCount'] =  $totalApplication;            
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(
                 true,
                 "Rejected Application List",
                 $data1,
-                "040103",
+                "050122",
                 "1.0",
-                "",
+                "$executionTime Sec",
                 "POST",
                 $req->deviceId ?? ""
             );
@@ -855,7 +905,7 @@ class SelfAdvetController extends Controller
                 false,
                 $e->getMessage(),
                 "",
-                "040103",
+                "050122",
                 "1.0",
                 "",
                 'POST',
@@ -863,5 +913,98 @@ class SelfAdvetController extends Controller
             );
         }
     }
-    
+
+
+
+    /**
+     * | Generate Payment Order ID
+     * | @param Request $req
+     */
+
+    public function generatePaymentOrderId(Request $req)
+    {
+        $req->validate([
+            'id' => 'required|integer',
+        ]);
+        try {
+            $startTime = microtime(true);
+            $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
+            $reqData = [
+                "id" => $mAdvSelfadvertisement->id,
+                'amount' => $mAdvSelfadvertisement->payment_amount,
+                'workflowId' => $mAdvSelfadvertisement->workflow_id,
+                'ulbId' => $mAdvSelfadvertisement->ulb_id,
+                'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+            ];
+            $paymentUrl = Config::get('constants.PAYMENT_URL');
+            $refResponse = Http::withHeaders([
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->bearerToken())
+                ->post($paymentUrl . 'api/payment/generate-orderid',$reqData);
+
+            $data = json_decode($refResponse);
+                       
+            if (!$data)
+            throw new Exception("Payment Order Id Not Generate");
+
+            $data->name = $mAdvSelfadvertisement->applicant;
+            $data->email = $mAdvSelfadvertisement->email;
+            $data->contact = $mAdvSelfadvertisement->mobile_no;
+            // $data->apply_date = $mAdvSelfadvertisement->application_date;
+            // $data->entity_name = $mAdvSelfadvertisement->entity_name;
+            $data->type = "Self Advertisement";
+            // return $data;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(
+                true,
+                "Payment OrderId Generated Successfully !!!",
+                $data,
+                "050123",
+                "1.0",
+                "$executionTime Sec",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "050123",
+                "1.0",
+                "",
+                'POST',
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+
+    /**
+     * Summary of application Details For Payment
+     * @param Request $req
+     * @return void
+     */
+    public function applicationDetailsForPayment(Request $req){
+        $req->validate([
+            'applicationId' => 'required|integer',
+        ]);
+        try {
+            $startTime = microtime(true);
+            $selfAdvets = new AdvSelfadvertisement();
+            $workflowId = $this->_workflowIds;
+            if ($req->applicationId) {
+                $data = $selfAdvets->detailsForPayments($req->applicationId, $workflowId);
+            }
+            $data['type']="Self Advertisement";
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
 }

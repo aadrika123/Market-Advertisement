@@ -3,13 +3,18 @@
 namespace App\Http\Controllers\Params;
 
 use App\Http\Controllers\Controller;
+use App\MicroServices\DocumentUpload;
 use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
+use App\Models\Advertisements\AdvAgency;
+use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Advertisements\AdvVehicle;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
@@ -39,6 +44,10 @@ class ParamController extends Controller
                 ])->post($baseUrl . 'api/workflow/getWardByUlb', [
                     "ulbId" => $mUlbId
                 ]);
+
+                if (!$mWards)
+                    throw new Exception("Wards not found");
+
                 $data['wards'] = $mWards['data'];
 
                 Cache::put('adv_param_strings' . $mUlbId, json_encode($data));  // Set Key on Param Strings
@@ -88,7 +97,31 @@ class ParamController extends Controller
         );
     }
 
-    public function metaReqs($req){
+
+
+    /**
+     * | Get Document Masters from our localstorage db
+     */
+    public function districtMstrs()
+    {
+        $startTime = microtime(true);
+        $districts = json_decode(file_get_contents(storage_path() . "/local-db/districtMstrs.json", true));
+        $districts = remove_null($districts);
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+        return responseMsgs(
+            true,
+            "District Masters",
+            $districts,
+            "040202",
+            "1.0",
+            $executionTime . " Sec",
+            "POST"
+        );
+    }
+
+    public function metaReqs($req)
+    {
         $metaReqs = [
             'verified_by' => $req['roleId'],
             'verify_status' => $req['verifyStatus'],
@@ -98,12 +131,13 @@ class ParamController extends Controller
         return $metaReqs;
     }
 
-    public function documentVerification(Request $req){
+    public function documentVerification(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'documentId' => 'required|integer',
-            'roleId'=>"required|integer",
-            'verifyStatus'=>"required|integer",
-            'remarks'=>"string|nullable"
+            'roleId' => "required|integer",
+            'verifyStatus' => "required|integer",
+            'remarks' => "string|nullable"
 
         ]);
         if ($validator->fails()) {
@@ -119,7 +153,7 @@ class ParamController extends Controller
                 $req->deviceId ?? ""
             );
         }
-        try{
+        try {
             $metaReqs = $this->metaReqs($req->all());
             // die;
             AdvActiveSelfadvetdocument::where('id', $req['documentId'])->update($metaReqs);
@@ -133,7 +167,7 @@ class ParamController extends Controller
                 "POST",
                 $req->deviceId ?? ""
             );
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return responseMsgs(
                 false,
                 $e->getMessage(),
@@ -145,53 +179,160 @@ class ParamController extends Controller
                 $req->deviceId ?? ""
             );
         }
-
     }
 
-    public function uploadDocument(Request $req){
-            $validator = Validator::make($req->all(), [
-                'documentId' => 'required|integer',
-                'document' => 'required|mimes:png,jpeg,pdf,jpg',
-                'documentName' => 'required|string'
-            ]);
-            if ($validator->fails()) {
-                return responseMsgs(
-                    false,
-                    $validator->errors(),
-                    "",
-                    "040201",
-                    "1.0",
-                    "",
-                    "POST",
-                    $req->deviceId ?? ""
-                );
+    public function uploadDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'documentId' => 'required|integer',
+            'document' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documentName' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(
+                false,
+                $validator->errors(),
+                "",
+                "040201",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+        try {
+            $mAdvActiveSelfadvetdocument = AdvActiveSelfadvetdocument::find($req->documentId);
+            DB::beginTransaction();
+
+            // Advertisement Document replication
+
+            $rejectedDoc = $mAdvActiveSelfadvetdocument->replicate();
+            $rejectedDoc->setTable('adv_rejected_selfadvetdocuments');
+            $rejectedDoc->activedoc_id = $mAdvActiveSelfadvetdocument->id;
+            $rejectedDoc->save();
+
+            // Re-upload Documents
+
+            $mImage = $req->document;
+            $mRelativePath = $mAdvActiveSelfadvetdocument->relative_path;
+            $mDocRelativeName = $req->documentName;
+            $mDocService = new DocumentUpload;
+
+            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+            $docUploadReqs = [
+                'doc_name' => $mDocName,
+                'verified_by' => null,
+                'verified_on' => null,
+                'verify_status' => 0,
+                'remarks' => null,
+                'updated_at' =>  Carbon::now()
+            ];
+
+            // $docUploadReqs;
+            DB::table('adv_active_selfadvetdocuments')
+                ->where('id', $mAdvActiveSelfadvetdocument->id)
+                ->update($docUploadReqs);
+
+
+            $msg = "Document Reupload Successfully !!";
+
+            DB::commit();
+            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(
+                false,
+                $e->getMessage(),
+                "",
+                "040201",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
+            );
+        }
+    }
+
+
+
+    /**
+     * Summary of payment Success Failure of all Types of Advertisment 
+     * @return void
+     * @param request $req
+     */
+    public function paymentSuccessFailure(Request $req)
+    {
+        try {
+            $startTime = microtime(true);
+            DB::beginTransaction();
+            $updateData = [
+                'payment_date' => Carbon::now(),
+                'payment_status' => 1,
+                'payment_id' => $req->paymentId,
+                'payment_details' => $req->all(),
+            ];
+
+
+            if ($req->workflowId == 245) { // Self Advertisement
+
+                DB::table('adv_selfadvertisements')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('adv_selfadvet_renewals')
+                    ->where('id', $mAdvSelfadvertisement->last_renewal_id)
+                    ->update($updateData);
+
+            } elseif ($req->workflowId == 248) { // Movable Vechicles
+
+                DB::table('adv_vehicles')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mAdvVehicle = AdvVehicle::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('adv_vehicle_renewals')
+                    ->where('id', $mAdvVehicle->last_renewal_id)
+                    ->update($updateData);
+
+            } elseif ($req->workflowId == 249) { // Agency Apply
+
+                 DB::table('adv_agencies')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mAdvVehicle = AdvAgency::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('adv_agency_renewals')
+                    ->where('id', $mAdvVehicle->last_renewal_id)
+                    ->update($updateData);
+
+            } elseif ($req->workflowId == 250) { // Private Land
+                return "Private Land Not Complete";
+                die;
+            } elseif ($req->workflowId == 251) { // Hording Apply
+                
+                return "Hording Apply Not Complete";
+                die;
             }
-            try{
-            echo "hhi";
-                // $metaReqs = $this->metaReqs($req->all());
-                // // die;
-                // AdvActiveSelfadvetdocument::where('id', $req['documentId'])->update($metaReqs);
-                // return responseMsgs(
-                //     true,
-                //     "Document Verify Updated Successfully",
-                //     "",
-                //     "040201",
-                //     "1.0",
-                //     "",
-                //     "POST",
-                //     $req->deviceId ?? ""
-                // );
-            }catch(Exception $e){
-                return responseMsgs(
-                    false,
-                    $e->getMessage(),
-                    "",
-                    "040201",
-                    "1.0",
-                    "",
-                    "POST",
-                    $req->deviceId ?? ""
-                );
-            }
+
+
+            DB::commit();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            $msg = "Payment Successfully !!!";
+            return responseMsgs(true, $msg, "", '050206', 01, "$executionTime Sec", 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'Post', $req->deviceId);
+        }
     }
 }

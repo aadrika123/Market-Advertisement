@@ -26,6 +26,7 @@ use App\Traits\WorkflowTrait;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 /**
  * | Created On-02-01-20222 
@@ -1523,5 +1524,98 @@ class AgencyController extends Controller
             );
         }
     }
+
+    
+
+
+    /**
+     * | Generate Payment Order ID
+     * | @param Request $req
+     */
+
+     public function generatePaymentOrderId(Request $req)
+     {
+         $req->validate([
+             'id' => 'required|integer',
+         ]);
+         try {
+             $startTime = microtime(true);
+             $mAdvAgency = AdvAgency::find($req->id);
+             $reqData = [
+                 "id" => $mAdvAgency->id,
+                 'amount' => $mAdvAgency->payment_amount,
+                 'workflowId' => $mAdvAgency->workflow_id,
+                 'ulbId' => $mAdvAgency->ulb_id,
+                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+             ];
+             $paymentUrl = Config::get('constants.PAYMENT_URL');
+             $refResponse = Http::withHeaders([
+                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+             ])
+                 ->withToken($req->bearerToken())
+                 ->post($paymentUrl . 'api/payment/generate-orderid',$reqData);
+ 
+             $data = json_decode($refResponse);
+                        
+             if (!$data)
+             throw new Exception("Payment Order Id Not Generate");
+ 
+             $data->name = $mAdvAgency->applicant;
+             $data->email = $mAdvAgency->email;
+             $data->contact = $mAdvAgency->mobile_no;
+             $data->type = "Agency";
+             // return $data;
+             $endTime = microtime(true);
+             $executionTime = $endTime - $startTime;
+ 
+             return responseMsgs(
+                 true,
+                 "Payment OrderId Generated Successfully !!!",
+                 $data,
+                 "050123",
+                 "1.0",
+                 "$executionTime Sec",
+                 "POST",
+                 $req->deviceId ?? ""
+             );
+         } catch (Exception $e) {
+             return responseMsgs(
+                 false,
+                 $e->getMessage(),
+                 "",
+                 "050123",
+                 "1.0",
+                 "",
+                 'POST',
+                 $req->deviceId ?? ""
+             );
+         }
+     }
+ 
+ 
+     /**
+      * Summary of application Details For Payment
+      * @param Request $req
+      * @return void
+      */
+     public function applicationDetailsForPayment(Request $req){
+         $req->validate([
+             'applicationId' => 'required|integer',
+         ]);
+         try {
+             $startTime = microtime(true);
+             $mAdvAgency = new AdvAgency();
+             $workflowId = $this->_workflowIds;
+             if ($req->applicationId) {
+                 $data = $mAdvAgency->detailsForPayments($req->applicationId, $workflowId);
+             }
+             $data['type']="Agency";
+             $endTime = microtime(true);
+             $executionTime = $endTime - $startTime;
+             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+         } catch (Exception $e) {
+             return responseMsgs(false, $e->getMessage(), "");
+         }
+     }
 
 }

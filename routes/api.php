@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Route;
  * | Created By-Anshu Kumar
  * | Module Id for Advetisements=05
  */
+Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
+
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     /**
@@ -55,7 +57,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
         Route::post('advertisement/self-advert/jsk-approved-list', 'jskApprovedList');          // 21 ( Approved list for JSK)
         Route::post('advertisement/self-advert/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)    
-    });
+        Route::post('advertisement/self-advert/generate-payment-order-id', 'generatePaymentOrderId');          // 23 ( Generate Payment Order ID)
+        Route::post('advertisement/self-advert/application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
+     });
 
     /**
      * | Param Strings 
@@ -64,8 +68,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
         Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
-        Route::post('advertisements/document-verification', 'documentVerification');
-        Route::post('advertisements/upload-document', 'uploadDocument');
+        Route::post('advertisements/crud/v1/district-mstrs', 'districtMstrs');      // 03
+        Route::post('advertisements/document-verification', 'documentVerification'); //04
+        Route::post('advertisements/upload-document', 'uploadDocument'); // 05
+        // Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 06
     });
 
     /**
@@ -90,6 +96,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/movable-vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
         Route::post('advertisement/movable-vehicle/jsk-approved-list', 'jskApprovedList');          // 15 ( Approved list for JSK)
         Route::post('advertisement/movable-vehicle/jsk-rejected-list', 'jskRejectedList');          // 16 ( Rejected list for JSK)  
+        Route::post('advertisement/movable-vehicle/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('advertisement/movable-vehicle/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
     });
 
     /**
@@ -138,25 +146,27 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
         Route::post('advertisement/agency/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
         Route::post('advertisement/agency/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
- 
+        Route::post('advertisement/agency/generate-payment-order-id', 'generatePaymentOrderId');          // 18 ( Generate Payment Order ID)
+        Route::post('advertisement/agency/application-details-for-payment', 'applicationDetailsForPayment');          // 19 ( Application Details For Payments )
+    
         /*------------ Apply For Hording License -------------------*/
-        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 18 ( Get Typology List )
-        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 19 ( Save Application For Licence )
-        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 20 ( Application Inbox Lists )
-        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 21 ( Application Outbox Lists )
-        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 22 ( Get Application Details By Application ID )
-        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 23 ( Get Applied Applications List )
-        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 24 ( Escalate or De-escalate Application )
-        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 25 ( Special Inbox Applications )
-        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 26 ( Forward or Backward Application )
-        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 27 ( Independent Comment )
-        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 28 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 29 ( Approve or Reject )
-        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 30 ( License Approved list for Citizen)
-        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 31 ( License Rejected list for Citizen)
-        Route::post('advertisement/agency/license-get-jsk-applications', 'licenseGetJSKApplications');          // 15 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/agency/license-jsk-approved-list', 'licenseJskApprovedList');          // 32 ( Approved list for JSK)
-        Route::post('advertisement/agency/license-jsk-rejected-list', 'licenseJskRejectedList');          // 33 ( Rejected list for JSK)  
+        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 20 ( Get Typology List )
+        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 21 ( Save Application For Licence )
+        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 22 ( Application Inbox Lists )
+        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 23 ( Application Outbox Lists )
+        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 24 ( Get Application Details By Application ID )
+        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 25 ( Get Applied Applications List )
+        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 26 ( Escalate or De-escalate Application )
+        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 27 ( Special Inbox Applications )
+        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 28 ( Forward or Backward Application )
+        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 29 ( Independent Comment )
+        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 30 ( Get Uploaded Document By Application ID )
+        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 31 ( Approve or Reject )
+        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 32 ( License Approved list for Citizen)
+        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 33 ( License Rejected list for Citizen)
+        Route::post('advertisement/agency/license-get-jsk-applications', 'licenseGetJSKApplications');          // 34 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/agency/license-jsk-approved-list', 'licenseJskApprovedList');          // 35 ( Approved list for JSK)
+        Route::post('advertisement/agency/license-jsk-rejected-list', 'licenseJskRejectedList');          // 36 ( Rejected list for JSK)  
  
     });
 });

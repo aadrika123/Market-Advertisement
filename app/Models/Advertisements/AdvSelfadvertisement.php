@@ -28,6 +28,8 @@ class AdvSelfadvertisement extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'ulb_id',
+                'workflow_id',
             )
             ->orderByDesc('temp_id')
             ->get();
@@ -51,8 +53,35 @@ class AdvSelfadvertisement extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'ulb_id',
+                'workflow_id',
             )
             ->orderByDesc('temp_id')
             ->get();
+    }
+
+
+      /**
+     * | Get Application Details For Payments
+     */
+    public function detailsForPayments($id)
+    {
+        return AdvSelfadvertisement::where('id', $id)
+            ->select(
+                'id',
+                'temp_id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'old_application_no',
+                'payment_status',
+                'payment_amount',
+                'approve_date',
+                'ulb_id',
+                'workflow_id',
+            )
+            ->first();
     }
 }
