@@ -998,7 +998,10 @@ class SelfAdvetController extends Controller
             $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
                 $data = $selfAdvets->detailsForPayments($req->applicationId, $workflowId);
-            }
+            }    
+            if (!$data)
+                 throw new Exception("Application Not Found");
+
             $data['type']="Self Advertisement";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

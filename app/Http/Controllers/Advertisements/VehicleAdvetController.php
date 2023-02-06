@@ -804,6 +804,10 @@ class VehicleAdvetController extends Controller
             if ($req->applicationId) {
                 $data = $mAdvVehicle->detailsForPayments($req->applicationId, $workflowId);
             }
+              
+            if (!$data)
+                 throw new Exception("Application Not Found");
+                 
             $data['type']="Movable Vehicles";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

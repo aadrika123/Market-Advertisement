@@ -23,6 +23,8 @@ use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use PhpParser\Node\Expr\Empty_;
 
 /**
  * | Created On-02-01-2022 
@@ -731,6 +733,102 @@ class PrivateLandController extends Controller
     }
 
 
+     
+
+
+    /**
+     * | Generate Payment Order ID
+     * | @param Request $req
+     */
+
+     public function generatePaymentOrderId(Request $req)
+     {
+         $req->validate([
+             'id' => 'required|integer',
+         ]);
+         try {
+             $startTime = microtime(true);
+             $mAdvPrivateland = AdvPrivateland::find($req->id);
+             $reqData = [
+                 "id" => $mAdvPrivateland->id,
+                 'amount' => $mAdvPrivateland->payment_amount,
+                 'workflowId' => $mAdvPrivateland->workflow_id,
+                 'ulbId' => $mAdvPrivateland->ulb_id,
+                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+             ];
+             $paymentUrl = Config::get('constants.PAYMENT_URL');
+             $refResponse = Http::withHeaders([
+                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+             ])
+                 ->withToken($req->bearerToken())
+                 ->post($paymentUrl . 'api/payment/generate-orderid',$reqData);
+ 
+             $data = json_decode($refResponse);
+                        
+             if (!$data)
+             throw new Exception("Payment Order Id Not Generate");
+ 
+             $data->name = $mAdvPrivateland->applicant;
+             $data->email = $mAdvPrivateland->email;
+             $data->contact = $mAdvPrivateland->mobile_no;
+             $data->type = "Private Lands";
+             // return $data;
+             $endTime = microtime(true);
+             $executionTime = $endTime - $startTime;
+ 
+             return responseMsgs(
+                 true,
+                 "Payment OrderId Generated Successfully !!!",
+                 $data,
+                 "050123",
+                 "1.0",
+                 "$executionTime Sec",
+                 "POST",
+                 $req->deviceId ?? ""
+             );
+         } catch (Exception $e) {
+             return responseMsgs(
+                 false,
+                 $e->getMessage(),
+                 "",
+                 "050123",
+                 "1.0",
+                 "",
+                 'POST',
+                 $req->deviceId ?? ""
+             );
+         }
+     }
+ 
+ 
+     /**
+      * Summary of application Details For Payment
+      * @param Request $req
+      * @return void
+      */
+     public function applicationDetailsForPayment(Request $req){
+         $req->validate([
+             'applicationId' => 'required|integer',
+         ]);
+         try {
+             $startTime = microtime(true);
+             $mAdvPrivateland = new AdvPrivateland();
+             $workflowId = $this->_workflowIds;
+             if ($req->applicationId) {
+                 $data = $mAdvPrivateland->detailsForPayments($req->applicationId, $workflowId);
+             }
+             
+            if (!$data)
+                 throw new Exception("Application Not Found");
+
+             $data['type']="Private Lands";
+             $endTime = microtime(true);
+             $executionTime = $endTime - $startTime;
+             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+         } catch (Exception $e) {
+             return responseMsgs(false, $e->getMessage(), "");
+         }
+     }
 
 
 

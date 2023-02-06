@@ -1609,6 +1609,10 @@ class AgencyController extends Controller
              if ($req->applicationId) {
                  $data = $mAdvAgency->detailsForPayments($req->applicationId, $workflowId);
              }
+               
+            if (!$data)
+                throw new Exception("Application Not Found");
+
              $data['type']="Agency";
              $endTime = microtime(true);
              $executionTime = $endTime - $startTime;

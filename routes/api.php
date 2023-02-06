@@ -121,7 +121,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/private-land/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
         Route::post('advertisement/private-land/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
         Route::post('advertisement/private-land/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
-    });
+        Route::post('advertisement/private-land/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('advertisement/private-land/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
+  });
 
     /**
      * | Agency 
@@ -167,6 +169,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/license-get-jsk-applications', 'licenseGetJSKApplications');          // 34 ( Get Applied Applications List By JSK )
         Route::post('advertisement/agency/license-jsk-approved-list', 'licenseJskApprovedList');          // 35 ( Approved list for JSK)
         Route::post('advertisement/agency/license-jsk-rejected-list', 'licenseJskRejectedList');          // 36 ( Rejected list for JSK)  
- 
+        Route::post('advertisement/agency/license-generate-payment-order-id', 'licenseGeneratePaymentOrderId');          // 37 ( Generate Payment Order ID)
+        Route::post('advertisement/agency/license-application-details-for-payment', 'licenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
+    
     });
 });

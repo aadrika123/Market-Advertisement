@@ -7,6 +7,8 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
 use App\Models\Advertisements\AdvAgency;
+use App\Models\Advertisements\AdvAgencyLicense;
+use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvVehicle;
 use Carbon\Carbon;
@@ -316,19 +318,39 @@ class ParamController extends Controller
                     ->update($updateData);
 
             } elseif ($req->workflowId == 250) { // Private Land
-                return "Private Land Not Complete";
-                die;
+
+                DB::table('adv_privatelands')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mAdvPrivateland = AdvPrivateland::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('adv_privateland_renewals')
+                    ->where('id', $mAdvPrivateland->last_renewal_id)
+                    ->update($updateData);
+
             } elseif ($req->workflowId == 251) { // Hording Apply
                 
-                return "Hording Apply Not Complete";
-                die;
-            }
+                DB::table('adv_agency_licenses')
+                    ->where('id', $req->id)
+                    ->update($updateData);
 
+                $mAdvAgencyLicense = AdvAgencyLicense::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('adv_agency_license_renewals')
+                    ->where('id', $mAdvAgencyLicense->last_renewal_id)
+                    ->update($updateData);
+
+            }
 
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            $msg = "Payment Successfully !!!";
+            $msg = "Payment Accepted Successfully !!!";
             return responseMsgs(true, $msg, "", '050206', 01, "$executionTime Sec", 'Post', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
