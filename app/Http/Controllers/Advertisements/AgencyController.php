@@ -576,8 +576,9 @@ class AgencyController extends Controller
     {
         try {
             $citizenId = authUser()->id;
+            $userType = authUser()->user_type;
             $mAdvAgency = new AdvAgency();
-            $applications = $mAdvAgency->approvedList($citizenId);
+            $applications = $mAdvAgency->approvedList($citizenId,$userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1318,8 +1319,9 @@ class AgencyController extends Controller
     {
         try {
             $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
             $mAdvAgencyLicense = new AdvAgencyLicense();
-            $applications = $mAdvAgencyLicense->approvedList($citizenId);
+            $applications = $mAdvAgencyLicense->approvedList($citizenId,$userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;

@@ -531,8 +531,9 @@ class VehicleAdvetController extends Controller
     {
         try {
             $citizenId = authUser()->id;
+            $userType = authUser()->user_type;
             $mAdvVehicle = new AdvVehicle();
-            $applications = $mAdvVehicle->approvedList($citizenId);
+            $applications = $mAdvVehicle->approvedList($citizenId,$userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;

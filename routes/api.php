@@ -173,4 +173,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/license-application-details-for-payment', 'licenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
     
     });
+
+    /**
+     * | Lodge Controller
+     * | Controller 06
+     * | By - Bikash Kumar
+     */
+    Route::controller(LodgeController::class)->group(function () {
+    
+    });
 });

@@ -11,25 +11,34 @@ class AdvPrivateland extends Model
 
 
     /**
+     * | Get Application All Approve List
+     */
+    public function allApproveList(){
+        return AdvPrivateland::select(
+            'id',
+            'temp_id',
+            'application_no',
+            'application_date',
+            'payment_amount',
+            'approve_date',
+        )
+        ->orderByDesc('temp_id')
+        ->get();
+    }
+
+    /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId)
+    public function approvedList($citizenId,$userType)
     {
-        return AdvPrivateland::where('citizen_id', $citizenId)
-            ->select(
-                'id',
-                'temp_id',
-                'application_no',
-                'application_date',
-                // 'entity_address',
-                // 'old_application_no',
-                //  'payment_status',
-                'payment_amount',
-                'approve_date',
-            )
-            ->orderByDesc('temp_id')
-            ->get();
+        $allApproveList = $this->allApproveList();
+        if ($userType == 'Citizen') {
+            return  $allApproveList->where('citizen_id', $citizenId);
+        }else{
+            return $allApproveList;
+        }
     }
+    
 
     /**
      * | Get Application Approve List by Role Ids

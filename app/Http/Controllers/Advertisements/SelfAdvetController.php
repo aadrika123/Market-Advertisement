@@ -714,8 +714,9 @@ class SelfAdvetController extends Controller
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
+            $userType = authUser()->user_type;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->approvedList($citizenId);
+            $applications = $mAdvSelfadvertisements->approvedList($citizenId,$userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;

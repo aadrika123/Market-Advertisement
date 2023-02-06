@@ -526,8 +526,9 @@ class PrivateLandController extends Controller
     {
         try {
             $citizenId = authUser()->id;
+            $userType=authUser()->user_type;
             $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->approvedList($citizenId);
+            $applications = $mAdvPrivateland->approvedList($citizenId, $userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
