@@ -10,7 +10,7 @@ namespace App\MicroServices;
 
 class DocumentUpload
 {
-    /**
+       /**
      * | Image Document Upload
      * | @param refImageName format Image Name like SAF-geotagging-id (Pass Your Ref Image Name Here)
      * | @param requested image (pass your request image here)
@@ -21,7 +21,7 @@ class DocumentUpload
     {
         $extention = $image->getClientOriginalExtension();
         $imageName = time() . '-' . $refImageName . '.' . $extention;
-        $image->move(public_path($relativePath), $imageName);
+        $image->move($relativePath, $imageName);
         return $imageName;
     }
 }

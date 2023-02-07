@@ -4,6 +4,7 @@ use App\Http\Controllers\Advertisements\AgencyController;
 use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
+use App\Http\Controllers\Markets\BanquetMarriageHallController;
 use App\Http\Controllers\Params\ParamController;
 use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
@@ -35,22 +36,21 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      */
     Route::controller(SelfAdvetController::class)->group(function () {
         Route::post('advertisement/self-advert/save', 'store');       // 01 ( Save Application )
-        Route::post('advertisement/self-advert/edit', 'edit');        // 02 ( Edit Application )
-        Route::post('advertisement/self-advert/inbox', 'inbox');      // 03 ( Application Inbox Lists )
-        Route::post('advertisement/self-advert/outbox', 'outbox');    // 04 ( Application Outbox Lists )
-        Route::post('advertisement/self-advert/details', 'details');  // 05 ( Get Application Details By Application ID )
-        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List By CityZen )
-        Route::post('advertisement/self-advert/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
-        Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
-        Route::post('advertisement/self-advert/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
-        Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
-        Route::post('advertisement/self-advert/get-license-by-userid', 'getLicense');  // 11 ( Get License By User ID )
+        Route::post('advertisement/self-advert/inbox', 'inbox');      // 02 ( Application Inbox Lists )
+        Route::post('advertisement/self-advert/outbox', 'outbox');    // 03 ( Application Outbox Lists )
+        Route::post('advertisement/self-advert/details', 'details');  // 04 ( Get Application Details By Application ID )
+        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 05 ( Get Applied Applications List By CityZen )
+        Route::post('advertisement/self-advert/escalate', 'escalate');  // 06 ( Escalate or De-escalate Application )
+        Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 07 ( Special Inbox Applications )
+        Route::post('advertisement/self-advert/post-next-level', 'postNextLevel');  // 08 ( Forward or Backward Application )
+        Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 09 ( Independent Comment )
+        Route::post('advertisement/self-advert/get-license-by-userid', 'getLicense');  // 10 ( Get License By User ID )
         Route::post('advertisement/self-advert/get-license-by-holding-no', 'getLicenseByHoldingNo');  // 11 ( Get License By Holding No )
         Route::post('advertisement/self-advert/get-license-details-by-license-no', 'getLicenseDetailso');  // 12 ( Get License Details By Licence No )
         Route::post('advertisement/self-advert/advertisement-document-view', 'uploadDocumentsView');  // 13 ( Get Uploaded Document By Advertisement ID )
         Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 14 ( Get Uploaded Document By Advertisement ID )
         Route::post('advertisement/self-advert/workflow-view-documents', 'workflowViewDocuments');  // 15 ( View Uploaded Document By Advertisement ID )
-        Route::post('advertisement/self-advert/workflow-upload-document', 'workflowUploadDocument');  // 16 ( Workflow Upload Document )
+        // Route::post('advertisement/self-advert/workflow-upload-document', 'workflowUploadDocument');  // 16 ( Workflow Upload Document )
         Route::post('advertisement/self-advert/approval-rejection', 'finalApprovalRejection');          // 17 ( Approve or Reject )
         Route::post('advertisement/self-advert/approved-list', 'approvedList');          // 18 ( Approved list for Citizen)
         Route::post('advertisement/self-advert/rejected-list', 'rejectedList');          // 19 ( Rejected list for Citizen)
@@ -59,7 +59,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/self-advert/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)    
         Route::post('advertisement/self-advert/generate-payment-order-id', 'generatePaymentOrderId');          // 23 ( Generate Payment Order ID)
         Route::post('advertisement/self-advert/application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
-     });
+    });
 
     /**
      * | Param Strings 
@@ -69,9 +69,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
         Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
         Route::post('advertisements/crud/v1/district-mstrs', 'districtMstrs');      // 03
-        Route::post('advertisements/document-verification', 'documentVerification'); //04
-        Route::post('advertisements/upload-document', 'uploadDocument'); // 05
-        // Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 06
+        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 06
     });
 
     /**
@@ -176,10 +174,57 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     /**
      * | Lodge Controller
-     * | Controller 06
+     * | Controller-06
      * | By - Bikash Kumar
+     * | Date 06-02-2023
      */
     Route::controller(LodgeController::class)->group(function () {
+        Route::post('market/lodge/save', 'store'); // 01   ( Save Application )  
+        Route::post('market/lodge/inbox', 'inbox');    // 03 ( Application Inbox Lists )
+        Route::post('market/lodge/outbox', 'outbox');    // 04 ( Application Outbox Lists )
+        Route::post('market/lodge/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('market/lodge/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('market/lodge/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
+        Route::post('market/lodge/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
+        Route::post('market/lodge/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('market/lodge/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
+        Route::post('market/lodge/private-land-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('market/lodge/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
+        Route::post('market/lodge/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
+        Route::post('market/lodge/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
+        Route::post('market/lodge/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('market/lodge/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
+        Route::post('market/lodge/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
+        Route::post('market/lodge/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('market/lodge/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
     
+    });
+
+    /**
+     * | Lodge Controller
+     * | Controller-07
+     * | By - Bikash Kumar
+     * | Date 06-02-2023
+     * | Status - Open
+     */
+    Route::controller(BanquetMarriageHallController::class)->group(function(){
+        Route::post('market/banquet-marriage-hall/save', 'store'); // 01   ( Save Application )  
+        Route::post('market/banquet-marriage-hall/inbox', 'inbox');    // 03 ( Application Inbox Lists )
+        Route::post('market/banquet-marriage-hall/outbox', 'outbox');    // 04 ( Application Outbox Lists )
+        Route::post('market/banquet-marriage-hall/details', 'details');  // 05 ( Get Application Details By Application ID )
+        Route::post('market/banquet-marriage-hall/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
+        Route::post('market/banquet-marriage-hall/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
+        Route::post('market/banquet-marriage-hall/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
+        Route::post('market/banquet-marriage-hall/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('market/banquet-marriage-hall/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
+        Route::post('market/banquet-marriage-hall/banquet-marriage-hall-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('market/banquet-marriage-hall/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
+        Route::post('market/banquet-marriage-hall/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
+        Route::post('market/banquet-marriage-hall/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
+        Route::post('market/banquet-marriage-hall/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('market/banquet-marriage-hall/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
+        Route::post('market/banquet-marriage-hall/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
+        Route::post('market/banquet-marriage-hall/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('market/banquet-marriage-hall/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
     });
 });

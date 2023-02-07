@@ -84,64 +84,64 @@ class AdvActiveSelfadvertisement extends Model
         return $mApplicationNo['application_no'];
     }
 
-    /**
-     * | Document Upload (1.1)
-     * | @param tempId Temprory Id
-     * | @param documents Uploading Documents
-     * */
+
+       /**
+     * upload Document By Admin
+     * @param Request $req
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function uploadDocument($tempId, $documents)
     {
-        $mAdvDocument = new AdvActiveSelfadvetdocument();
-        $mDocService = new DocumentUpload;
-        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
-        $workflowId = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+        collect($documents)->map(function ($doc) use ($tempId) {
+            $metaReqs = array();
+            $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $relativePath = Config::get('constants.SELF_ADVET_RELATIVE_PATH');
+            $getApplicationDtls = $mAdvActiveSelfadvertisement->getSelfAdvertNo($tempId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath,$workflowId) {
-            $mDocumentId = $document['id'];
-            $mDocRelativeName = $document['relativeName'];
-            $mImage = $document['image'];
-            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-            $docUploadReqs = [
-                'tempId' => $tempId,
-                'docTypeCode' => 'Test-Code',
-                'documentId' => $mDocumentId,
-                'relativePath' => $mRelativePath,
-                'docName' => $mDocName,
-                'workflowId' => $workflowId
-            ];
-            $docUploadReqs = new Request($docUploadReqs);
-
-            $mAdvDocument->store($docUploadReqs);
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $a = new Request($metaReqs);
+            $mWfActiveDocument->postDocuments($a);
         });
     }
-
 
     /**
      * | Document Upload (1.1)
      * | @param applicationId Application Id
      * | @param document Uploading Document
-     * */
-    public function workflowUploadDocument($req)
-    {
-        // return $req;
-        $mAdvDocument = new AdvActiveSelfadvetdocument();
-        $mDocService = new DocumentUpload;
-        $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
-        $workflowId = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+      * */
+    // public function workflowUploadDocument($req)
+    // {
+    //     // return $req;
+    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
+    //     $mDocService = new DocumentUpload;
+    //     $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
+    //     $workflowId = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
 
-        $mDocName = $mDocService->upload($req->docRefName, $req->document, $mRelativePath);
-        $docUploadReqs = [
-            'tempId' => $req->applicationId,
-            'docTypeCode' => 'Test-Code',
-            'documentId' => $req->docMstrId,
-            'relativePath' => $mRelativePath,
-            'docName' => $mDocName,
-            'workflowId'=>$workflowId
-        ];
-        $docUploadReqs = new Request($docUploadReqs);
-        $mAdvDocument->store($docUploadReqs);
-    }
+    //     $mDocName = $mDocService->upload($req->docRefName, $req->document, $mRelativePath);
+    //     $docUploadReqs = [
+    //         'tempId' => $req->applicationId,
+    //         'docTypeCode' => 'Test-Code',
+    //         'documentId' => $req->docMstrId,
+    //         'relativePath' => $mRelativePath,
+    //         'docName' => $mDocName,
+    //         'workflowId'=>$workflowId
+    //     ];
+    //     $docUploadReqs = new Request($docUploadReqs);
+    //     $mAdvDocument->store($docUploadReqs);
+    // }
 
     /**
      * | Get Citizen Applied applications
@@ -168,12 +168,36 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function details($id,$workflowId)
+    public function details($id,$type)
     {
         $details = array();
-        $details = DB::table('adv_active_selfadvertisements')
+        if ($type == 'Active') {
+            $details = DB::table('adv_active_selfadvertisements')
+                ->select(
+                    'adv_active_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role'
+                )
+                ->where('adv_active_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_selfadvertisements.current_role_id')
+                ->first();
+        } elseif ($type == 'Reject') {
+            $details = DB::table('adv_rejected_selfadvertisements')
             ->select(
-                'adv_active_selfadvertisements.*',
+                'adv_rejected_selfadvertisements.*',
                 'u.ulb_name',
                 'p.string_parameter as m_license_year',
                 'w.ward_name as ward_no',
@@ -183,40 +207,41 @@ class AdvActiveSelfadvertisement extends Model
                 'il.string_parameter as m_installation_location',
                 'r.role_name as m_current_role'
             )
-            ->where('adv_active_selfadvertisements.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
-            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_selfadvertisements.license_year')
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_selfadvertisements.ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_selfadvertisements.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_selfadvertisements.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
-            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
-            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_selfadvertisements.current_role_id')
+            ->where('adv_rejected_selfadvertisements.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_selfadvertisements.license_year')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_selfadvertisements.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_selfadvertisements.permanent_ward_id')
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_selfadvertisements.entity_ward_id')
+            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_selfadvertisements.display_type')
+            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_selfadvertisements.installation_location')
+            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
             ->first();
-
-        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
-        // $documents = DB::table('adv_active_selfadvetdocuments')
-        //     ->select(
-        //         'adv_active_selfadvetdocuments.*',
-        //         'd.document_name',
-        //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
-        //     )
-        //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-        //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-        //     ->get();
-        // $details['documents'] = remove_null($documents->toArray());
-        // return $details;
-        $documents = DB::table('adv_active_selfadvetdocuments')
-        ->select(
-            'adv_active_selfadvetdocuments.*',
-            'd.document_name as doc_type',
-            DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
-        )
-        ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-        ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-        ->get();
-    $details['documents'] = remove_null($documents->toArray());
-    return $details;
+        }elseif ($type == 'Approve'){
+            $details = DB::table('adv_selfadvertisements')
+            ->select(
+                'adv_selfadvertisements.*',
+                'u.ulb_name',
+                'p.string_parameter as m_license_year',
+                'w.ward_name as ward_no',
+                'pw.ward_name as permanent_ward_no',
+                'ew.ward_name as entity_ward_no',
+                'dp.string_parameter as m_display_type',
+                'il.string_parameter as m_installation_location',
+                'r.role_name as m_current_role'
+            )
+            ->where('adv_selfadvertisements.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_selfadvertisements.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_selfadvertisements.entity_ward_id')
+            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
+            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
+            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
+            ->first();
+        }
+        return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
     /**
@@ -285,4 +310,12 @@ class AdvActiveSelfadvertisement extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    public function getSelfAdvertNo($appId)
+    {
+        return AdvActiveSelfadvertisement::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
 }

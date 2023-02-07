@@ -4,31 +4,51 @@
             "id":2,
             "document_name":"Aadhar Document",
             "workflow_id":129,
-            "relative_name":"AADHAR"
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Aadhar Card"
         },
         {
             "id":4,
             "document_name":"Municipal Trade License Document",
             "workflow_id":129,
-            "relative_name":"TRADE"
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Trade License"
         },
         {
             "id":7,
             "document_name":"Holding No Document",
             "workflow_id":129,
-            "relative_name":"HOLDING"
+            "relative_name":"HOLDING",
+            "docCode":"HORDING_NO",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Hording No"
         },
         {
             "id":11,
             "document_name":"GPS Document",
             "workflow_id":129,
-            "relative_name":"GPS"
+            "relative_name":"GPS",
+            "docCode":"GPS",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Gps"
         },
         {
             "id":16,
             "document_name":"GST No Document",
             "workflow_id":129,
-            "relative_name":"GST"
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Gst"
         }
     ],
     "MovableVehicle":[
@@ -36,43 +56,71 @@
             "id":17,
             "document_name":"Aadhar Document",
             "workflow_id":131,
-            "relative_name":"AADHAR"
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Aadhar Card"
         },
         {
             "id":18,
             "document_name":"Municipal Trade License Document",
             "workflow_id":131,
-            "relative_name":"TRADE"
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Trade License"
         },
         {
             "id":19,
             "document_name":"Vehicle Photograph",
             "workflow_id":131,
-            "relative_name":"VEHICLE"
+            "relative_name":"VEHICLE",
+            "docCode":"VEHICLE_PHOTOGRAPH",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Vehicle Photograph"
         },
         {
             "id":20,
             "document_name":"Owner Book",
             "workflow_id":131,
-            "relative_name":"OWNERBOOK"
+            "relative_name":"OWNERBOOK",
+            "docCode":"OWNERBOOK",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Trade License"
         },
         {
             "id":21,
             "document_name":"Driving License",
             "workflow_id":131,
-            "relative_name":"DRIVINGLICENSE"
+            "relative_name":"DRIVINGLICENSE",
+            "docCode":"DRIVING_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Owner Book"
         },
         {
             "id":22,
             "document_name":"Insurance Photo",
             "workflow_id":131,
-            "relative_name":"INSURANCE"
+            "relative_name":"INSURANCE",
+            "docCode":"INSURANCE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Insurance"
         },
         {
             "id":23,
             "document_name":"GST No Document",
             "workflow_id":131,
-            "relative_name":"GST"
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Gst"
         }
     ],
     "Agency":[

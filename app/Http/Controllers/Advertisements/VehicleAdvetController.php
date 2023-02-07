@@ -48,11 +48,8 @@ class VehicleAdvetController extends Controller
     }
     public function store(StoreRequest $req)
     {
-        // echo $workflow_id = $this->_workflowIds;
         try {
             $advVehicle = new AdvActiveVehicle();
-            // $citizenId = ['citizenId' => authUser()->id];
-            // $req->request->add($citizenId);
             if( authUser()->user_type=='JSK'){
                 $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
@@ -60,7 +57,10 @@ class VehicleAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+            DB::beginTransaction();
             $applicationNo = $advVehicle->store($req);               // Store Vehicle 
+            DB::commit();
+           
             return responseMsgs(
                 true,
                 "Successfully Applied the Application !!",
@@ -428,9 +428,6 @@ class VehicleAdvetController extends Controller
             $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
         }
         // Uploads Documents Details
-
-        // $fullDetailsData['application_no'] = $data['application_no'];
-        // $fullDetailsData['apply_date'] = $data['application_date'];
         $fullDetailsData = $data['documents'];
 
 

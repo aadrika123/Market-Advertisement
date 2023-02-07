@@ -50,9 +50,10 @@ class StoreRequest extends FormRequest
             'installationLocation' => 'required|integer',
             'brandDisplayName' => 'required',
             'documents' => 'required|array',
-            'documents.*.id' => 'required|integer',
+            // 'documents.*.id' => 'required|integer',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-            'documents.*.relativeName' => 'required|string'
+            // 'documents.*.relativeName' => 'required|string',
+            'documents.*.docCode' => 'required|string'
         ];
     }
 

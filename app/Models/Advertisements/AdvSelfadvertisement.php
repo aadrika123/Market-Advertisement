@@ -11,38 +11,38 @@ class AdvSelfadvertisement extends Model
     use HasFactory;
 
 
-    public function allApproveList(){
-        
+    public function allApproveList()
+    {
+
         return AdvSelfadvertisement::select(
-                'id',
-                'temp_id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'old_application_no',
-                'payment_status',
-                'payment_amount',
-                'approve_date',
-                'ulb_id',
-                'workflow_id',
-            )
+            'id',
+            'temp_id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+            'entity_address',
+            'old_application_no',
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'ulb_id',
+            'workflow_id',
+        )
             ->orderByDesc('temp_id')
             ->get();
-
     }
-    
-   /**
+
+    /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId,$userType)
+    public function approvedList($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
 
-        if($userType=='Citizen'){
+        if ($userType == 'Citizen') {
             return $allApproveList->where('citizen_id', $citizenId);
-        }else{
+        } else {
             return $allApproveList;
         }
         // return AdvSelfadvertisement::where('citizen_id', $citizenId)
@@ -65,7 +65,7 @@ class AdvSelfadvertisement extends Model
         //     ->get();
     }
 
-     /**
+    /**
      * | Get Application Approve List by Role Ids
      */
     public function jskApprovedList($userId)
@@ -91,7 +91,7 @@ class AdvSelfadvertisement extends Model
     }
 
 
-      /**
+    /**
      * | Get Application Details For Payments
      */
     public function detailsForPayments($id)

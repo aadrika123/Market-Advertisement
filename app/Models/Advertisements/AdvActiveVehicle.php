@@ -120,96 +120,74 @@ class AdvActiveVehicle extends Model
 
     
 
-    /**
-     * | Document Upload(1.1)
-     * | @param Client User Requested Data
-     * | @param metaReqs More Added Filtered Data
-     */
-    public function uploadDocument_old($req, $metaReqs)
-    {
-        $mDocUpload = new DocumentUpload();
-        $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
-        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
-
-        // Document Upload
-
-        // Aadhar Document
-        if ($req->aadharDoc) {
-            $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->aadharDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['aadhar_path' => $docName]);
-        }
-        // Trade License Path
-        if ($req->tradeDoc) {
-            $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->tradeDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
-        }
-        // Vehicle Photo Document
-        if ($req->vehiclePhotoDoc) {
-            $mRefDocName = Config::get('constants.VEHICLE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->vehiclePhotoDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['vehicle_photo_path' => $docName]);
-        }
-        // Owner Book Document
-        if ($req->ownerBookDoc) {
-            $mRefDocName = Config::get('constants.OWNER_BOOK_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->ownerBookDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['owner_book_path' => $docName]);
-        }
-        // Driving License Document
-        if ($req->drivingLicenseDoc) {
-            $mRefDocName = Config::get('constants.DRIVING_LICENSE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->drivingLicenseDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['driving_license_path' => $docName]);
-        }
-        // Insurance Document
-        if ($req->insuranceDoc) {
-            $mRefDocName = Config::get('constants.INSURANCE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->insuranceDoc, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['insurance_photo_path' => $docName]);
-        }
-        // GST Document
-        if ($req->gstDoc) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->gstDoc, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['gst_photo_path' => $docName]);
-        }
-
-        return $metaReqs;
-    }
 
         /**
      * | Document Upload (1.1)
      * | @param tempId Temprory Id
      * | @param documents Uploading Documents
      * */
+    // public function uploadDocument($tempId, $documents)
+    // {
+    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
+    //     $mDocService = new DocumentUpload;
+    //     $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
+    //     $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
+
+    //     collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
+    //         $mDocumentId = $document['id'];
+    //         $mDocRelativeName = $document['relativeName'];
+    //         $mImage = $document['image'];
+    //         $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+
+    //         $docUploadReqs = [
+    //             'tempId' => $tempId,
+    //             'docTypeCode' => 'Test-Code',
+    //             'documentId' => $mDocumentId,
+    //             'relativePath' => $mRelativePath,
+    //             'docName' => $mDocName,
+    //             'workflowId' => $workflowId
+    //         ];
+    //         $docUploadReqs = new Request($docUploadReqs);
+
+    //         $mAdvDocument->store($docUploadReqs);
+    //     });
+    // }
+
+    
     public function uploadDocument($tempId, $documents)
     {
-        $mAdvDocument = new AdvActiveSelfadvetdocument();
-        $mDocService = new DocumentUpload;
-        $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
-        $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
+        collect($documents)->map(function ($doc) use ($tempId) {
+            $metaReqs = array();
+            $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $relativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
+            $getApplicationDtls = $mAdvActiveVehicle->getApplicationDetails($tempId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
-            $mDocumentId = $document['id'];
-            $mDocRelativeName = $document['relativeName'];
-            $mImage = $document['image'];
-            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-            $docUploadReqs = [
-                'tempId' => $tempId,
-                'docTypeCode' => 'Test-Code',
-                'documentId' => $mDocumentId,
-                'relativePath' => $mRelativePath,
-                'docName' => $mDocName,
-                'workflowId' => $workflowId
-            ];
-            $docUploadReqs = new Request($docUploadReqs);
-
-            $mAdvDocument->store($docUploadReqs);
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $a = new Request($metaReqs);
+            $mWfActiveDocument->postDocuments($a);
         });
     }
+
+    public function getApplicationDetails($appId)
+    {
+        return AdvActiveVehicle::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
 
 
     public function inbox($roleIds)

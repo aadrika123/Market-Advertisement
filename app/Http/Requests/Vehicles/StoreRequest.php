@@ -56,10 +56,14 @@ class StoreRequest extends FormRequest
             // 'insuranceDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
             // 'gstDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
             // 'drivingLicenseNo' => 'nullable|mimes:png,jpeg,pdf,jpg'
+            // 'documents' => 'required|array',
+            // 'documents.*.id' => 'required|integer',
+            // 'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            // 'documents.*.relativeName' => 'required|string'
+
             'documents' => 'required|array',
-            'documents.*.id' => 'required|integer',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-            'documents.*.relativeName' => 'required|string'
+            'documents.*.docCode' => 'required|string'
         ];
     }
 
