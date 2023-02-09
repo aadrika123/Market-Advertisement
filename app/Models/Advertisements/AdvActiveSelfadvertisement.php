@@ -168,10 +168,10 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function details($id,$type)
+    public function details($id,$type=NULL)
     {
         $details = array();
-        if ($type == 'Active') {
+        if ($type == 'Active' || $type == NULL) {
             $details = DB::table('adv_active_selfadvertisements')
                 ->select(
                     'adv_active_selfadvertisements.*',

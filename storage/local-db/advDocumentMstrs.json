@@ -252,67 +252,233 @@
             "id":36,
             "document_name":"Director Information Document",
             "workflow_id":134,
-            "relative_name":"DIRECTOR INFORMATION"
+            "relative_name":"DIRECTOR INFORMATION",
+            "docCode":"DIRECTOR_INFORMATION",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Director Information"
         },
         {
             "id":37,
             "document_name":"Building Permit/Property Tax",
             "workflow_id":134,
-            "relative_name":"BUILDING PERMIT/PROPERTY TAX"
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"BUILDING_PERMIT/PROPERTY_TAX",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Building Permit/Property Tax"
         },
         {
             "id":38,
             "document_name":"Pan No Document",
             "workflow_id":134,
-            "relative_name":"PAN NO"
+            "relative_name":"PAN NO",
+            "docCode":"PAN_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pan No Document"
         },
         {
             "id":39,
             "document_name":"Service Tax No",
             "workflow_id":134,
-            "relative_name":"SERVICE TAX NO"
+            "relative_name":"SERVICE TAX NO",
+            "docCode":"SERVICE_TAX_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Service Tax No"
         },
         {
             "id":40,
             "document_name":"Certificate of Structural Engineer Ownership Details",
             "workflow_id":134,
-            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS"
+            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS",
+            "docCode":"CERTIFICATE_OF_STRUCTURAL_ENGINEER_OWNERSHIP_DETAILS",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Certificate of Structural Engineer Ownership Details"
         },
         {
             "id":41,
             "document_name":"Agreement Between The Building Owner And Advertising Agency",
             "workflow_id":134,
-            "relative_name":"AGREEMENT BETWEEN THE AGENCY AND BUILDING OWNER"
+            "relative_name":"AGREEMENT BETWEEN THE AGENCY AND BUILDING OWNER",
+            "docCode":"AGREEMENT_BETWEEN_THE_BUILDING_OWNER_AND_ADVERTISING_AGENCY",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Agreement Between The Building Owner And Advertising Agency"
         },
         {
             "id":42,
             "document_name":"Coordinates of OMD with GPS Location",
             "workflow_id":134,
-            "relative_name":"COORDINATE OF OMD WITH GPS LOCATION"
+            "relative_name":"COORDINATE OF OMD WITH GPS LOCATION",
+            "docCode":"COORDINATE_OF_OMD_WITH_GPS_LOCATION",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Coordinates of OMD with GPS Location"
         },
         {
             "id":43,
             "document_name":"Site Photograph Document",
             "workflow_id":134,
-            "relative_name":"SITE PHOTOGRAPH"
+            "relative_name":"SITE PHOTOGRAPH",
+            "docCode":"SITE_PHOTOGRAPH",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Site Photograph"
         },
         {
             "id":44,
             "document_name":"Sketch Plan of The Site",
             "workflow_id":134,
-            "relative_name":"SKTECH PLAN OF SITE"
+            "relative_name":"SKTECH PLAN OF SITE",
+            "docCode":"SKTECH_PLAN_OF_SITE",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Sketch Plan of The Site"
         },
         {
             "id":45,
             "document_name":"Pending Dues Document",
             "workflow_id":134,
-            "relative_name":"PENDING DUES"
+            "relative_name":"PENDING DUES",
+            "docCode":"PENDING_DUES",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pending Dues"
         },
         {
             "id":46,
             "document_name":"Architectural Drawing",
             "workflow_id":134,
-            "relative_name":"ARCHITECTURAL DRAWING"
+            "relative_name":"ARCHITECTURAL DRAWING",
+            "docCode":"ARCHITECTURAL_DRAWING",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Architectural Drawing"
+        }
+    ],
+    "BanquteMarrigeHall":[
+        {
+            "id":47,
+            "document_name":"Banquet-Marriage Hall Frontage Photograph",
+            "workflow_id":350,
+            "relative_name":"BANQUET-MARRIAGE HALL FRONTAGE",
+            "docCode":"BANQUET-MARRIAGE_HALL_FRONTAGE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Banquet-Marriage Hall Frontage"
+        },
+        {
+            "id":48,
+            "document_name":"Aadhar Document",
+            "workflow_id":350,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"AADHAR_CARD",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Aadhar Card"
+        },
+        {
+            "id":49,
+            "document_name":"Fire Extinguisher Photograph",
+            "workflow_id":350,
+            "relative_name":"FIRE EXTINGUISHER",
+            "docCode":"FIRE_EXTINGUISHER",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Fire Extinguisher"
+        },
+        {
+            "id":50,
+            "document_name":"Composting Machine Photograph",
+            "workflow_id":350,
+            "relative_name":"COMPOSTING MACHINE",
+            "docCode":"COMPOSTING_MACHINE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Composting Machine"
+        },
+        {
+            "id":51,
+            "document_name":"Building Plan Photograph",
+            "workflow_id":350,
+            "relative_name":"BUILDING PLAN",
+            "docCode":"BUILDING_PLAN",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Building Plan"
+        },
+        {
+            "id":52,
+            "document_name":"CCTV Camera(s) Photograph",
+            "workflow_id":350,
+            "relative_name":"CCTV CAMERA",
+            "docCode":"CCTV_CAMERA",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"CCTV Camera"
+        },
+        {
+            "id":53,
+            "document_name":"Name-plate with mobile Photograph",
+            "workflow_id":350,
+            "relative_name":"NAME PLATE WITH MOBILE",
+            "docCode":"NAME-PLAT_ WITH_MOBILE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Name-plate with mobile"
+        },
+        {
+            "id":54,
+            "document_name":"Parking Photograph",
+            "workflow_id":350,
+            "relative_name":"PARKING PHOTOGRAPH",
+            "docCode":"PARKING_PHOTOGRAPH",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Parking Photograph"
+        },
+        {
+            "id":55,
+            "document_name":"Site Photograph Document",
+            "workflow_id":350,
+            "relative_name":"SITE PHOTOGRAPH",
+            "docCode":"SITE_PHOTOGRAPH",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Site Photograph"
+        },
+        {
+            "id":56,
+            "document_name":"Input Out report of Composting Machine",
+            "workflow_id":350,
+            "relative_name":"INPUT OUT REPORT OF COMPOSTING MACHINE",
+            "docCode":"INPUT_OUT_REPORT_OF_COMPOSTING_MACHINE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Input Out report of Composting Machine"
+        },
+        {
+            "id":57,
+            "document_name":"Holding Tax Receipt Photo",
+            "workflow_id":350,
+            "relative_name":"HOLDING TAX RECIEPT",
+            "docCode":"HOLDING_TAX_RECIEPT",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Holding Tax Receipt"
+        },
+        {
+            "id":58,
+            "document_name":"Solid Waste Usage Charge Photo",
+            "workflow_id":350,
+            "relative_name":"SOLID WASTE USASE CHARGE",
+            "docCode":"SOLID_WASTE_USASE_CHARGE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Solid Waste Usage Charge"
         }
     ]
 }

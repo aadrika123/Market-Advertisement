@@ -28,6 +28,8 @@ class AdvSelfadvertisement extends Model
             'approve_date',
             'ulb_id',
             'workflow_id',
+            'citizen_id',
+            'user_id',
         )
             ->orderByDesc('temp_id')
             ->get();
@@ -39,11 +41,10 @@ class AdvSelfadvertisement extends Model
     public function approvedList($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
-
         if ($userType == 'Citizen') {
-            return $allApproveList->where('citizen_id', $citizenId);
+            return collect($allApproveList->where('citizen_id', $citizenId))->values();
         } else {
-            return $allApproveList;
+            return collect($allApproveList)->values();
         }
         // return AdvSelfadvertisement::where('citizen_id', $citizenId)
         //     ->select(

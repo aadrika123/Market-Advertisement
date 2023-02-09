@@ -153,14 +153,15 @@ class AgencyController extends Controller
             $mAdvActiveAgency = new AdvActiveAgency();
             // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId && $req->type) {
-                $data = $mAdvActiveAgency->details($req->applicationId,$req->type);
+            if(isset($req->type)){
+                $type = $req->type;
             }else{
-                throw new Exception("Not Pass Application Id And Application Type");
+                $type = NULL;
             }
-
-            if(!$data){
-                throw new Exception("Not Application Details Found");
+            if ($req->applicationId) {
+                $data = $mAdvActiveAgency->details($req->applicationId,$type);
+            }else{
+                throw new Exception("Not Pass Application Id");
             }
 
 
@@ -820,10 +821,15 @@ class AgencyController extends Controller
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
             // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId && $req->type) {
-                $data = $mAdvActiveAgencyLicense->details($req->applicationId,$req->type);
+            if(isset($req->type)){
+                $type = $req->type;
             }else{
-                throw new Exception("Not Pass Application Id And Application Type");
+                $type = NULL;
+            }
+            if ($req->applicationId) {
+                $data = $mAdvActiveAgencyLicense->details($req->applicationId,$type);
+            }else{
+                throw new Exception("Not Pass Application Id");
             }
 
             if(!$data){

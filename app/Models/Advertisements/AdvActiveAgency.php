@@ -178,7 +178,7 @@ class AdvActiveAgency extends Model
     public function details($id,$type)
     {
         $details = array();
-        if ($type == "Active") {
+        if ($type == "Active" || $type==NULL) {
             $details = DB::table('adv_active_agencies')
                 ->select(
                     'adv_active_agencies.*',

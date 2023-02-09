@@ -54,27 +54,9 @@ class ParamController extends Controller
 
                 Cache::put('adv_param_strings' . $mUlbId, json_encode($data));  // Set Key on Param Strings
             }
-            return responseMsgs(
-                true,
-                "Param Strings",
-                $data,
-                "040201",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Param Strings",$data,"040201","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040201",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040201","1.0","","POST",$req->deviceId ?? "");
         }
     }
 
@@ -88,15 +70,7 @@ class ParamController extends Controller
         $documents = remove_null($documents);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(
-            true,
-            "Document Masters",
-            $documents,
-            "040202",
-            "1.0",
-            $executionTime . " Sec",
-            "POST"
-        );
+        return responseMsgs(true,"Document Masters",$documents,"040202","1.0",$executionTime . " Sec","POST");
     }
 
 
@@ -111,15 +85,7 @@ class ParamController extends Controller
         $districts = remove_null($districts);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(
-            true,
-            "District Masters",
-            $districts,
-            "040202",
-            "1.0",
-            $executionTime . " Sec",
-            "POST"
-        );
+        return responseMsgs(true,"District Masters",$districts,"040202","1.0",$executionTime . " Sec","POST");
     }
 
     public function metaReqs($req)

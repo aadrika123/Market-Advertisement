@@ -155,13 +155,16 @@ class PrivateLandController extends Controller
     {
         try {
             $mAdvActivePrivateland = new AdvActivePrivateland();
-            // $forwardBackward = new WorkflowMap;
-            // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId && $req->type) {
-                $data = $mAdvActivePrivateland->details($req->applicationId,$req->type);
+            if(isset($req->type)){
+                $type = $req->type;
             }else{
-                throw new Exception("Not Pass Application Id And Application Type");
+                $type = NULL;
+            }
+            if ($req->applicationId) {
+                $data = $mAdvActivePrivateland->details($req->applicationId,$type);
+            }else{
+                throw new Exception("Not Pass Application Id");
             }
 
             if(!$data){

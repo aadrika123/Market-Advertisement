@@ -28,4 +28,11 @@ return [
      */
     "AGENCY_HORDING" => "134",
     "AGENCY_HORDING_WORKFLOWS" => "251",
+
+    /**
+     * | -------- Market Section --------------- 
+     */
+    "BANQUTE_MARRIGE_HALL" => "350",
+    "MARKET_MODULE_ID" => 6,
+    "BANQUTE_MARRIGE_HALL_WORKFLOWS" => "317",
 ];

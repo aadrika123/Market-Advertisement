@@ -32,5 +32,9 @@ return [
 
     "AGENCY_ADVET" => [
         "RELATIVE_PATH" => "Uploads/AgencyAdvets"
+    ],
+
+    "BANQUTE_MARRIGE_HALL" => [
+        "RELATIVE_PATH" => "Uploads/BanquteMarrigeHall"
     ]
 ];

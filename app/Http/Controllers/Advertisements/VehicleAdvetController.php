@@ -119,12 +119,16 @@ class VehicleAdvetController extends Controller
             $mvehicleAdvets = new AdvActiveVehicle();
             // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId && $req->type) {
-                $data = $mvehicleAdvets->details($req->applicationId,$req->type);
+            if(isset($req->type)){
+                $type = $req->type;
             }else{
-                throw new Exception("Not Pass Application Id And Application Type");
+                $type = NULL;
             }
-
+            if ($req->applicationId) {
+                $data = $mvehicleAdvets->details($req->applicationId,$type);
+            }else{
+                throw new Exception("Not Pass Application Id");
+            }
             if(!$data){
                 throw new Exception("Not Application Details Found");
             }

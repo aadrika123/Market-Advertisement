@@ -366,6 +366,8 @@ class AdvAgencyLicense extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'citizen_id',
+                'user_id'
             )
             ->orderByDesc('temp_id')
             ->get();
@@ -378,9 +380,9 @@ class AdvAgencyLicense extends Model
     {
         $allApproveList=$this->allApproveList();
         if($usertype == 'Citizen'){
-            return $allApproveList->where('citizen_id',$citizenId);
+            return collect($allApproveList->where('citizen_id',$citizenId))->values();;
         }else{
-            return $allApproveList;
+            return collect($allApproveList)->values();
         }
         // return AdvAgencyLicense::where('citizen_id', $citizenId)
         //     ->select(

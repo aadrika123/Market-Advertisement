@@ -143,10 +143,15 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $fullDetailsData = array();
-            if ($req->applicationId && $req->type) {
-                $data = $mAdvActiveSelfadvertisement->details($req->applicationId,$req->type);
+            if(isset($req->type)){
+                $type = $req->type;
             }else{
-                throw new Exception("Not Pass Application Id And Application Type");
+                $type = NULL;
+            }
+            if ($req->applicationId) {
+                $data = $mAdvActiveSelfadvertisement->details($req->applicationId,$type);
+            }else{
+                throw new Exception("Not Pass Application Id");
             }
 
             if(!$data)

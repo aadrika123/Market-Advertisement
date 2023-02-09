@@ -21,6 +21,8 @@ class AdvPrivateland extends Model
             'application_date',
             'payment_amount',
             'approve_date',
+            'citizen_id',
+            'user_id',
         )
         ->orderByDesc('temp_id')
         ->get();
@@ -33,9 +35,9 @@ class AdvPrivateland extends Model
     {
         $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
-            return  $allApproveList->where('citizen_id', $citizenId);
+            return  collect($allApproveList->where('citizen_id', $citizenId))->values();
         }else{
-            return $allApproveList;
+            return collect($allApproveList)->values();
         }
     }
     

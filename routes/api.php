@@ -205,10 +205,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     });
 
     /**
-     * | Lodge Controller
+     * | Banquet Marriage Hall Controller
      * | Controller-07
      * | By - Bikash Kumar
-     * | Date 06-02-2023
+     * | Date 09-02-2023
      * | Status - Open
      */
     Route::controller(BanquetMarriageHallController::class)->group(function () {
