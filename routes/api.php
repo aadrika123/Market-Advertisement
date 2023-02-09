@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
 
-Route::group(['middleware' => 'auth:sanctum'], function () {
+Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
     /**
      * | Self Advertisements
@@ -121,7 +121,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/private-land/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
         Route::post('advertisement/private-land/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
         Route::post('advertisement/private-land/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
-  });
+    });
 
     /**
      * | Agency 
@@ -148,7 +148,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
         Route::post('advertisement/agency/generate-payment-order-id', 'generatePaymentOrderId');          // 18 ( Generate Payment Order ID)
         Route::post('advertisement/agency/application-details-for-payment', 'applicationDetailsForPayment');          // 19 ( Application Details For Payments )
-    
+
         /*------------ Apply For Hording License -------------------*/
         Route::post('advertisement/hording/get-typology-list', 'getTypologyList');  // 20 ( Get Typology List )
         Route::post('advertisement/hording/licence-save', 'saveForLicence');  // 21 ( Save Application For Licence )
@@ -172,8 +172,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
         //================================= Other Apis ===========================
         Route::post('advertisement/agency/is-agency', 'isAgency'); // (Get Agency or not By Login Token)
-        
-    
+
+
     });
 
     /**
@@ -201,7 +201,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('market/lodge/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
         Route::post('market/lodge/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
         Route::post('market/lodge/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
-    
+
     });
 
     /**
@@ -211,7 +211,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Date 06-02-2023
      * | Status - Open
      */
-    Route::controller(BanquetMarriageHallController::class)->group(function(){
+    Route::controller(BanquetMarriageHallController::class)->group(function () {
         Route::post('market/banquet-marriage-hall/save', 'store'); // 01   ( Save Application )  
         Route::post('market/banquet-marriage-hall/inbox', 'inbox');    // 03 ( Application Inbox Lists )
         Route::post('market/banquet-marriage-hall/outbox', 'outbox');    // 04 ( Application Outbox Lists )
