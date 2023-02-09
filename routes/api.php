@@ -30,6 +30,7 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
 
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
     /**
      * | Self Advertisements
      * | Controller-01
@@ -77,8 +78,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * | Controller-03
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
-        Route::post('advertisement/movable-vehicle/save', 'store');    // 01 ( Save Application )
-        Route::post('advertisement/movable-vehicle/edit', 'edit');    // 02 ( Edit Application )
+        Route::post('advertisement/movable-vehicle/save', 'store');    // 01 ( Save Application )\
         Route::post('advertisement/movable-vehicle/inbox', 'inbox');    // 03 ( Application Inbox Lists )
         Route::post('advertisement/movable-vehicle/outbox', 'outbox');    // 04 ( Application Outbox Lists )
         Route::post('advertisement/movable-vehicle/details', 'details');  // 05 ( Get Application Details By Application ID )
@@ -150,25 +150,29 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('advertisement/agency/application-details-for-payment', 'applicationDetailsForPayment');          // 19 ( Application Details For Payments )
     
         /*------------ Apply For Hording License -------------------*/
-        Route::post('advertisement/agency/get-typology-list', 'getTypologyList');  // 20 ( Get Typology List )
-        Route::post('advertisement/agency/save-for-licence', 'saveForLicence');  // 21 ( Save Application For Licence )
-        Route::post('advertisement/agency/license-inbox', 'licenseInbox');             // 22 ( Application Inbox Lists )
-        Route::post('advertisement/agency/license-outbox', 'licenseOutbox');    // 23 ( Application Outbox Lists )
-        Route::post('advertisement/agency/license-details', 'licenseDetails');  // 24 ( Get Application Details By Application ID )
-        Route::post('advertisement/agency/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 25 ( Get Applied Applications List )
-        Route::post('advertisement/agency/license-escalate', 'licenseEscalate');  // 26 ( Escalate or De-escalate Application )
-        Route::post('advertisement/agency/license-special-inbox', 'licenseSpecialInbox');  // 27 ( Special Inbox Applications )
-        Route::post('advertisement/agency/license-post-next-level', 'licensePostNextLevel');  // 28 ( Forward or Backward Application )
-        Route::post('advertisement/agency/license-comment-independent', 'LicenseCommentIndependent');  // 29 ( Independent Comment )
-        Route::post('advertisement/agency/license-hording-document-view', 'licenseUploadDocumentsView');  // 30 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/agency/license-approval-rejection', 'licenseFinalApprovalRejection');          // 31 ( Approve or Reject )
-        Route::post('advertisement/agency/license-approved-list', 'licenseApprovedList');          // 32 ( License Approved list for Citizen)
-        Route::post('advertisement/agency/license-rejected-list', 'licenseRejectedList');          // 33 ( License Rejected list for Citizen)
-        Route::post('advertisement/agency/license-get-jsk-applications', 'licenseGetJSKApplications');          // 34 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/agency/license-jsk-approved-list', 'licenseJskApprovedList');          // 35 ( Approved list for JSK)
-        Route::post('advertisement/agency/license-jsk-rejected-list', 'licenseJskRejectedList');          // 36 ( Rejected list for JSK)  
-        Route::post('advertisement/agency/license-generate-payment-order-id', 'licenseGeneratePaymentOrderId');          // 37 ( Generate Payment Order ID)
-        Route::post('advertisement/agency/license-application-details-for-payment', 'licenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
+        Route::post('advertisement/hording/get-typology-list', 'getTypologyList');  // 20 ( Get Typology List )
+        Route::post('advertisement/hording/licence-save', 'saveForLicence');  // 21 ( Save Application For Licence )
+        Route::post('advertisement/hording/license-inbox', 'licenseInbox');             // 22 ( Application Inbox Lists )
+        Route::post('advertisement/hording/license-outbox', 'licenseOutbox');    // 23 ( Application Outbox Lists )
+        Route::post('advertisement/hording/license-details', 'licenseDetails');  // 24 ( Get Application Details By Application ID )
+        Route::post('advertisement/hording/license-get-citizen-applications', 'licenseGetCitizenApplications');     // 25 ( Get Applied Applications List )
+        Route::post('advertisement/hording/license-escalate', 'licenseEscalate');  // 26 ( Escalate or De-escalate Application )
+        Route::post('advertisement/hording/license-special-inbox', 'licenseSpecialInbox');  // 27 ( Special Inbox Applications )
+        Route::post('advertisement/hording/license-post-next-level', 'licensePostNextLevel');  // 28 ( Forward or Backward Application )
+        Route::post('advertisement/hording/license-comment-independent', 'LicenseCommentIndependent');  // 29 ( Independent Comment )
+        Route::post('advertisement/hording/license-hording-document-view', 'licenseUploadDocumentsView');  // 30 ( Get Uploaded Document By Application ID )
+        Route::post('advertisement/hording/license-approval-rejection', 'licenseFinalApprovalRejection');          // 31 ( Approve or Reject )
+        Route::post('advertisement/hording/license-approved-list', 'licenseApprovedList');          // 32 ( License Approved list for Citizen)
+        Route::post('advertisement/hording/license-rejected-list', 'licenseRejectedList');          // 33 ( License Rejected list for Citizen)
+        Route::post('advertisement/hording/license-get-jsk-applications', 'licenseGetJSKApplications');          // 34 ( Get Applied Applications List By JSK )
+        Route::post('advertisement/hording/license-jsk-approved-list', 'licenseJskApprovedList');          // 35 ( Approved list for JSK)
+        Route::post('advertisement/hording/license-jsk-rejected-list', 'licenseJskRejectedList');          // 36 ( Rejected list for JSK)  
+        Route::post('advertisement/hording/license-generate-payment-order-id', 'licenseGeneratePaymentOrderId');          // 37 ( Generate Payment Order ID)
+        Route::post('advertisement/hording/license-application-details-for-payment', 'licenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
+
+        //================================= Other Apis ===========================
+        Route::post('advertisement/agency/is-agency', 'isAgency'); // (Get Agency or not By Login Token)
+        
     
     });
 

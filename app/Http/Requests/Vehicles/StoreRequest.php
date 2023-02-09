@@ -63,7 +63,8 @@ class StoreRequest extends FormRequest
 
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-            'documents.*.docCode' => 'required|string'
+            'documents.*.docCode' => 'required|string',
+            'documents.*.ownerDtlId' => 'nullable|integer'
         ];
     }
 

@@ -7,6 +7,7 @@ use App\Http\Requests\Vehicles\StoreRequest;
 use App\Models\Advertisements\AdvActiveVehicle;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvRejectedVehicle;
+use App\Models\Advertisements\WfActiveDocument;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -36,9 +37,7 @@ class VehicleAdvetController extends Controller
     use AdvDetailsTraits;
 
     protected $_modelObj;
-
     protected $Repository;
-
     protected $_workflowIds;
     public function __construct(iSelfAdvetRepo $self_repo)
     {
@@ -61,38 +60,12 @@ class VehicleAdvetController extends Controller
             $applicationNo = $advVehicle->store($req);               // Store Vehicle 
             DB::commit();
            
-            return responseMsgs(
-                true,
-                "Successfully Applied the Application !!",
-                [
-                    "status" => true,
-                    "ApplicationNo" => $applicationNo
-                ],
-                "040301",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
+            return responseMsgs(true,"Successfully Applied the Application !!",["status" => true,"ApplicationNo" => $applicationNo],"040301","1.0","","POST",$req->deviceId ?? ""
             );
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-    
-    /**
-     * | Application Update 
-     * | @param Request $req
-     */
-    public function edit(Request $req)
-    {
-        $documents = collect($req->documents)->first();
-        if (empty($documents)) {
-            return 'Collection is Empty';
-        }
-        return 'Not Empty';
-    }
-
 
     
     /**
@@ -110,27 +83,9 @@ class VehicleAdvetController extends Controller
             });
            
             $inboxList = $mvehicleAdvets->inbox($roleIds);
-            return responseMsgs(
-                true,
-                "Inbox Applications",
-                remove_null($inboxList->toArray()),
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Inbox Applications",remove_null($inboxList->toArray()),"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
@@ -148,27 +103,9 @@ class VehicleAdvetController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $outboxList = $mvehicleAdvets->outbox($roleIds);
-            return responseMsgs(
-                true,
-                "Outbox Lists",
-                remove_null($outboxList->toArray()),
-                "040104",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Outbox Lists",remove_null($outboxList->toArray()),"040104","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040104",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040104","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
@@ -182,11 +119,15 @@ class VehicleAdvetController extends Controller
             $mvehicleAdvets = new AdvActiveVehicle();
             // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId) {
-                $data = $mvehicleAdvets->details($req->applicationId,$this->_workflowIds);
+            if ($req->applicationId && $req->type) {
+                $data = $mvehicleAdvets->details($req->applicationId,$req->type);
+            }else{
+                throw new Exception("Not Pass Application Id And Application Type");
             }
 
-            // return $data;
+            if(!$data){
+                throw new Exception("Not Application Details Found");
+            }
 
             // Basic Details
             $basicDetails = $this->generateVehicleBasicDetails($data); // Trait function to get Vehicle Basic Details
@@ -419,19 +360,39 @@ class VehicleAdvetController extends Controller
     /**
      * | Get Uploaded Document by application ID
      */
+    // public function uploadDocumentsView(Request $req)
+    // {
+    //     $selfAdvets = new AdvActiveVehicle();
+    //     $data = array();
+    //     $fullDetailsData = array();
+    //     if ($req->applicationId) {
+    //         $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
+    //     }
+    //     // Uploads Documents Details
+    //     $fullDetailsData = $data['documents'];
+
+
+    //     $data1['data'] = $fullDetailsData;
+    //     return $data1;
+    // }
+
     public function uploadDocumentsView(Request $req)
     {
-        $selfAdvets = new AdvActiveVehicle();
+        $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $fullDetailsData = array();
-        if ($req->applicationId) {
-            $data = $selfAdvets->details($req->applicationId, $this->_workflowIds);
+        if ($req->applicationId && $req->type) {
+            if($req->type=='Active'){
+                $appId=$req->applicationId;
+            }elseif($req->type=='Reject'){
+                $appId=AdvRejectedVehicle::find($req->applicationId)->temp_id;
+            }elseif($req->type=='Approve'){
+                $appId=AdvVehicle::find($req->applicationId)->temp_id;
+            }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+        }else{
+            throw new Exception("Required Application Id And Application Type ");
         }
-        // Uploads Documents Details
-        $fullDetailsData = $data['documents'];
-
-
-        $data1['data'] = $fullDetailsData;
+        $data1['data'] = $data;
         return $data1;
     }
 
@@ -439,7 +400,7 @@ class VehicleAdvetController extends Controller
     
     
     /**
-     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
+     * |Final Approval and Rejection of the Application 
      * | Rating-
      * | Status- Open
      */

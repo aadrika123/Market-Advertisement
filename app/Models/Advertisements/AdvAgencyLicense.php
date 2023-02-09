@@ -419,4 +419,27 @@ class AdvAgencyLicense extends Model
             ->get();
     }
 
+    
+    /**
+     * | Get Application Details FOr Payments
+     */
+    public function detailsForPayments($id)
+    {
+        return AdvAgencyLicense::where('id', $id)
+            ->select(
+                'id',
+                'temp_id',
+                'application_no',
+                'application_date',
+                // 'applicant',
+                // 'entity_name',
+                'payment_status',
+                'payment_amount',
+                'approve_date',
+                'ulb_id',
+                'workflow_id',
+            )
+            ->first();
+    }
+
 }

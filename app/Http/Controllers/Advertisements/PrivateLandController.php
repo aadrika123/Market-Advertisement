@@ -7,6 +7,7 @@ use App\Http\Requests\PrivateLand\StoreRequest;
 use App\Models\Advertisements\AdvActivePrivateland;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvRejectedPrivateland;
+use App\Models\Advertisements\WfActiveDocument;
 use Exception;
 
 use Illuminate\Http\Request;
@@ -56,8 +57,6 @@ class PrivateLandController extends Controller
     {
         try {
             $privateLand = new AdvActivePrivateland();
-            // $citizenId = ['citizenId' => authUser()->id];
-            // $req->request->add($citizenId);
             if( authUser()->user_type=='JSK'){
                 $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
@@ -66,30 +65,9 @@ class PrivateLandController extends Controller
                 $req->request->add($citizenId);
             }
             $applicationNo = $privateLand->store($req);       //<--------------- Model function to store 
-            return responseMsgs(
-                true,
-                "Successfully Submitted the application !!",
-                [
-                    'status' => true,
-                    'ApplicationNo' => $applicationNo
-                ],
-                "040401",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Successfully Submitted the application !!",['status' => true,'ApplicationNo' => $applicationNo],"040401","1.0","",'POST',$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040401",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040401","1.0","","POST",$req->deviceId ?? "");
         }
     }
 
@@ -180,8 +158,14 @@ class PrivateLandController extends Controller
             // $forwardBackward = new WorkflowMap;
             // $data = array();
             $fullDetailsData = array();
-            if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
+            if ($req->applicationId && $req->type) {
+                $data = $mAdvActivePrivateland->details($req->applicationId,$req->type);
+            }else{
+                throw new Exception("Not Pass Application Id And Application Type");
+            }
+
+            if(!$data){
+                throw new Exception("Not Application Details Found");
             }
 
             // return $data;
@@ -414,24 +398,44 @@ class PrivateLandController extends Controller
       /**
      * | Get Uploaded Document by application ID
      */
+    // public function uploadDocumentsView(Request $req)
+    // {
+    //     $mAdvActivePrivateland = new AdvActivePrivateland();
+    //     $data = array();
+    //     $fullDetailsData = array();
+    //     if ($req->applicationId) {
+    //         $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
+    //     }
+
+    //     // $fullDetailsData['application_no'] = $data['application_no'];
+    //     // $fullDetailsData['apply_date'] = $data['application_date'];
+    //     $fullDetailsData = $data['documents'];
+
+
+    //     $data1['data'] = $fullDetailsData;
+    //     return $data1;
+    // }
+
+
     public function uploadDocumentsView(Request $req)
     {
-        $mAdvActivePrivateland = new AdvActivePrivateland();
+        $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $fullDetailsData = array();
-        if ($req->applicationId) {
-            $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
+        if ($req->applicationId && $req->type) {
+            if($req->type=='Active'){
+                $appId=$req->applicationId;
+            }elseif($req->type=='Reject'){
+                $appId=AdvRejectedPrivateland::find($req->applicationId)->temp_id;
+            }elseif($req->type=='Approve'){
+                $appId=AdvPrivateland::find($req->applicationId)->temp_id;
+            }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+        }else{
+            throw new Exception("Required Application Id And Application Type ");
         }
-
-        // $fullDetailsData['application_no'] = $data['application_no'];
-        // $fullDetailsData['apply_date'] = $data['application_date'];
-        $fullDetailsData = $data['documents'];
-
-
-        $data1['data'] = $fullDetailsData;
+        $data1['data'] = $data;
         return $data1;
     }
-
     
 
     

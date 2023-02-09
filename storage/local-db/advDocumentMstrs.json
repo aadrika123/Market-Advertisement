@@ -90,7 +90,7 @@
             "docCode":"OWNERBOOK",
             "code":"MOVABLE_VEHICLE",
             "module_id":5,
-            "docVal":"Trade License"
+            "docVal":"Ownerbook"
         },
         {
             "id":21,
@@ -100,7 +100,7 @@
             "docCode":"DRIVING_LICENSE",
             "code":"MOVABLE_VEHICLE",
             "module_id":5,
-            "docVal":"Owner Book"
+            "docVal":"Driving License"
         },
         {
             "id":22,
@@ -128,37 +128,61 @@
             "id":24,
             "document_name":"GST No Document",
             "workflow_id":132,
-            "relative_name":"GST"
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Gst"
         },
         {
             "id":25,
             "document_name":"IT Return Last Year",
             "workflow_id":132,
-            "relative_name":"IT RETURN LAST YEAR"
+            "relative_name":"IT RETURN LAST YEAR",
+            "docCode":"IT_RETURN_LAST_YEAR",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"IT Return Last Year"
         },
         {
             "id":26,
             "document_name":"IT Return Previous Last Year",
             "workflow_id":132,
-            "relative_name":"IT RETURN PREVIOUS LAST YEAR"
+            "relative_name":"IT RETURN PREVIOUS LAST YEAR",
+            "docCode":"IT_RETURN_PREVIOUS_LAST_YEAR",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"IT Return Previous Last Year"
         },
         {
             "id":27,
             "document_name":"Office Address Photograph",
             "workflow_id":132,
-            "relative_name":"OFFICE ADDRESS"
+            "relative_name":"OFFICE ADDRESS",
+            "docCode":"OFFICE_ADDRESS",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Office Address"
         },
         {
             "id":28,
             "document_name":"PAN No Document",
             "workflow_id":132,
-            "relative_name":"PAN"
+            "relative_name":"PAN",
+            "docCode":"PAN",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Pan"
         },
         {
             "id":29,
             "document_name":"Affidavit Photograph",
             "workflow_id":132,
-            "relative_name":"AFFIDAVIT"
+            "relative_name":"AFFIDAVIT",
+            "docCode":"AFFIDAVIT_PHOTOGRAPH",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Affidavit Photograph"
         }
     ],
     "PrivateLands":[
@@ -166,37 +190,61 @@
             "id":30,
             "document_name":"Aadhar Document",
             "workflow_id":133,
-            "relative_name":"AADHAR"
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Aadhar Card"
         },
         {
             "id":31,
             "document_name":"Municipal Trade License Document",
             "workflow_id":133,
-            "relative_name":"TRADE"
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Trade License"
         },
         {
             "id":32,
             "document_name":"GPS Map Camera Photograph",
             "workflow_id":133,
-            "relative_name":"GPS MAP CAMERA"
+            "relative_name":"GPS MAP CAMERA",
+            "docCode":"GPS_MAP_CAMERA",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gps Map Camera"
         },
         {
             "id":33,
             "document_name":"Holding No Document",
             "workflow_id":133,
-            "relative_name":"HOLDING"
+            "relative_name":"HOLDING",
+            "docCode":"HOLDING_NO",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Holding No"
         },
         {
             "id":34,
             "document_name":"GST No Document",
             "workflow_id":133,
-            "relative_name":"GST"
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gst"
         },
         {
             "id":35,
             "document_name":"Brand Display Permission",
             "workflow_id":133,
-            "relative_name":"BRAND DISPLAY"
+            "relative_name":"BRAND DISPLAY",
+            "docCode":"BRAND_DISPLAY",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Brand Display"
         }
     ],
     "AgencyHordingLicense":[

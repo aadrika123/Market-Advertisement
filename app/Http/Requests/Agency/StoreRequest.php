@@ -45,9 +45,9 @@ class StoreRequest extends FormRequest
             'directors.*.email' => 'required|email',
             // 'directors.*.aadhar' => 'required|mimes:png,jpeg,pdf,jpg',
             'documents' => 'required|array',
-            'documents.*.id' => 'required|integer',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-            'documents.*.relativeName' => 'required|string'
+            'documents.*.docCode' => 'required|string',
+            'documents.*.ownerDtlId' => 'nullable|integer'
         ];
     }
 
