@@ -90,13 +90,6 @@ function PrivateLandIndexForm() {
         }
     };
 
-
-    ///////////{*** COLLECTING ALL FORM DATA***}/////////
-    // const collectAllFormData = (key, formData) => {
-    //     console.log('prev of all Data', allFormData)
-    //     setAllFormData({ ...allFormData, [key]: formData })
-    // }
-    // console.log("all form data in index", allFormData)
     ///////////{*** COLLECTING ALL FORM DATA***}/////////
     const collectAllFormData = (key, formData, reviewIdName) => {
         console.log('prev of all Data', allFormData)
@@ -122,10 +115,10 @@ function PrivateLandIndexForm() {
     }
 
     const submitAgencyForm = () => {
+        showLoader(true)
         const requestBody = {
             // ulbId: allFormData?.agency?.ulb,
             ulbId: 2,
-            deviceId: "privateLand",
             entityType: allFormData?.agency?.entityType,
             entityName: allFormData?.agency?.entityName,
             address: allFormData?.agency?.address,
@@ -148,12 +141,27 @@ function PrivateLandIndexForm() {
             .then(function (response) {
                 console.log('response after data submitted', response.data.data)
                 setresponseScreen(response.data.data)
-                notify('submitted successfully', 'success')
+                setTimeout(() => {
+                    showLoader(false)
+                }, 500);
+                notify("submitted successfully", "success")
             })
             .catch(function (error) {
                 console.log('errorrr.... ', error);
-                notify('failed to submit', 'error')
+                setTimeout(() => {
+                    showLoader(false)
+                }, 500);
+                notify("failed to submit", "error")
             })
+    }
+
+
+    // passing values in components
+    const values = {
+        setFormIndex: setFormIndex,
+        showLoader: showLoader,
+        collectFormDataFun: collectAllFormData,
+        toastFun: notify,
     }
 
     console.log("response screen", responseScreen)
@@ -174,27 +182,32 @@ function PrivateLandIndexForm() {
             <ToastContainer position="top-right"
                 autoClose={2000} />
             <div className='overflow-x-clip'>
-                <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
-                    <div className='flex flex-row '>
-                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Agency Registration</h1>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 bg-white p-2 rounded-md shadow-md shadow-violet-200  '>
+                    <div className=''>
+                        <div className='flex flex-row '>
+                            <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold'>Agency Registration</h1>
+                        </div>
+                        <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>
+                            You Can Get License To Advertise Your Business Name On Your Shop
+                        </h1>
                     </div>
-                    <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
-                    <div className='flex flex-row float-right'>
-                        {/* {FirmStep == 1 && */}
-                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{4 - formIndex}
-                        </strong> more screen</span>
-                        <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
-                        <div className=''>
-                            <BackButton />
+                    <div>
+                        <div className='flex flex-row mt-2 float-right'>
+                            <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle '>&emsp; <strong className='text-2xl text-violet-600 '>{4 - formIndex}
+                            </strong> more screen</span>
+                            <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right ml-4' />
+                            <div className='mt-2'>
+                                <BackButton />
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className={`${animateform1} transition-all relative`}><AgencyDetailForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-                <div className={`${animateform2} transition-all relative -mt-[40.5rem]  `}><AgencyDirectorDetail allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${formIndex == 1 ? 'translate-x-0' : 'translate-x-full'}`}><AgencyDetailForm values={values} /></div>
+                <div className={`${formIndex == 2 ? 'translate-x-0' : 'translate-x-full'}`}><AgencyDirectorDetail values={values} /></div>
 
-                <div className={`${animateform3} transition-all relative -mt-[41rem]`}><AgencyDetailDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
+                <div className={`${formIndex == 3 ? 'translate-x-0' : 'translate-x-full'}`}><AgencyDetailDocForm values={values} /></div>
 
-                <div className={`${animateform4} transition-all relative -mt-[40.5rem]`}><ReviewAgencyApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${formIndex == 4 ? 'translate-x-0' : 'translate-x-full'}`}><ReviewAgencyApplication values={values} reviewIdNameData={reviewData} allFormData={allFormData} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>

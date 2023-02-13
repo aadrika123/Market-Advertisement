@@ -174,10 +174,10 @@ function AdvertisementDashboard() {
                     <div className='border-b border-violet-500'>
                         <div className='flex justify-start  h-18 bg-white rounded leading-5  w-full  shadow-lg'>
                             <div className='p-2  '>
-                                <h1 className=' text-lg  font-semibold text-gray-500'>Applications</h1>
+                                <h1 className=' text-lg  font-semibold text-gray-500'>Applications Lists</h1>
                                 {/* <h1 className='text-xs  text-gray-500 '>You Can Get License To Advertise Your Business Name </h1> */}
                             </div>
-                            <div className='p-2 flex space-x-8'>
+                            <div className='p-2  md:flex lg:flex space-x-8'>
                                 <span>
                                     <Tooltip className='bg-gray-300 text-xs text-gray-900' content="Self Advertisement Applications">
                                         <button type='button' onClick={() => settabIndex(1)} className='focus:outline-none focus:ring focus:ring-violet-300 '>

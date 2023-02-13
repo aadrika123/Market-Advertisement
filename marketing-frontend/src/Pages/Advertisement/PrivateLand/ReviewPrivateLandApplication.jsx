@@ -1,6 +1,9 @@
 import React from 'react'
 
 function ReviewPrivateLandApplication(props) {
+
+    const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
+
     let labelStyle = "mt-6 -ml-7 text-xs text-gray-600"
     let inputStyle = "mt-6 -ml-7 text-md text-gray-800 font-bold"
 
@@ -126,7 +129,7 @@ function ReviewPrivateLandApplication(props) {
             </div> */}
             <div className="grid grid-cols-12 w-full p-3 -mt-96">
                 <div className='md:pl-0 col-span-6'>
-                    <button type="button" class="py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => props.backFun(3)}>back</button>
+                    <button type="button" class="py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => setFormIndex(2)}>back</button>
 
                 </div>
                 <div className='col-span-6'>

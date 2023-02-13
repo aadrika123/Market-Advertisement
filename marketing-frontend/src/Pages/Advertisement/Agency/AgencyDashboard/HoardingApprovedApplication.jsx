@@ -1,20 +1,53 @@
+import { useState, useEffect } from 'react'
 import axios from 'axios'
-import React from 'react'
-import { useEffect } from 'react'
-import { useState } from 'react'
-import AdvertisementApiList from '../../../../Compnents/AdvertisementApiList'
-import ApiHeader from '../../../../Compnents/ApiHeader'
+import Modal from 'react-modal';
+import AdvertisementApiList from '../../../../Compnents/AdvertisementApiList';
+import ApiHeader from '../../../../Compnents/ApiHeader';
+import HoardingApplicationFullDetail from '../Hoarding/HoardingApplicationFullDetail';
+import { useNavigate } from 'react-router-dom';
+
+
+
+const customStyles = {
+    content: {
+        top: '50%',
+        left: '50%',
+        right: 'auto',
+        bottom: 'auto',
+        marginRight: '-50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'white',
+        border: 'none'
+    },
+};
+Modal.setAppElement('#root');
+
 
 function HoardingApprovedApplication(props) {
 
 
-    const { api_getHoardingApprovedApplicationList, api_getAgencyAppliedDocumentList } = AdvertisementApiList()
+    const { api_getHoardingApprovedApplicationList } = AdvertisementApiList()
 
     let labelStyle = "mt-6 -ml-7 text-xs text-gray-600 font-semibold"
     let inputStyle = "mt-6 -ml-7 mb-2 text-sm text-gray-800 text-left font-bold"
 
+    const navigate = useNavigate()
+
     const [applicationDetail, setapplicationDetail] = useState()
-    const [documentList, setdocumentList] = useState()
+    const [applicationType, setapplicationType] = useState()
+    const [applicationNo, setapplicationNo] = useState()
+    const [modalIsOpen, setIsOpen] = useState(false);
+    const openModal = () => setIsOpen(true)
+    const closeModal = () => setIsOpen(false)
+    const afterOpenModal = () => { }
+
+    const modalAction = (applicationId, applicationType) => {
+        console.log("..............application id..............", applicationId)
+        console.log("..............application type..............", applicationType)
+        setapplicationNo(applicationId)
+        setapplicationType(applicationType)
+        openModal()
+    }
 
     ///////////{*** GET APPLICATION LIST***}/////////
     useEffect(() => {
@@ -58,7 +91,7 @@ function HoardingApprovedApplication(props) {
 
                 :
                 <>
-                    {applicationDetail?.data?.map((data) => (
+                    {applicationDetail?.data?.slice(0, 4)?.map((data) => (
                         <div className="col-span-3  p-2">
                             <div className="bg-violet-100 ">
                                 <div className="flex p-2 text-gray-600  text-xs">
@@ -69,11 +102,27 @@ function HoardingApprovedApplication(props) {
                                     <h1 className="flex-1">Applied Date</h1>
                                     <h1 className="flex-1 font-bold">{data?.application_date}</h1>
                                 </div>
+                                <div className='text-right'>
+                                    <button id={data?.id} value='Active' className=' px-1 text-violet-700 text-sm border-b border-violet-700  font-semibold' onClick={(e) => modalAction(data?.id, e.target.value)}>view</button>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </>
             }
+            <div className='text-right'><button className='text-sm bg-indigo-500  shadow-lg px-2 text-white' onClick={() => navigate
+                (`/hoarding-approved-list`)}>View All</button></div>
+            <Modal
+                isOpen={modalIsOpen}
+                onAfterOpen={afterOpenModal}
+                onRequestClose={closeModal}
+                style={customStyles}
+                contentLabel="Example Modal"
+            >
+                <div class=" rounded-lg shadow-xl border-2 border-gray-50 mx-auto px-0 " style={{ 'width': '80vw', 'height': '100%' }}>
+                    <HoardingApplicationFullDetail data={applicationNo} applicationType={applicationType} showLoader={props.showLoader} closeModal={closeModal} />
+                </div>
+            </Modal>
 
             {/* <div><button className='text-sm bg-indigo-500 rounded leading-5 shadow-md px-2 text-white  '>View All</button></div> */}
         </>

@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { Component, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import AdvertisementApiList from "../../../../Compnents/AdvertisementApiList";
+import ApiHeader from "../../../../Compnents/ApiHeader";
 import Loader from "../../Loader";
 import AgencyNotification from "../AgencyNotification";
 import { BarGraphComponent } from "../BarGraphComponent";
@@ -11,13 +14,56 @@ import HoardingRejectedApplication from "./HoardingRejectedApplication";
 
 function AgencyDashboard() {
 
+
+    const { api_getAgencyDashboardData } = AdvertisementApiList()
     const [tabIndex, settabIndex] = useState(0)
     const [show, setshow] = useState(false)
-
+    const [agencyDashboard, setagencyDashboard] = useState()
+    const myRef = useRef(null);
+    const useMountEffect = fun => useEffect(fun, []);
+    const executeScroll = () => {
+        // console.log("id of div",e.target)
+        myRef.current.scrollIntoView();
+        // settabIndex(2)
+    }
+    // run this function from an event handler or pass it to useEffect to execute scroll
+    useMountEffect(executeScroll); // Scroll on mount
 
     const showLoader = (val) => {
         setshow(val);
     }
+
+
+
+    ///////////{*** get agencty details ***}/////////
+    useEffect(() => {
+        getAgencyDetails()
+    }, [])
+    const getAgencyDetails = () => {
+        // props.showLoader(true);
+        const requestBody = {
+            // deviceId: "selfAdvert",
+        }
+        axios.post(`${api_getAgencyDashboardData}`, requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('agency dashboard---2', response.data.data)
+                setagencyDashboard(response.data.data)
+                // setTimeout(() => {
+                //     props.showLoader(false);
+                // }, 500);
+            })
+            .catch(function (error) {
+                console.log('errorrr.... ', error);
+                // setTimeout(() => {
+                //     props.showLoader(false);
+                // }, 500);
+
+            })
+    }
+
+    console.log("agency count data", (agencyDashboard?.countApprovedAppl?.Feb2023) + (agencyDashboard?.countApprovedAppl?.Jan2023))
+
+
     return (
         <>
             <Loader show={show} />
@@ -71,7 +117,7 @@ function AgencyDashboard() {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={() => settabIndex(2)}>
+                            <div id="2" className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={executeScroll}>
                                 <div className="">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-green-500 bg-green-100 dark:bg-green-900 dark:bg-opacity-40  ">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
@@ -82,7 +128,7 @@ function AgencyDashboard() {
                                     <h1 className="text-gray-500 text-lg ">0</h1>
                                 </div>
                             </div>
-                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={() => settabIndex(3)}>
+                            <div className="flex flex-row p-3 bg-white rounded leading-5 shadow-lg" onClick={executeScroll}>
                                 <div className="">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 p-4 rounded-full text-yellow-500 bg-yellow-100 dark:bg-yellow-900 dark:bg-opacity-40">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
@@ -213,13 +259,13 @@ function AgencyDashboard() {
                         </div>
                     </div>
 
-                    <div className={`${tabIndex == 2 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
+                    <div ref={myRef} className={`${tabIndex == 2 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
                         <h1 className={`${tabIndex == 2 ? 'text-white' : 'text-gray-500'} text-lg font-semibold px-2 mt-4 border-b`}>Approved Applications</h1>
                         <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  rounded leading-5 shadow-md ">
                             <HoardingApprovedApplication showLoader={showLoader} />
                         </div>
                     </div>
-                    <div className={`${tabIndex == 3 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
+                    <div ref={myRef} className={`${tabIndex == 3 ? 'bg-indigo-300 z-20 drop-shadow-xl' : 'bg-white'} transition-all ease-in-out `}  >
                         <h1 className={`${tabIndex == 3 ? 'text-white' : 'text-gray-500'} text-lg font-semibold px-2 mt-4 border-b`}>Rejected Applications</h1>
                         <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12  rounded leading-5 shadow-md ">
                             <HoardingRejectedApplication showLoader={showLoader} />

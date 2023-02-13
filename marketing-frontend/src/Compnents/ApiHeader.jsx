@@ -1,6 +1,6 @@
 export default function ApiHeader() {
     // let token = JSON.parse(window.localStorage.getItem("token"));
-    let token = "6013|t2aIEj61qSORvpZwqkA0sVOytfxZC8EaWendlPMK";
+    let token = "6927|fYOxJyRC02gWokJxlbSJmBhOD0IAHZC8wzswyVOW";
     const header = {
       headers: {
         Authorization: `Bearer ${token}`,

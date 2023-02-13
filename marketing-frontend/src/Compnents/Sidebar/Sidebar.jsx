@@ -13,7 +13,7 @@ function Sidebar() {
 
     return (
         <>
-            <div className=' bg-white shadow-lg h-screen'>
+            <div className=' bg-white shadow-lg  h-screen'>
                 <div>
                     <img src='https://seeklogo.com/images/G/government-of-jharkhand-logo-D9985104A5-seeklogo.com.png' className='w-28 mx-auto p-2' />
                     <h1 className='text-center font-semibold text-lg '>Government Of Jharkhand</h1>

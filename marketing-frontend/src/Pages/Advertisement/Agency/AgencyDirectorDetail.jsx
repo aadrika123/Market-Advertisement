@@ -4,6 +4,9 @@ import SelfAdvrtInformationScreen from '../SelfAdvertisement/SelfAdvrtInformatio
 
 
 function AgencyDirectorDetail(props) {
+
+    const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
+
     // const [directorData, setdirectorData] = useState([])
     const [directorData, setdirectorData] = useState([])
     const [formToggleStatus, setformToggleStatus] = useState(true)
@@ -27,18 +30,10 @@ function AgencyDirectorDetail(props) {
 
         },
         onSubmit: values => {
-            // alert(JSON.stringify(values, null, 2));
-            // console.log("agencyDirector", values)
-            // props.collectFormDataFun('agencyDirector', values)
-            // setAddMore(true);
-
-
             setformToggleStatus(false)
             setdirectorDataVisibility(true)
             setdirectorData([...directorData, values]);
-            // console.log('myindexkey ', indexkey);
             setAddMore(true);
-            // props?.nextFun(2)
             formik.resetForm();
         },
     });
@@ -50,8 +45,8 @@ function AgencyDirectorDetail(props) {
             alert('Atleast One Owner is required !');
             showLoader(false);
         } else {
-            props.collectFormDataFun('agencyDirector', directorData, 0) //sending BasicDetails data to parent to store all form data at one container
-            props?.nextFun(2) //forwarding to next form level
+            collectFormDataFun('agencyDirector', directorData, 0) //sending BasicDetails data to parent to store all form data at one container
+            setFormIndex(3) //forwarding to next form level
             // setTimeout(() => {
             //     props?.nextFun(2) 
             //     currentStepFun(4)
@@ -84,7 +79,6 @@ function AgencyDirectorDetail(props) {
 
 
     const handleOwnerShow = () => {
-        // alert(formToggleStatus);
         { formToggleStatus == false ? setformToggleStatus(true) : setformToggleStatus(false) }
     }
 
@@ -93,7 +87,7 @@ function AgencyDirectorDetail(props) {
     return (
         <>
             {/* DIRECTORS INFORMATION */}
-            <div className=''>
+            <div className='absolute w-full top-4 '>
                 <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto'>
                     <div className='col-span-8  p-2 border border-dashed border-violet-800 h-auto'>
                         <h1 className='text-md font-semibold text-gray-700 ml-2 bg-white p-2'>DIRECTOR INFORMATION</h1>
@@ -165,7 +159,7 @@ function AgencyDirectorDetail(props) {
 
                             <div className="grid grid-cols-3 w-full px-10 mt-16">
                                 <div className=' text-left'>
-                                    <button type="button" class="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => props.backFun(2)}>back</button>
+                                    <button type="button" class="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => setFormIndex(1)}>back</button>
                                 </div>
                                 <div className='text-center'>
                                     <button type="button" class={`${AddMore ? '' : 'hidden'} text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0`} onClick={handleOwnerShow}> Add Director </button>

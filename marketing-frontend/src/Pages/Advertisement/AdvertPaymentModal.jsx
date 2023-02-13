@@ -1,9 +1,12 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
-
+import RazorPaymentScreen from '../../Compnents/RazorPaymentScreen'
 
 
 import { useNavigate } from "react-router-dom";
+import AdvertisementApiList from "../../Compnents/AdvertisementApiList";
+import ApiHeader from "../../Compnents/ApiHeader";
 
 
 const customStyles = {
@@ -14,7 +17,7 @@ const customStyles = {
         bottom: "auto",
         marginRight: "-50%",
         transform: "translate(-50%, -50%)",
-        background: "transparent",
+        background: "",
         border: "none",
     },
 };
@@ -23,12 +26,14 @@ function AdvertPaymentModal(props) {
     // Modal.setAppElement('#yourAppElement');
     const [modalIsOpen, setIsOpen] = React.useState(false);
 
+    const { api_getOrderIdForPayment } = AdvertisementApiList()
+    const [orderId, setorderId] = useState()
     const navigate = useNavigate();
     useEffect(() => {
         if (props.openPaymentModal > 0) setIsOpen(true);
     }, [props.openPaymentModal]);
 
-
+    console.log("payment card details", props?.applicationDetails?.id)
 
     function afterOpenModal() { }
 
@@ -37,75 +42,62 @@ function AdvertPaymentModal(props) {
         // props.refetchListOfRoles();
     }
 
+    const notify = (toastData, type) => {
+        toast.dismiss();
+        if (type == 'success') {
+            toast.success(toastData)
+        }
+        if (type == 'error') {
+            toast.error(toastData)
+        }
+    };
+
+
     ///////////{*** PAYMENT METHOD ***}/////////
     const dreturn = (data) => {   // In (DATA) this function returns the Paymen Status, Message and Other Response data form Razorpay Server
         console.log('Payment Status =>', data)
-        if (data?.status) {
-            toast.success('Payment Success....', data)
-            // return
-            navigate(`/paymentScreen/${data?.data?.razorpay_payment_id}`)
+        if (data?.status === true) {
+            navigate(`/paymentScreen`)
+            notify("Payment Successfull", "success")
         } else {
             toast.error('Payment failed....')
+            notify("Payment Failed", "error")
             navigate('/advertDashboard')
         }
     }
 
-
-
-
     const payNow = (e) => {
-        let payApplicationId = e.target.id
-        let payableAmount = e.target.value
-        console.log("application id for payment process...", payApplicationId)
-        console.log("payable amount for payment process...", payableAmount)
-        console.log('loader clicked...')
-        const orderIdPayload = {
-            "id": payApplicationId,
-            "amount": props?.safSubmitResponse?.data?.demand?.amounts?.payableAmount,
-            "departmentId": 1,
-            "workflowId": 4,
-            "uldId": 2
+        props.showLoader(true)
+        console.log("payment id on click pay", e.target.id)
+        let applicationId = e.target.id
+        const requestBody = {
+            id: applicationId
         }
+        axios.post(`${api_getOrderIdForPayment}`, requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('generate order id', response.data)
+                if (response.data.status == true) {
+                    console.log("OrderId Generated True", response.data)
+                    RazorPaymentScreen(response.data.data, dreturn)  //Send Response Data as Object (amount, orderId, ulbId, departmentId, applicationId, workflowId, userId, name, email, contact) will call razorpay payment function to show payment popup     
+                }
+                else {
+
+                }
+                setorderId(response)
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+            })
+            .catch(function (error) {
+                alert("Backend Server error. Unable to Generate Order Id");
+                console.log("ERROR :-  Unable to Generate Order Id ", err)
+
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+
+            })
     }
-
-    let token = window.localStorage.getItem('token')
-    console.log('token at basic details is post method...', token)
-    const header = {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-        }
-    }
-    // axios.post(propertyGenerateOrderId, orderIdPayload, header)  // This API will generate Order ID
-    //     .then((res) => {
-    //         console.log("Order Id Response ", res.data)
-    //         if (res.data.status === true) {
-    //             console.log("OrderId Generated True", res.data)
-    //             setloaderStatus(false)
-
-    //             RazorPaymentScreen(res.data.data, dreturn);  //Send Response Data as Object (amount, orderId, ulbId, departmentId, applicationId, workflowId, userId, name, email, contact) will call razorpay payment function to show payment popup                                      
-    //             setTimeout(() => {
-    //                 props.showLoader(false)
-    //             }, 500)
-
-    //         }
-    //         else {
-    //             setloaderStatus(false)
-
-    //             props.showLoader(false)
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         alert("Backend Server error. Unable to Generate Order Id");
-    //         console.log("ERROR :-  Unable to Generate Order Id ", err)
-
-    //         props.showLoader(false)
-    //     })
-
-
-
-
-
 
     return (
         <div className="">
@@ -117,22 +109,22 @@ function AdvertPaymentModal(props) {
                 style={customStyles}
                 contentLabel="Example Modal"
             >
-                <div className="bg-white text-slate-50 shadow-2xl border border-violet-400 p-5 m-5 rounded-md"  >
+                <div className="bg-violet-200 text-slate-50 drop-shadow-2xl border border-violet-500 p-5 m-5 rounded-md"  >
                     <div className=''>
-                        <div className='shadow-md shadow-violet-200 py-1 pl-3 bg-white border-gray-400 text-gray-600 flex'>Make Payment For<span className="font-bold text-md ml-4 ">APPLICATION NO. -   123456789 (SELF ADVERTISEMENT)</span></div>
+                        <div className='shadow-md shadow-violet-300 py-1 pl-3 bg-white border-gray-400 text-gray-600 flex'>Make Payment For<span className="font-bold text-md ml-4 uppercase ">{props?.applicationDetails?.type} </span></div>
 
                         <div className="md:flex block w-full h-56">
                             <div className='grid grid-cols-12 px-8 pt-3 leading-8 '>
                                 <div className='md:col-span-6 col-span-12'>
                                     <div className='grid grid-cols-12'>
                                         <div className='col-span-6  text-gray-600'>
-                                            <p>Entity Name</p>
-                                            <p>Applied date</p>
+                                            <p>Application No. -</p>
+                                            <p>Applied date -</p>
 
                                         </div>
-                                        <div className='col-span-6 text-gray-600'>
-                                            <p>Applicant </p>
-                                            <p>01/02/2023</p>
+                                        <div className='col-span-6 text-gray-500 font-bold'>
+                                            <p>{props?.applicationDetails?.application_no} </p>
+                                            <p>{props?.applicationDetails?.application_date}</p>
                                             {/* <p>{props?.OrderResponse?.applicationType}</p>
                                             <p>&emsp;{props?.OrderResponse?.licenceForYears} year <small>(s)</small></p>
                                             <p>{props?.OrderResponse?.applyDate == null ? JSON.stringify(new Date()).slice(1, 11) : props?.OrderResponse?.applyDate}</p> */}
@@ -142,12 +134,12 @@ function AdvertPaymentModal(props) {
                                 <div className='md:col-span-6 col-span-12'>
                                     <div className='grid grid-cols-12'>
                                         <div className='col-span-6  text-gray-600'>
-                                            <p>Entity Name</p>
-                                            <p>Applied date</p>
+                                            <p>Applicant Name -</p>
+                                            <p>Entity Name -</p>
                                         </div>
-                                        <div className='col-span-6 text-gray-600 '>
-                                            <p>Applicant </p>
-                                            <p>01/02/2023</p>
+                                        <div className='col-span-6 text-gray-500 font-bold'>
+                                            <p>{props?.applicationDetails?.applicant}  </p>
+                                            <p>{props?.applicationDetails?.entity_name} </p>
                                         </div>
                                     </div>
                                 </div>
@@ -163,7 +155,7 @@ function AdvertPaymentModal(props) {
                                 <div className='md:col-span-6 col-span-12'>
                                     <div className='grid grid-cols-12'>
                                         <div className='col-span-6  text-gray-600'>
-                                            <h1 className="font-bold text-lg bg-violet-300 px-2 ">0.00</h1>
+                                            <h1 className="font-bold text-lg bg-violet-300 px-2 ">{props?.applicationDetails?.payment_amount}</h1>
 
                                         </div>
 
@@ -174,14 +166,14 @@ function AdvertPaymentModal(props) {
                                     <div className='grid grid-cols-12'>
                                         <div className='col-span-6  text-gray-600'>
                                             <button onClick={closeModal} className='mx-2 bg-red-600 hover:bg-red-700 transition duration-200 hover:scale-105 font-normal text-white px-6 py-1 text-sm  rounded-sm shadow-xl'>Cancel</button>
-                                            <button onClick={payNow} className='mx-2 bg-indigo-600 hover:bg-indigo-700 transition duration-200 hover:scale-105 font-normal text-white px-6 py-1 text-sm  rounded-sm shadow-xl'>Pay Now</button>
+                                            <button onClick={payNow} id={props?.applicationDetails?.id} className='mx-2 bg-indigo-600 hover:bg-indigo-700 transition duration-200 hover:scale-105 font-normal text-white px-6 py-1 text-sm  rounded-sm shadow-xl'>Pay Now</button>
                                         </div>
                                     </div>
                                 </div>
                                 <div className='md:col-span-6 col-span-12'>
                                     <div className='grid grid-cols-12'>
                                         <div className='col-span-6  text-gray-600'>
-                                           <img src='https://cdn-icons-png.flaticon.com/256/7057/7057515.png' className="h-16"/>
+                                            <img src='https://cdn-icons-png.flaticon.com/256/7057/7057515.png' className="h-16" />
 
                                         </div>
 

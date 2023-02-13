@@ -9,9 +9,10 @@ function HoardingForm1(props) {
 
     const { api_getAdvertMasterData, api_getWardList } = AdvertisementApiList()
 
+    const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
 
     let labelStyle = "mt-6 -ml-7 text-xs text-gray-600"
-    let inputStyle = "text-xs rounded-md shadow-md px-1.5 py-1 w-[10rem] md:w-[13rem] h-6 md:h-8  mt-5 -ml-2 "
+    let inputStyle = "text-xs rounded leading-5 shadow-md px-1.5 py-1 w-full h-6 md:h-8  mt-5 "
 
     const [masterData, setmasterData] = useState()
     const [wardList, setwardList] = useState()
@@ -37,13 +38,12 @@ function HoardingForm1(props) {
 
     const formik = useFormik({
         initialValues: initialValues,
-        // enableReinitialize: true,
         onSubmit: values => {
             alert(JSON.stringify(values, null, 2));
             console.log("hoarding1...1", values)
             // props.collectFormDataFun('hoarding1', values, reviewIdName)
-            props.collectFormDataFun('hoarding1', values)
-            props?.nextFun(1)
+            collectFormDataFun('hoarding1', values)
+            setFormIndex(2)
         },
     });
 
@@ -95,7 +95,7 @@ function HoardingForm1(props) {
 
     return (
         <>
-            <div>
+            <div className='absolute w-full top-0 '>
                 <form onSubmit={formik.handleSubmit} onChange={handleChange}>
                     <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto '>
                         <div className='col-span-8'>
@@ -106,7 +106,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}> Ulb <span className='text-red-600'>*</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <select className={`${inputStyle} bg-white`} {...formik.getFieldProps('ulb')} >
                                                 <option>select </option>
                                                 {ulbList?.map((items) => (
@@ -120,7 +120,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle} `}> District <span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='district' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.district}
@@ -131,7 +131,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>City<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='city' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.city}
@@ -142,7 +142,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Ward No.<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <select {...formik.getFieldProps('wardNo')} className={`${inputStyle} bg-white`} >
                                                 <option>select </option>
                                                 {wardList?.map((items) => (
@@ -155,7 +155,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Zone<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='zone' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.zone}
@@ -166,7 +166,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Permit Number<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='permitNumber' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.permitNumber}
@@ -179,7 +179,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Road Street/Address<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='roadStreetAddress' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.roadStreetAddress}
@@ -190,7 +190,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Date Granted<span className='text-red-600'>*</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="date" name='dateGranted' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.dateGranted}
@@ -202,7 +202,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Application No.<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="text" name='applicationNo' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.applicationNo}
@@ -213,7 +213,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Permit Issue Date<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="date" name='permitIssueDate' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.permitIssueDate}
@@ -224,7 +224,7 @@ function HoardingForm1(props) {
                                         <div className='col-span-1'>
                                             <p className={`${labelStyle}`}>Permit Expired Date<span className='text-red-600'> *</span></p>
                                         </div>
-                                        <div className='col-span-2'>
+                                        <div className='col-span-2 mr-2'>
                                             <input type="date" name='permitExpireDate' placeholder='' className={`${inputStyle}`}
                                                 onChange={formik.handleChange}
                                                 value={formik.values.permitExpireDate}
@@ -244,7 +244,7 @@ function HoardingForm1(props) {
                                     <div className='col-span-1'>
                                         <p className={`${labelStyle}`}>Account No.<span className='text-red-600'> *</span></p>
                                     </div>
-                                    <div className='col-span-2'>
+                                    <div className='col-span-2 mr-2'>
                                         <input type="text" name='accountNo' placeholder='' className={`${inputStyle}`}
                                             onChange={formik.handleChange}
                                             value={formik.values.accountNo}
@@ -255,7 +255,7 @@ function HoardingForm1(props) {
                                     <div className='col-span-1'>
                                         <p className={`${labelStyle}`}>Bank Name<span className='text-red-600'> *</span></p>
                                     </div>
-                                    <div className='col-span-2'>
+                                    <div className='col-span-2 mr-2'>
                                         <input type="text" name='bankName' placeholder='' className={`${inputStyle}`}
                                             onChange={formik.handleChange}
                                             value={formik.values.bankName}
@@ -266,7 +266,7 @@ function HoardingForm1(props) {
                                     <div className='col-span-1'>
                                         <p className={`${labelStyle}`}>IFSC code<span className='text-red-600'> *</span></p>
                                     </div>
-                                    <div className='col-span-2'>
+                                    <div className='col-span-2 mr-2'>
                                         <input type="text" name='ifscCode' placeholder='' className={`${inputStyle}`}
                                             onChange={formik.handleChange}
                                             value={formik.values.ifscCode}
@@ -277,7 +277,7 @@ function HoardingForm1(props) {
                                     <div className='col-span-1'>
                                         <p className={`${labelStyle}`}>Total fees charged<span className='text-red-600'> *</span></p>
                                     </div>
-                                    <div className='col-span-2'>
+                                    <div className='col-span-2 mr-2'>
                                         <input type="text" name='totalFeeCharged' placeholder='' className={`${inputStyle}`}
                                             onChange={formik.handleChange}
                                             value={formik.values.totalFeeCharged}

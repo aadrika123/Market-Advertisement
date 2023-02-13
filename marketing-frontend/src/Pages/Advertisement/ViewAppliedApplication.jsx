@@ -15,10 +15,18 @@ function ViewAppliedApplication(props) {
     const [applicationDetail, setapplicationDetail] = useState()
     const [documentList, setdocumentList] = useState()
 
-    let show = props.showLoader
     const applicationId = props.data
+    const applicationType = props.applicationType
 
-    console.log("application id..1",applicationId)
+
+    console.log("onclick close modal", props.closeModal)
+    console.log("application id..1", applicationId)
+    console.log("application type", applicationType)
+
+
+    const handleClose = () => {
+        props.closeModal()
+    }
 
     ///////////{*** GET APPLICATION LIST***}/////////
     useEffect(() => {
@@ -29,8 +37,9 @@ function ViewAppliedApplication(props) {
         console.log("application no through props..", props?.data)
         const requestBody = {
             applicationId: applicationId,
-            // deviceId: "selfAdvert",
+            type: applicationType,
         }
+        console.log("request body for application full detail", requestBody)
         axios.post(`${api_getAppliedApplicationDetail}`, requestBody, ApiHeader())
             .then(function (response) {
                 console.log('application view details 1', response)
@@ -53,15 +62,15 @@ function ViewAppliedApplication(props) {
     useEffect(() => {
         getAppliedDocumentList()
     }, [])
-    const getAppliedDocumentList = () => {  
+    const getAppliedDocumentList = () => {
         props.showLoader(true)
         const requestBody = {
-            applicationId: props?.data,
-            // deviceId: "selfAdvert",
+            applicationId: applicationId,
+            type: applicationType,
         }
         axios.post(`${api_getAppliedDocumentList}`, requestBody, ApiHeader())
             .then(function (response) {
-                console.log('document list', response.data.data)
+                console.log('document list 22', response.data.data)
                 setdocumentList(response.data.data)
                 setTimeout(() => {
                     props.showLoader(false);
@@ -75,15 +84,20 @@ function ViewAppliedApplication(props) {
             })
     }
 
-    console.log("document list...2", documentList?.documents)
+    console.log("document list...2", documentList)
 
 
     return (
         <>
-            <div className=''>
-                <div className=' shadow-md shadow-violet-200 p-2'>
-                    <h1 className='text-2xl  font-semibold text-gray-700 '>Application Details</h1>
-                    <h1 className='text-xs  text-gray-500'>Review your application</h1>
+            <div className='border border-violet-400 shadow-lg rounded leading-5 z-50'>
+                <div className=' shadow-md shadow-violet-200 p-2 '>
+                    <h1 className='text-2xl px-4 font-semibold text-gray-700 '>Application Details</h1>
+                    <h1 className='text-xs px-4 text-gray-500'>Review your application</h1>
+                    <button className='float-right -mt-9 mr-4' onClick={handleClose}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 bg-red-400 text-white  shadow-lg  rounded-full">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
                 </div>
                 <div className='ml-96'>
                     {/* <Loader show={ props.showLoader(false)} /> */}
@@ -120,13 +134,12 @@ function ViewAppliedApplication(props) {
                                 <h1 className='font-semibold text-gray-800 text-lg text-center '>Documents Uploaded</h1>
                             </div>
                         </div>
-                        {documentList?.documents?.map((data) => (
+                        {documentList?.map((data) => (
                             <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 p-4 bg-white  rounded leading-5'>
                                 <div className='flex  bg-violet-100'>
-                                    <h1 className='flex-1 font-semibold text-sm text-gray-600 p-6 uppercase'>{data?.document_name}</h1>
+                                    <h1 className='flex-1 font-semibold text-sm text-gray-600 p-6 uppercase'>{data?.doc_val}</h1>
                                     <h1 className='flex-1 '>
-                                        <embed className='w-16 h-16 float-right' src={`http://192.168.0.140:8000/${data?.document_path}`} />
-                                        {/* <img className='w-16 float-right' src={`http://192.168.0.140:8000/${data?.document_path}`} /> */}
+                                        <embed className='w-16 h-16 float-right' src={`http://192.168.0.127:8000/${data?.doc_path}`} />
                                     </h1>
                                 </div>
                             </div>

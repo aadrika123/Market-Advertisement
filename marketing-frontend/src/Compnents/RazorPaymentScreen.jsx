@@ -4,7 +4,8 @@ import axios from "axios";
 // const { verifyPaymentStatus } = CitizenApplyApiList();
 
 
-let token = window.localStorage.getItem('token')
+// let token = window.localStorage.getItem('token')
+let token = "6927|fYOxJyRC02gWokJxlbSJmBhOD0IAHZC8wzswyVOW"
 console.log('token at basic details is post method...', token)
 const header = {
     headers: {
@@ -84,7 +85,8 @@ const callApiLog = (response) => {
         "razorpaySignature": response.razorpay_signature
     }
 
-    axios.post(verifyPaymentStatus, sendPayload, header) /// This API Will save the data. When response come after payment Sucess -> Not Nessesary
+    // axios.post(verifyPaymentStatus, sendPayload, header) /// This API Will save the data. When response come after payment Sucess -> Not Nessesary
+    axios.post('http://192.168.0.16:8000/api/payment/verify-payment-status', sendPayload, header) /// This API Will save the data. When response come after payment Sucess -> Not Nessesary
         .then((res) => {
             console.log("2nd API Data saved ", res)
         })
@@ -106,7 +108,8 @@ const callApiLogFailed = (response) => {
         "description": response.error.description,
     }
 
-    axios.post(verifyPaymentStatus, sendPayload, header) /// This API Will save the data. When response come after payment FAILED -> Not Nessesary
+    // axios.post(verifyPaymentStatus, sendPayload, header) /// This API Will save the data. When response come after payment FAILED -> Not Nessesary
+    axios.post('http://192.168.0.16:8000/api/payment/verify-payment-status', sendPayload, header) /// This API Will save the data. When response come after payment FAILED -> Not Nessesary
         .then((res) => {
             console.log("2nd API Filed Data saved ", res)
         })

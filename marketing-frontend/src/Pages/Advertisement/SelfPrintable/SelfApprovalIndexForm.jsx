@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import ReactToPrint from 'react-to-print-advanced'
-import ComponentToPrint from './SelfApprovalForm'
+import ComponentToPrint from './SelfApprovalForm';
+
 
 function SelfApprovalIndexForm() {
 
@@ -8,12 +9,15 @@ function SelfApprovalIndexForm() {
     return (
         <>
             <div>
+
                 {/* <NonBlockingLoader show={show} /> */}
                 <ReactToPrint
-                    trigger={() => <button></button>}
+                    trigger={() => <button className='bg-sky-200 px-4 text-lg '>print</button>}
                     content={() => componentRef.current}
                 />
-                <ComponentToPrint ref={componentRef}  />
+                <ComponentToPrint ref={componentRef} />
+
+
             </div>
         </>
     )

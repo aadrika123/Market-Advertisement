@@ -2,6 +2,7 @@
 import Modal from 'react-modal';
 import { useFormik } from 'formik';
 import React, { useState } from 'react'
+import { Tooltip } from '@material-tailwind/react';
 
 
 
@@ -42,9 +43,12 @@ function MovableVehicleDocTable(props) {
     }
 
     const initialValues = {
-        id: props?.data?.id,
+        // id: props?.data?.id,
+        // image: "",
+        // relativeName: props?.data?.relative_name
         image: "",
-        relativeName: props?.data?.relative_name
+        docCode: props?.data?.docCode,
+        ownerDtlId: ''
     };
 
     const formik = useFormik({
@@ -78,7 +82,7 @@ function MovableVehicleDocTable(props) {
     console.log("url", DocUrl)
     console.log("path", imgPath)
     return (
-        <div>
+        <div className=''>
             <form onSubmit={formik.handleSubmit}
                 onChange={handleOnChange}
                 encType="multipart/form-data">
@@ -97,12 +101,24 @@ function MovableVehicleDocTable(props) {
                         <div className="flex items-center justify-center font-semibold text-sm" >
                             {imgPath?.image?.name == null || imgPath?.image?.name == undefined || imgPath?.image?.name == '' ? <img src='https://cdn-icons-png.flaticon.com/512/4194/4194756.png' alt="Preview Image" className={`${labelStyle} w-8`} /> :
                                 <>
-                                    <div onClick={() => modalAction(DocUrl)}>
-                                        {imgPath?.image?.name?.split('.').pop() == "pdf" && <img src='https://cdn-icons-png.flaticon.com/512/3997/3997593.png' alt="Preview Image" className={`${labelStyle} w-8`} />}
-                                        {imgPath?.image?.name?.split('.').pop() == "jpg" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719824.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
-                                        {imgPath?.image?.name?.split('.').pop() == "jpeg" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719824.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
-                                        {imgPath?.image?.name?.split('.').pop() == "png" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
-                                    </div>
+                                    {imgPath?.image?.name?.split('.').pop() == "pdf" || imgPath?.image?.name?.split('.').pop() == "jpg" || imgPath?.image?.name?.split('.').pop() == "jpeg" || imgPath?.image?.name?.split('.').pop() == "png"
+                                        ?
+                                        <div onClick={() => modalAction(DocUrl)}>
+                                            {imgPath?.image?.name?.split('.').pop() == "pdf" && <img src='https://cdn-icons-png.flaticon.com/512/3997/3997593.png' alt="Preview Image" className={`${labelStyle} w-8`} />}
+                                            {imgPath?.image?.name?.split('.').pop() == "jpg" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719824.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
+                                            {imgPath?.image?.name?.split('.').pop() == "jpeg" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719824.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
+                                            {imgPath?.image?.name?.split('.').pop() == "png" && <img src="https://cdn-icons-png.flaticon.com/512/5719/5719894.png" alt="Preview Image" className={`${labelStyle} w-8`} />}
+                                        </div>
+                                        :
+                                        <>
+                                            <Tooltip className='bg-gray-500 text-xs text-white' content="Does not support this file extension">
+                                                <div>
+                                                    <img src='https://cdn-icons-png.flaticon.com/512/8316/8316660.png' className={`${labelStyle} w-8 mx-auto`} />
+                                                </div>
+                                            </Tooltip>
+
+                                        </>
+                                    }
 
                                 </>
                             }

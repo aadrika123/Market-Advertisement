@@ -42,9 +42,12 @@ function AgencyDocTable(props) {
     }
 
     const initialValues = {
-        id: props?.data?.id,
-        image: "",
-        relativeName: props?.data?.relative_name
+        // id: props?.data?.id,
+        // image: "",
+        // relativeName: props?.data?.relative_name
+        image: '',
+        docCode: props?.data?.docCode,
+        ownerDtlId: ''
     };
 
     const formik = useFormik({

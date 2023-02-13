@@ -171,6 +171,14 @@ function PrivateLandIndexForm() {
         console.log("form index", formIndex)
     }
 
+    // passing values in components
+    const values = {
+        setFormIndex: setFormIndex,
+        showLoader: showLoader,
+        collectFormDataFun: collectAllFormData,
+        toastFun: notify,
+    }
+
     console.log("response screen", responseScreen)
     if (responseScreen?.status == true) {
         return (
@@ -189,27 +197,29 @@ function PrivateLandIndexForm() {
             <ToastContainer position="top-right"
                 autoClose={2000} />
             <div className='overflow-x-clip '>
-                <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
-                    <div className='flex flex-row '>
-                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Private Land</h1>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 bg-white p-2 rounded-md shadow-md shadow-violet-200  '>
+                    <div className=''>
+                        <div className='flex flex-row '>
+                            <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold'>Private Land</h1>
+                        </div>
+                        <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>
+                            You Can Get License To Advertise Your Business Name On Your Shop
+                        </h1>
                     </div>
-                    <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
-                    <div className='flex flex-row float-right'>
-                        {/* {FirmStep == 1 && */}
-                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
-                        </strong> more screen</span>
-                        <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
-                        <div className=''>
-                            <BackButton />
+                    <div>
+                        <div className='flex flex-row mt-2 float-right'>
+                            <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle'>&emsp; <strong className='text-2xl text-violet-600 '>{3 - formIndex}
+                            </strong> more screen</span>
+                            <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right ml-4' />
+                            <div className='mt-2'>
+                                <BackButton />
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div className={`${animateform1} transition-all relative`}><PrivateLandForm showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-
-                <div className={`${animateform2} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><PrivateLandDocForm collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-
-                <div className={`${animateform3} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><ReviewPrivateLandApplication reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${animateform1} transition-all relative`}><PrivateLandForm values={values} /></div>
+                <div className={`${animateform2} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><PrivateLandDocForm values={values} /></div>
+                <div className={`${animateform3} transition-all relative md:-mt-[49rem] lg:-mt-[49rem]`}><ReviewPrivateLandApplication values={values} reviewIdNameData={reviewData} allFormData={allFormData} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>

@@ -1,6 +1,9 @@
 import React from 'react'
 
 function ReviewMovableApplication(props) {
+
+    const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
+
     let labelStyle = "mt-6 -ml-7 text-xs text-gray-600"
     let inputStyle = "mt-6 -ml-7 text-md text-gray-800 font-bold"
 
@@ -13,9 +16,9 @@ function ReviewMovableApplication(props) {
     return (
         <>
 
-            <div>
+            <div className='absolute w-full top-0 '>
                 <div className='grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container mx-auto  '>
-                    <div className='col-span-8 border border-dashed border-violet-800 -mt-[35rem]'>
+                    <div className='col-span-8 border border-dashed border-violet-800 '>
                         <h1 className='text-center p-3 mb-2 bg-white text-gray-600 font-sans font-semibold'>APPLICATION DETAILS</h1>
                         <div className='grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 p-2 ml-12'>
                             <div className=''>
@@ -130,7 +133,7 @@ function ReviewMovableApplication(props) {
                         </div>
                     </div>
                     {/* document */}
-                    <div className='col-span-4 border border-dashed border-violet-800 -mt-[35rem]'>
+                    <div className='col-span-4 border border-dashed border-violet-800 '>
                         <h1 className='text-center p-3 mb-2 bg-white text-gray-600 font-sans font-semibold '>DOCUMENTS UPLOADED</h1>
 
                         <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 p-2 ml-12'>
@@ -187,7 +190,7 @@ function ReviewMovableApplication(props) {
                 </div>
                 <div className="grid grid-cols-12 w-full p-3">
                     <div className='md:pl-0 col-span-6'>
-                        <button type="button" class="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => props.backFun(3)}>back</button>
+                        <button type="button" class="text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => setFormIndex(2)}>back</button>
 
                     </div>
                     <div className='col-span-6'>

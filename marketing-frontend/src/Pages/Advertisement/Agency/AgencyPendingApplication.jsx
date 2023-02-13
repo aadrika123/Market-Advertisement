@@ -8,6 +8,7 @@ import ViewAppliedApplication from '../ViewAppliedApplication';
 import Loader from '../Loader';
 import ViewAgencyApplicationFullDetails from './ViewAgencyApplicationFullDetails';
 import AdvertPaymentModal from '../AdvertPaymentModal';
+import AgencyPaymentModal from './AgencyPaymentModal';
 // import NoData from '../../../assets/gifFolder/NoData.gif    '
 
 
@@ -28,16 +29,15 @@ Modal.setAppElement('#root');
 
 function AgencyPendingApplication(props) {
     const navigate = useNavigate()
-
-
-    const { api_getAgencyAppliedApplicationList, api_getAgencyApprovedApplicationList, api_getAgencyRejectedApplicationList } = AdvertisementApiList()
-
+    const { api_getAgencyAppliedApplicationList, api_getAgencyApprovedApplicationList, api_getAgencyRejectedApplicationList, api_getAgencyApplicationDetailForPayment, api_postRedirectToAgencyDashboard } = AdvertisementApiList()
     const [applyList, setapplyList] = useState('hidden')
     const [appliedApplication, setappliedApplication] = useState()
     const [approvedApplication, setapprovedApplication] = useState()
     const [rejectedApplication, setrejectedApplication] = useState()
+    const [agencyDashboard, setagencyDashboard] = useState()
     const [openPaymentModal, setOpenPaymentModal] = useState(0)
-
+    const [applicationIdDetail, setapplicationIdDetail] = useState()
+    const [applicationType, setapplicationType] = useState()
     const [modalIsOpen, setIsOpen] = useState(false);
     const [applicationNo, setapplicationNo] = useState()
     const [tabIndex, settabIndex] = useState(1)
@@ -46,17 +46,14 @@ function AgencyPendingApplication(props) {
     const afterOpenModal = () => { }
 
 
-    const modalAction = (e) => {
-        let applicationId = e.target.id
-        console.log("application id", applicationId)
+    const modalAction = (applicationId, applicationType) => {
+        console.log("..............application id..............", applicationId)
+        console.log("..............application type..............", applicationType)
         setapplicationNo(applicationId)
+        setapplicationType(applicationType)
         openModal()
     }
     console.log("application no. for modal", applicationNo)
-
-    const showApplyList = () => {
-        applyList == 'hidden' ? setapplyList('') : setapplyList('hidden')
-    }
 
     ///////////{*** GET APPLICATION LIST***}/////////
     useEffect(() => {
@@ -65,7 +62,7 @@ function AgencyPendingApplication(props) {
     const getApplicationList = () => {
         props.showLoader(true);
         const requestBody = {
-            deviceId: "selfAdvert",
+            // deviceId: "selfAdvert",
         }
         axios.post(`${api_getAgencyAppliedApplicationList}`, requestBody, ApiHeader())
             .then(function (response) {
@@ -138,27 +135,78 @@ function AgencyPendingApplication(props) {
             })
     }
 
-    const handlePayment = () => {
-        console.log("Clicked PAy")
-        setOpenPaymentModal(prev => prev + 1)
-
+    const handlePayment = (e) => {
+        props.showLoader(true);
+        console.log("application id", e.target.id)
+        let applicationId = e.target.id
+        const requestBody = {
+            applicationId: applicationId
+        }
+        axios.post(`${api_getAgencyApplicationDetailForPayment}`, requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('application detail for payment 1', response.data.data)
+                setapplicationIdDetail(response.data.data)
+                setOpenPaymentModal(prev => prev + 1)
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+            })
+            .catch(function (error) {
+                console.log('errorrr.... ', error);
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+            })
     }
 
+    ///////////{*** If agency redirect to dashboard ***}/////////
+  
+    const handleAgencyDashboard = () => {
+        props.showLoader(true);
+        const requestBody = {
+            // deviceId: "selfAdvert",
+        }
+        axios.post(`${api_postRedirectToAgencyDashboard}`, requestBody, ApiHeader())
+            .then(function (response) {
+                console.log('agency dashboard', response?.data?.status)
+                if(response?.data?.status==true){
+                    navigate('/agencyDashboard')
+                }
+                else{
+                    navigate('/advertDashboard')
+                }
+                setagencyDashboard(response)
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+            })
+            .catch(function (error) {
+                console.log('errorrr.... ', error);
+                setTimeout(() => {
+                    props.showLoader(false);
+                }, 500);
+
+            })
+    }
+
+    console.log("agency dashboard...1", agencyDashboard?.data?.status)
 
     console.log("rejected application list...", rejectedApplication)
-
-    console.log("application  list...1", appliedApplication?.data)
+    console.log("application  list...1", appliedApplication)
     console.log("application  no.", applicationNo)
 
     return (
         <>
             {/***** section 3 ******/}
-            <AdvertPaymentModal openPaymentModal={openPaymentModal} />
+            <AgencyPaymentModal openPaymentModal={openPaymentModal} applicationDetails={applicationIdDetail} showLoader={props.showLoader} />
 
             <div className=''>
-                <div className='flex bg-white p-2 mb-4 shadow-md  text-lg  font-semibold text-gray-500  '>
-                    <h1 className='flex-1'>Agency Application</h1>
-                    <div className='flex-1'>
+                <div className='flex flex-col md:flex lg:flex bg-white p-2 mb-4 shadow-md  text-lg  font-semibold text-gray-500  '>
+                    {tabIndex == 1 && <h1 className='flex-1'>Agency Application<span className='text-indigo-500 underline'>Pending Application</span> </h1>}
+                    {tabIndex == 2 && <h1 className='flex-1'>Agency Application<span className='text-indigo-500 underline'>Approved Application</span></h1>}
+                    {tabIndex == 3 && <h1 className='flex-1'>Agency Application<span className='text-indigo-500 underline'>Rejected Application</span></h1>}
+
+                    <div className='flex-1  md:-mt-7 lg:-mt-7'>
                         <button type='button' className='text-xs bg-indigo-300 px-2 py-1 mr-2 text-indigo-600 border border-indigo-500  rounded leading-5 float-right focus:bg-indigo-500  focus:shadow-lg focus:text-white dark:bg-white' onClick={() => settabIndex(3)}>Rejected Application</button>
                         <button type='button' className='text-xs bg-indigo-300 px-2 py-1 mr-2 text-indigo-600 border border-indigo-500  rounded leading-5 float-right focus:bg-indigo-500  focus:shadow-lg focus:text-white dark:bg-white' onClick={() => settabIndex(2)}>Approved Application</button>
                         <button type='button' className='text-xs bg-indigo-300 px-2 py-1 mr-2 text-indigo-600 border border-indigo-500  rounded leading-5 float-right focus:bg-indigo-500  focus:shadow-lg focus:text-white dark:bg-white' onClick={() => settabIndex(1)}>Pending Application</button>
@@ -167,65 +215,87 @@ function AgencyPendingApplication(props) {
                 </div>
                 {/* pending application list for self advertisement */}
                 {tabIndex == 1 &&
-                    <div className=''>
-                        {appliedApplication?.data?.map((items) => (
-                            <div className='col-span-3 p-3 h-32 mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
-                                <div className='bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md '>
-                                    <h1 className='text-xs -mt-3 text-center text-white '>Agency Application</h1>
-                                </div>
-                                <div className='flex flex-row space-x-8 p-2'>
-                                    <h1 className='text-xs'>Application No. :- <span className='font-bold text-sm text-gray-700'>{items?.application_no}-({items?.id})</span></h1>
-                                    <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1>
-                                    <h1 className='text-xs'>Apply Date :- <span className='font-bold text-sm text-gray-700'>{items?.application_date}</span></h1>
-                                </div>
-                                <div className='flex flex-row space-x-8 p-2'>
-                                    <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
-                                    {/* <h1 className='text-xs'>Entity Address :- <span className='font-bold text-sm text-gray-700'>{items?.entity_address
-                                    }</span></h1> */}
-                                </div>
+                    <div>
+                        {appliedApplication == undefined || appliedApplication == null ?
+                            <>
+                                <h1 className='text-center text-2xl text-gray-500'>No Pending Application Found ... </h1>
+                                <img src='https://cdn-icons-png.flaticon.com/512/7466/7466140.png' className='mx-auto h-36 mt-4' />
 
-                                <div className='flex space-x-3 p-2'>
-                                    <div className='flex-1 justify-end'>
-                                        <button type="button" id={items?.id} class="  float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={modalAction}>View</button>
+                            </>
+                            :
+                            <div className=''>
+                                {appliedApplication?.data?.map((items) => (
+                                    <div className='col-span-3 p-3 h-auto mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md top-0 absolute'>
+                                            <h1 className='text-xs  text-center text-white '>Agency Application</h1>
+                                        </div>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
+                                            <h1 className='text-xs'>Application No. :- <span className='font-bold text-sm text-gray-700'>{items?.application_no}-({items?.id})</span></h1>
+                                            <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
+                                            <h1 className='text-xs'>Apply Date :- <span className='font-bold text-sm text-gray-700'>{items?.application_date}</span></h1>
+                                        </div>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
+                                            {/* <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1> */}
+                                            {/* <h1 className='text-xs'>Entity Address :- <span className='font-bold text-sm text-gray-700'>{items?.entity_address
+                                    }</span></h1> */}
+                                        </div>
+
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1  p-2'>
+                                            <div className='flex-1 justify-end'>
+                                                <button type="button" id={items?.id} value='Active' class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={(e) => modalAction(items?.id, e.target.value)}>View</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
+                        }
                     </div>
                 }
 
                 {/* approved application list for self advertisement */}
                 {tabIndex == 2 &&
                     <div>
-                        {approvedApplication.data.length == 0 || approvedApplication == undefined || approvedApplication == null ?
-                            <img src='https://img.freepik.com/free-vector/no-data-concept-illustration_114360-536.jpg?w=826&t=st=1674804842~exp=1674805442~hmac=00dcb272b055b7c82777562fa066650f13c6eaa2d78a2dc5709ae5bbda951e20' className='mx-auto h-96' />
+                        {approvedApplication == undefined || approvedApplication == null ?
+                            <>
+                                <h1 className='text-center text-2xl text-gray-500'>No Approved Application Found ... </h1>
+                                <img src='https://cdn-icons-png.flaticon.com/512/7466/7466140.png' className='mx-auto h-36 mt-4' />
+
+                            </>
                             :
                             <div className=''>
                                 {approvedApplication?.data?.map((items) => (
-                                    <div className='col-span-3 p-3 h-32 mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
-                                        <div className='bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md '>
-                                            <h1 className='text-xs -mt-3 text-center text-white '>Agency Application</h1>
+                                    <div className='col-span-3 p-3 h-auto mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md top-0 absolute'>
+                                            <h1 className='text-xs text-center text-white '>Agency Application</h1>
                                         </div>
-                                        <div className='flex flex-row space-x-8 p-2'>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
                                             <h1 className='text-xs'>Application No. :- <span className='font-bold text-sm text-gray-700'>{items?.application_no}-({items?.temp_id
                                             })</span></h1>
-                                            <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1>
+                                            <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
+
                                             <h1 className='text-xs'>Apply Date :- <span className='font-bold text-sm text-gray-700'>{items?.application_date}</span></h1>
                                         </div>
-                                        <div className='flex flex-row space-x-8 p-2'>
-                                            <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
+                                            {/* <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1> */}
                                             {/* <h1 className='text-xs'>Entity Address :- <span className='font-bold text-sm text-gray-700'>{items?.entity_address */}
                                             {/* }</span></h1> */}
 
                                         </div>
 
-                                        <div className='flex space-x-3 p-2'>
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1  p-2'>
                                             <div className='flex-1 justify-end'>
-                                                <button type="button" id={items?.temp_id
-                                                } class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={modalAction}>View</button>
-                                                <button type="button" id={items?.temp_id
-                                                } value={items?.payment_amount
-                                                } class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0 mr-2" onClick={handlePayment}>Pay</button>
+                                                <button type="button" id={items?.id
+                                                } value='Approve' class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={(e) => modalAction(items?.id, e.target.value)}>View</button>
+                                                {items.payment_status == 1 ?
+                                                    <>
+                                                        <button className='float-right text-xs shadow-lg mr-2 rounded leading-5 border-gray-50 bg-indigo-500 px-2 py-1 text-white' onClick={() => navigate('/approvalLetter')}>Download Approval Letter</button>
+
+                                                        <button className='float-right text-xs   shadow-lg mr-2 rounded leading-5 border-gray-50 bg-indigo-500 px-2 py-1 text-white' onClick={handleAgencyDashboard}>Your Dashboard</button>
+                                                    </>
+                                                    :
+                                                    <button type="button" id={items?.id
+                                                    } class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0 mr-2" onClick={handlePayment}>Pay</button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -239,33 +309,36 @@ function AgencyPendingApplication(props) {
                 {/* rejected  application list for self advertisement */}
                 {tabIndex == 3 &&
                     <div>
-                        {rejectedApplication.data.length == 0 || rejectedApplication == undefined || rejectedApplication == null ?
-                            <img src='https://img.freepik.com/free-vector/no-data-concept-illustration_114360-536.jpg?w=826&t=st=1674804842~exp=1674805442~hmac=00dcb272b055b7c82777562fa066650f13c6eaa2d78a2dc5709ae5bbda951e20' className='mx-auto h-96' />
-                            // <img src={NoData}/>
+                        {rejectedApplication == undefined || rejectedApplication == null ?
+                            <>
+                                <h1 className='text-center text-2xl text-gray-500'>No Rejected Application Found ... </h1>
+                                <img src='https://cdn-icons-png.flaticon.com/512/7466/7466140.png' className='mx-auto h-36 mt-4' />
+
+                            </>
                             :
                             <div className=''>
                                 {rejectedApplication?.data?.map((items) => (
-                                    <div className='col-span-3 p-3 h-32 mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
-                                        <div className='bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md '>
-                                            <h1 className='text-xs -mt-3 text-center text-white '>Agency Application</h1>
+                                    <div className='col-span-3 p-3 h-auto mb-4 shadow-lg rounded leading-5 bg-white transform transition duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl  '>
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 bg-yellow-500  w-36 -ml-3 rounded-r-lg shadow-md top-0 absolute'>
+                                            <h1 className='text-xs  text-center text-white '>Agency Application</h1>
                                         </div>
-                                        <div className='flex flex-row space-x-8 p-2'>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
                                             <h1 className='text-xs'>Application No. :- <span className='font-bold text-sm text-gray-700'>{items?.application_no}-({items?.temp_id
                                             })</span></h1>
-                                            <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1>
+                                            <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
                                             <h1 className='text-xs'>Apply Date :- <span className='font-bold text-sm text-gray-700'>{items?.application_date}</span></h1>
                                         </div>
-                                        <div className='flex flex-row space-x-8 p-2'>
-                                            <h1 className='text-xs'>Entity Name :- <span className='font-bold text-sm text-gray-700'>{items?.entity_name}</span></h1>
+                                        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 p-2'>
+                                            <h1 className='text-xs'>Applicant Name :- <span className='font-bold text-sm text-gray-700'>{items?.applicant}</span></h1>
                                             {/* <h1 className='text-xs'>Entity Address :- <span className='font-bold text-sm text-gray-700'>{items?.entity_address
                                             }</span></h1> */}
 
                                         </div>
 
-                                        <div className='flex space-x-3 p-2'>
+                                        <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1  p-2'>
                                             <div className='flex-1 justify-end'>
-                                                <button type="button" id={items?.temp_id
-                                                } class="  float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={modalAction}>View</button>
+                                                <button type="button" id={items?.id
+                                                } value='Reject' class="float-right text-xs  px-4 inline-block text-center  rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={(e) => modalAction(items?.id, e.target.value)}>View</button>
                                             </div>
                                         </div>
                                     </div>
@@ -283,7 +356,7 @@ function AgencyPendingApplication(props) {
                 contentLabel="Example Modal"
             >
                 <div class=" rounded-lg shadow-xl border-2 border-gray-50 mx-auto px-0" style={{ 'width': '80vw', 'height': '100%' }}>
-                    <ViewAgencyApplicationFullDetails data={applicationNo} showLoader={props.showLoader} />
+                    <ViewAgencyApplicationFullDetails data={applicationNo} applicationType={applicationType} showLoader={props.showLoader} closeModal={closeModal} />
                 </div>
             </Modal>
 

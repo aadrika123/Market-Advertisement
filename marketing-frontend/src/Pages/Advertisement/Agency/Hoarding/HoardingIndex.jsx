@@ -28,67 +28,7 @@ function HoardingIndex() {
         setshow(val);
     }
 
-
     const { api_postHoardingApplication } = AdvertisementApiList()
-
-    const backFun = (formIndex) => {
-        let tempFormIndex = formIndex
-        if (tempFormIndex == 1) { //backward by current form index 2
-            setFormIndex(1) // go to form index 1 since back from index 2
-            setAnimateform1('translate-x-0') // always setstate one index less than current index
-            setAnimateform2('pl-20 translate-x-full') //always current index setstate
-        }
-        if (tempFormIndex == 2) { //backward by current form index 2
-            setFormIndex(1) // go to form index 1 since back from index 2
-            setAnimateform1('translate-x-0') // always setstate one index less than current index
-            setAnimateform2('pl-20 translate-x-full') //always current index setstate
-        }
-        if (tempFormIndex == 3) {
-            setFormIndex(2)
-            setAnimateform2('translate-x-0')
-            setAnimateform3('pl-20 translate-x-full')
-        }
-        if (tempFormIndex == 4) {
-            setFormIndex(3)
-            setAnimateform3('translate-x-0')
-            setAnimateform4('pl-20 translate-x-full')
-        }
-        if (tempFormIndex == 5) {
-            setFormIndex(4)
-            setAnimateform4('translate-x-0')
-            setAnimateform5('pl-20 translate-x-full')
-        }
-
-    }
-    const nextFun = (formIndex) => {
-        let tempFormIndex = formIndex
-        if (tempFormIndex == 1) { //forward by current form index 1
-            setFormIndex(2) //go to form index 2 since forward from index 1
-            setAnimateform1(' -translate-x-full right-80')  //always current index setstate
-            setAnimateform2('pl-0 translate-x-0') // always setstate one index greater than current index
-        }
-        if (tempFormIndex == 2) {
-            setFormIndex(3)
-            setAnimateform2('-translate-x-full right-80')
-            setAnimateform3('pl-0 translate-x-0')
-        }
-        if (tempFormIndex == 3) {
-            setFormIndex(3)
-            setAnimateform2('-translate-x-full right-80')
-            setAnimateform3('pl-0 translate-x-0')
-        }
-        if (tempFormIndex == 4) {
-            setFormIndex(4)
-            setAnimateform3('-translate-x-full right-80')
-            setAnimateform4('pl-0 translate-x-0')
-        }
-        if (tempFormIndex == 5) {
-            setFormIndex(5)
-            setAnimateform4('-translate-x-full right-80')
-            setAnimateform5('pl-0 translate-x-0')
-        }
-    }
-
 
     //activating notification if no owner or no floor added
     const notify = (toastData, type) => {
@@ -128,7 +68,6 @@ function HoardingIndex() {
         const requestBody = {
             // ulbId: allFormData?.agency?.ulb,
             ulbId: 2,
-            // deviceId: "privateLand",
             accountNo: allFormData?.hoarding1?.accountNo,
             applicationNo: allFormData?.hoarding1?.applicationNo,
             bankName: allFormData?.hoarding1?.bankName,
@@ -177,6 +116,14 @@ function HoardingIndex() {
             })
     }
 
+    // passing values in components
+    const values = {
+        setFormIndex: setFormIndex,
+        showLoader: showLoader,
+        collectFormDataFun: collectAllFormData,
+        toastFun: notify,
+    }
+
     console.log("response screen", responseScreen)
     if (responseScreen?.status == true) {
         return (
@@ -195,28 +142,33 @@ function HoardingIndex() {
             <ToastContainer position="top-right"
                 autoClose={2000} />
             <div className='overflow-x-clip'>
-                <div className='bg-white p-1 rounded-md shadow-md shadow-violet-200 '>
-                    <div className='flex flex-row '>
-                        <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold '>Hoarding</h1>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 bg-white p-2 rounded-md shadow-md shadow-violet-200  '>
+                    <div className=''>
+                        <div className='flex flex-row '>
+                            <h1 className='text-2xl ml-4 text-gray-600 font-sans font-semibold'>HOARDING REGISTRATION APPLICATION</h1>
+                        </div>
+                        <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>
+                            You Can Get License To Advertise Your Business Name On Your Shop
+                        </h1>
                     </div>
-                    <h1 className='text-xs ml-3 p-1 text-gray-600 font-sans'>You Can Get License To Advertise Your Business Name On Your Shop</h1>
-                    <div className='flex flex-row float-right'>
-                        {/* {FirmStep == 1 && */}
-                        <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle -mt-10'>&emsp; <strong className='text-2xl text-violet-600'>{5 - formIndex}
-                        </strong> more screen</span>
-                        <BackButton />
-                        <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right -mt-12 ml-4' />
+                    <div>
+                        <div className='flex flex-row mt-2 float-right'>
+                            <span className='text-md font-bold md:text-xl text-violet-600 text-center  transition-all animate-wiggle'>&emsp; <strong className='text-2xl text-violet-600'>{5 - formIndex}
+                            </strong> more screen</span>
+                            <img src='https://cdn-icons-png.flaticon.com/512/1684/1684121.png' className='h-10 mr-4  opacity-80 float-right  ml-4' />
+                            <div className='mt-2'>
+                                <BackButton />
+                            </div>
+                        </div>
                     </div>
-
                 </div>
+                <div className={`${formIndex == 1 ? 'translate-x-0' : 'translate-x-full'} transition-all`}><HoardingForm1 values={values} /></div>
+                <div className={`${formIndex == 2 ? 'translate-x-0' : 'translate-x-full'} transition-all`}><HoardingForm2 values={values} /></div>
 
-                <div className={`${animateform1} transition-all relative`}><HoardingForm1 showLoader={showLoader} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-                <div className={`${animateform2} transition-all relative -mt-[40.5rem]  `}><HoardingForm2 allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${formIndex == 3 ? 'translate-x-0' : 'translate-x-full'} transition-all `}><HoardingForm3 values={values} /></div>
 
-                <div className={`${animateform3} transition-all relative -mt-[50rem]`}><HoardingForm3 collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} /></div>
-
-                <div className={`${animateform4} transition-all relative -mt-[40.5rem]`}><HoardingFormDoc reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
-                <div className={`${animateform5} transition-all relative -mt-[40.5rem]`}><HoardingReview reviewIdNameData={reviewData} allFormData={allFormData} collectFormDataFun={collectAllFormData} backFun={backFun} nextFun={nextFun} toastFun={notify} submitFun={submitButtonToggle} /></div>
+                <div className={`${formIndex == 4 ? 'translate-x-0' : 'translate-x-full'} transition-all `}><HoardingFormDoc values={values} /></div>
+                <div className={`${formIndex == 5 ? 'translate-x-0' : 'translate-x-full'} transition-all `}><HoardingReview values={values} reviewIdNameData={reviewData} allFormData={allFormData} submitFun={submitButtonToggle} /></div>
 
             </div>
         </>

@@ -4,12 +4,15 @@ import { useFormik } from 'formik'
 import React, { useEffect, useState } from 'react'
 import AdvertisementApiList from '../../../Compnents/AdvertisementApiList';
 import ApiHeader from '../../../Compnents/ApiHeader';
+import DocumentUploadSteps from '../DocumentUploadSteps';
 
 import SelfAdvrtInformationScreen from '../SelfAdvertisement/SelfAdvrtInformationScreen'
 import MovableVehicleDocTable from './MovableVehicleDocTable';
 
 
 function MovableVehicleDocForm(props) {
+
+  const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
 
   const { api_getSelfAdvertDocList } = AdvertisementApiList()
   const [collectDoc, setcollectDoc] = useState([]);
@@ -21,23 +24,10 @@ function MovableVehicleDocForm(props) {
   };
   console.log("all data doc", collectDoc)
 
-  // const validationSchema = yup.object({
-  //     aadharDoc: yup.mixed(),
-  //     tradeLicenseDoc: yup.mixed(),
-  //     photoWithGps: yup.mixed(),
-  //     holdingNoDoc: yup.mixed(),
-  //     gstDocPhoto: yup.mixed(),
-  //     proceedingPhoto1: yup.mixed(),
-  //     proceedingPhoto2: yup.mixed(),
-  //     proceedingPhoto3: yup.mixed(),
-  //     uploadExtraDoc1: yup.mixed(),
-  //     uploadExtraDoc2: yup.mixed(),
-  // })
-
 
   const handleDocument = () => {
-    props.collectFormDataFun('movableVehicleDoc', [collectDoc])
-    props?.nextFun(2)
+    collectFormDataFun('movableVehicleDoc', [collectDoc])
+    setFormIndex(3)
   }
 
   ///////////{*** GET DOCUMENT LIST***}/////////
@@ -63,8 +53,8 @@ function MovableVehicleDocForm(props) {
 
       {/* upload document */}
 
-      <div className=''>
-        <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2'>
+      <div className='absolute w-full  top-0 '>
+        <div className=' grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-4 container  mx-auto pb-8 p-2 '>
           <div className='col-span-8 p-1 border border-dashed border-violet-800'>
             <div className="p-1">
               <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1 bg-white">
@@ -89,7 +79,7 @@ function MovableVehicleDocForm(props) {
             </div>
             <div className="grid grid-cols-12 w-full p-3">
               <div className='md:pl-0 col-span-6'>
-                <button type="button" class="py-2 px-4 text-xs inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => props.backFun(2)}>back</button>
+                <button type="button" class="py-2 px-4 text-xs inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => setFormIndex(1)}>back</button>
               </div>
               <div className='col-span-6'>
                 <button type="button" className="float-right text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-green-500 border border-green-500 hover:text-white hover:bg-green-600 hover:ring-0 hover:border-green-600 focus:bg-green-600 focus:border-green-600 focus:outline-none focus:ring-0" onClick={handleDocument}>Save & Next</button>
@@ -98,7 +88,7 @@ function MovableVehicleDocForm(props) {
           </div>
           <div className='col-span-4'>
             <div className='-mt-20'>
-              <SelfAdvrtInformationScreen />
+              <DocumentUploadSteps />
             </div>
           </div>
         </div>

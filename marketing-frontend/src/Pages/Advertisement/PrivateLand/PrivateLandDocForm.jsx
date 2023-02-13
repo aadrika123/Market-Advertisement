@@ -2,10 +2,14 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import AdvertisementApiList from '../../../Compnents/AdvertisementApiList';
 import ApiHeader from '../../../Compnents/ApiHeader';
+import DocumentUploadSteps from '../DocumentUploadSteps';
 import SelfAdvrtInformationScreen from '../SelfAdvertisement/SelfAdvrtInformationScreen';
 import PrivateLandDocTable from './PrivateLandDocTable';
 
 function PrivateLandDocForm(props) {
+
+    const { setFormIndex, showLoader, collectFormDataFun, toastFun } = props?.values
+
 
     const { api_getSelfAdvertDocList } = AdvertisementApiList()
     const [collectDoc, setcollectDoc] = useState([]);
@@ -18,8 +22,8 @@ function PrivateLandDocForm(props) {
     console.log("all data doc", collectDoc)
 
     const handleDocument = () => {
-        props.collectFormDataFun('privateLandDoc', [collectDoc])
-        props?.nextFun(2)
+        collectFormDataFun('privateLandDoc', [collectDoc])
+        setFormIndex(3)
     }
 
     ///////////{*** GET DOCUMENT LIST***}/////////
@@ -70,7 +74,7 @@ function PrivateLandDocForm(props) {
                         </div>
                         <div className="grid grid-cols-12 w-full p-3">
                             <div className='md:pl-0 col-span-6'>
-                                <button type="button" class="py-2 px-4 text-xs inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => props.backFun(2)}>back</button>
+                                <button type="button" class="py-2 px-4 text-xs inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-indigo-500 border border-indigo-500 hover:text-white hover:bg-indigo-600 hover:ring-0 hover:border-indigo-600 focus:bg-indigo-600 focus:border-indigo-600 focus:outline-none focus:ring-0" onClick={() => setFormIndex(1)}>back</button>
                             </div>
                             <div className='col-span-6'>
                                 <button type="button" className="float-right text-xs py-2 px-4 inline-block text-center mb-3 rounded leading-5 text-gray-100 bg-green-500 border border-green-500 hover:text-white hover:bg-green-600 hover:ring-0 hover:border-green-600 focus:bg-green-600 focus:border-green-600 focus:outline-none focus:ring-0" onClick={handleDocument}>Save & Next</button>
@@ -79,7 +83,7 @@ function PrivateLandDocForm(props) {
                     </div>
                     <div className='col-span-4'>
                         <div className='-mt-20'>
-                            <SelfAdvrtInformationScreen />
+                            <DocumentUploadSteps />
                         </div>
                     </div>
                 </div>
