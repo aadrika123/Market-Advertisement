@@ -9,31 +9,59 @@ class AdvVehicle extends Model
 {
     use HasFactory;
 
-     
-   /**
-     * | Get Application Approve List by Role Ids
-     */
-    public function approvedList($citizenId)
+
+    public function allApproveList()
     {
-        return AdvVehicle::where('citizen_id', $citizenId)
-            ->select(
-                'id',
-                'temp_id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                // 'entity_address',
-                // 'old_application_no',
-                'payment_status',
-                'payment_amount',
-                'approve_date',
-            )
+        return AdvVehicle::select(
+            'id',
+            'temp_id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+            // 'entity_address',
+            // 'old_application_no',
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'citizen_id',
+            'user_id',
+        )
             ->orderByDesc('temp_id')
             ->get();
     }
 
-       /**
+    /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function approvedList($citizenId,$userType)
+    {
+
+        $allApproveList = $this->allApproveList();
+        if($userType=='Citizen'){
+            return collect($allApproveList->where('citizen_id', $citizenId))->values();
+        }else{
+            return collect($allApproveList)->values(); 
+        }
+        // return AdvVehicle::where('citizen_id', $citizenId)
+        //     ->select(
+        //         'id',
+        //         'temp_id',
+        //         'application_no',
+        //         'application_date',
+        //         'applicant',
+        //         'entity_name',
+        //         // 'entity_address',
+        //         // 'old_application_no',
+        //         'payment_status',
+        //         'payment_amount',
+        //         'approve_date',
+        //     )
+        //     ->orderByDesc('temp_id')
+        //     ->get();
+    }
+
+    /**
      * | Get Application Approve List by Role Ids
      */
     public function jskApprovedList($userId)
@@ -54,5 +82,27 @@ class AdvVehicle extends Model
             )
             ->orderByDesc('temp_id')
             ->get();
+    }
+
+    /**
+     * | Get Application Details FOr Payments
+     */
+    public function detailsForPayments($id)
+    {
+        return AdvVehicle::where('id', $id)
+            ->select(
+                'id',
+                'temp_id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'payment_status',
+                'payment_amount',
+                'approve_date',
+                'ulb_id',
+                'workflow_id',
+            )
+            ->first();
     }
 }

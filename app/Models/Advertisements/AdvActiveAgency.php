@@ -109,31 +109,65 @@ class AdvActiveAgency extends Model
      * | @param tempId Temprory Id
      * | @param documents Uploading Documents
      * */
+    // public function uploadDocument($tempId, $documents)
+    // {
+    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
+    //     $mDocService = new DocumentUpload;
+    //     $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+    //     $workflowId = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+
+    //     collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath,$workflowId) {
+    //         $mDocumentId = $document['id'];
+    //         $mDocRelativeName = $document['relativeName'];
+    //         $mImage = $document['image'];
+    //         $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+
+    //         $docUploadReqs = [
+    //             'tempId' => $tempId,
+    //             'docTypeCode' => 'Test-Code',
+    //             'documentId' => $mDocumentId,
+    //             'relativePath' => $mRelativePath,
+    //             'docName' => $mDocName,
+    //             'workflowId'=>$workflowId
+    //         ];
+    //         $docUploadReqs = new Request($docUploadReqs);
+
+    //         $mAdvDocument->store($docUploadReqs);
+    //     });
+    // }
+
     public function uploadDocument($tempId, $documents)
     {
-        $mAdvDocument = new AdvActiveSelfadvetdocument();
-        $mDocService = new DocumentUpload;
-        $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
-        $workflowId = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+        collect($documents)->map(function ($doc) use ($tempId) {
+            $metaReqs = array();
+            $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+            $getApplicationDtls = $mAdvActiveAgency->getAgencyDetails($tempId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath,$workflowId) {
-            $mDocumentId = $document['id'];
-            $mDocRelativeName = $document['relativeName'];
-            $mImage = $document['image'];
-            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-            $docUploadReqs = [
-                'tempId' => $tempId,
-                'docTypeCode' => 'Test-Code',
-                'documentId' => $mDocumentId,
-                'relativePath' => $mRelativePath,
-                'docName' => $mDocName,
-                'workflowId'=>$workflowId
-            ];
-            $docUploadReqs = new Request($docUploadReqs);
-
-            $mAdvDocument->store($docUploadReqs);
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $a = new Request($metaReqs);
+            $mWfActiveDocument->postDocuments($a);
         });
+    }
+
+    public function getAgencyDetails($appId)
+    {
+        return AdvActiveAgency::select('*')
+            ->where('id', $appId)
+            ->first();
     }
 
 
@@ -141,13 +175,14 @@ class AdvActiveAgency extends Model
      * | Get Application Details by id
      * | @param Agencies id
      */
-    public function details($id)
+    public function details($id,$type)
     {
         $details = array();
-        $details = DB::table('adv_active_agencies')
-            ->select(
-                'adv_active_agencies.*',
-                'u.ulb_name',
+        if ($type == "Active" || $type==NULL) {
+            $details = DB::table('adv_active_agencies')
+                ->select(
+                    'adv_active_agencies.*',
+                    'u.ulb_name',
                 // 'p.string_parameter as m_license_year',
                 // 'w.ward_name as ward_no',
                 // 'pw.ward_name as permanent_ward_no',
@@ -155,19 +190,66 @@ class AdvActiveAgency extends Model
                 // 'dp.string_parameter as m_display_type',
                 // 'il.string_parameter as m_installation_location',
                 // 'r.role_name as m_current_role'
+                )
+                ->where('adv_active_agencies.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agencies.ulb_id')
+                    // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
+                    // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
+                    // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')
+                    // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_agencies.entity_ward_id')
+                    // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_agencies.display_type')
+                    // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_agencies.installation_location')
+                    // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_agencies.current_role_id')
+                ->first();
+        }elseif($type=="Reject"){
+            $details = DB::table('adv_rejected_agencies')
+            ->select(
+                'adv_rejected_agencies.*',
+                'u.ulb_name',
+            // 'p.string_parameter as m_license_year',
+            // 'w.ward_name as ward_no',
+            // 'pw.ward_name as permanent_ward_no',
+            // 'ew.ward_name as entity_ward_no',
+            // 'dp.string_parameter as m_display_type',
+            // 'il.string_parameter as m_installation_location',
+            // 'r.role_name as m_current_role'
             )
-            ->where('adv_active_agencies.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agencies.ulb_id')
-            // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
-            // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
-            // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')
-            // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_agencies.entity_ward_id')
-            // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_agencies.display_type')
-            // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_agencies.installation_location')
-            // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_agencies.current_role_id')
+            ->where('adv_rejected_agencies.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_agencies.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_agencies.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_agencies.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_agencies.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_agencies.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_agencies.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_agencies.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_agencies.current_role_id')
             ->first();
+        }elseif($type=="Approve"){
+            $details = DB::table('adv_agencies')
+            ->select(
+                'adv_agencies.*',
+                'u.ulb_name',
+            // 'p.string_parameter as m_license_year',
+            // 'w.ward_name as ward_no',
+            // 'pw.ward_name as permanent_ward_no',
+            // 'ew.ward_name as entity_ward_no',
+            // 'dp.string_parameter as m_display_type',
+            // 'il.string_parameter as m_installation_location',
+            // 'r.role_name as m_current_role'
+            )
+            ->where('adv_agencies.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_agencies.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_agencies.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_agencies.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_agencies.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_agencies.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_agencies.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_agencies.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_agencies.current_role_id')
+            ->first();
+        }
 
-        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
+        $details=json_decode(json_encode($details), true);            // Convert Std Class to Array
         $directors = DB::table('adv_active_agencydirectors')
             ->select(
                 'adv_active_agencydirectors.*',
@@ -243,8 +325,8 @@ class AdvActiveAgency extends Model
         $documents = DB::table('adv_active_selfadvetdocuments')
             ->select(
                 'adv_active_selfadvetdocuments.*',
-                'd.document_name',
-                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
+                'd.document_name as doc_type',
+                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
             )
             ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
             ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))

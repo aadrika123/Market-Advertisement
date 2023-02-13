@@ -56,7 +56,8 @@ class AdvActivePrivateland extends Model
             'latitude' => $req->latitude,
             'installation_location' => $req->installationLocation,
             'citizen_id' => $req->citizenId,
-            'ulb_id' => $req->ulbId
+            'ulb_id' => $req->ulbId,
+            'user_id' => $req->userId
         ];
         return $metaReqs;
     }
@@ -77,7 +78,7 @@ class AdvActivePrivateland extends Model
     //     return AdvActivePrivateland::create($metaReqs)->application_no;
     // }
 
-    
+
     public function store($req)
     {
         $bearerToken = $req->bearerToken();
@@ -117,130 +118,232 @@ class AdvActivePrivateland extends Model
      * | @param Client User Requested Data
      * | @param metaReqs More Added Filtered Data
      */
-    public function uploadDocument_old($req, $metaReqs)
-    {
-        $mDocUpload = new DocumentUpload();
-        $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
-        $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
+    // public function uploadDocument_old($req, $metaReqs)
+    // {
+    //     $mDocUpload = new DocumentUpload();
+    //     $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
+    //     $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
 
-        // Document Upload
+    //     // Document Upload
 
-        // Aadhar Document
-        if ($req->aadharDoc) {
-            $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->aadharDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['aadhar_path' => $docName]);
-        }
-        // Trade License Path
-        if ($req->tradeDoc) {
-            $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->tradeDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
-        }
-        // Gps Document
-        if ($req->gpsDoc) {
-            $mRefDocName = Config::get('constants.GPS_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->gpsDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['gps_path' => $docName]);
-        }
-        // Holding Document
-        if ($req->holdingDoc) {
-            $mRefDocName = Config::get('constants.HOLDING_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->holdingDoc, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['holding_path' => $docName]);
-        }
-        // GST Document
-        if ($req->gstDoc) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->gstDoc, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['gst_path' => $docName]);
-        }
-        // Brand Display Path
-        if ($req->brandDisplayDoc) {
-            $mRefDocName = Config::get('constants.BRAND_DISPLAY_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->brandDisplayDoc, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['brand_display_path' => $docName]);
-        }
+    //     // Aadhar Document
+    //     if ($req->aadharDoc) {
+    //         $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->aadharDoc, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['aadhar_path' => $docName]);
+    //     }
+    //     // Trade License Path
+    //     if ($req->tradeDoc) {
+    //         $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->tradeDoc, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['trade_license_path' => $docName]);
+    //     }
+    //     // Gps Document
+    //     if ($req->gpsDoc) {
+    //         $mRefDocName = Config::get('constants.GPS_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->gpsDoc, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['gps_path' => $docName]);
+    //     }
+    //     // Holding Document
+    //     if ($req->holdingDoc) {
+    //         $mRefDocName = Config::get('constants.HOLDING_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->holdingDoc, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['holding_path' => $docName]);
+    //     }
+    //     // GST Document
+    //     if ($req->gstDoc) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->gstDoc, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['gst_path' => $docName]);
+    //     }
+    //     // Brand Display Path
+    //     if ($req->brandDisplayDoc) {
+    //         $mRefDocName = Config::get('constants.BRAND_DISPLAY_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->brandDisplayDoc, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['brand_display_path' => $docName]);
+    //     }
 
-        return $metaReqs;
-    }
+    //     return $metaReqs;
+    // }
 
 
-    
+
     /**
      * | Document Upload (1.1)
      * | @param tempId Temprory Id
      * | @param documents Uploading Documents
      * */
+    // public function uploadDocument_old_2($tempId, $documents)
+    // {
+    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
+    //     $mDocService = new DocumentUpload;
+    //     $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
+    //     $workflowId = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+
+    //     collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
+    //         $mDocumentId = $document['id'];
+    //         $mDocRelativeName = $document['relativeName'];
+    //         $mImage = $document['image'];
+    //         $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+
+    //         $docUploadReqs = [
+    //             'tempId' => $tempId,
+    //             'docTypeCode' => 'Test-Code',
+    //             'documentId' => $mDocumentId,
+    //             'relativePath' => $mRelativePath,
+    //             'docName' => $mDocName,
+    //             'workflowId'=> $workflowId
+    //         ];
+    //         $docUploadReqs = new Request($docUploadReqs);
+
+    //         $mAdvDocument->store($docUploadReqs);
+    //     });
+    // }
+
+
+    /** 
+     * upload Document
+     * @param Request $req
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function uploadDocument($tempId, $documents)
     {
-        $mAdvDocument = new AdvActiveSelfadvetdocument();
-        $mDocService = new DocumentUpload;
-        $mRelativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
-        $workflowId = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        collect($documents)->map(function ($doc) use ($tempId) {
+            $metaReqs = array();
+            $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $relativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
+            $getApplicationDtls = $mAdvActivePrivateland->getPrivatelandDetails($tempId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
 
-        collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
-            $mDocumentId = $document['id'];
-            $mDocRelativeName = $document['relativeName'];
-            $mImage = $document['image'];
-            $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-            $docUploadReqs = [
-                'tempId' => $tempId,
-                'docTypeCode' => 'Test-Code',
-                'documentId' => $mDocumentId,
-                'relativePath' => $mRelativePath,
-                'docName' => $mDocName,
-                'workflowId'=> $workflowId
-            ];
-            $docUploadReqs = new Request($docUploadReqs);
-
-            $mAdvDocument->store($docUploadReqs);
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $a = new Request($metaReqs);
+            $mWfActiveDocument->postDocuments($a);
         });
     }
 
-        /**
+
+    public function getPrivatelandDetails($appId)
+    {
+        return AdvActivePrivateland::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
+
+    /**
      * | Get Application Details by id
-     * | @param SelfAdvertisements id
+     * | @param Advertisements id
      */
-    public function details($id,$workflowId)
+    public function details($id, $type)
     {
         $details = array();
-        $details = DB::table('adv_active_privatelands')
-            ->select(
-                'adv_active_privatelands.*',
-                'u.ulb_name',
-                // 'p.string_parameter as m_license_year',
-                // 'w.ward_name as ward_no',
-                // 'pw.ward_name as permanent_ward_no',
-                // 'ew.ward_name as entity_ward_no',
-                // 'dp.string_parameter as m_display_type',
-                // 'il.string_parameter as m_installation_location',
-                // 'r.role_name as m_current_role'
-            )
-            ->where('adv_active_privatelands.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_privatelands.ulb_id')
-            // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_privatelands.license_year')
-            // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_privatelands.ward_id')
-            // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_privatelands.permanent_ward_id')
-            // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_privatelands.entity_ward_id')
-            // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_privatelands.display_type')
-            // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_privatelands.installation_location')
-            // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_privatelands.current_role_id')
-            ->first();
+        if ($type == "Active" || $type==NULL) {
+            $details = DB::table('adv_active_privatelands')
+                ->select(
+                    'adv_active_privatelands.*',
+                    'u.ulb_name',
+                    // 'p.string_parameter as m_license_year',
+                    // 'w.ward_name as ward_no',
+                    // 'pw.ward_name as permanent_ward_no',
+                    // 'ew.ward_name as entity_ward_no',
+                    // 'dp.string_parameter as m_display_type',
+                    // 'il.string_parameter as m_installation_location',
+                    // 'r.role_name as m_current_role'
+                )
+                ->where('adv_active_privatelands.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_privatelands.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_privatelands.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_privatelands.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_privatelands.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_privatelands.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_privatelands.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_privatelands.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_privatelands.current_role_id')
+                ->first();
+        } elseif ($type == "Reject") {
+            $details = DB::table('adv_rejected_privatelands')
+                ->select(
+                    'adv_rejected_privatelands.*',
+                    'u.ulb_name',
+                    // 'p.string_parameter as m_license_year',
+                    // 'w.ward_name as ward_no',
+                    // 'pw.ward_name as permanent_ward_no',
+                    // 'ew.ward_name as entity_ward_no',
+                    // 'dp.string_parameter as m_display_type',
+                    // 'il.string_parameter as m_installation_location',
+                    // 'r.role_name as m_current_role'
+                )
+                ->where('adv_rejected_privatelands.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_privatelands.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_privatelands.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_privatelands.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_privatelands.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_privatelands.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_privatelands.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_privatelands.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_privatelands.current_role_id')
+                ->first();
+        } elseif ($type == 'Approve') {
+            $details = DB::table('adv_active_privatelands')
+                ->select(
+                    'adv_active_privatelands.*',
+                    'u.ulb_name',
+                    // 'p.string_parameter as m_license_year',
+                    // 'w.ward_name as ward_no',
+                    // 'pw.ward_name as permanent_ward_no',
+                    // 'ew.ward_name as entity_ward_no',
+                    // 'dp.string_parameter as m_display_type',
+                    // 'il.string_parameter as m_installation_location',
+                    // 'r.role_name as m_current_role'
+                )
+                ->where('adv_active_privatelands.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_privatelands.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_privatelands.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_privatelands.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_privatelands.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_privatelands.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_privatelands.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_privatelands.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_privatelands.current_role_id')
+                ->first();
+        } elseif ($type == "Reject") {
+            $details = DB::table('adv_privatelands')
+                ->select(
+                    'adv_privatelands.*',
+                    'u.ulb_name',
+                    // 'p.string_parameter as m_license_year',
+                    // 'w.ward_name as ward_no',
+                    // 'pw.ward_name as permanent_ward_no',
+                    // 'ew.ward_name as entity_ward_no',
+                    // 'dp.string_parameter as m_display_type',
+                    // 'il.string_parameter as m_installation_location',
+                    // 'r.role_name as m_current_role'
+                )
+                ->where('adv_privatelands.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')
+                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_privatelands.license_year')
+                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_privatelands.ward_id')
+                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_privatelands.permanent_ward_id')
+                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_privatelands.entity_ward_id')
+                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_privatelands.display_type')
+                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_privatelands.installation_location')
+                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_privatelands.current_role_id')
+                ->first();
+        }
 
-        $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
-        $documents = DB::table('adv_active_selfadvetdocuments')
-            ->select(
-                'adv_active_selfadvetdocuments.*',
-                'd.document_name',
-                DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
-            )
-            ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-            ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-            ->get();
-        $details['documents'] = remove_null($documents->toArray());
-        return $details;
+        return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
     /**
@@ -299,4 +402,20 @@ class AdvActivePrivateland extends Model
             ->get();
     }
 
+
+    /**
+     * | Get Jsk Applied applications
+     * | @param userId
+     */
+    public function getJSKApplications($userId)
+    {
+        return AdvActivePrivateland::where('user_id', $userId)
+            ->select(
+                'id',
+                'application_no',
+                'application_date'
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

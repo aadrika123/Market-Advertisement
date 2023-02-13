@@ -352,15 +352,11 @@ class AdvAgencyLicense extends Model
     //     $details['documents'] = remove_null($documents->toArray());
     //     return $details;
     // }
-    
-
     /**
-     * | Get Application Approve List by Role Ids
+     * | All Approve lIST
      */
-    public function approvedList($citizenId)
-    {
-        return AdvAgencyLicense::where('citizen_id', $citizenId)
-            ->select(
+    public function allApproveList(){
+        return AdvAgencyLicense::select(
                 'id',
                 'temp_id',
                 'application_no',
@@ -370,9 +366,38 @@ class AdvAgencyLicense extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'citizen_id',
+                'user_id'
             )
             ->orderByDesc('temp_id')
             ->get();
+    }
+
+    /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function approvedList($citizenId,$usertype)
+    {
+        $allApproveList=$this->allApproveList();
+        if($usertype == 'Citizen'){
+            return collect($allApproveList->where('citizen_id',$citizenId))->values();;
+        }else{
+            return collect($allApproveList)->values();
+        }
+        // return AdvAgencyLicense::where('citizen_id', $citizenId)
+        //     ->select(
+        //         'id',
+        //         'temp_id',
+        //         'application_no',
+        //         'application_date',
+        //         // 'entity_address',
+        //         // 'old_application_no',
+        //         'payment_status',
+        //         'payment_amount',
+        //         'approve_date',
+        //     )
+        //     ->orderByDesc('temp_id')
+        //     ->get();
     }
 
        /**
@@ -388,12 +413,35 @@ class AdvAgencyLicense extends Model
                 'application_date',
                 // 'entity_address',
                 // 'old_application_no',
-                'payment_status',
+                // 'payment_status',
                 'payment_amount',
                 'approve_date',
             )
             ->orderByDesc('temp_id')
             ->get();
+    }
+
+    
+    /**
+     * | Get Application Details FOr Payments
+     */
+    public function detailsForPayments($id)
+    {
+        return AdvAgencyLicense::where('id', $id)
+            ->select(
+                'id',
+                'temp_id',
+                'application_no',
+                'application_date',
+                // 'applicant',
+                // 'entity_name',
+                'payment_status',
+                'payment_amount',
+                'approve_date',
+                'ulb_id',
+                'workflow_id',
+            )
+            ->first();
     }
 
 }
