@@ -9,7 +9,7 @@ class AdvTypologyMstr extends Model
 {
     use HasFactory;
 
-    public function getTypologyList(){
+    public function listTypology(){
         return AdvTypologyMstr::where('status', '1')
             ->select(
                 'id',

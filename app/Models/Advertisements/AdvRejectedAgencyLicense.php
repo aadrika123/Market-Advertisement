@@ -13,7 +13,7 @@ class AdvRejectedAgencyLicense extends Model
      /**
      * | Get Application Reject List by Role Ids
      */
-    public function rejectedList($citizenId)
+    public function listRejectedLicense($citizenId)
     {
         return AdvRejectedAgencyLicense::where('citizen_id', $citizenId)
             ->select(
@@ -33,7 +33,7 @@ class AdvRejectedAgencyLicense extends Model
      /**
      * | Get Application Reject List by Login JSK
      */
-    public function jskRejectedList($userId)
+    public function listJskRejectedLicenseApplication($userId)
     {
         return AdvRejectedAgencyLicense::where('user_id', $userId)
             ->select(

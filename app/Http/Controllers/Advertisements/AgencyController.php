@@ -48,10 +48,12 @@ class AgencyController extends Controller
     protected $Repository;
 
     protected $_workflowIds;
+    protected $_hordingWorkflowIds;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
         $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+        $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->Repository = $agency_repo;
     }
 
@@ -60,12 +62,12 @@ class AgencyController extends Controller
      * | @param Request $req
      */
 
-    public function agencyDetails(Request $req)
+    public function getagencyDetails(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvAgency = new AdvAgency();
-            $agencydetails = $mAdvAgency->agencyDetails($citizenId);
+            $agencydetails = $mAdvAgency->getagencyDetails($citizenId);
             remove_null($agencydetails);
             $data1['data'] = $agencydetails;
             return responseMsgs(true, "Agency Details", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -81,7 +83,7 @@ class AgencyController extends Controller
      * | Store 
      * | @param StoreRequest Request
      */
-    public function store(StoreRequest $req)
+    public function addNew(StoreRequest $req)
     {
         try {
             $agency = new AdvActiveAgency();
@@ -93,7 +95,7 @@ class AgencyController extends Controller
                 $req->request->add($citizenId);
             }
             DB::beginTransaction();
-            $applicationNo = $agency->store($req);       //<--------------- Model function to store 
+            $applicationNo = $agency->addNew($req);       //<--------------- Model function to store 
             DB::commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -106,7 +108,7 @@ class AgencyController extends Controller
      * | Inbox List
      * | @param Request $req
      */
-    public function inbox(Request $req)
+    public function listInbox(Request $req)
     {
         try {
             $mAdvActiveAgency = $this->_modelObj;
@@ -115,7 +117,7 @@ class AgencyController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveAgency->inbox($roleIds);
+            $inboxList = $mAdvActiveAgency->listInbox($roleIds);
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -127,7 +129,7 @@ class AgencyController extends Controller
     /**
      * | Outbox List
      */
-    public function outbox(Request $req)
+    public function listOutbox(Request $req)
     {
         try {
             $mAdvActiveAgency = $this->_modelObj;
@@ -136,7 +138,7 @@ class AgencyController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveAgency->outbox($roleIds);
+            $outboxList = $mAdvActiveAgency->listOutbox($roleIds);
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -149,7 +151,7 @@ class AgencyController extends Controller
      * | Application Details
      */
 
-    public function details(Request $req)
+    public function getDetailsById(Request $req)
     {
         try {
             $mAdvActiveAgency = new AdvActiveAgency();
@@ -161,7 +163,7 @@ class AgencyController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveAgency->details($req->applicationId, $type);
+                $data = $mAdvActiveAgency->getDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -187,6 +189,7 @@ class AgencyController extends Controller
             $metaReqs['customFor'] = 'Agency Advertisement';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
+            $metaReqs['lastRoleId'] = $data['last_role_id'];
             // return $metaReqs;
             $req->request->add($metaReqs);
 
@@ -200,6 +203,7 @@ class AgencyController extends Controller
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
             $fullDetailsData['directors'] = $data['directors'];
+            $fullDetailsData['timelineData'] = collect($req);
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -241,12 +245,12 @@ class AgencyController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      */
-    public function getCitizenApplications(Request $req)
+    public function listAppliedApplications(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvActiveAgency = new AdvActiveAgency();
-            $applications = $mAdvActiveAgency->getCitizenApplications($citizenId);
+            $applications = $mAdvActiveAgency->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -263,7 +267,7 @@ class AgencyController extends Controller
     /**
      * | Escalate
      */
-    public function escalate(Request $request)
+    public function escalateApplication(Request $request)
     {
         $request->validate([
             "escalateStatus" => "required|int",
@@ -285,7 +289,7 @@ class AgencyController extends Controller
     /**
      * | Special Inbox
      */
-    public function specialInbox(Request $req)
+    public function listEscalated(Request $req)
     {
         try {
             $mWfWardUser = new WfWardUser();
@@ -313,7 +317,7 @@ class AgencyController extends Controller
     /**
      * | Forward or Backward Application
      */
-    public function postNextLevel(Request $request)
+    public function forwardNextLevel(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|integer',
@@ -326,6 +330,7 @@ class AgencyController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveAgency::find($request->applicationId);
+            $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
@@ -347,7 +352,7 @@ class AgencyController extends Controller
 
 
     // Post Independent Comment
-    public function commentIndependent(Request $request)
+    public function commentApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -385,24 +390,8 @@ class AgencyController extends Controller
         }
     }
 
-    // public function uploadDocumentsView(Request $req)
-    // {
-    //     $mAdvActiveAgency = new AdvActiveAgency();
-    //     $data = array();
-    //     $fullDetailsData = array();
-    //     if ($req->applicationId) {
-    //         $data = $mAdvActiveAgency->viewUploadedDocuments($req->applicationId,$this->_workflowIds);
-    //     }
 
-    //     $fullDetailsData = $data['documents'];
-
-
-    //     $data1['data'] = $fullDetailsData;
-    //     return $data1;
-    // }
-
-
-    public function uploadDocumentsView(Request $req)
+    public function viewAgencyDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -423,6 +412,24 @@ class AgencyController extends Controller
     }
 
 
+    /**
+    * | Workflow View Uploaded Document by application ID
+    */
+   public function viewDocumentsOnWorkflow(Request $req)
+   {
+       $startTime = microtime(true);
+       $mWfActiveDocument = new WfActiveDocument();
+       $data = array();
+       if ($req->applicationId) {
+           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+       }
+       $endTime = microtime(true);
+       $executionTime = $endTime - $startTime;
+
+       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+   }
+
+
 
 
     /**
@@ -430,7 +437,7 @@ class AgencyController extends Controller
      * | Rating-
      * | Status- Open
      */
-    public function finalApprovalRejection(Request $req)
+    public function approvedOrReject(Request $req)
     {
         try {
             $req->validate([
@@ -511,13 +518,13 @@ class AgencyController extends Controller
      * | Approve Application List for Citzen
      * | @param Request $req
      */
-    public function approvedList(Request $req)
+    public function listApproved(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
             $mAdvAgency = new AdvAgency();
-            $applications = $mAdvAgency->approvedList($citizenId, $userType);
+            $applications = $mAdvAgency->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -537,12 +544,12 @@ class AgencyController extends Controller
      * | Reject Application List for Citizen
      * | @param Request $req
      */
-    public function rejectedList(Request $req)
+    public function listRejected(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $applications = $mAdvRejectedAgency->rejectedList($citizenId);
+            $applications = $mAdvRejectedAgency->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -588,12 +595,12 @@ class AgencyController extends Controller
      * | Approve Application List for JSK
      * | @param Request $req
      */
-    public function jskApprovedList(Request $req)
+    public function listjskApprovedApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvAgency = new AdvAgency();
-            $applications = $mAdvAgency->jskApprovedList($userId);
+            $applications = $mAdvAgency->listjskApprovedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -612,12 +619,12 @@ class AgencyController extends Controller
      * | Reject Application List for JSK
      * | @param Request $req
      */
-    public function jskRejectedList(Request $req)
+    public function listJskRejectedApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $applications = $mAdvRejectedAgency->jskRejectedList($userId);
+            $applications = $mAdvRejectedAgency->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -686,7 +693,7 @@ class AgencyController extends Controller
      * @param Request $req
      * @return void
      */
-    public function applicationDetailsForPayment(Request $req)
+    public function getApplicationDetailsForPayment(Request $req)
     {
         $req->validate([
             'applicationId' => 'required|integer',
@@ -694,9 +701,8 @@ class AgencyController extends Controller
         try {
             $startTime = microtime(true);
             $mAdvAgency = new AdvAgency();
-            $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
-                $data = $mAdvAgency->detailsForPayments($req->applicationId, $workflowId);
+                $data = $mAdvAgency->getApplicationDetailsForPayment($req->applicationId);
             }
 
             if (!$data)
@@ -724,11 +730,11 @@ class AgencyController extends Controller
     /**
      * | Get Typology List
      */
-    public function getTypologyList(Request $req)
+    public function listTypology(Request $req)
     {
         try {
             $mAdvTypologyMstr = new AdvTypologyMstr();
-            $typologyList = $mAdvTypologyMstr->getTypologyList();
+            $typologyList = $mAdvTypologyMstr->listTypology();
             $typologyList = $typologyList->groupBy('type');
             foreach ($typologyList as $key => $data) {
                 $type = [
@@ -748,7 +754,7 @@ class AgencyController extends Controller
     /**
      * | Save Application For Licence
      */
-    public function saveForLicence(StoreLicenceRequest $req)
+    public function addNewLicense(StoreLicenceRequest $req)
     {
         try {
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
@@ -760,7 +766,7 @@ class AgencyController extends Controller
                 $req->request->add($citizenId);
             }
             DB::beginTransaction();
-            $LicenseNo = $mAdvActiveAgencyLicense->licenceStore($req);       //<--------------- Model function to store 
+            $LicenseNo = $mAdvActiveAgencyLicense->addNewLicense($req);       //<--------------- Model function to store 
             DB::commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $LicenseNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -775,7 +781,7 @@ class AgencyController extends Controller
      * | License Inbox List
      * | @param Request $req
      */
-    public function licenseInbox(Request $req)
+    public function listLicenseInbox(Request $req)
     {
         try {
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
@@ -784,7 +790,7 @@ class AgencyController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveAgencyLicense->inbox($roleIds);
+            $inboxList = $mAdvActiveAgencyLicense->listLicenseInbox($roleIds);
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -796,7 +802,7 @@ class AgencyController extends Controller
     /**
      * | License Outbox List
      */
-    public function licenseOutbox(Request $req)
+    public function listLicenseOutbox(Request $req)
     {
         try {
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
@@ -805,7 +811,7 @@ class AgencyController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveAgencyLicense->outbox($roleIds);
+            $outboxList = $mAdvActiveAgencyLicense->listLicenseOutbox($roleIds);
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -818,7 +824,7 @@ class AgencyController extends Controller
      * | License Application Details
      */
 
-    public function licenseDetails(Request $req)
+    public function getLicenseDetailsById(Request $req)
     {
         try {
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
@@ -830,7 +836,7 @@ class AgencyController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveAgencyLicense->details($req->applicationId, $type);
+                $data = $mAdvActiveAgencyLicense->getLicenseDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -861,6 +867,7 @@ class AgencyController extends Controller
             $metaReqs['customFor'] = 'Agency Hording License';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
+            $metaReqs['lastRoleId'] = $data['last_role_id'];
             // return $metaReqs;
             $req->request->add($metaReqs);
 
@@ -873,6 +880,7 @@ class AgencyController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['timelineData'] = collect($req);
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -885,12 +893,12 @@ class AgencyController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      */
-    public function licenseGetCitizenApplications(Request $req)
+    public function listLicenseAppliedApplications(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
-            $applications = $mAdvActiveAgencyLicense->getCitizenApplications($citizenId);
+            $applications = $mAdvActiveAgencyLicense->listLicenseAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -906,7 +914,7 @@ class AgencyController extends Controller
     /**
      * | License Escalate
      */
-    public function licenseEscalate(Request $request)
+    public function escalateLicenseApplication(Request $request)
     {
         $request->validate([
             "escalateStatus" => "required|int",
@@ -928,7 +936,7 @@ class AgencyController extends Controller
     /**
      * | Special Inbox
      */
-    public function licenseSpecialInbox(Request $req)
+    public function listLicenseEscalated(Request $req)
     {
         try {
             $mWfWardUser = new WfWardUser();
@@ -942,7 +950,7 @@ class AgencyController extends Controller
 
             // print_r($wardId);
 
-            $advData = $this->Repository->specialAgencyLicenseInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
+            $advData = $this->Repository->specialAgencyLicenseInbox($this->_hordingWorkflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_agency_licenses.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -956,7 +964,7 @@ class AgencyController extends Controller
     /**
      * | License Forward or Backward Application
      */
-    public function licensePostNextLevel(Request $request)
+    public function forwardLicenseNextLevel(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|integer',
@@ -969,6 +977,7 @@ class AgencyController extends Controller
             // Hording License Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveAgencyLicense::find($request->applicationId);
+            $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
@@ -990,7 +999,7 @@ class AgencyController extends Controller
 
 
     // License Post Independent Comment
-    public function licenseCommentIndependent(Request $request)
+    public function commentLicenseApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -1029,32 +1038,7 @@ class AgencyController extends Controller
     }
 
 
-
-    /**
-     * | Hording Uploaded Document View
-     */
-    // public function licenseUploadDocumentsView(Request $req)
-    // {
-    //     $AdvActiveAgencyLicense = new AdvActiveAgencyLicense();
-
-    //     $data = array();
-    //     $fullDetailsData = array();
-    //     $workflowId = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
-    //     if ($req->applicationId) {
-    //         $data = $AdvActiveAgencyLicense->viewUploadedDocuments($req->applicationId,$workflowId);
-    //     }
-    //     // return $data;
-
-    //     // $fullDetailsData['application_no'] = $data['application_no'];
-    //     // $fullDetailsData['apply_date'] = $data['application_date'];
-    //     $fullDetailsData = $data['documents'];
-
-
-    //     $data1['data'] = $fullDetailsData;
-    //     return $data1;
-    // }
-
-    public function licenseUploadDocumentsView(Request $req)
+    public function viewLicenseDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -1066,13 +1050,30 @@ class AgencyController extends Controller
             } elseif ($req->type == 'Approve') {
                 $appId = AdvActiveAgencyLicense::find($req->applicationId)->temp_id;
             }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($appId,  $this->_hordingWorkflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
         $data1['data'] = $data;
         return $data1;
     }
+
+    /**
+   * | Workflow View Uploaded Document by application ID
+    */
+   public function viewLicenseDocumentsOnWorkflow(Request $req)
+   {
+       $startTime = microtime(true);
+       $mWfActiveDocument = new WfActiveDocument();
+       $data = array();
+       if ($req->applicationId) {
+           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_hordingWorkflowIds);
+       }
+       $endTime = microtime(true);
+       $executionTime = $endTime - $startTime;
+
+       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+   }
 
 
 
@@ -1081,7 +1082,7 @@ class AgencyController extends Controller
      * | Rating-
      * | Status- Open
      */
-    public function licenseFinalApprovalRejection(Request $req)
+    public function approvalOrRejectionLicense(Request $req)
     {
         try {
             $req->validate([
@@ -1162,13 +1163,13 @@ class AgencyController extends Controller
      * | Approve License Application List for Citzen
      * | @param Request $req
      */
-    public function licenseApprovedList(Request $req)
+    public function listApprovedLicense(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $userId = authUser()->user_type;
             $mAdvAgencyLicense = new AdvAgencyLicense();
-            $applications = $mAdvAgencyLicense->approvedList($citizenId, $userId);
+            $applications = $mAdvAgencyLicense->listApprovedLicense($citizenId, $userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1188,12 +1189,12 @@ class AgencyController extends Controller
      * | Reject License Application List for Citizen
      * | @param Request $req
      */
-    public function licenseRejectedList(Request $req)
+    public function listRejectedLicense(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvRejectedAgency = new AdvRejectedAgencyLicense();
-            $applications = $mAdvRejectedAgency->rejectedList($citizenId);
+            $applications = $mAdvRejectedAgency->listRejectedLicense($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1214,12 +1215,12 @@ class AgencyController extends Controller
     /**
      * | Get Applied License Applications by Logged In JSK
      */
-    public function licenseGetJSKApplications(Request $req)
+    public function getJskLicenseApplications(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
-            $applications = $mAdvActiveAgencyLicense->getJSKApplications($userId);
+            $applications = $mAdvActiveAgencyLicense->getJskLicenseApplications($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1239,12 +1240,12 @@ class AgencyController extends Controller
      * | Approve License Application List for JSK
      * | @param Request $req
      */
-    public function licenseJskApprovedList(Request $req)
+    public function listJskApprovedLicenseApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvAgencyLicense = new AdvAgencyLicense();
-            $applications = $mAdvAgencyLicense->jskApprovedList($userId);
+            $applications = $mAdvAgencyLicense->listJskApprovedLicenseApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1264,12 +1265,12 @@ class AgencyController extends Controller
      * | Reject License Application List for JSK
      * | @param Request $req
      */
-    public function licenseJskRejectedList(Request $req)
+    public function listJskRejectedLicenseApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvRejectedAgencyLicense = new AdvRejectedAgencyLicense();
-            $applications = $mAdvRejectedAgencyLicense->jskRejectedList($userId);
+            $applications = $mAdvRejectedAgencyLicense->listJskRejectedLicenseApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1292,7 +1293,7 @@ class AgencyController extends Controller
      * | @param Request $req
      */
 
-    public function licenseGeneratePaymentOrderId(Request $req)
+    public function generateLicensePaymentOrderId(Request $req)
     {
         $req->validate([
             'id' => 'required|integer',
@@ -1339,7 +1340,7 @@ class AgencyController extends Controller
      * @param Request $req
      * @return void
      */
-    public function licenseApplicationDetailsForPayment(Request $req)
+    public function getLicenseApplicationDetailsForPayment(Request $req)
     {
         $req->validate([
             'applicationId' => 'required|integer',
@@ -1348,7 +1349,7 @@ class AgencyController extends Controller
             $startTime = microtime(true);
             $mAdvAgencyLicense = new AdvAgencyLicense();
             if ($req->applicationId) {
-                $data = $mAdvAgencyLicense->detailsForPayments($req->applicationId);
+                $data = $mAdvAgencyLicense->getLicenseApplicationDetailsForPayment($req->applicationId);
             }
 
             if (!$data)
@@ -1395,7 +1396,7 @@ class AgencyController extends Controller
         }
     }
 
-    public function agencyDashboard(Request $req){
+    public function getAgencyDashboard(Request $req){
         try{
         $userType = authUser()->user_type;
         if ($userType == "Citizen") {

@@ -384,6 +384,24 @@ class VehicleAdvetController extends Controller
         return $data1;
     }
 
+        /**
+    * | Workflow View Uploaded Document by application ID
+    */
+   public function viewDocumentsOnWorkflow(Request $req)
+   {
+       $startTime = microtime(true);
+       $mWfActiveDocument = new WfActiveDocument();
+       $data = array();
+       if ($req->applicationId) {
+           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+       }
+       $endTime = microtime(true);
+       $executionTime = $endTime - $startTime;
+
+       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+   }
+
+
 
     
     

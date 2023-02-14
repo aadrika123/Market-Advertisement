@@ -12,7 +12,7 @@ class AdvRejectedAgency extends Model
      /**
      * | Get Application Reject List by Role Ids
      */
-    public function rejectedList($citizenId)
+    public function listRejected($citizenId)
     {
         return AdvRejectedAgency::where('citizen_id', $citizenId)
             ->select(
@@ -32,7 +32,7 @@ class AdvRejectedAgency extends Model
      /**
      * | Get Application Reject List by Login JSK
      */
-    public function jskRejectedList($userId)
+    public function listJskRejectedApplication($userId)
     {
         return AdvRejectedAgency::where('user_id', $userId)
             ->select(

@@ -80,7 +80,7 @@ class AdvActiveAgencyLicense extends Model
      * | Store function to Licence apply
      * | @param request 
      */
-    public function licenceStore($req)
+    public function addNewLicense($req)
     {
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->licenceMetaReqs($req);
@@ -92,6 +92,7 @@ class AdvActiveAgencyLicense extends Model
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
@@ -286,7 +287,7 @@ class AdvActiveAgencyLicense extends Model
      * | Get Application License Details by id
      * | @param Agencies License id
      */
-    public function details($id,$type)
+    public function getLicenseDetailsById($id,$type)
     {
         $details = array();
         if ($type == "Active" || $type==NULL) {
@@ -370,7 +371,7 @@ class AdvActiveAgencyLicense extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function inbox($roleIds)
+    public function listLicenseInbox($roleIds)
     {
         $inbox = DB::table('adv_active_agency_licenses')
             ->select(
@@ -394,7 +395,7 @@ class AdvActiveAgencyLicense extends Model
      * | Get Citizen Applied applications
      * | @param citizenId
      */
-    public function getCitizenApplications($citizenId)
+    public function listLicenseAppliedApplications($citizenId)
     {
         return AdvActiveAgencyLicense::where('citizen_id', $citizenId)
             ->select(
@@ -415,7 +416,7 @@ class AdvActiveAgencyLicense extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function outbox($roleIds)
+    public function listLicenseOutbox($roleIds)
     {
         $outbox = DB::table('adv_active_agency_licenses')
             ->select(
@@ -465,7 +466,7 @@ class AdvActiveAgencyLicense extends Model
      * | Get Jsk Applied License  applications
      * | @param userId
      */
-    public function getJSKApplications($userId)
+    public function getJskLicenseApplications($userId)
     {
         return AdvActiveAgencyLicense::where('user_id', $userId)
             ->select(

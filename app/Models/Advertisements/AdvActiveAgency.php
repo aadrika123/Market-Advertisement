@@ -56,7 +56,7 @@ class AdvActiveAgency extends Model
      * | Store function to apply(1)
      * | @param request 
      */
-    public function store($req)
+    public function addNew($req)
     {
         $directors = $req->directors;
         $bearerToken = $req->bearerToken();
@@ -69,6 +69,7 @@ class AdvActiveAgency extends Model
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
@@ -175,7 +176,7 @@ class AdvActiveAgency extends Model
      * | Get Application Details by id
      * | @param Agencies id
      */
-    public function details($id,$type)
+    public function getDetailsById($id,$type)
     {
         $details = array();
         if ($type == "Active" || $type==NULL) {
@@ -266,7 +267,7 @@ class AdvActiveAgency extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function inbox($roleIds)
+    public function listInbox($roleIds)
     {
         $inbox = DB::table('adv_active_agencies')
             ->select(
@@ -287,7 +288,7 @@ class AdvActiveAgency extends Model
      * | Get Citizen Applied applications
      * | @param citizenId
      */
-    public function getCitizenApplications($citizenId)
+    public function listAppliedApplications($citizenId)
     {
         return AdvActiveAgency::where('citizen_id', $citizenId)
             ->select(
@@ -305,7 +306,7 @@ class AdvActiveAgency extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function outbox($roleIds)
+    public function listOutbox($roleIds)
     {
         $outbox = DB::table('adv_active_agencies')
             ->select(

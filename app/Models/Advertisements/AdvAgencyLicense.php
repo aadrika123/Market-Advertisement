@@ -376,7 +376,7 @@ class AdvAgencyLicense extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId,$usertype)
+    public function listApprovedLicense($citizenId,$usertype)
     {
         // echo authUser()->id;
         $allApproveList=$this->allApproveList();
@@ -404,7 +404,7 @@ class AdvAgencyLicense extends Model
        /**
      * | Get Application Approve List by Role Ids
      */
-    public function jskApprovedList($userId)
+    public function listJskApprovedLicenseApplication($userId)
     {
         return AdvAgencyLicense::where('user_id', $userId)
             ->select(
@@ -426,7 +426,7 @@ class AdvAgencyLicense extends Model
     /**
      * | Get Application Details FOr Payments
      */
-    public function detailsForPayments($id)
+    public function getLicenseApplicationDetailsForPayment($id)
     {
         return AdvAgencyLicense::where('id', $id)
             ->select(

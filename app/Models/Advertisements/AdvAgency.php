@@ -12,7 +12,7 @@ class AdvAgency extends Model
 {
     use HasFactory;
 
-    public function agencyDetails($id){
+    public function getagencyDetails($id){
         return AdvAgency::where('citizen_id', $id)->first();
     }
 
@@ -43,7 +43,7 @@ class AdvAgency extends Model
        /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId,$userType)
+    public function listApproved($citizenId,$userType)
     {
         $allApproveList = $this->allApproveList();
         if($userType=='Citizen'){
@@ -56,7 +56,7 @@ class AdvAgency extends Model
        /**
      * | Get Application Approve List by Role Ids
      */
-    public function jskApprovedList($userId)
+    public function listjskApprovedApplication($userId)
     {
         return AdvAgency::where('user_id', $userId)
             ->select(
@@ -79,7 +79,7 @@ class AdvAgency extends Model
     /**
      * | Get Application Details FOr Payments
      */
-    public function detailsForPayments($id)
+    public function getApplicationDetailsForPayment($id)
     {
         return AdvAgency::where('id', $id)
             ->select(
