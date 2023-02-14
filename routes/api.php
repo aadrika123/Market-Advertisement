@@ -36,30 +36,30 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-01
      */
     Route::controller(SelfAdvetController::class)->group(function () {
-        Route::post('advertisement/self-advert/save', 'store');       // 01 ( Save Application )
-        Route::post('advertisement/self-advert/inbox', 'inbox');      // 02 ( Application Inbox Lists )
-        Route::post('advertisement/self-advert/outbox', 'outbox');    // 03 ( Application Outbox Lists )
-        Route::post('advertisement/self-advert/details', 'details');  // 04 ( Get Application Details By Application ID )
-        Route::post('advertisement/self-advert/get-citizen-applications', 'getCitizenApplications');     // 05 ( Get Applied Applications List By CityZen )
-        Route::post('advertisement/self-advert/escalate', 'escalate');  // 06 ( Escalate or De-escalate Application )
-        Route::post('advertisement/self-advert/special-inbox', 'specialInbox');  // 07 ( Special Inbox Applications )
-        Route::post('advertisement/self-advert/post-next-level', 'postNextLevel');  // 08 ( Forward or Backward Application )
-        Route::post('advertisement/self-advert/comment-independent', 'commentIndependent');  // 09 ( Independent Comment )
-        Route::post('advertisement/self-advert/get-license-by-userid', 'getLicense');  // 10 ( Get License By User ID )
-        Route::post('advertisement/self-advert/get-license-by-holding-no', 'getLicenseByHoldingNo');  // 11 ( Get License By Holding No )
-        Route::post('advertisement/self-advert/get-license-details-by-license-no', 'getLicenseDetailso');  // 12 ( Get License Details By Licence No )
-        Route::post('advertisement/self-advert/advertisement-document-view', 'uploadDocumentsView');  // 13 ( Get Uploaded Document By Advertisement ID )
-        Route::post('advertisement/self-advert/get-details-by-license-no', 'getDetailsByLicenseNo');  // 14 ( Get Uploaded Document By Advertisement ID )
-        Route::post('advertisement/self-advert/workflow-view-documents', 'workflowViewDocuments');  // 15 ( View Uploaded Document By Advertisement ID )
-        // Route::post('advertisement/self-advert/workflow-upload-document', 'workflowUploadDocument');  // 16 ( Workflow Upload Document )
-        Route::post('advertisement/self-advert/approval-rejection', 'finalApprovalRejection');          // 17 ( Approve or Reject )
-        Route::post('advertisement/self-advert/approved-list', 'approvedList');          // 18 ( Approved list for Citizen)
-        Route::post('advertisement/self-advert/rejected-list', 'rejectedList');          // 19 ( Rejected list for Citizen)
-        Route::post('advertisement/self-advert/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/self-advert/jsk-approved-list', 'jskApprovedList');          // 21 ( Approved list for JSK)
-        Route::post('advertisement/self-advert/jsk-rejected-list', 'jskRejectedList');          // 22 ( Rejected list for JSK)    
-        Route::post('advertisement/self-advert/generate-payment-order-id', 'generatePaymentOrderId');          // 23 ( Generate Payment Order ID)
-        Route::post('advertisement/self-advert/application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
+        Route::post('advert/self/add-new', 'addNew');       // 01 ( Save Application )
+        Route::post('advert/self/list-inbox', 'listInbox');      // 02 ( Application Inbox Lists )
+        Route::post('advert/self/list-outbox', 'listOutbox');    // 03 ( Application Outbox Lists )
+        Route::post('advert/self/get-details-by-id', 'getDetailsById');  // 04 ( Get Application Details By Application ID )
+        Route::post('advert/self/list-applied-applications', 'listAppliedApplications');     // 05 ( Get Applied Applications List By CityZen )
+        Route::post('advert/self/escalate-application', 'escalateApplication');  // 06 ( Escalate or De-escalate Application )
+        Route::post('advert/self/list-special-inbox', 'listSpecialInbox');  // 07 ( Special Inbox Applications )
+        Route::post('advert/self/forward-next-level', 'forwordNextLevel');  // 08 ( Forward or Backward Application )
+        Route::post('advert/self/comment-application', 'commentApplication');  // 09 ( Independent Comment )
+        Route::post('advert/self/get-license-by-id', 'getLicenseById');  // 10 ( Get License By User ID )
+        Route::post('advert/self/get-license-by-holding-no', 'getLicenseByHoldingNo');  // 11 ( Get License By Holding No )
+        // Route::post('advert/self/get-license-details-by-license-no', 'getLicenseDetailso');  // 12 ( Get License Details By Licence No )
+        Route::post('advert/self/view-advert-document', 'viewAdvertDocument');  // 13 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advert/self/get-details-by-license-no', 'getDetailsByLicenseNo');  // 14 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advert/self/view-documents-on-workflow', 'viewDocumentsOnWorkflow');  // 15 ( View Uploaded Document By Advertisement ID )
+        // Route::post('advert/self/workflow-upload-document', 'workflowUploadDocument');  // 16 ( Workflow Upload Document )
+        Route::post('advert/self/approved-or-reject', 'approvalOrRejection');          // 17 ( Approve or Reject )
+        Route::post('advert/self/list-approved', 'listApproved');          // 18 ( Approved list for Citizen)
+        Route::post('advert/self/list-rejected', 'listRejected');          // 19 ( Rejected list for Citizen)
+        Route::post('advert/self/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
+        Route::post('advert/self/list-jsk-approved-application', 'listJskApprovedApplication');          // 21 ( Approved list for JSK)
+        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');          // 22 ( Rejected list for JSK)    
+        Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');          // 23 ( Generate Payment Order ID)
+        Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
     });
 
     /**
@@ -78,24 +78,25 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-03
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
-        Route::post('advertisement/movable-vehicle/save', 'store');    // 01 ( Save Application )\
-        Route::post('advertisement/movable-vehicle/inbox', 'inbox');    // 03 ( Application Inbox Lists )
-        Route::post('advertisement/movable-vehicle/outbox', 'outbox');    // 04 ( Application Outbox Lists )
-        Route::post('advertisement/movable-vehicle/details', 'details');  // 05 ( Get Application Details By Application ID )
-        Route::post('advertisement/movable-vehicle/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
-        Route::post('advertisement/movable-vehicle/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
-        Route::post('advertisement/movable-vehicle/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
-        Route::post('advertisement/movable-vehicle/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
-        Route::post('advertisement/movable-vehicle/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
-        Route::post('advertisement/movable-vehicle/vehicle-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/movable-vehicle/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
-        Route::post('advertisement/movable-vehicle/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
-        Route::post('advertisement/movable-vehicle/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
-        Route::post('advertisement/movable-vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/movable-vehicle/jsk-approved-list', 'jskApprovedList');          // 15 ( Approved list for JSK)
-        Route::post('advertisement/movable-vehicle/jsk-rejected-list', 'jskRejectedList');          // 16 ( Rejected list for JSK)  
-        Route::post('advertisement/movable-vehicle/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
-        Route::post('advertisement/movable-vehicle/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
+        Route::post('advert/vehicle/add-new', 'addNew');    // 01 ( Save Application )\
+        Route::post('advert/vehicle/list-inbox', 'listInbox');    // 03 ( Application Inbox Lists )
+        Route::post('advert/vehicle/list-outbox', 'listOutbox');    // 04 ( Application Outbox Lists )
+        Route::post('advert/vehicle/get-details-by-id', 'getDetailsById');  // 05 ( Get Application Details By Application ID )
+        Route::post('advert/vehicle/list-applied-applications', 'listAppliedApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advert/vehicle/escalate-application', 'escalateApplication');  // 07 ( Escalate or De-escalate Application )
+        Route::post('advert/vehicle/list-escalated', 'listEscalated');  // 08 ( Special Inbox Applications )
+        Route::post('advert/vehicle/forward-next-level', 'forwardNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advert/vehicle/comment-application', 'commentApplication');  // 10 ( Independent Comment )
+        Route::post('advert/vehicle/view-vehicle-documents', 'viewVehicleDocuments');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('advert/vehicle/approved-or-reject', 'approvedOrReject');          // 12 ( Approve or Reject )
+        Route::post('advert/vehicle/list-approved', 'listApproved');          // 13 ( Approved list for Citizen)
+        Route::post('advert/vehicle/list-rejected', 'listRejected');          // 14 ( Rejected list for Citizen)
+
+        Route::post('advert/vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
+        Route::post('advert/vehicle/list-jsk-approved-application', 'listjskApprovedApplication');          // 15 ( Approved list for JSK)
+        Route::post('advert/vehicle/list-jsk-rejected-application', 'listJskRejectedApplication');          // 16 ( Rejected list for JSK)  
+        Route::post('advert/vehicle/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('advert/vehicle/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 18 ( Application Details For Payments )
     });
 
     /**
@@ -103,24 +104,24 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-04 
      */
     Route::controller(PrivateLandController::class)->group(function () {
-        Route::post('advertisement/private-land/save', 'store'); // 01   ( Save Application )  
-        Route::post('advertisement/private-land/inbox', 'inbox');    // 03 ( Application Inbox Lists )
-        Route::post('advertisement/private-land/outbox', 'outbox');    // 04 ( Application Outbox Lists )
-        Route::post('advertisement/private-land/details', 'details');  // 05 ( Get Application Details By Application ID )
-        Route::post('advertisement/private-land/get-citizen-applications', 'getCitizenApplications');     // 06 ( Get Applied Applications List )
-        Route::post('advertisement/private-land/escalate', 'escalate');  // 07 ( Escalate or De-escalate Application )
-        Route::post('advertisement/private-land/special-inbox', 'specialInbox');  // 08 ( Special Inbox Applications )
-        Route::post('advertisement/private-land/post-next-level', 'postNextLevel');  // 09 ( Forward or Backward Application )
-        Route::post('advertisement/private-land/comment-independent', 'commentIndependent');  // 10 ( Independent Comment )
-        Route::post('advertisement/private-land/private-land-document-view', 'uploadDocumentsView');  // 11 ( Get Uploaded Document By Application ID )
-        Route::post('advertisement/private-land/approval-rejection', 'finalApprovalRejection');          // 12 ( Approve or Reject )
-        Route::post('advertisement/private-land/approved-list', 'approvedList');          // 13 ( Approved list for Citizen)
-        Route::post('advertisement/private-land/rejected-list', 'rejectedList');          // 14 ( Rejected list for Citizen)
-        Route::post('advertisement/private-land/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
-        Route::post('advertisement/private-land/jsk-approved-list', 'jskApprovedList');          // 16 ( Approved list for JSK)
-        Route::post('advertisement/private-land/jsk-rejected-list', 'jskRejectedList');          // 17 ( Rejected list for JSK)  
-        Route::post('advertisement/private-land/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
-        Route::post('advertisement/private-land/application-details-for-payment', 'applicationDetailsForPayment');          // 18 ( Application Details For Payments )
+        Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  
+        Route::post('advert/pvt-land/list-inbox', 'listInbox');    // 03 ( Application Inbox Lists )
+        Route::post('advert/pvt-land/list-outbox', 'listOutbox');    // 04 ( Application Outbox Lists )
+        Route::post('advert/pvt-land/get-details-by-id', 'getDetailsById');  // 05 ( Get Application Details By Application ID )
+        Route::post('advert/pvt-land/list-applied-applications', 'listAppliedApplications');     // 06 ( Get Applied Applications List )
+        Route::post('advert/pvt-land/escalate-application', 'escalateApplication');  // 07 ( Escalate or De-escalate Application )
+        Route::post('advert/pvt-land/list-escalated', 'listEscalated');  // 08 ( Special Inbox Applications )
+        Route::post('advert/pvt-land/forward-next-level', 'forwardNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advert/pvt-land/comment-application', 'commentApplication');  // 10 ( Independent Comment )
+        Route::post('advert/pvt-land/view-pvt-land-documents', 'viewPvtLandDocuments');  // 11 ( Get Uploaded Document By Application ID )
+        Route::post('advert/pvt-land/approved-or-reject', 'approvedOrReject');          // 12 ( Approve or Reject )
+        Route::post('advert/pvt-land/list-approved', 'listApproved');          // 13 ( Approved list for Citizen)
+        Route::post('advert/pvt-land/list-rejected', 'listRejected');          // 14 ( Rejected list for Citizen)
+        Route::post('advert/pvt-land/get-jsk-applications', 'getJSKApplications');          // 15 ( Get Applied Applications List By JSK )
+        Route::post('advert/pvt-land/list-jsk-approved-application', 'listjskApprovedApplication');          // 16 ( Approved list for JSK)
+        Route::post('advert/pvt-land/list-jsk-rejected-application', 'listJskRejectedApplication');          // 17 ( Rejected list for JSK)  
+        Route::post('advert/pvt-land/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
+        Route::post('advert/pvt-land/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 18 ( Application Details For Payments )
     });
 
     /**
@@ -171,7 +172,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advertisement/hording/license-application-details-for-payment', 'licenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
 
         //================================= Other Apis ===========================
-        Route::post('advertisement/agency/is-agency', 'isAgency'); // (Get Agency or not By Login Token)
+        Route::post('advertisement/agency/is-agency', 'isAgency'); // (Get Agency Approve or not By Login Token)
+        Route::post('advertisement/agency/agency-dashboard', 'agencyDashboard'); // (Get Agency Dashboard)
 
 
     });

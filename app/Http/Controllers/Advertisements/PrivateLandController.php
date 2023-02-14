@@ -53,7 +53,7 @@ class PrivateLandController extends Controller
     /**
      * | Apply For Private Land Advertisement
      */
-    public function store(StoreRequest $req)
+    public function addNew(StoreRequest $req)
     {
         try {
             $privateLand = new AdvActivePrivateland();
@@ -64,7 +64,7 @@ class PrivateLandController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-            $applicationNo = $privateLand->store($req);       //<--------------- Model function to store 
+            $applicationNo = $privateLand->addNew($req);       //<--------------- Model function to store 
             return responseMsgs(true,"Successfully Submitted the application !!",['status' => true,'ApplicationNo' => $applicationNo],"040401","1.0","",'POST',$req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false,$e->getMessage(),"","040401","1.0","","POST",$req->deviceId ?? "");
@@ -76,7 +76,7 @@ class PrivateLandController extends Controller
      * | Inbox List
      * | @param Request $req
      */
-    public function inbox(Request $req)
+    public function listInbox(Request $req)
     {
         try {
             $mAdvActivePrivateland = $this->_modelObj;
@@ -85,35 +85,17 @@ class PrivateLandController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActivePrivateland->inbox($roleIds);
-            return responseMsgs(
-                true,
-                "Inbox Applications",
-                remove_null($inboxList->toArray()),
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            $inboxList = $mAdvActivePrivateland->listInbox($roleIds);
+            return responseMsgs(true,"Inbox Applications",remove_null($inboxList->toArray()),"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
     /**
      * | Outbox List
      */
-    public function outbox(Request $req)
+    public function listOutbox(Request $req)
     {
         try {
             $selfAdvets = $this->_modelObj;
@@ -122,28 +104,10 @@ class PrivateLandController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $selfAdvets->outbox($roleIds);
-            return responseMsgs(
-                true,
-                "Outbox Lists",
-                remove_null($outboxList->toArray()),
-                "040104",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            $outboxList = $selfAdvets->listOutbox($roleIds);
+            return responseMsgs(true,"Outbox Lists",remove_null($outboxList->toArray()),"040104","1.0","","POST",$req->deviceId ??"");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040104",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040104","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
@@ -151,7 +115,7 @@ class PrivateLandController extends Controller
      * | Application Details
      */
 
-    public function details(Request $req)
+    public function getDetailsById(Request $req)
     {
         try {
             $mAdvActivePrivateland = new AdvActivePrivateland();
@@ -162,7 +126,7 @@ class PrivateLandController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->details($req->applicationId,$type);
+                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId,$type);
             }else{
                 throw new Exception("Not Pass Application Id");
             }
@@ -192,6 +156,7 @@ class PrivateLandController extends Controller
             $metaReqs['customFor'] = 'Private Land Advertisement';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
+            $metaReqs['lastRoleId'] = $data['last_role_id'];
 
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);
@@ -201,6 +166,7 @@ class PrivateLandController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['timelineData'] = collect($req);
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -239,37 +205,19 @@ class PrivateLandController extends Controller
       /**
      * | Get Applied Applications by Logged In Citizen
      */
-    public function getCitizenApplications(Request $req)
+    public function listAppliedApplications(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvActivePrivateland = new AdvActivePrivateland();
-            $applications = $mAdvActivePrivateland->getCitizenApplications($citizenId);
+            $applications = $mAdvActivePrivateland->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            return responseMsgs(
-                true,
-                "Applied Applications",
-                $data1,
-                "040106",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Applied Applications",$data1,"040106","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040106",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040106","1.0","","POST",$req->deviceId ?? "");
         }
     }
 
@@ -277,7 +225,7 @@ class PrivateLandController extends Controller
     /**
      * | Escalate
      */
-    public function escalate(Request $request)
+    public function escalateApplication(Request $request)
     {
         $request->validate([
             "escalateStatus" => "required|int",
@@ -297,7 +245,7 @@ class PrivateLandController extends Controller
     }
 
     
-    public function specialInbox(Request $req)
+    public function listEscalated(Request $req)
     {
         try {
             $mWfWardUser = new WfWardUser();
@@ -325,7 +273,7 @@ class PrivateLandController extends Controller
     /**
      * | Forward or Backward Application
      */
-    public function postNextLevel(Request $request)
+    public function forwardNextLevel(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|integer',
@@ -338,6 +286,7 @@ class PrivateLandController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActivePrivateland::find($request->applicationId);
+            $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
@@ -359,7 +308,7 @@ class PrivateLandController extends Controller
 
     
     // Post Independent Comment
-    public function commentIndependent(Request $request)
+    public function commentApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -420,7 +369,7 @@ class PrivateLandController extends Controller
     // }
 
 
-    public function uploadDocumentsView(Request $req)
+    public function viewPvtLandDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -448,7 +397,7 @@ class PrivateLandController extends Controller
      * | Rating-
      * | Status- Open
      */
-    public function finalApprovalRejection(Request $req)
+    public function approvedOrReject(Request $req)
     {
         try {
             $req->validate([
@@ -529,13 +478,13 @@ class PrivateLandController extends Controller
      * | Approve Application List for Citzen
      * | @param Request $req
      */
-    public function approvedList(Request $req)
+    public function listApproved(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $userType=authUser()->user_type;
             $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->approvedList($citizenId, $userType);
+            $applications = $mAdvPrivateland->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -544,27 +493,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(
-                true,
-                "Approved Application List",
-                $data1,
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
     
@@ -573,12 +504,12 @@ class PrivateLandController extends Controller
      * | Reject Application List for Citizen
      * | @param Request $req
      */
-    public function rejectedList(Request $req)
+    public function listRejected(Request $req)
     {
         try {
             $citizenId = authUser()->id;
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->rejectedList($citizenId);
+            $applications = $mAdvRejectedPrivateland->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -587,27 +518,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(
-                true,
-                "Approved Application List",
-                $data1,
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
@@ -630,27 +543,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(
-                true,
-                "Applied Applications",
-                $data1,
-                "040106",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Applied Applications",$data1,"040106","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040106",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040106","1.0","","POST",$req->deviceId ?? "");
         }
     }
 
@@ -659,12 +554,12 @@ class PrivateLandController extends Controller
      * | Approve Application List for JSK
      * | @param Request $req
      */
-    public function jskApprovedList(Request $req)
+    public function listjskApprovedApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->jskApprovedList($userId);
+            $applications = $mAdvPrivateland->listjskApprovedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -673,27 +568,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(
-                true,
-                "Approved Application List",
-                $data1,
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
     
@@ -702,12 +579,12 @@ class PrivateLandController extends Controller
      * | Reject Application List for JSK
      * | @param Request $req
      */
-    public function jskRejectedList(Request $req)
+    public function listJskRejectedApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->jskRejectedList($userId);
+            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -716,27 +593,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(
-                true,
-                "Rejected Application List",
-                $data1,
-                "040103",
-                "1.0",
-                "",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Rejected Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(
-                false,
-                $e->getMessage(),
-                "",
-                "040103",
-                "1.0",
-                "",
-                'POST',
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
         }
     }
 
@@ -784,27 +643,9 @@ class PrivateLandController extends Controller
              $endTime = microtime(true);
              $executionTime = $endTime - $startTime;
  
-             return responseMsgs(
-                 true,
-                 "Payment OrderId Generated Successfully !!!",
-                 $data,
-                 "050123",
-                 "1.0",
-                 "$executionTime Sec",
-                 "POST",
-                 $req->deviceId ?? ""
-             );
+             return responseMsgs(true,"Payment OrderId Generated Successfully !!!",$data,"050123","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
          } catch (Exception $e) {
-             return responseMsgs(
-                 false,
-                 $e->getMessage(),
-                 "",
-                 "050123",
-                 "1.0",
-                 "",
-                 'POST',
-                 $req->deviceId ?? ""
-             );
+             return responseMsgs(false,$e->getMessage(),"","050123","1.0","",'POST',$req->deviceId ?? "");
          }
      }
  
@@ -814,7 +655,7 @@ class PrivateLandController extends Controller
       * @param Request $req
       * @return void
       */
-     public function applicationDetailsForPayment(Request $req){
+     public function getApplicationDetailsForPayment(Request $req){
          $req->validate([
              'applicationId' => 'required|integer',
          ]);
@@ -823,7 +664,7 @@ class PrivateLandController extends Controller
              $mAdvPrivateland = new AdvPrivateland();
              $workflowId = $this->_workflowIds;
              if ($req->applicationId) {
-                 $data = $mAdvPrivateland->detailsForPayments($req->applicationId, $workflowId);
+                 $data = $mAdvPrivateland->getApplicationDetailsForPayment($req->applicationId, $workflowId);
              }
              
             if (!$data)

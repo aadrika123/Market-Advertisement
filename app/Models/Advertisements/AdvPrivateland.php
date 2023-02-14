@@ -31,7 +31,7 @@ class AdvPrivateland extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId,$userType)
+    public function listApproved($citizenId,$userType)
     {
         $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
@@ -45,7 +45,7 @@ class AdvPrivateland extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function jskApprovedList($userId)
+    public function listjskApprovedApplication($userId)
     {
         return AdvPrivateland::where('user_id', $userId)
             ->select(
@@ -67,7 +67,7 @@ class AdvPrivateland extends Model
     /**
      * | Get Application Details FOr Payments
      */
-    public function detailsForPayments($id)
+    public function getApplicationDetailsForPayment($id)
     {
         return AdvPrivateland::where('id', $id)
             ->select(

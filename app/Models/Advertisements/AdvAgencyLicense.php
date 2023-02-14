@@ -378,9 +378,10 @@ class AdvAgencyLicense extends Model
      */
     public function approvedList($citizenId,$usertype)
     {
+        // echo authUser()->id;
         $allApproveList=$this->allApproveList();
         if($usertype == 'Citizen'){
-            return collect($allApproveList->where('citizen_id',$citizenId))->values();;
+            return collect($allApproveList->where('citizen_id',$citizenId))->values();
         }else{
             return collect($allApproveList)->values();
         }

@@ -52,7 +52,7 @@ class AdvActiveSelfadvertisement extends Model
     }
 
     // Store Self Advertisements(1)
-    public function store($req)
+    public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
         $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
@@ -63,6 +63,7 @@ class AdvActiveSelfadvertisement extends Model
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
         $mDocuments = $req->documents;
@@ -147,7 +148,7 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Citizen Applied applications
      * | @param citizenId
      */
-    public function getCitizenApplications($citizenId)
+    public function listAppliedApplications($citizenId)
     {
         return AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
@@ -168,7 +169,7 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function details($id,$type=NULL)
+    public function getDetailsById($id,$type=NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -248,7 +249,7 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function inbox($roleIds)
+    public function listInbox($roleIds)
     {
         $inbox = DB::table('adv_active_selfadvertisements')
             ->select(
@@ -270,7 +271,7 @@ class AdvActiveSelfadvertisement extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function outbox($roleIds)
+    public function listOutbox($roleIds)
     {
         $outbox = DB::table('adv_active_selfadvertisements')
             ->select(

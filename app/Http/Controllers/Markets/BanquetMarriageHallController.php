@@ -5,11 +5,20 @@ namespace App\Http\Controllers\Markets;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveBanquteHall;
+use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WorkflowTrack;
+use App\Repositories\Markets\iMarketRepo;
 use App\Traits\WorkflowTrait;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+
+
+use App\Traits\MarDetailsTraits;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 /**
  * | Created on - 06-02-2023
@@ -21,13 +30,21 @@ class BanquetMarriageHallController extends Controller
 {
 
     use WorkflowTrait;
+    use MarDetailsTraits;
+    
+    protected $_modelObj;  //  Generate Model Instance
+    protected $_repository;
+    protected $_workflowIds;
+    protected $_moduleIds;
 
     //Constructor
-    public function __construct()
+    public function __construct(iMarketRepo $self_repo)
     {
         $this->_modelObj = new MarActiveBanquteHall();
+        $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
+        $this->_repository = $self_repo;
     }
-    protected $_modelObj;  //  Generate Model Instance
 
     /**
      * | Store 
@@ -140,7 +157,7 @@ class BanquetMarriageHallController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Advertisement",
+                'headerTitle' => "About Banqute-Marriage Hall",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
@@ -204,53 +221,174 @@ class BanquetMarriageHallController extends Controller
      */
     public function getCitizenApplications(Request $req)
     {
-        echo "getCitizenApplications";
+        try {
+            $startTime = microtime(true);
+            $citizenId = authUser()->id;
+            $mMarActiveBanquteHall = $this->_modelObj;
+            $applications = $mMarActiveBanquteHall->getCitizenApplications($citizenId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? ""
+            );
+        } catch (Exception $e) {
+            return responseMsgs(false,$e->getMessage(),"","050106","1.0","","POST",$req->deviceId ?? "");
+        }
     }
 
 
     /**
      *  | Escalate
-     * @param Request $req
+     * @param Request $request
      * @return void
      */
-    public function escalate(Request $req)
+    public function escalate(Request $request)
     {
-        echo 'Esclate';
+        $request->validate([
+            "escalateStatus" => "required|int",
+            "applicationId" => "required|int",
+        ]);
+        try {
+            $startTime = microtime(true);
+            $userId = auth()->user()->id;
+            $applicationId = $request->applicationId;
+            $data = MarActiveBanquteHall::find($applicationId);
+            $data->is_escalate = $request->escalateStatus;
+            $data->escalate_by = $userId;
+            $data->save();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Mazrrige Hall is Escalated' : "Banqute Mazrrige Hall is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), $request->all());
+        }
     }
 
 
     /**
-     *  Inbox List
+     *  Special Inbox List
      * @param Request $req
      * @return void
      */
     public function specialInbox(Request $req)
     {
-        echo "Special Inbox";
+        try {
+            $startTime = microtime(true);
+            $mWfWardUser = new WfWardUser();
+            $userId = authUser()->id;
+            $ulbId = authUser()->ulb_id;
+
+            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
+            $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
+                return $item->ward_id;
+            });
+
+            $advData = $this->_repository->specialInbox($this->_workflowIds)                      // Repository function to get Markets Details
+                ->where('is_escalate', 1)
+                ->where('mar_active_banqute_halls.ulb_id', $ulbId)
+                // ->whereIn('ward_mstr_id', $wardId)
+                ->get();
+                $endTime = microtime(true);
+                $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
     }
 
 
 
     /**
      * Forward or Backward Application
-     * @param Request $req
+     * @param Request $request
      * @return void
      */
-    public function postNextLevel(Request $req)
+    public function postNextLevel(Request $request)
     {
-        echo "Post Next Level";
+        $request->validate([
+            'applicationId' => 'required|integer',
+            'senderRoleId' => 'required|integer',
+            'receiverRoleId' => 'required|integer',
+            'comment' => 'required',
+        ]);
+
+        try {
+            $startTime = microtime(true);
+            // Marriage Banqute Hall Application Update Current Role Updation
+            DB::beginTransaction();
+            $adv = MarActiveBanquteHall::find($request->applicationId);
+            $adv->current_role_id = $request->receiverRoleId;
+            $adv->save();
+
+            $metaReqs['moduleId'] = $this->_moduleIds;
+            $metaReqs['workflowId'] = $adv->workflow_id;
+            $metaReqs['refTableDotId'] = "mar_active_banqute_halls.id";
+            $metaReqs['refTableIdValue'] = $request->applicationId;
+            $request->request->add($metaReqs);
+
+            $track = new WorkflowTrack();
+            $track->saveTrack($request);
+            DB::commit();
+                    
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), $request->all());
+        }
     }
 
 
 
     /**
      * Post Independent Comment
-     * @param Request $req
+     * @param Request $request
      * @return void
      */
-    public function commentIndependent(Request $req)
+    public function commentIndependent(Request $request)
     {
-        echo "Comment Independent";
+        $request->validate([
+            'comment' => 'required',
+            'applicationId' => 'required|integer',
+            'senderRoleId' => 'nullable|integer'
+        ]);
+
+        try {
+            $startTime = microtime(true);
+            $workflowTrack = new WorkflowTrack();
+            $mMarActiveBanquteHall = MarActiveBanquteHall::find($request->applicationId);                // Advertisment Details
+            $mModuleId = $this->_moduleIds;
+            $metaReqs = array();
+            DB::beginTransaction();
+            // Save On Workflow Track For Level Independent
+            $metaReqs = [
+                'workflowId' => $mMarActiveBanquteHall->workflow_id,
+                'moduleId' => $mModuleId,
+                'refTableDotId' => "mar_active_banqute_halls.id",
+                'refTableIdValue' => $mMarActiveBanquteHall->id,
+                'message' => $request->comment
+            ];
+            // For Citizen Independent Comment
+            if (!$request->senderRoleId) {
+                $metaReqs = array_merge($metaReqs, ['citizenId' => $mMarActiveBanquteHall->user_id]);
+            }
+
+            $request->request->add($metaReqs);
+            $workflowTrack->saveTrack($request);
+
+            DB::commit();
+            
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "");
+        }
     }
 
 
@@ -261,7 +399,22 @@ class BanquetMarriageHallController extends Controller
      */
     public function uploadDocumentsView(Request $req)
     {
-        echo "Upload Documents View";
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId && $req->type) {
+            if($req->type=='Active'){
+                $appId=$req->applicationId;
+            }elseif($req->type=='Reject'){
+                // $appId=AdvRejectedSelfadvertisement::find($req->applicationId)->temp_id;
+            }elseif($req->type=='Approve'){
+                // $appId=AdvSelfadvertisement::find($req->applicationId)->temp_id;
+            }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+        }else{
+            throw new Exception("Required Application Id And Application Type");
+        }
+        $data1['data'] = $data;
+        return $data1;
     }
 
 
@@ -273,7 +426,78 @@ class BanquetMarriageHallController extends Controller
      */
     public function finalApprovalRejection(Request $req)
     {
-        echo "final Approval Rejection";
+        $req->validate([
+            'roleId' => 'required',
+            'applicationId' => 'required|integer',
+            'status' => 'required|integer',
+            // 'payment_amount' => 'required',
+
+        ]);
+        try {
+            $startTime = microtime(true);
+            // Check if the Current User is Finisher or Not         
+            $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mMarActiveBanquteHall->workflow_id);                                 // Get Finisher using Trait
+            $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
+            if ($refGetFinisher->role_id != $req->roleId) {
+                return responseMsgs(false, " Access Forbidden", "");
+            }
+
+            DB::beginTransaction();
+            // Approval
+            if ($req->status == 1) {
+
+                $payment_amount = ['payment_amount' => 1000];
+                $req->request->add($payment_amount);
+                // Selfadvertisement Application replication
+
+                $approvedSelfadvertisement = $mMarActiveBanquteHall->replicate();
+                $approvedSelfadvertisement->setTable('adv_selfadvertisements');
+                $temp_id = $approvedSelfadvertisement->temp_id = $mMarActiveBanquteHall->id;
+                $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                $approvedSelfadvertisement->approve_date = Carbon::now();
+                $approvedSelfadvertisement->save();
+
+                // Save in self Advertisement Renewal
+                $approvedSelfadvertisement = $mMarActiveBanquteHall->replicate();
+                $approvedSelfadvertisement->approve_date = Carbon::now();
+                $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                $approvedSelfadvertisement->selfadvet_id = $temp_id;
+                $approvedSelfadvertisement->save();
+
+
+                $mMarActiveBanquteHall->delete();
+
+                // Update in adv_selfadvertisements (last_renewal_id)
+
+                DB::table('adv_selfadvertisements')
+                    ->where('temp_id', $temp_id)
+                    ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+
+                $msg = "Application Successfully Approved !!";
+            }
+            // Rejection
+            if ($req->status == 0) {
+
+                $payment_amount = ['payment_amount' => 0];
+                $req->request->add($payment_amount);
+                // Selfadvertisement Application replication
+                $rejectedSelfadvertisement = $mMarActiveBanquteHall->replicate();
+                $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
+                $rejectedSelfadvertisement->temp_id = $mMarActiveBanquteHall->id;
+                $rejectedSelfadvertisement->rejected_date = Carbon::now();
+                $rejectedSelfadvertisement->save();
+                $mMarActiveBanquteHall->delete();
+                $msg = "Application Successfully Rejected !!";
+            }
+            DB::commit();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, $msg, "", '050117', 01, "$executionTime Sec", 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false,  $e->getMessage(), "", '050117', 01, "", 'Post', $req->deviceId);
+        }
     }
 
     /**

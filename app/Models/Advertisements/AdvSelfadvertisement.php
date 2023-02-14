@@ -38,7 +38,7 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId, $userType)
+    public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
@@ -69,7 +69,7 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function jskApprovedList($userId)
+    public function listJskApprovedApplication($userId)
     {
         return AdvSelfadvertisement::where('user_id', $userId)
             ->select(
@@ -95,7 +95,7 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Details For Payments
      */
-    public function detailsForPayments($id)
+    public function applicationDetailsForPayment($id)
     {
         return AdvSelfadvertisement::where('id', $id)
             ->select(

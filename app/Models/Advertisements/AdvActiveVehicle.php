@@ -65,7 +65,7 @@ class AdvActiveVehicle extends Model
      * | Store function to apply(1)
      * | @param request 
      */
-    public function store($req)
+    public function addNew($req)
     {
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
@@ -77,6 +77,7 @@ class AdvActiveVehicle extends Model
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role' => $ulbWorkflows['initiator_role_id'],
             'current_roles' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role' => $ulbWorkflows['finisher_role_id'],
         ];
         $metaReqs = array_merge(
@@ -102,7 +103,7 @@ class AdvActiveVehicle extends Model
    /**
      * | Get Application Outbox List by Role Ids
      */
-    public function outbox($roleIds)
+    public function listOutbox($roleIds)
     {
         $outbox = DB::table('adv_active_vehicles')
             ->select(
@@ -190,7 +191,7 @@ class AdvActiveVehicle extends Model
 
 
 
-    public function inbox($roleIds)
+    public function listInbox($roleIds)
     {
         $inbox = DB::table('adv_active_vehicles')
             ->select(
@@ -207,7 +208,7 @@ class AdvActiveVehicle extends Model
     }
 
 
-    public function details($id,$type){
+    public function getDetailsById($id,$type){
         $details = array();
         if ($type == 'Active' || $type==NULL) {
             $details = DB::table('adv_active_vehicles')
@@ -299,12 +300,13 @@ class AdvActiveVehicle extends Model
      * | Get Citizen Applied applications
      * | @param citizenId
      */
-    public function getCitizenApplications($citizenId)
+    public function listAppliedApplications($citizenId)
     {
         return AdvActiveVehicle::where('citizen_id', $citizenId)
             ->select(
                 'id',
                 'application_no',
+                'application_date',
                 'applicant',
                 'father',
                 'residence_address',

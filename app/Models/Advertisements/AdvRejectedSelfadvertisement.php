@@ -12,7 +12,7 @@ class AdvRejectedSelfadvertisement extends Model
      /**
      * | Get Application Reject List by Role Ids
      */
-    public function rejectedList($citizenId)
+    public function listRejected($citizenId)
     {
         return AdvRejectedSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
@@ -34,7 +34,7 @@ class AdvRejectedSelfadvertisement extends Model
      /**
      * | Get Application Reject List by Login JSK
      */
-    public function jskRejectedList($userId)
+    public function listJskRejectedApplication($userId)
     {
         return AdvRejectedSelfadvertisement::where('user_id', $userId)
             ->select(

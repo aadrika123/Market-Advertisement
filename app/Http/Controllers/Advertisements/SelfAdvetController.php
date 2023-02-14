@@ -61,7 +61,7 @@ class SelfAdvetController extends Controller
      * | Apply for Self Advertisements 
      * | @param StoreRequest 
      */
-    public function store(StoreRequest $req)
+    public function addNew(StoreRequest $req)
     {
         try {
             // Variable initialization
@@ -76,7 +76,7 @@ class SelfAdvetController extends Controller
             }
 
             DB::beginTransaction();
-            $applicationNo = $mAdvActiveSelfadvertisement->store($req);       //<--------------- Model function to store 
+            $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -92,7 +92,7 @@ class SelfAdvetController extends Controller
      * | Inbox List
      * | @param Request $req
      */
-    public function inbox(Request $req)
+    public function listInbox(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -102,7 +102,7 @@ class SelfAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveSelfadvertisement->inbox($roleIds);            
+            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds);            
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true,"Inbox Applications",remove_null($inboxList->toArray()),"050103","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
@@ -114,7 +114,7 @@ class SelfAdvetController extends Controller
     /**
      * | Outbox List
      */
-    public function outbox(Request $req)
+    public function listOutbox(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -124,7 +124,7 @@ class SelfAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveSelfadvertisement->outbox($roleIds);         
+            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds);         
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true,"Outbox Lists",remove_null($outboxList->toArray()),"050104","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
@@ -137,7 +137,7 @@ class SelfAdvetController extends Controller
      * | Application Details
      */
 
-    public function details(Request $req)
+    public function getDetailsById(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -149,7 +149,7 @@ class SelfAdvetController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveSelfadvertisement->details($req->applicationId,$type);
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId,$type);
             }else{
                 throw new Exception("Not Pass Application Id");
             }
@@ -173,9 +173,10 @@ class SelfAdvetController extends Controller
 
             // return ($data);
 
-            $metaReqs['customFor'] = 'Slef Advertisement';
+            $metaReqs['customFor'] = 'Self Advertisement';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
+            $metaReqs['lastRoleId'] = $data['last_role_id'];
 
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);
@@ -185,6 +186,7 @@ class SelfAdvetController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['timelineData'] = collect($req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -224,7 +226,7 @@ class SelfAdvetController extends Controller
     /**
      * | Forward or Backward Application
      */
-    public function postNextLevel(Request $request)
+    public function forwordNextLevel(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|integer',
@@ -238,6 +240,7 @@ class SelfAdvetController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
+            $adv->last_role_id=$adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
@@ -263,7 +266,7 @@ class SelfAdvetController extends Controller
     /**
      * | Escalate
      */
-    public function escalate(Request $request)
+    public function escalateApplication(Request $request)
     {
         $request->validate([
             "escalateStatus" => "required|int",
@@ -286,7 +289,7 @@ class SelfAdvetController extends Controller
     }
 
     // Post Independent Comment
-    public function commentIndependent(Request $request)
+    public function commentApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -333,13 +336,13 @@ class SelfAdvetController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      */
-    public function getCitizenApplications(Request $req)
+    public function listAppliedApplications(Request $req)
     {
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $applications = $selfAdvets->getCitizenApplications($citizenId);
+            $applications = $selfAdvets->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -358,7 +361,7 @@ class SelfAdvetController extends Controller
     /**
      * | Get License By User ID
      */
-    public function getLicense(Request $req)
+    public function getLicenseById(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'user_id' => 'required|integer'
@@ -408,7 +411,7 @@ class SelfAdvetController extends Controller
     /**
      * | Get Uploaded Document by application ID
      */
-    public function uploadDocumentsView(Request $req)
+    public function viewAdvertDocument(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -459,7 +462,7 @@ class SelfAdvetController extends Controller
     /**
      * | Workflow View Uploaded Document by application ID
      */
-    public function workflowViewDocuments(Request $req)
+    public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
@@ -473,7 +476,7 @@ class SelfAdvetController extends Controller
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
-    public function specialInbox(Request $req)
+    public function listSpecialInbox(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -527,7 +530,7 @@ class SelfAdvetController extends Controller
      * | Rating-
      * | Status- Open
      */
-    public function finalApprovalRejection(Request $req)
+    public function approvalOrRejection(Request $req)
     {
         $req->validate([
             'roleId' => 'required',
@@ -607,14 +610,14 @@ class SelfAdvetController extends Controller
      * | Approve Application List for Citzen
      * | @param Request $req
      */
-    public function approvedList(Request $req)
+    public function listApproved(Request $req)
     {
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->approvedList($citizenId,$userType);
+            $applications = $mAdvSelfadvertisements->listApproved($citizenId,$userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -633,13 +636,13 @@ class SelfAdvetController extends Controller
      * | Reject Application List for Citizen
      * | @param Request $req
      */
-    public function rejectedList(Request $req)
+    public function listRejected(Request $req)
     {
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $applications = $mAdvRejectedSelfadvertisement->rejectedList($citizenId);
+            $applications = $mAdvRejectedSelfadvertisement->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -682,13 +685,13 @@ class SelfAdvetController extends Controller
      * | Approve Application List for JSK
      * | @param Request $req
      */
-    public function jskApprovedList(Request $req)
+    public function listJskApprovedApplication(Request $req)
     {
         try {
             $startTime = microtime(true);
             $userId = authUser()->id;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->jskApprovedList($userId);
+            $applications = $mAdvSelfadvertisements->listJskApprovedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -706,13 +709,13 @@ class SelfAdvetController extends Controller
      * | Reject Application List for JSK
      * | @param Request $req
      */
-    public function jskRejectedList(Request $req)
+    public function listJskRejectedApplication(Request $req)
     {
         try {
             $startTime = microtime(true);
             $userId = authUser()->id;
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $applications = $mAdvRejectedSelfadvertisement->jskRejectedList($userId);
+            $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -786,7 +789,7 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
             if ($req->applicationId) {
-                $data = $mAdvSelfadvertisement->detailsForPayments($req->applicationId);
+                $data = $mAdvSelfadvertisement->applicationDetailsForPayment($req->applicationId);
             }    
             if (!$data)
                  throw new Exception("Application Not Found");
@@ -803,90 +806,90 @@ class SelfAdvetController extends Controller
     /**
      * | Get Documents List
      */
-    public function getDocList(Request $req)
-    {
-        try {
-            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
-           $refApplication = $mAdvActiveSelfadvertisement->getSelfAdvertNo($req->applicationId);
-            if (!$refApplication)
-                throw new Exception("Application Not Found for this id");
+    // public function getDocList(Request $req)
+    // {
+    //     try {
+    //         $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+    //        $refApplication = $mAdvActiveSelfadvertisement->getSelfAdvertNo($req->applicationId);
+    //         if (!$refApplication)
+    //             throw new Exception("Application Not Found for this id");
 
-            $harvestingDoc['listDocs'] = $this->geSelfAdvertDoc($refApplication);
-            return responseMsgs(true, "Doc List", remove_null($harvestingDoc), 010717, 1.0, "271ms", "POST", "", "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
-        }
-    }
+    //         $harvestingDoc['listDocs'] = $this->geSelfAdvertDoc($refApplication);
+    //         return responseMsgs(true, "Doc List", remove_null($harvestingDoc), 010717, 1.0, "271ms", "POST", "", "");
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+    //     }
+    // }
 
-    public function geSelfAdvertDoc($refApplication)
-    {
-        $mRefReqDocs = new RefRequiredDocument();
-        $mWfActiveDocument = new WfActiveDocument();
-        $applicationId = $refApplication->id;
-        $workflowId = $refApplication->workflow_id;
-        $moduleId = $this->_moduleIds;
+    // public function geSelfAdvertDoc($refApplication)
+    // {
+    //     $mRefReqDocs = new RefRequiredDocument();
+    //     $mWfActiveDocument = new WfActiveDocument();
+    //     $applicationId = $refApplication->id;
+    //     $workflowId = $refApplication->workflow_id;
+    //     $moduleId = $this->_moduleIds;
 
-        $documentList = $mRefReqDocs->getDocsByDocCode($moduleId, "SELF_ADVERT")->requirements;
+    //     $documentList = $mRefReqDocs->getDocsByDocCode($moduleId, "SELF_ADVERT")->requirements;
 
-        $uploadedDocs = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
-        $explodeDocs = collect(explode('#', $documentList));
+    //     $uploadedDocs = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
+    //     $explodeDocs = collect(explode('#', $documentList));
 
-        $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs) {
-            $document = explode(',', $explodeDoc);
-            $key = array_shift($document);
+    //     $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs) {
+    //         $document = explode(',', $explodeDoc);
+    //         $key = array_shift($document);
 
-            $documents = collect();
+    //         $documents = collect();
 
-            collect($document)->map(function ($item) use ($uploadedDocs, $documents) {
-                $uploadedDoc = $uploadedDocs->where('doc_code', $item)->first();
-                if ($uploadedDoc) {
-                    $response = [
-                        "documentCode" => $item,
-                        "ownerId" => $uploadedDoc->owner_dtl_id ?? "",
-                        "docPath" => $uploadedDoc->doc_path ?? ""
-                    ];
-                    $documents->push($response);
-                }
-            });
-            $reqDoc['docType'] = $key;
-            $reqDoc['uploadedDoc'] = $documents->first();
+    //         collect($document)->map(function ($item) use ($uploadedDocs, $documents) {
+    //             $uploadedDoc = $uploadedDocs->where('doc_code', $item)->first();
+    //             if ($uploadedDoc) {
+    //                 $response = [
+    //                     "documentCode" => $item,
+    //                     "ownerId" => $uploadedDoc->owner_dtl_id ?? "",
+    //                     "docPath" => $uploadedDoc->doc_path ?? ""
+    //                 ];
+    //                 $documents->push($response);
+    //             }
+    //         });
+    //         $reqDoc['docType'] = $key;
+    //         $reqDoc['uploadedDoc'] = $documents->first();
 
-            $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs) {
-                $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
-                $strLower = strtolower($doc);
-                $strReplace = str_replace('_', ' ', $strLower);
-                $arr = [
-                    "documentCode" => $doc,
-                    "docVal" => ucwords($strReplace),
-                    "uploadedDoc'" => $uploadedDoc->doc_path ?? null
-                ];
-                return $arr;
-            });
-            return $reqDoc;
-        });
-        return $filteredDocs;
-    }
+    //         $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs) {
+    //             $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
+    //             $strLower = strtolower($doc);
+    //             $strReplace = str_replace('_', ' ', $strLower);
+    //             $arr = [
+    //                 "documentCode" => $doc,
+    //                 "docVal" => ucwords($strReplace),
+    //                 "uploadedDoc'" => $uploadedDoc->doc_path ?? null
+    //             ];
+    //             return $arr;
+    //         });
+    //         return $reqDoc;
+    //     });
+    //     return $filteredDocs;
+    // }
 
     /**
      * Summary of approve Reject Full Details
      * @return void
      */
-    public function approveRejectFullDetails(Request $req){
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|integer',
-            'type' => 'required|String',
-        ]);
-        if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-        if($req->type=='Approved'){
+    // public function approveRejectFullDetails(Request $req){
+    //     $validator = Validator::make($req->all(), [
+    //         'applicationId' => 'required|integer',
+    //         'type' => 'required|String',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return responseMsgs(false, $validator->errors(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    //     if($req->type=='Approved'){
 
-        }elseif($req->type=='Rejected'){
+    //     }elseif($req->type=='Rejected'){
             
-        }else{
-            return responseMsgs(false, "Type Wrong !!!", "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
+    //     }else{
+    //         return responseMsgs(false, "Type Wrong !!!", "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    // }
 
 
 }

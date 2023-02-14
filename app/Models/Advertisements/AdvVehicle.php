@@ -34,7 +34,7 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function approvedList($citizenId,$userType)
+    public function listApproved($citizenId,$userType)
     {
 
         $allApproveList = $this->allApproveList();
@@ -64,7 +64,7 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function jskApprovedList($userId)
+    public function listjskApprovedApplication($userId)
     {
         return AdvVehicle::where('user_id', $userId)
             ->select(
