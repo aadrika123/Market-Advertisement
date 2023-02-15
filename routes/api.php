@@ -92,7 +92,6 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/vehicle/approved-or-reject', 'approvedOrReject');          // 12 ( Approve or Reject )
         Route::post('advert/vehicle/list-approved', 'listApproved');          // 13 ( Approved list for Citizen)
         Route::post('advert/vehicle/list-rejected', 'listRejected');          // 14 ( Rejected list for Citizen)
-
         Route::post('advert/vehicle/get-jsk-applications', 'getJSKApplications');          // 20 ( Get Applied Applications List By JSK )
         Route::post('advert/vehicle/list-jsk-approved-application', 'listjskApprovedApplication');          // 15 ( Approved list for JSK)
         Route::post('advert/vehicle/list-jsk-rejected-application', 'listJskRejectedApplication');          // 16 ( Rejected list for JSK)  
