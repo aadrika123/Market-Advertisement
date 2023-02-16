@@ -392,7 +392,7 @@ class PrivateLandController extends Controller
     * | Workflow View Uploaded Document by application ID
     */
    public function viewDocumentsOnWorkflow(Request $req)
-   {
+   {  
        $startTime = microtime(true);
        $mWfActiveDocument = new WfActiveDocument();
        $data = array();

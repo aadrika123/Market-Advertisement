@@ -250,14 +250,23 @@ class AdvActiveAgency extends Model
             ->first();
         }
 
-        $details=json_decode(json_encode($details), true);            // Convert Std Class to Array
+       $details=json_decode(json_encode($details), true);            // Convert Std Class to Array
+    //    return $details['temp_id'];
         $directors = DB::table('adv_active_agencydirectors')
             ->select(
                 'adv_active_agencydirectors.*',
                 DB::raw("CONCAT(adv_active_agencydirectors.relative_path,'/',adv_active_agencydirectors.doc_name) as document_path")
-            )
-            ->where('agency_id', $id)
-            ->get();
+            );
+            if($type=='Active'){
+                $directors = $directors->where('agency_id', $id);
+            }
+            elseif($type=='Reject'){
+                $directors = $directors->where('agency_id', $details['temp_id']);
+            }
+            elseif($type=='Approve'){
+                $directors = $directors->where('agency_id', $details['temp_id']);
+            }
+            $directors=$directors->get();
         $details['directors'] = remove_null($directors->toArray());
         return $details;
     }

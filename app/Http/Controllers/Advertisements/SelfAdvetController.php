@@ -149,7 +149,7 @@ class SelfAdvetController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId,$type);
+               $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId,$type);
             }else{
                 throw new Exception("Not Pass Application Id");
             }
@@ -476,7 +476,7 @@ class SelfAdvetController extends Controller
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
-    public function listSpecialInbox(Request $req)
+    public function listEscalated(Request $req)
     {
         try {
             $startTime = microtime(true);

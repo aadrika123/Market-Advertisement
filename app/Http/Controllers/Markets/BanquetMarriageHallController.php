@@ -50,7 +50,7 @@ class BanquetMarriageHallController extends Controller
      * | Store 
      * | @param StoreRequest Request
      */
-    public function store(StoreRequest $req)
+    public function addNew(StoreRequest $req)
     {
         try {
             // Variable initialization
@@ -65,7 +65,7 @@ class BanquetMarriageHallController extends Controller
             }
 
             DB::beginTransaction();
-            $applicationNo = $mMarActiveBanquteHall->store($req);       //<--------------- Model function to store 
+            $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -81,7 +81,7 @@ class BanquetMarriageHallController extends Controller
      * | Inbox List
      * | @param Request $req
      */
-    public function inbox(Request $req)
+    public function listInbox(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -91,7 +91,7 @@ class BanquetMarriageHallController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveBanquteHall->inbox($roleIds);
+            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -105,7 +105,7 @@ class BanquetMarriageHallController extends Controller
     /**
      * | Outbox List
      */
-    public function outbox(Request $req)
+    public function listOutbox(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -115,7 +115,7 @@ class BanquetMarriageHallController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveBanquteHall->outbox($roleIds);
+            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050104", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -129,7 +129,7 @@ class BanquetMarriageHallController extends Controller
      * | Application Details
      */
 
-    public function details(Request $req)
+    public function getDetailsById(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -141,7 +141,7 @@ class BanquetMarriageHallController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mMarActiveBanquteHall->details($req->applicationId, $type);
+                $data = $mMarActiveBanquteHall->getDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -219,13 +219,13 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function getCitizenApplications(Request $req)
+    public function listAppliedApplications(Request $req)
     {
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mMarActiveBanquteHall = $this->_modelObj;
-            $applications = $mMarActiveBanquteHall->getCitizenApplications($citizenId);
+            $applications = $mMarActiveBanquteHall->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -245,7 +245,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $request
      * @return void
      */
-    public function escalate(Request $request)
+    public function escalateApplication(Request $request)
     {
         $request->validate([
             "escalateStatus" => "required|int",
@@ -261,7 +261,7 @@ class BanquetMarriageHallController extends Controller
             $data->save();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Mazrrige Hall is Escalated' : "Banqute Mazrrige Hall is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Marriage Hall is Escalated' : "Banqute Marriage Hall is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
         }
@@ -273,7 +273,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function specialInbox(Request $req)
+    public function listEscalated(Request $req)
     {
         try {
             $startTime = microtime(true);
@@ -306,7 +306,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $request
      * @return void
      */
-    public function postNextLevel(Request $request)
+    public function forwardNextLevel(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|integer',
@@ -349,7 +349,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $request
      * @return void
      */
-    public function commentIndependent(Request $request)
+    public function commentApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -397,7 +397,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function uploadDocumentsView(Request $req)
+    public function viewBmHallDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -417,6 +417,26 @@ class BanquetMarriageHallController extends Controller
         return $data1;
     }
 
+    
+    /**
+    * | Workflow View Uploaded Document by application ID
+    */
+   public function viewDocumentsOnWorkflow(Request $req)
+   {
+       $startTime = microtime(true);
+       $mWfActiveDocument = new WfActiveDocument();
+       $data = array();
+       if ($req->applicationId) {
+           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+       }
+       $endTime = microtime(true);
+       $executionTime = $endTime - $startTime;
+
+       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+   }
+
+
+
 
 
     /**
@@ -424,7 +444,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function finalApprovalRejection(Request $req)
+    public function approvedOrReject(Request $req)
     {
         $req->validate([
             'roleId' => 'required',
@@ -505,7 +525,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function approvedList(Request $req)
+    public function listApproved(Request $req)
     {
         echo "approved List";
     }
@@ -517,7 +537,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function rejectedList(Request $req)
+    public function listRejected(Request $req)
     {
         echo "Rejected List";
     }
@@ -541,7 +561,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function jskApprovedList(Request $req)
+    public function listjskApprovedApplication(Request $req)
     {
         echo "jsk Approved List";
     }
@@ -554,7 +574,7 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function jskRejectedList(Request $req)
+    public function listJskRejectedApplication(Request $req)
     {
         echo "jsk Rejected List";
     }
@@ -576,7 +596,7 @@ class BanquetMarriageHallController extends Controller
      * Get application Details For Payment
      * @return void
      */
-    public function applicationDetailsForPayment()
+    public function getApplicationDetailsForPayment()
     {
         echo "application Details For Payment";
     }

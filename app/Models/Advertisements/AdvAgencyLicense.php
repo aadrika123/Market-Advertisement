@@ -372,7 +372,7 @@ class AdvAgencyLicense extends Model
             ->orderByDesc('temp_id')
             ->get();
     }
-
+    
     /**
      * | Get Application Approve List by Role Ids
      */
@@ -381,9 +381,9 @@ class AdvAgencyLicense extends Model
         // echo authUser()->id;
         $allApproveList=$this->allApproveList();
         if($usertype == 'Citizen'){
-            return collect($allApproveList->where('citizen_id',$citizenId))->values();
+            return collect($allApproveList->where(['citizen_id'=>$citizenId,'payment_status'=>'1']))->values();
         }else{
-            return collect($allApproveList)->values();
+            return collect($allApproveList->where(['payment_status'=>'1']))->values();
         }
         // return AdvAgencyLicense::where('citizen_id', $citizenId)
         //     ->select(
@@ -399,6 +399,20 @@ class AdvAgencyLicense extends Model
         //     )
         //     ->orderByDesc('temp_id')
         //     ->get();
+    }
+
+      /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function listUnpaidLicenses($citizenId,$usertype)
+    {
+        // echo authUser()->id;
+        $allApproveList=$this->allApproveList();
+        if($usertype == 'Citizen'){
+            return collect($allApproveList->where(['citizen_id'=>$citizenId,'payment_status'=>0]))->values();
+        }else{
+            return collect($allApproveList->where(['payment_status'=>0]))->values();
+        }
     }
 
        /**

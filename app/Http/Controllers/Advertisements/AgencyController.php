@@ -68,6 +68,9 @@ class AgencyController extends Controller
             $citizenId = authUser()->id;
             $mAdvAgency = new AdvAgency();
             $agencydetails = $mAdvAgency->getagencyDetails($citizenId);
+            if(!$agencydetails){
+                throw new Exception('You Have No Any Agency !!!');
+            }
             remove_null($agencydetails);
             $data1['data'] = $agencydetails;
             return responseMsgs(true, "Agency Details", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1158,7 +1161,7 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
+    
     /**
      * | Approve License Application List for Citzen
      * | @param Request $req
@@ -1179,6 +1182,31 @@ class AgencyController extends Controller
             }
 
             return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Unpaid License Application List for Citzen
+     * | @param Request $req
+     */
+    public function listUnpaidLicenses(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->listUnpaidLicenses($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+
+            return responseMsgs(true, "Unpaid Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -1373,8 +1401,7 @@ class AgencyController extends Controller
      */
     public function isAgency(Request $req)
     {
-        try {
-            
+        try { 
             $userType = authUser()->user_type;
             if ($userType == "Citizen") {
                 $startTime = microtime(true);

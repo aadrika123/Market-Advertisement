@@ -67,7 +67,7 @@ class MarActiveBanquteHall extends Model
     }
 
     // Store Application Banqute-Marrige Hall(1)
-    public function store($req)
+    public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
         $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
@@ -142,7 +142,7 @@ class MarActiveBanquteHall extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function inbox($roleIds)
+    public function listInbox($roleIds)
     {
         $inbox = DB::table('mar_active_banqute_halls')
             ->select(
@@ -162,7 +162,7 @@ class MarActiveBanquteHall extends Model
       /**
      * | Get Application Outbox List by Role Ids
      */
-    public function outbox($roleIds)
+    public function listOutbox($roleIds)
     {
         $outbox = DB::table('mar_active_banqute_halls')
             ->select(
@@ -184,7 +184,7 @@ class MarActiveBanquteHall extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function details($id,$type=NULL)
+    public function getDetailsById($id,$type=NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -271,7 +271,7 @@ class MarActiveBanquteHall extends Model
      * | Get Citizen Applied applications
      * | @param citizenId
      */
-    public function getCitizenApplications($citizenId)
+    public function listAppliedApplications($citizenId)
     {
         return MarActiveBanquteHall::where('citizen_id', $citizenId)
             ->select(

@@ -21,7 +21,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
-            ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['license_year']],
+            ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['m_license_year']],
             ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Ward ID', 'key' => 'wardId', 'value' => $data['ward_id']],
@@ -34,8 +34,8 @@ trait AdvDetailsTraits
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
             ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
-            ['displayString' => 'M Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
-            ['displayString' => 'M Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']]
+            ['displayString' => 'Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
+            ['displayString' => 'Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']]
             // ['displayString' => 'M Current Role', 'key' => 'mCurrentRole', 'value' => $data['m_current_role']]
         ]);
     }
@@ -49,7 +49,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
@@ -80,8 +80,8 @@ trait AdvDetailsTraits
     public function generateLicenseDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Appication No', 'key' => 'applicantNo', 'value' => $data->application_no],
-            ['displayString' => 'Appication Date', 'key' => 'appicationDate', 'value' => $data->application_date],
+            ['displayString' => 'Application No', 'key' => 'applicantNo', 'value' => $data->application_no],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data->application_date],
             ['displayString' => 'Licence No', 'key' => 'licenseNo', 'value' => $data->license_no],
             ['displayString' => 'Valid From', 'key' => 'validFrom', 'value' => $data->valid_from],
             ['displayString' => 'Valid Upto', 'key' => 'validUpto', 'value' => $data->valid_upto],
@@ -140,7 +140,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
         ]);
@@ -161,8 +161,8 @@ trait AdvDetailsTraits
     public function generateAgencyBasicDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
-            ['displayString' => 'Appication Date', 'key' => 'appicationDate', 'value' => $data['application_date']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Address', 'key' => 'address', 'value' => $data['address']],
@@ -171,9 +171,9 @@ trait AdvDetailsTraits
             ['displayString' => 'Fax', 'key' => 'fax', 'value' => $data['fax']],
             ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst_no']],
             ['displayString' => 'Pan No', 'key' => 'panNo', 'value' => $data['pan_no']],
-            ['displayString' => 'Blacklisted', 'key' => 'blacklisted', 'value' => $data['blacklisted'] == 0 ? "NO" : "YES"],
+            ['displayString' => 'Blacklisted', 'key' => 'blacklisted', 'value' => $data['blacklisted'] == 0 ? "No" : "Yes"],
             ['displayString' => 'Pending Amount', 'key' => 'pendingAmount', 'value' => $data['pending_amount']],
-            ['displayString' => 'pending Cour tCase', 'key' => 'pendingCourtCase', 'value' => $data['pending_court_case'] == 0 ? "NO" : "YES"],
+            ['displayString' => 'Pending Court Case', 'key' => 'pendingCourtCase', 'value' => $data['pending_court_case'] == 0 ? "No" : "Yes"],
         ]);
     }
 
@@ -184,8 +184,8 @@ trait AdvDetailsTraits
     public function generateAgencyCardDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
-            ['displayString' => 'Appication Date', 'key' => 'appicationDate', 'value' => $data['application_date']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Pending Amount', 'key' => 'pending_amount', 'value' => $data['pending_amount']],
         ]);
@@ -301,7 +301,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Size', 'key' => 'size', 'value' => $data['size']],
             ['displayString' => 'Material', 'key' => 'material', 'value' => $data['material']],
             ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination']?"Yes":"No"],
-            ['displayString' => 'Indicate_facing', 'key' => 'indicate_facing', 'value' => $data['indicate_facing']],
+            ['displayString' => 'Indicate Facing', 'key' => 'indicateFacing', 'value' => $data['indicate_facing']],
             ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']]
         ]);
     }
