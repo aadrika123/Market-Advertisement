@@ -820,8 +820,8 @@ class VehicleAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mAdvVehicle = new AdvVehicle();
-            $status = $mAdvVehicle->entryZone($req);
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $status = $mAdvActiveVehicle->entryZone($req);
             if ($status == '1') {
                 return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);
             } else {

@@ -419,4 +419,11 @@ class AdvActivePrivateland extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    
+    public function entryZone($req){
+        $AdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);        // Application ID
+        $AdvActivePrivateland->zone = $req->zone;
+        return $AdvActivePrivateland->save();
+    }
 }

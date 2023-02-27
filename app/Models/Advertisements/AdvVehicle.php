@@ -140,9 +140,4 @@ class AdvVehicle extends Model
     }
 
 
-    public function entryZone($req){
-        $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
-        $mAdvVehicle->zone = $req->zone;
-        return $mAdvVehicle->save();
-    }
 }

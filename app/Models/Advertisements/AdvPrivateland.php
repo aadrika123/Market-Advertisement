@@ -119,9 +119,4 @@ class AdvPrivateland extends Model
         }
     }
 
-    public function entryZone($req){
-        $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
-        $mAdvPrivateland->zone = $req->zone;
-        return $mAdvPrivateland->save();
-    }
 }

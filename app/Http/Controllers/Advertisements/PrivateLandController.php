@@ -834,8 +834,8 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mAdvPrivateland = new AdvPrivateland();
-            $status = $mAdvPrivateland->entryZone($req);
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $status = $mAdvActivePrivateland->entryZone($req);
             if ($status=='1') {
                 return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);                
             } else {
