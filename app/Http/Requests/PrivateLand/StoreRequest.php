@@ -53,6 +53,7 @@ class StoreRequest extends FormRequest
             'latitude' => 'required|numeric',
             'installationLocation' => 'required',
             'ulbId' => 'required|integer',
+            'typology' => 'required|integer',
             // 'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
             // 'tradeDoc' => 'required|mimes:png,jpeg,pdf,jpg',
             // 'gpsDoc' => 'required|mimes:png,jpeg,pdf,jpg',

@@ -10,4 +10,7 @@ namespace App\Repositories\Markets;
 interface iMarketRepo
 {
     public function specialInbox($workflowIds);
+    public function specialInboxHostel($workflowIds);
+    public function specialInboxLodge($workflowIds);
+    public function specialInboxmDharamshala($workflowIds);
 }

@@ -56,7 +56,8 @@ class AdvActiveVehicle extends Model
             'display_type' => $req->displayType,
             'citizen_id' => $req->citizenId,
             'ulb_id' => $req->ulbId,
-            'user_id' => $req->userId
+            'user_id' => $req->userId,
+            'typology' => $req->typology
         ];
         return $metaReqs;
     }

@@ -28,5 +28,51 @@ class MarketRepo implements iMarketRepo
         return $specialInbox;
     }
 
+    public function specialInboxHostel($workflowIds){
+        $specialInbox = DB::table('mar_active_hostels')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address'
+            )
+            ->orderByDesc('id');
+            // ->whereIn('workflow_id', $workflowIds);
+        return $specialInbox;
+    }
+
+    public function specialInboxLodge($workflowIds){
+        $specialInbox = DB::table('mar_active_lodges')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address'
+            )
+            ->orderByDesc('id');
+            // ->whereIn('workflow_id', $workflowIds);
+        return $specialInbox;
+    }
+
+    public function specialInboxmDharamshala($workflowIds){
+        $specialInbox = DB::table('mar_active_dharamshalas')
+            ->select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address'
+            )
+            ->orderByDesc('id');
+            // ->whereIn('workflow_id', $workflowIds);
+        return $specialInbox;
+    }
+
+
 
 }

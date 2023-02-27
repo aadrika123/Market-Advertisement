@@ -52,6 +52,36 @@ class AdvActiveAgency extends Model
         return $metaReqs;
     }
 
+
+
+    
+    /**
+     * | Renewal Data Uses to Store data in DB
+     */
+    public function renewalReqs($req)
+    {
+        $metaReqs = [
+            'application_date' => $this->_applicationDate,
+            'entity_type' => $req->entityType,
+            'entity_name' => $req->entityName,
+            'address' => $req->address,
+            'mobile_no' => $req->mobileNo,
+            'telephone' => $req->officeTelephone,
+            'fax' => $req->fax,
+            'email' => $req->email,
+            'pan_no' => $req->panNo,
+            'gst_no' => $req->gstNo,
+            'blacklisted' => $req->blacklisted,
+            'pending_court_case' => $req->pendingCourtCase,
+            'pending_amount' => $req->pendingAmount,
+            'citizen_id' => $req->citizenId,
+            'user_id' => $req->userId,
+            'ulb_id' => $req->ulbId,
+            'application_no' => $req->applicationNo,
+        ];
+        return $metaReqs;
+    }
+
     /**
      * | Store function to apply(1)
      * | @param request 
@@ -105,37 +135,6 @@ class AdvActiveAgency extends Model
         return $mApplicationNo['application_no'];
     }
 
-      /**
-     * | Document Upload (1.1)
-     * | @param tempId Temprory Id
-     * | @param documents Uploading Documents
-     * */
-    // public function uploadDocument($tempId, $documents)
-    // {
-    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
-    //     $mDocService = new DocumentUpload;
-    //     $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
-    //     $workflowId = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-
-    //     collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath,$workflowId) {
-    //         $mDocumentId = $document['id'];
-    //         $mDocRelativeName = $document['relativeName'];
-    //         $mImage = $document['image'];
-    //         $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-    //         $docUploadReqs = [
-    //             'tempId' => $tempId,
-    //             'docTypeCode' => 'Test-Code',
-    //             'documentId' => $mDocumentId,
-    //             'relativePath' => $mRelativePath,
-    //             'docName' => $mDocName,
-    //             'workflowId'=>$workflowId
-    //         ];
-    //         $docUploadReqs = new Request($docUploadReqs);
-
-    //         $mAdvDocument->store($docUploadReqs);
-    //     });
-    // }
 
     public function uploadDocument($tempId, $documents)
     {
@@ -360,5 +359,64 @@ class AdvActiveAgency extends Model
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+
+
+
+
+     /**
+     * | Agency Renewals
+     * | @param request 
+     */
+    public function renewalAgency($req)
+    {
+        $directors = $req->directors;
+        $bearerToken = $req->bearerToken();
+        $metaReqs = $this->renewalReqs($req);
+
+        $workflowId = Config::get('workflow-constants.AGENCY');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'renewal' => 1
+            ],
+            $this->renewalReqs($req),
+            // $mApplicationNo,
+            $ulbWorkflowReqs
+        ); 
+
+        // $agencyDirector = new AdvActiveAgencydirector();
+        $agencyId = AdvActiveAgency::create($metaReqs)->id;
+
+        $mDocuments = $req->documents;
+        $this->uploadDocument($agencyId, $mDocuments);
+
+        // Store Director Details
+        // $mDocService = new DocumentUpload;
+        // $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+        // collect($directors)->map(function ($director) use ($agencyId, $agencyDirector, $mDocService, $mRelativePath) {
+        //     // $mDocRelativeName = "AADHAR";
+        //     // $mImage = $director['aadhar'];
+        //     // $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+        //     $agencyDirector->store($director, $agencyId);       // Model function to store
+        // });
+
+        // return $mApplicationNo['application_no'];
+        return $req->application_no;
     }
 }

@@ -28,11 +28,33 @@ return [
      */
     "AGENCY_HORDING" => "134",
     "AGENCY_HORDING_WORKFLOWS" => "251",
+    "AGENCY_REG_PRICE" => "200000",
+    "AGENCY_RENEW_PRICE" => "100000",
 
     /**
-     * | -------- Market Section --------------- 
+     * | =========== Market Section ==========
+     * | -------- Bnaqute Marriage Hall -------
      */
     "BANQUTE_MARRIGE_HALL" => "350",
     "MARKET_MODULE_ID" => 6,
     "BANQUTE_MARRIGE_HALL_WORKFLOWS" => "317",
+
+
+     /**
+     * | ---------- Hostel -----------
+     */
+    "HOSTEL" => "398",
+    "HOSTEL_WORKFLOWS" => "404",
+
+    /**
+    * | ---------- Lodge -----------
+    */
+   "LODGE" => "399",
+   "LODGE_WORKFLOWS" => "405",
+
+   /**
+   * | ---------- Dharamshala -----------
+   */
+  "DHARAMSHALA" => "400",
+  "DHARAMSHALA_WORKFLOWS" => "406",
 ];

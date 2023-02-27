@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agency\RenewalRequest;
 use App\Http\Requests\Agency\StoreRequest;
 use App\Http\Requests\Agency\StoreLicenceRequest;
 use App\Models\Advertisements\AdvActiveAgency;
@@ -11,6 +12,8 @@ use App\Models\Advertisements\AdvRejectedAgency;
 use App\Models\Advertisements\AdvRejectedAgencyLicense;
 use App\Models\Advertisements\AdvActiveAgencyLicense;
 use App\Models\Advertisements\AdvAgencyLicense;
+use App\Models\Advertisements\AdvCheckDtl;
+use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use Exception;
@@ -49,11 +52,15 @@ class AgencyController extends Controller
 
     protected $_workflowIds;
     protected $_hordingWorkflowIds;
+    protected $_agencyRegPrice;
+    protected $_agencyRenewPrice;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
         $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        $this->_agencyRegPrice = Config::get('workflow-constants.AGENCY_REG_PRICE');
+        $this->_agencyRenewPrice = Config::get('workflow-constants.AGENCY_RENEW_PRICE');
         $this->Repository = $agency_repo;
     }
 
@@ -68,7 +75,7 @@ class AgencyController extends Controller
             $citizenId = authUser()->id;
             $mAdvAgency = new AdvAgency();
             $agencydetails = $mAdvAgency->getagencyDetails($citizenId);
-            if(!$agencydetails){
+            if (!$agencydetails) {
                 throw new Exception('You Have No Any Agency !!!');
             }
             remove_null($agencydetails);
@@ -416,21 +423,21 @@ class AgencyController extends Controller
 
 
     /**
-    * | Workflow View Uploaded Document by application ID
-    */
-   public function viewDocumentsOnWorkflow(Request $req)
-   {
-       $startTime = microtime(true);
-       $mWfActiveDocument = new WfActiveDocument();
-       $data = array();
-       if ($req->applicationId) {
-           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-       }
-       $endTime = microtime(true);
-       $executionTime = $endTime - $startTime;
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function viewDocumentsOnWorkflow(Request $req)
+    {
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
 
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
-   }
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+    }
 
 
 
@@ -461,9 +468,12 @@ class AgencyController extends Controller
 
             DB::beginTransaction();
             // Approval
-            if ($req->status == 1) {
 
-                $payment_amount = ['payment_amount' => 1000];
+            if ($req->status == 1) {
+                $payment_amount = ['payment_amount' =>  $this->_agencyRegPrice];                            // Agency Reg Price
+                if ($mAdvActiveAgency->renewal == 1) {
+                    $payment_amount = ['payment_amount' => $this->_agencyRenewPrice];                        // Agency Renew Price
+                }
                 $req->request->add($payment_amount);
 
                 // approved Vehicle Application replication
@@ -720,6 +730,120 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * Get Payment Details
+     */
+    public function getPaymentDetails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgency = new AdvAgency();
+            $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+            }
+        } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Renewal Agency
+     */
+    public function renewalAgency(RenewalRequest $req)
+    {
+        try {
+            $agency = new AdvActiveAgency();
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+            DB::beginTransaction();
+            $applicationNo = $agency->renewalAgency($req);       //<--------------- Model function to store 
+            DB::commit();
+            return responseMsgs(true, "Successfully Submitted Application For Renewals !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|integer',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+
+    /**
+     * | Approved Agency List
+     */
+    public function listApprovedAgency()
+    {
+        $mAdvAgency = new AdvAgency();
+        $agencies = $mAdvAgency->listApprovedAgency();
+        if (!empty($agencies)) {
+            return responseMsgs(true, "Agency List", $agencies, "040501", "1.0", "", 'POST',  "");
+        } else {
+            return responseMsgs(false, "No Any Agency Found !!!", '', "040501", "1.0", "", 'POST', "");
+        }
+    }
+
+
 
 
     /**
@@ -847,8 +971,6 @@ class AgencyController extends Controller
             if (!$data) {
                 throw new Exception("Not Application Details Found");
             }
-
-            // return $data;
 
             // Basic Details
             $basicDetails = $this->generatehordingLicenseDetails($data); // Trait function to get Basic Details
@@ -1062,21 +1184,21 @@ class AgencyController extends Controller
     }
 
     /**
-   * | Workflow View Uploaded Document by application ID
-    */
-   public function viewLicenseDocumentsOnWorkflow(Request $req)
-   {
-       $startTime = microtime(true);
-       $mWfActiveDocument = new WfActiveDocument();
-       $data = array();
-       if ($req->applicationId) {
-           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_hordingWorkflowIds);
-       }
-       $endTime = microtime(true);
-       $executionTime = $endTime - $startTime;
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function viewLicenseDocumentsOnWorkflow(Request $req)
+    {
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_hordingWorkflowIds);
+        }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
 
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
-   }
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+    }
 
 
 
@@ -1107,12 +1229,11 @@ class AgencyController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-
-                $payment_amount = ['payment_amount' => 1000];
+                $amount = $this->getHordingPrice($mAdvActiveAgencyLicense->typology, $mAdvActiveAgencyLicense->zone_id);
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
                 // approved Vehicle Application replication
-
                 $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
                 $approvedAgencyLicense->setTable('adv_agency_licenses');
                 $temp_id = $approvedAgencyLicense->temp_id = $mAdvActiveAgencyLicense->id;
@@ -1161,7 +1282,19 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-    
+
+    public function  getHordingPrice($typology_id, $zone = 'A')
+    {
+        return DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then rate_zone_a
+                              when $zone = 2 then rate_zone_b
+                              when $zone = 3 then rate_zone_c
+                        else 0 end as rate"))
+            ->where('id', $typology_id)
+            ->first()->rate;
+        //    return $price;
+    }
+
     /**
      * | Approve License Application List for Citzen
      * | @param Request $req
@@ -1401,18 +1534,18 @@ class AgencyController extends Controller
      */
     public function isAgency(Request $req)
     {
-        try { 
+        try {
             $userType = authUser()->user_type;
             if ($userType == "Citizen") {
                 $startTime = microtime(true);
                 $citizenId = authUser()->id;
-                $mAdvAgency= new AdvAgency();
-                $isAgency=$mAdvAgency->checkAgency($citizenId);
+                $mAdvAgency = new AdvAgency();
+                $isAgency = $mAdvAgency->checkAgency($citizenId);
                 $endTime = microtime(true);
                 $executionTime = $endTime - $startTime;
-                if(empty($isAgency)){
+                if (empty($isAgency)) {
                     throw new Exception("You Have Not Agency !!");
-                }else{
+                } else {
                     return responseMsgs(true, "Data Fetched !!!", $isAgency, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
                 }
             } else {
@@ -1423,26 +1556,127 @@ class AgencyController extends Controller
         }
     }
 
-    public function getAgencyDashboard(Request $req){
-        try{
-        $userType = authUser()->user_type;
-        if ($userType == "Citizen") {
-            $startTime = microtime(true);
-            $citizenId = authUser()->id;
-            $mAdvAgency= new AdvAgency();
-            $agencyDashboard=$mAdvAgency->agencyDashboard($citizenId);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            if(empty($agencyDashboard)){
-                throw new Exception("You Have Not Agency !!");
-            }else{
-                return responseMsgs(true, "Data Fetched !!!", $agencyDashboard, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+    public function getAgencyDashboard(Request $req)
+    {
+        try {
+            $userType = authUser()->user_type;
+            if ($userType == "Citizen") {
+                $startTime = microtime(true);
+                $citizenId = authUser()->id;
+                $mAdvAgencyLicense = new AdvAgencyLicense();
+                $agencyDashboard = $mAdvAgencyLicense->agencyDashboard($citizenId);
+                $endTime = microtime(true);
+                $executionTime = $endTime - $startTime;
+                if (empty($agencyDashboard)) {
+                    throw new Exception("You Have Not Agency !!");
+                } else {
+                    return responseMsgs(true, "Data Fetched !!!", $agencyDashboard, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+                }
+            } else {
+                throw new Exception("You Are Not Citizen");
             }
-        } else {
-            throw new Exception("You Are Not Citizen");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
         }
-    } catch (Exception $e) {
-        return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
     }
+
+    /**
+     * Get Payment Details
+     */
+    public function getLicensePaymentDetails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+            }
+        } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            DB::beginTransaction();
+            $status = $mAdvAgencyLicense->paymentByCash($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    public function entryChequeDdLicense(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_hordingWorkflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function clearOrBounceChequeLicense(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
     }
 }

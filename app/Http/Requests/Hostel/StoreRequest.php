@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Lodge;
+namespace App\Http\Requests\Hostel;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
 class StoreRequest extends FormRequest
 {
@@ -48,7 +48,7 @@ class StoreRequest extends FormRequest
             'waterSupplyType' => 'required|integer',
             'electricityType' => 'required|integer',
             'securityType' => 'required|integer',
-            'lodgeType' => 'required|integer',
+            'hostelType' => 'required|integer',
             'messType' => 'required|integer',
             'cctvCamera' => 'required|integer',
             'noOfBeds' => 'required|integer',
@@ -69,7 +69,8 @@ class StoreRequest extends FormRequest
         ];
     }
 
-     /**
+     
+    /**
      * | Error Message
      */
     public function failedValidation(Validator $validator)

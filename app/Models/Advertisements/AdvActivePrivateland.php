@@ -57,7 +57,8 @@ class AdvActivePrivateland extends Model
             'installation_location' => $req->installationLocation,
             'citizen_id' => $req->citizenId,
             'ulb_id' => $req->ulbId,
-            'user_id' => $req->userId
+            'user_id' => $req->userId,
+            'typology' => $req->typology
         ];
         return $metaReqs;
     }

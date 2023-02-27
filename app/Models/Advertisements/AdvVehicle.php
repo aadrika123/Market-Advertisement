@@ -2,6 +2,7 @@
 
 namespace App\Models\Advertisements;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -104,5 +105,44 @@ class AdvVehicle extends Model
                 'workflow_id',
             )
             ->first();
+    }
+
+    
+    public function getPaymentDetails($paymentId){
+        $details=AdvVehicle::select('payment_details')
+        ->where('payment_id', $paymentId)
+        ->first();
+       return json_decode($details->payment_details);
+    }
+
+    
+    public function paymentByCash($req){
+
+        if ($req->status == '1') {
+            // Self Privateland Table Update
+            $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
+            $mAdvVehicle->payment_status = $req->status;
+            $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId/".time();
+            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mAdvVehicle->payment_date = Carbon::now();
+            $mAdvVehicle->payment_details = "By Cash";
+            $mAdvVehicle->save();
+            $renewal_id = $mAdvVehicle->last_renewal_id;
+
+            // Privateland Renewal Table Updation
+            $mAdvVehicleRenewal = AdvVehicleRenewal::find($renewal_id);
+            $mAdvVehicleRenewal->payment_status = 1;
+            $mAdvVehicleRenewal->payment_id =  $pay_id;
+            $mAdvVehicleRenewal->payment_date = Carbon::now();
+            $mAdvVehicleRenewal->payment_details = "By Cash";
+            return $mAdvVehicleRenewal->save();
+        }
+    }
+
+
+    public function entryZone($req){
+        $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
+        $mAdvVehicle->zone = $req->zone;
+        return $mAdvVehicle->save();
     }
 }

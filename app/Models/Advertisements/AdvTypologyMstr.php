@@ -17,6 +17,7 @@ class AdvTypologyMstr extends Model
                 'type_inner as subtype',
                 'descriptions'
             )
+            ->orderBy('type_inner')
             ->get();
     }
 }

@@ -36,5 +36,17 @@ return [
 
     "BANQUTE_MARRIGE_HALL" => [
         "RELATIVE_PATH" => "Uploads/BanquteMarrigeHall"
-    ]
+    ],
+
+    "HOSTEL" => [
+        "RELATIVE_PATH" => "Uploads/Hostel"
+    ],
+
+    "LODGE" => [
+        "RELATIVE_PATH" => "Uploads/Lodge"
+    ],
+
+    "DHARAMSHALA" => [
+        "RELATIVE_PATH" => "Uploads/Dharamshala"
+    ],
 ];

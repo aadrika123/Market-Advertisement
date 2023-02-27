@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Lodge;
+namespace App\Http\Requests\Dharamshala;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
 
 class StoreRequest extends FormRequest
 {
@@ -43,13 +43,11 @@ class StoreRequest extends FormRequest
             'tradeLicenseNo' => 'required|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
-            'organizationType' => 'required|integer',
-            'landDeedType' => 'required|integer',
-            'waterSupplyType' => 'required|integer',
-            'electricityType' => 'required|integer',
-            'securityType' => 'required|integer',
-            'lodgeType' => 'required|integer',
-            'messType' => 'required|integer',
+            'organizationType' => 'required|string',
+            'landDeedType' => 'required|string',
+            'waterSupplyType' => 'required|string',
+            'electricityType' => 'required|string',
+            'securityType' => 'required|string',
             'cctvCamera' => 'required|integer',
             'noOfBeds' => 'required|integer',
             'noOfRooms' => 'required|integer',
@@ -69,7 +67,7 @@ class StoreRequest extends FormRequest
         ];
     }
 
-     /**
+    /**
      * | Error Message
      */
     public function failedValidation(Validator $validator)

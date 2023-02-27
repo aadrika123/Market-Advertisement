@@ -3,73 +3,60 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Requests\BanquetMarriageHall\StoreRequest;
+use App\Http\Requests\Hostel\StoreRequest;
 use App\Models\Advertisements\WfActiveDocument;
-use App\Models\Markets\MarActiveBanquteHall;
-use App\Models\Markets\MarBanquteHall;
-use App\Models\Markets\MarRejectedBanquteHall;
+use App\Models\Markets\MarActiveHostel;
+use App\Models\Markets\MarHostel;
+use App\Models\Markets\MarRejectedHostel;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
+use App\Traits\MarDetailsTraits;
 use App\Traits\WorkflowTrait;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
-
-
-use App\Traits\MarDetailsTraits;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * | Created on - 06-02-2023
- * | Created By - Bikash Kumar
- * | Banquet Marriage Hall
- * | Status - Open
- */
-class BanquetMarriageHallController extends Controller
+class HostelController extends Controller
 {
 
     use WorkflowTrait;
+
     use MarDetailsTraits;
-    
-    protected $_modelObj;  //  Generate Model Instance
-    protected $_repository;
-    protected $_workflowIds;
+    protected $_modelObj;
     protected $_moduleIds;
+    protected $_workflowIds;
+    protected $_repository;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
-        $this->_modelObj = new MarActiveBanquteHall();
-        $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        $this->_modelObj = new MarActiveHostel();
+        $this->_workflowIds = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
     }
 
     /**
-     * | Store 
-     * | @param StoreRequest Request
+     * | Apply for Hostel 
+     * | @param StoreRequest 
      */
     public function addNew(StoreRequest $req)
     {
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $mMarActiveBanquteHall = $this->_modelObj;
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
-                $req->request->add($userId);
-            } else {
-                $citizenId = ['citizenId' => authUser()->id];
-                $req->request->add($citizenId);
-            }
+            $mMarActiveHostel = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
 
             DB::beginTransaction();
-            $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
+            $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -81,6 +68,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
+
     /**
      * | Inbox List
      * | @param Request $req
@@ -89,13 +77,13 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             $startTime = microtime(true);
-            $mMarActiveBanquteHall = $this->_modelObj;
+            $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds);
+            $inboxList = $mMarActiveHostel->listInbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -105,7 +93,6 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-
     /**
      * | Outbox List
      */
@@ -113,13 +100,13 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             $startTime = microtime(true);
-            $mMarActiveBanquteHall = $this->_modelObj;
+            $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds);
+            $outboxList = $mMarActiveHostel->listOutbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050104", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -137,7 +124,7 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             $startTime = microtime(true);
-            $mMarActiveBanquteHall = $this->_modelObj;
+            $mMarActiveHostel = $this->_modelObj;
             $fullDetailsData = array();
             if (isset($req->type)) {
                 $type = $req->type;
@@ -145,7 +132,7 @@ class BanquetMarriageHallController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mMarActiveBanquteHall->getDetailsById($req->applicationId, $type);
+                $data = $mMarActiveHostel->getDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -161,7 +148,7 @@ class BanquetMarriageHallController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Banqute-Marriage Hall",
+                'headerTitle' => "About Hostel",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
@@ -169,7 +156,7 @@ class BanquetMarriageHallController extends Controller
 
             // return ($data);
 
-            $metaReqs['customFor'] = 'Banqute-Marrige Hall';
+            $metaReqs['customFor'] = 'Hostel';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
@@ -219,7 +206,6 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-
     /**
      * Summary of getCitizenApplications
      * @param Request $req
@@ -230,21 +216,28 @@ class BanquetMarriageHallController extends Controller
         try {
             $startTime = microtime(true);
             $citizenId = authUser()->id;
-            $mMarActiveBanquteHall = $this->_modelObj;
-            $applications = $mMarActiveBanquteHall->listAppliedApplications($citizenId);
+            $mMarActiveHostel = $this->_modelObj;
+            $applications = $mMarActiveHostel->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? ""
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "050106",
+                "1.0",
+                "$executionTime Sec",
+                "POST",
+                $req->deviceId ?? ""
             );
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","050106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      *  | Escalate
@@ -261,18 +254,17 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
-            $data = MarActiveBanquteHall::find($applicationId);
+            $data = MarActiveHostel::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Marriage Hall is Escalated' : "Banqute Marriage Hall is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Hostel is Escalated' : "Hostel is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
         }
     }
-
 
     /**
      *  Special Inbox List
@@ -292,18 +284,19 @@ class BanquetMarriageHallController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->_repository->specialInbox($this->_workflowIds)                      // Repository function to get Markets Details
+            $advData = $this->_repository->specialInboxHostel($this->_workflowIds)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
-                ->where('mar_active_banqute_halls.ulb_id', $ulbId)
+                ->where('mar_active_hostels.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
-                $endTime = microtime(true);
-                $executionTime = $endTime - $startTime;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
+
 
 
 
@@ -325,21 +318,21 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
-            $adv = MarActiveBanquteHall::find($request->applicationId);
-            $adv->last_role_id = $adv->current_role_id;
-            $adv->current_role_id = $request->receiverRoleId;
-            $adv->save();
+            $mMarActiveHostel = MarActiveHostel::find($request->applicationId);
+            $mMarActiveHostel->last_role_id = $mMarActiveHostel->current_role_id;
+            $mMarActiveHostel->current_role_id = $request->receiverRoleId;
+            $mMarActiveHostel->save();
 
             $metaReqs['moduleId'] = $this->_moduleIds;
-            $metaReqs['workflowId'] = $adv->workflow_id;
-            $metaReqs['refTableDotId'] = "mar_active_banqute_halls.id";
+            $metaReqs['workflowId'] = $mMarActiveHostel->workflow_id;
+            $metaReqs['refTableDotId'] = "mar_active_hostels.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-                    
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
@@ -367,28 +360,28 @@ class BanquetMarriageHallController extends Controller
         try {
             $startTime = microtime(true);
             $workflowTrack = new WorkflowTrack();
-            $mMarActiveBanquteHall = MarActiveBanquteHall::find($request->applicationId);                // Advertisment Details
+            $mMarActiveHostel = MarActiveHostel::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
             DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
-                'workflowId' => $mMarActiveBanquteHall->workflow_id,
+                'workflowId' => $mMarActiveHostel->workflow_id,
                 'moduleId' => $mModuleId,
-                'refTableDotId' => "mar_active_banqute_halls.id",
-                'refTableIdValue' => $mMarActiveBanquteHall->id,
+                'refTableDotId' => "mar_active_hostels.id",
+                'refTableIdValue' => $mMarActiveHostel->id,
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
             if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mMarActiveBanquteHall->user_id]);
+                $metaReqs = array_merge($metaReqs, ['citizenId' => $mMarActiveHostel->user_id]);
             }
 
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
 
             DB::commit();
-            
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
@@ -404,44 +397,43 @@ class BanquetMarriageHallController extends Controller
      * @param Request $req
      * @return void
      */
-    public function viewBmHallDocuments(Request $req)
+    public function viewHostelDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if($req->type=='Active'){
-                $appId=$req->applicationId;
-            }elseif($req->type=='Reject'){
-                $appId=MarRejectedBanquteHall::find($req->applicationId)->temp_id;
-            }elseif($req->type=='Approve'){
-                $appId=MarBanquteHall::find($req->applicationId)->temp_id;
+            if ($req->type == 'Active') {
+                $appId = $req->applicationId;
+            } elseif ($req->type == 'Reject') {
+                $appId = MarRejectedHostel::find($req->applicationId)->temp_id;
+            } elseif ($req->type == 'Approve') {
+                $appId = MarHostel::find($req->applicationId)->temp_id;
             }
             $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
-        }else{
+        } else {
             throw new Exception("Required Application Id And Application Type");
         }
         $data1['data'] = $data;
         return $data1;
     }
 
-    
+
     /**
-    * | Workflow View Uploaded Document by application ID
-    */
-   public function viewDocumentsOnWorkflow(Request $req)
-   {
-       $startTime = microtime(true);
-       $mWfActiveDocument = new WfActiveDocument();
-       $data = array();
-       if ($req->applicationId) {
-           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-       }
-       $endTime = microtime(true);
-       $executionTime = $endTime - $startTime;
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function viewDocumentsOnWorkflow(Request $req)
+    {
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
 
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
-   }
-
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+    }
 
 
 
@@ -465,8 +457,8 @@ class BanquetMarriageHallController extends Controller
         try {
             $startTime = microtime(true);
             // Check if the Current User is Finisher or Not         
-            $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
-            $getFinisherQuery = $this->getFinisherId($mMarActiveBanquteHall->workflow_id);                                 // Get Finisher using Trait
+            $mMarActiveHostel = MarActiveHostel::find($req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mMarActiveHostel->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
             if ($refGetFinisher->role_id != $req->roleId) {
                 return responseMsgs(false, " Access Forbidden", "");
@@ -478,45 +470,45 @@ class BanquetMarriageHallController extends Controller
 
                 $payment_amount = ['payment_amount' => 1000];
                 $req->request->add($payment_amount);
-                // Banqute Hall Application replication
+                // Hostel Application replication
 
-                $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
-                $approvedbanqutehall->setTable('mar_banqute_halls');
-                $temp_id = $approvedbanqutehall->temp_id = $mMarActiveBanquteHall->id;
-                $approvedbanqutehall->payment_amount = $req->payment_amount;
-                $approvedbanqutehall->approve_date = Carbon::now();
-                $approvedbanqutehall->save();
+                $approvedhostel = $mMarActiveHostel->replicate();
+                $approvedhostel->setTable('mar_hostels');
+                $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
+                $approvedhostel->payment_amount = $req->payment_amount;
+                $approvedhostel->approve_date = Carbon::now();
+                $approvedhostel->save();
+                
 
-                // Save in Banqute Hall Renewal
-                $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
-                $approvedbanqutehall->approve_date = Carbon::now();
-                $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
-                $approvedbanqutehall->app_id = $temp_id;
-                $approvedbanqutehall->save();
+                // Save in Hostel Renewal
+                $approvedhostel = $mMarActiveHostel->replicate();
+                $approvedhostel->approve_date = Carbon::now();
+                $approvedhostel->setTable('mar_hostel_renewals');
+                $approvedhostel->app_id = $mMarActiveHostel->id;
+                $approvedhostel->save();
+
+                
+                $mMarActiveHostel->delete();
 
 
-                $mMarActiveBanquteHall->delete();
 
-                // Update in mar_banqute_halls (last_renewal_id)
+                // Update in mar_hostels (last_renewal_id)
 
-                DB::table('mar_banqute_halls')
-                    ->where('temp_id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedbanqutehall->id]);
+                DB::table('mar_hostels')
+                    ->where('id', $temp_id)
+                    ->update(['last_renewal_id' => $approvedhostel->id]);
 
                 $msg = "Application Successfully Approved !!";
             }
             // Rejection
             if ($req->status == 0) {
-
-                // $payment_amount = ['payment_amount' => 0];
-                // $req->request->add($payment_amount);
-                // Banqute Hall Application replication
-                $rejectedbanqutehall = $mMarActiveBanquteHall->replicate();
-                $rejectedbanqutehall->setTable('mar_rejected_banqute_halls');
-                $rejectedbanqutehall->temp_id = $mMarActiveBanquteHall->id;
-                $rejectedbanqutehall->rejected_date = Carbon::now();
-                $rejectedbanqutehall->save();
-                $mMarActiveBanquteHall->delete();
+                //Hostel Application replication
+                $rejectedhostel = $mMarActiveHostel->replicate();
+                $rejectedhostel->setTable('mar_rejected_hostels');
+                $rejectedhostel->id = $mMarActiveHostel->id;
+                $rejectedhostel->rejected_date = Carbon::now();
+                $rejectedhostel->save();
+                $mMarActiveHostel->delete();
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
@@ -539,8 +531,8 @@ class BanquetMarriageHallController extends Controller
         try {
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
-            $mMarBanquteHall = new MarBanquteHall();
-            $applications = $mMarBanquteHall->listApproved($citizenId, $userType);
+            $mMarHostel = new MarHostel();
+            $applications = $mMarHostel->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -566,8 +558,8 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             $citizenId = authUser()->id;
-            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $applications = $mMarRejectedBanquteHall->listRejected($citizenId);
+            $mMarRejectedHostel = new MarRejectedHostel();
+            $applications = $mMarRejectedHostel->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -594,12 +586,12 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             $startTime = microtime(true);
-            $mMarBanquteHall = MarBanquteHall::find($req->id);
+            $mMarHostel = MarHostel::find($req->id);
             $reqData = [
-                "id" => $mMarBanquteHall->id,
-                'amount' => $mMarBanquteHall->payment_amount,
-                'workflowId' => $mMarBanquteHall->workflow_id,
-                'ulbId' => $mMarBanquteHall->ulb_id,
+                "id" => $mMarHostel->id,
+                'amount' => $mMarHostel->payment_amount,
+                'workflowId' => $mMarHostel->workflow_id,
+                'ulbId' => $mMarHostel->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
@@ -614,10 +606,10 @@ class BanquetMarriageHallController extends Controller
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
-            $data->name = $mMarBanquteHall->applicant;
-            $data->email = $mMarBanquteHall->email;
-            $data->contact = $mMarBanquteHall->mobile_no;
-            $data->type = "Marriage Banqute Hall";
+            $data->name = $mMarHostel->applicant;
+            $data->email = $mMarHostel->email;
+            $data->contact = $mMarHostel->mobile_no;
+            $data->type = "Hostel";
             // return $data;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -640,15 +632,15 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             $startTime = microtime(true);
-            $mMarBanquteHall = new MarBanquteHall();
+            $mMarHostel = new MarHostel();
             if ($req->applicationId) {
-                $data = $mMarBanquteHall->getApplicationDetailsForPayment($req->applicationId);
+                $data = $mMarHostel->getApplicationDetailsForPayment($req->applicationId);
             }
 
             if (!$data)
                 throw new Exception("Application Not Found");
 
-            $data['type'] = "Agency";
+            $data['type'] = "Hostel";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -657,7 +649,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-     /**
+    /**
      * Get Payment Details
      */
     public function getPaymentDetails(Request $req)
@@ -669,11 +661,11 @@ class BanquetMarriageHallController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mMarBanquteHall = new MarBanquteHall();
-            $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+            $mMarHostel = new MarHostel();
+            $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
             if (empty($paymentDetails)) {
                 throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            }else{
+            } else {
                 return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
             }
         } catch (Exception $e) {

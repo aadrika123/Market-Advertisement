@@ -11,6 +11,8 @@ use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvVehicle;
+use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarHostel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -22,6 +24,28 @@ use Illuminate\Support\Facades\Validator;
 
 class ParamController extends Controller
 {
+
+    protected $_selfAdvt;
+    protected $_pvtLand;
+    protected $_movableVehicle;
+    protected $_agency;
+    protected $_hording;
+    protected $_banquetHall;
+    protected $_hostel;
+       //Constructor
+       public function __construct()
+       {
+           $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+           $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+           $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
+           $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+           $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+           $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+           $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+       }
+   
+
+
     /**
      * | String Parameters values
      * | @param request $req
@@ -120,7 +144,7 @@ class ParamController extends Controller
             ];
 
 
-            if ($req->workflowId == 245) { // Self Advertisement
+            if ($req->workflowId == $this->_selfAdvt) { // Self Advertisement Payment
 
                 DB::table('adv_selfadvertisements')
                     ->where('id', $req->id)
@@ -134,7 +158,7 @@ class ParamController extends Controller
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
                     ->update($updateData);
 
-            } elseif ($req->workflowId == 248) { // Movable Vechicles
+            } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
 
                 DB::table('adv_vehicles')
                     ->where('id', $req->id)
@@ -148,7 +172,7 @@ class ParamController extends Controller
                     ->where('id', $mAdvVehicle->last_renewal_id)
                     ->update($updateData);
 
-            } elseif ($req->workflowId == 249) { // Agency Apply
+            } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
 
                  DB::table('adv_agencies')
                     ->where('id', $req->id)
@@ -162,7 +186,7 @@ class ParamController extends Controller
                     ->where('id', $mAdvVehicle->last_renewal_id)
                     ->update($updateData);
 
-            } elseif ($req->workflowId == 250) { // Private Land
+            } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
 
                 DB::table('adv_privatelands')
                     ->where('id', $req->id)
@@ -176,7 +200,7 @@ class ParamController extends Controller
                     ->where('id', $mAdvPrivateland->last_renewal_id)
                     ->update($updateData);
 
-            } elseif ($req->workflowId == 251) { // Hording Apply
+            } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
                 
                 DB::table('adv_agency_licenses')
                     ->where('id', $req->id)
@@ -190,7 +214,36 @@ class ParamController extends Controller
                     ->where('id', $mAdvAgencyLicense->last_renewal_id)
                     ->update($updateData);
 
+            } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
+                
+                DB::table('mar_banqute_halls')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mMarBanquteHall = MarBanquteHall::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('mar_banqute_hall_renewals')
+                    ->where('id', $mMarBanquteHall->last_renewal_id)
+                    ->update($updateData);
+
+            } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
+                
+                DB::table('mar_hostels')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mMarHostel = MarHostel::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('mar_hostel_renewals')
+                    ->where('id', $mMarHostel->last_renewal_id)
+                    ->update($updateData);
+
             }
+
 
             DB::commit();
             $endTime = microtime(true);

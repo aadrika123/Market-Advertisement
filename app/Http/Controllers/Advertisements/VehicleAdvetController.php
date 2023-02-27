@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Advertisements;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicles\StoreRequest;
 use App\Models\Advertisements\AdvActiveVehicle;
+use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvRejectedVehicle;
 use App\Models\Advertisements\WfActiveDocument;
@@ -23,6 +24,7 @@ use Carbon\Carbon;
 
 use App\Traits\WorkflowTrait;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class VehicleAdvetController extends Controller
 {
@@ -32,7 +34,7 @@ class VehicleAdvetController extends Controller
      * | Created for the Movable Vehicles Operations
      */
 
-     
+
     use WorkflowTrait;
     use AdvDetailsTraits;
 
@@ -49,25 +51,33 @@ class VehicleAdvetController extends Controller
     {
         try {
             $advVehicle = new AdvActiveVehicle();
-            if( authUser()->user_type=='JSK'){
+            if (authUser()->user_type == 'JSK') {
                 $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
-            }else{
+            } else {
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
             DB::beginTransaction();
             $applicationNo = $advVehicle->addNew($req);               // Store Vehicle 
             DB::commit();
-           
-            return responseMsgs(true,"Successfully Applied the Application !!",["status" => true,"ApplicationNo" => $applicationNo],"040301","1.0","","POST",$req->deviceId ?? ""
+
+            return responseMsgs(
+                true,
+                "Successfully Applied the Application !!",
+                ["status" => true, "ApplicationNo" => $applicationNo],
+                "040301",
+                "1.0",
+                "",
+                "POST",
+                $req->deviceId ?? ""
             );
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
-    
+
     /**
      * | Inbox List
      * | @param Request $req
@@ -81,11 +91,11 @@ class VehicleAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-           
+
             $inboxList = $mvehicleAdvets->listInbox($roleIds);
-            return responseMsgs(true,"Inbox Applications",remove_null($inboxList->toArray()),"040103","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -103,13 +113,13 @@ class VehicleAdvetController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $outboxList = $mvehicleAdvets->listOutbox($roleIds);
-            return responseMsgs(true,"Outbox Lists",remove_null($outboxList->toArray()),"040104","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040104","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
-     /**
+    /**
      * | Application Details
      */
 
@@ -119,17 +129,17 @@ class VehicleAdvetController extends Controller
             $mvehicleAdvets = new AdvActiveVehicle();
             // $data = array();
             $fullDetailsData = array();
-            if(isset($req->type)){
+            if (isset($req->type)) {
                 $type = $req->type;
-            }else{
+            } else {
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mvehicleAdvets->getDetailsById($req->applicationId,$type);
-            }else{
+                $data = $mvehicleAdvets->getDetailsById($req->applicationId, $type);
+            } else {
                 throw new Exception("Not Pass Application Id");
             }
-            if(!$data){
+            if (!$data) {
                 throw new Exception("Not Application Details Found");
             }
 
@@ -169,7 +179,7 @@ class VehicleAdvetController extends Controller
     }
 
 
-    
+
 
     public function getRoleDetails(Request $request)
     {
@@ -198,7 +208,7 @@ class VehicleAdvetController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-    
+
     /**
      * | Get Applied Applications by Logged In Citizen
      */
@@ -208,13 +218,13 @@ class VehicleAdvetController extends Controller
             $citizenId = authUser()->id;
             $mvehicleAdvets = new AdvActiveVehicle();
             $applications = $mvehicleAdvets->listAppliedApplications($citizenId);
-            $totalApplication=$applications->count();
+            $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            return responseMsgs(true,"Applied Applications",$data1,"040106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -234,8 +244,8 @@ class VehicleAdvetController extends Controller
             // Vehicle Application Update Current Role Updation
             DB::beginTransaction();
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);
-            $mAdvActiveVehicle->last_role_id= $request->current_roles;
-            $mAdvActiveVehicle->current_roles= $request->receiverRoleId;
+            $mAdvActiveVehicle->last_role_id = $request->current_roles;
+            $mAdvActiveVehicle->current_roles = $request->receiverRoleId;
             $mAdvActiveVehicle->save();
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -254,7 +264,7 @@ class VehicleAdvetController extends Controller
         }
     }
 
-      /**
+    /**
      * | Escalate
      */
     public function escalateApplication(Request $request)
@@ -276,7 +286,7 @@ class VehicleAdvetController extends Controller
         }
     }
 
-    
+
     /**
      * | Post Independent Comment
      */
@@ -318,7 +328,7 @@ class VehicleAdvetController extends Controller
         }
     }
 
-    
+
     public function listEscalated(Request $req)
     {
         try {
@@ -332,7 +342,7 @@ class VehicleAdvetController extends Controller
             });
 
             // print_r($wardId);
-            
+
             $advData = $this->Repository->specialVehicleInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_vehicles.ulb_id', $ulbId)
@@ -369,42 +379,42 @@ class VehicleAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if($req->type=='Active'){
-                $appId=$req->applicationId;
-            }elseif($req->type=='Reject'){
-                $appId=AdvRejectedVehicle::find($req->applicationId)->temp_id;
-            }elseif($req->type=='Approve'){
-                $appId=AdvVehicle::find($req->applicationId)->temp_id;
+            if ($req->type == 'Active') {
+                $appId = $req->applicationId;
+            } elseif ($req->type == 'Reject') {
+                $appId = AdvRejectedVehicle::find($req->applicationId)->temp_id;
+            } elseif ($req->type == 'Approve') {
+                $appId = AdvVehicle::find($req->applicationId)->temp_id;
             }
             $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
-        }else{
+        } else {
             throw new Exception("Required Application Id And Application Type ");
         }
         $data1['data'] = $data;
         return $data1;
     }
 
-        /**
-    * | Workflow View Uploaded Document by application ID
-    */
-   public function viewDocumentsOnWorkflow(Request $req)
-   {
-       $startTime = microtime(true);
-       $mWfActiveDocument = new WfActiveDocument();
-       $data = array();
-       if ($req->applicationId) {
-           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-       }
-       $endTime = microtime(true);
-       $executionTime = $endTime - $startTime;
+    /**
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function viewDocumentsOnWorkflow(Request $req)
+    {
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
 
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
-   }
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+    }
 
 
 
-    
-    
+
+
     /**
      * |Final Approval and Rejection of the Application 
      * | Rating-
@@ -412,17 +422,18 @@ class VehicleAdvetController extends Controller
      */
     public function approvedOrReject(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'roleId' => 'required',
+            'applicationId' => 'required|integer',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
-            $req->validate([
-                'roleId' => 'required',
-                'applicationId' => 'required|integer',
-                'status' => 'required|integer',
-                // 'payment_amount' => 'required',
-
-            ]);
 
             // Check if the Current User is Finisher or Not         
-           $mAdvActiveVehicle = AdvActiveVehicle::find( $req->applicationId);
+            $mAdvActiveVehicle = AdvActiveVehicle::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveVehicle->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
             if ($refGetFinisher->role_id != $req->roleId) {
@@ -432,41 +443,49 @@ class VehicleAdvetController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-
-                $payment_amount = ['payment_amount' =>1000];
+                $typology = $mAdvActiveVehicle->typology;
+                $zone = $mAdvActiveVehicle->zone;
+                if($zone===NULL){
+                    throw new Exception("Zone Not Selected !!!");
+                }
+                // $typology=13;
+                $amount = $this->getMovableVehiclePayment($typology, $zone);
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-                
+
                 // approved Vehicle Application replication
 
                 $approvedVehicle = $mAdvActiveVehicle->replicate();
                 $approvedVehicle->setTable('adv_vehicles');
-                $temp_id=$approvedVehicle->temp_id = $mAdvActiveVehicle->id;
+                $temp_id = $approvedVehicle->temp_id = $mAdvActiveVehicle->id;
                 $approvedVehicle->payment_amount = $req->payment_amount;
-                $approvedVehicle->approve_date =Carbon::now();
+                $approvedVehicle->approve_date = Carbon::now();
+                $approvedVehicle->zone = $zone;
                 $approvedVehicle->save();
 
                 // Save in vehicle Advertisement Renewal
                 $approvedVehicle = $mAdvActiveVehicle->replicate();
-                $approvedVehicle->approve_date =Carbon::now();
+                $approvedVehicle->approve_date = Carbon::now();
                 $approvedVehicle->setTable('adv_vehicle_renewals');
                 $approvedVehicle->vechcleadvet_id = $temp_id;
+                $approvedVehicle->zone = $zone;
                 $approvedVehicle->save();
 
-                
+
                 $mAdvActiveVehicle->delete();
 
                 // Update in adv_vehicles (last_renewal_id)
 
                 DB::table('adv_vehicles')
-                ->where('temp_id', $temp_id)
-                ->update(['last_renewal_id' => $approvedVehicle->id]);
+                    ->where('temp_id', $temp_id)
+                    ->update(['last_renewal_id' => $approvedVehicle->id]);
 
                 $msg = "Application Successfully Approved !!";
             }
             // Rejection
             if ($req->status == 0) {
 
-                $payment_amount = ['payment_amount' =>0];
+                $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
 
 
@@ -474,7 +493,7 @@ class VehicleAdvetController extends Controller
                 $rejectedVehicle = $mAdvActiveVehicle->replicate();
                 $rejectedVehicle->setTable('adv_rejected_vehicles');
                 $rejectedVehicle->temp_id = $mAdvActiveVehicle->id;
-                $rejectedVehicle->rejected_date =Carbon::now();
+                $rejectedVehicle->rejected_date = Carbon::now();
                 $rejectedVehicle->save();
                 $mAdvActiveVehicle->delete();
                 $msg = "Application Successfully Rejected !!";
@@ -487,6 +506,17 @@ class VehicleAdvetController extends Controller
         }
     }
 
+    public function getMovableVehiclePayment($typology, $zone)
+    {
+        return DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then rate_zone_a
+                              when $zone = 2 then rate_zone_b
+                              when $zone = 3 then rate_zone_c
+                        else 0 end as rate"))
+            ->where('id', $typology)
+            ->first()->rate;
+    }
+
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
@@ -497,18 +527,18 @@ class VehicleAdvetController extends Controller
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
             $mAdvVehicle = new AdvVehicle();
-            $applications = $mAdvVehicle->listApproved($citizenId,$userType);
+            $applications = $mAdvVehicle->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-    
+
 
     /**
      * | Reject Application List for Citizen
@@ -525,13 +555,13 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
-    
+
 
     /**
      * | Get Applied Applications by Logged In JSK
@@ -546,13 +576,13 @@ class VehicleAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            return responseMsgs(true,"Applied Applications",$data1,"040106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
-    
+
     /**
      * | Approve Application List for JSK
      * | @param Request $req
@@ -568,12 +598,12 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            return responseMsgs(true,"Approved Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-    
+
 
     /**
      * | Reject Application List for JSK
@@ -590,9 +620,9 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            return responseMsgs(true,"Rejected Application List",$data1,"040103","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040103","1.0","",'POST',$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -603,54 +633,55 @@ class VehicleAdvetController extends Controller
      * | @param Request $req
      */
 
-     public function generatePaymentOrderId(Request $req)
-     {
-         $req->validate([
-             'id' => 'required|integer',
-         ]);
-         try {
-             $startTime = microtime(true);
-             $mAdvVehicle = AdvVehicle::find($req->id);
-             $reqData = [
-                 "id" => $mAdvVehicle->id,
-                 'amount' => $mAdvVehicle->payment_amount,
-                 'workflowId' => $mAdvVehicle->workflow_id,
-                 'ulbId' => $mAdvVehicle->ulb_id,
-                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
-             ];
-             $paymentUrl = Config::get('constants.PAYMENT_URL');
-             $refResponse = Http::withHeaders([
-                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
-             ])
-                 ->withToken($req->bearerToken())
-                 ->post($paymentUrl . 'api/payment/generate-orderid',$reqData);
- 
-             $data = json_decode($refResponse);
-                        
-             if (!$data)
-             throw new Exception("Payment Order Id Not Generate");
- 
-             $data->name = $mAdvVehicle->applicant;
-             $data->email = $mAdvVehicle->email;
-             $data->contact = $mAdvVehicle->mobile_no;
-             $data->type = "Movable Vehicles";
-             $endTime = microtime(true);
-             $executionTime = $endTime - $startTime;
- 
-             return responseMsgs(true,"Payment OrderId Generated Successfully !!!",$data,"050317","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
-         } catch (Exception $e) {
-             return responseMsgs(false,$e->getMessage(),"","050317","1.0","",'POST',$req->deviceId ?? "");
-         }
-     }
+    public function generatePaymentOrderId(Request $req)
+    {
+        $req->validate([
+            'id' => 'required|integer',
+        ]);
+        try {
+            $startTime = microtime(true);
+            $mAdvVehicle = AdvVehicle::find($req->id);
+            $reqData = [
+                "id" => $mAdvVehicle->id,
+                'amount' => $mAdvVehicle->payment_amount,
+                'workflowId' => $mAdvVehicle->workflow_id,
+                'ulbId' => $mAdvVehicle->ulb_id,
+                'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+            ];
+            $paymentUrl = Config::get('constants.PAYMENT_URL');
+            $refResponse = Http::withHeaders([
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->bearerToken())
+                ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
+
+            $data = json_decode($refResponse);
+
+            if (!$data)
+                throw new Exception("Payment Order Id Not Generate");
+
+            $data->name = $mAdvVehicle->applicant;
+            $data->email = $mAdvVehicle->email;
+            $data->contact = $mAdvVehicle->mobile_no;
+            $data->type = "Movable Vehicles";
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050317", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050317", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
 
 
-     
+
     /**
      * Summary of application Details For Payment
      * @param Request $req
      * @return void
      */
-    public function getApplicationDetailsForPayment(Request $req){
+    public function getApplicationDetailsForPayment(Request $req)
+    {
         $req->validate([
             'applicationId' => 'required|integer',
         ]);
@@ -661,11 +692,11 @@ class VehicleAdvetController extends Controller
             if ($req->applicationId) {
                 $data = $mAdvVehicle->detailsForPayments($req->applicationId, $workflowId);
             }
-              
+
             if (!$data)
-                 throw new Exception("Application Not Found");
-                 
-            $data['type']="Movable Vehicles";
+                throw new Exception("Application Not Found");
+
+            $data['type'] = "Movable Vehicles";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched',  $data, "050318", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -674,4 +705,130 @@ class VehicleAdvetController extends Controller
         }
     }
 
+
+    /**
+     * Get Payment Details
+     */
+    public function getPaymentDetails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvVehicle = new AdvVehicle();
+            $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+            }
+        } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvVehicle = new AdvVehicle();
+            DB::beginTransaction();
+            $status = $mAdvVehicle->paymentByCash($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(true, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * |Entry Zone of the Application 
+     * | Status- Open
+     */
+    public function entryZone(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer',
+            'zone' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvVehicle = new AdvVehicle();
+            $status = $mAdvVehicle->entryZone($req);
+            if ($status == '1') {
+                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+            } else {
+                throw new Exception("Zone Not Added !!!");
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }

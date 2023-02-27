@@ -49,6 +49,7 @@ class StoreRequest extends FormRequest
             'rearArea' => 'required|numeric',
             'topArea' => 'required|numeric',
             'displayType' => 'required|integer',
+            'typology' => 'required|integer',
             // 'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
             // 'tradeDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
             // 'vehiclePhotoDoc' => 'nullable|mimes:png,jpeg,pdf,jpg',
