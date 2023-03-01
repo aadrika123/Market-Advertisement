@@ -14,8 +14,7 @@ class AdvAgency extends Model
 
     public function getagencyDetails($id)
     {
-        // $details = AdvAgency::where('id', $id)->first();  
-
+        // $details = AdvAgency::where('id', $id)->first(); 
        $details1=DB::table('adv_agencies')
                     ->select('adv_agencies.*','et.string_parameter as entity_type_name')
                     ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
