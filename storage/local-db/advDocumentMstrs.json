@@ -132,8 +132,7 @@
             "docCode":"GST",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"Gst",
-            "renewal":"0"
+            "docVal":"Gst"
         },
         {
             "id":25,
@@ -143,8 +142,7 @@
             "docCode":"IT_RETURN_LAST_YEAR",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"IT Return Last Year",
-            "renewal":"0"
+            "docVal":"IT Return Last Year"
         },
         {
             "id":26,
@@ -164,8 +162,7 @@
             "docCode":"OFFICE_ADDRESS",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"Office Address",
-            "renewal":"0"
+            "docVal":"Office Address"
         },
         {
             "id":28,
@@ -175,8 +172,7 @@
             "docCode":"PAN",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"Pan",
-            "renewal":"0"
+            "docVal":"Pan"
         },
         {
             "id":29,
@@ -186,30 +182,7 @@
             "docCode":"AFFIDAVIT_PHOTOGRAPH",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"Affidavit Photograph",
-            "renewal":"0"
-        },
-        {
-            "id":86,
-            "document_name":"ITR",
-            "workflow_id":132,
-            "relative_name":"ITR",
-            "docCode":"ITR",
-            "code":"AGENCY",
-            "module_id":5,
-            "docVal":"ITR",
-            "renewal":"1"
-        },
-        {
-            "id":87,
-            "document_name":"Experience",
-            "workflow_id":132,
-            "relative_name":"EXPERIENCE",
-            "docCode":"EXPERIENCE",
-            "code":"AGENCY",
-            "module_id":5,
-            "docVal":"Experience",
-            "renewal":"1"
+            "docVal":"Affidavit Photograph"
         }
     ],
     "PrivateLands":[
@@ -792,8 +765,7 @@
             "docCode":"ITR",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"ITR",
-            "renewal":"1"
+            "docVal":"ITR"
         },
         {
             "id":87,
@@ -803,8 +775,7 @@
             "docCode":"EXPERIENCE",
             "code":"AGENCY",
             "module_id":5,
-            "docVal":"Experience",
-            "renewal":"1"
+            "docVal":"Experience"
         }
     ]
 }
