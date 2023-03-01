@@ -653,6 +653,9 @@ class SelfAdvetController extends Controller
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
+            if($totalApplication==0){
+                $applications=null; 
+            }
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
@@ -686,6 +689,9 @@ class SelfAdvetController extends Controller
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $applications = $mAdvRejectedSelfadvertisement->listRejected($citizenId);
             $totalApplication = $applications->count();
+            if($totalApplication==0){
+                $applications=null; 
+            }
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
