@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'rule' => 'required|string',
             'applicantName' => 'required|string',
             'fatherName' => 'required|string',
             'mobile' => 'required|numeric|digits:10',
@@ -61,6 +62,10 @@ class StoreRequest extends FormRequest
             'aadharCard' => 'required|integer',
             'panCard' => 'required|string',
             'ulbId' => 'required|integer',
+            'isSchoolCollegeUniv' => 'required|boolean',
+            'schoolCollegeUnivName' => $this->isSchoolCollegeUniv==true?'required|String':'nullable|string',
+            'isApproveByGovt' => $this->isSchoolCollegeUniv==true?'required|boolean':'nullable|boolean',
+            'govtType' => $this->isApproveByGovt==true?'required|String':'nullable|string',
 
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',

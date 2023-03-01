@@ -71,10 +71,15 @@ class AgencyController extends Controller
 
     public function getagencyDetails(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
-            $citizenId = authUser()->id;
             $mAdvAgency = new AdvAgency();
-            $agencydetails = $mAdvAgency->getagencyDetails($citizenId);
+            $agencydetails = $mAdvAgency->getagencyDetails($req->applicationId);
             if (!$agencydetails) {
                 throw new Exception('You Have No Any Agency !!!');
             }
@@ -832,16 +837,16 @@ class AgencyController extends Controller
     /**
      * | Approved Agency List
      */
-    public function listApprovedAgency()
-    {
-        $mAdvAgency = new AdvAgency();
-        $agencies = $mAdvAgency->listApprovedAgency();
-        if (!empty($agencies)) {
-            return responseMsgs(true, "Agency List", $agencies, "040501", "1.0", "", 'POST',  "");
-        } else {
-            return responseMsgs(false, "No Any Agency Found !!!", '', "040501", "1.0", "", 'POST', "");
-        }
-    }
+    // public function listApprovedAgency()
+    // {
+    //     $mAdvAgency = new AdvAgency();
+    //     $agencies = $mAdvAgency->listApprovedAgency();
+    //     if (!empty($agencies)) {
+    //         return responseMsgs(true, "Agency List", $agencies, "040501", "1.0", "", 'POST',  "");
+    //     } else {
+    //         return responseMsgs(false, "No Any Agency Found !!!", '', "040501", "1.0", "", 'POST', "");
+    //     }
+    // }
 
 
 
@@ -1583,26 +1588,26 @@ class AgencyController extends Controller
     /**
      * Get Payment Details
      */
-    public function getLicensePaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mAdvAgencyLicense = new AdvAgencyLicense();
-            $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getLicensePaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mAdvAgencyLicense = new AdvAgencyLicense();
+    //         $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         } else {
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 
 
     public function paymentByCash(Request $req)

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
+use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveBanquteHall;
 use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedBanquteHall;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WorkflowTrack;
@@ -471,13 +473,20 @@ class BanquetMarriageHallController extends Controller
             if ($refGetFinisher->role_id != $req->roleId) {
                 return responseMsgs(false, " Access Forbidden", "");
             }
+               
 
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
 
-                $payment_amount = ['payment_amount' => 1000];
+                $mMarketPriceMstr = new MarketPriceMstr();
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveBanquteHall->workflow_id, $mMarActiveBanquteHall->floor_area, $mMarActiveBanquteHall->ulb_id);
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+                // $payment_amount = ['payment_amount' => 1000];
+                // $req->request->add($payment_amount);
+
+
                 // Banqute Hall Application replication
 
                 $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
@@ -660,24 +669,24 @@ class BanquetMarriageHallController extends Controller
      /**
      * Get Payment Details
      */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mMarBanquteHall = new MarBanquteHall();
-            $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            }else{
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getPaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mMarBanquteHall = new MarBanquteHall();
+    //         $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         }else{
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 }

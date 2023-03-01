@@ -62,6 +62,8 @@ class MarActiveDharamshala extends Model
             'four_wheelers_parking'=>$req->fourWheelersParking,
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
+            'floor_area'=>$req->floorArea,
+            'rule'=>$req->rule,
         ];
     }
      // Store Application Foe Dharamshala(1)

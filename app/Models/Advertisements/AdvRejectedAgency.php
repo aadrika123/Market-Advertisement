@@ -20,6 +20,7 @@ class AdvRejectedAgency extends Model
                 'temp_id',
                 'application_no',
                 'application_date',
+                'entity_name',
                 // 'entity_address',
                 // 'old_application_no',
                 // 'payment_status',

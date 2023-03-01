@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'rule' => 'required|string',
             'applicantName' => 'required|string',
             'fatherName' => 'required|string',
             'mobile' => 'required|numeric|digits:10',
@@ -43,6 +44,7 @@ class StoreRequest extends FormRequest
             'tradeLicenseNo' => 'required|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
+            'floorArea' => 'required|numeric',
             'organizationType' => 'required|string',
             'landDeedType' => 'required|string',
             'waterSupplyType' => 'required|string',

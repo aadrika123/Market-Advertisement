@@ -14,21 +14,28 @@ class AdvAgency extends Model
 
     public function getagencyDetails($id)
     {
-        $details = AdvAgency::where('citizen_id', $id)->first();
+        // $details = AdvAgency::where('id', $id)->first();  
+
+       $details1=DB::table('adv_agencies')
+                    ->select('adv_agencies.*','et.string_parameter as entity_type_name')
+                    ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
+                    ->where('adv_agencies.id', $id)
+                    ->first();
+        $details = json_decode(json_encode($details1), true);
         if (!empty($details)) {
-            // $details->expiry_date=date('Y-m-d', strtotime($details->payment_date."+ 5 Years"));
-            // $warning_date=date('Y-m-d', strtotime($details->payment_date."+ 5 Years -1 months"));
-            $details->expiry_date = date('Y-m-d', strtotime($details->payment_date . "+ 1 months"));
-            $warning_date = date('Y-m-d', strtotime($details->payment_date . "+ 15 days"));
-            $details->warning_date = $warning_date;
+            // $details['expiry_date']=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years"));
+            // $warning_date=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years -1 months"));
+            $details['expiry_date'] = date('Y-m-d', strtotime($details['payment_date'] . "+ 1 months"));
+            $warning_date = date('Y-m-d', strtotime($details['payment_date'] . "+ 15 days"));
+            $details['warning_date'] = $warning_date;
             $current_date = date('Y-m-d');
             if ($current_date < $warning_date) {
-                $details->warning = 0; // Warning Not Enabled
+                $details['warning'] = 0; // Warning Not Enabled
             } elseif ($current_date >= $warning_date) {
-                $details->warning = 1; // Warning Enabled
+                $details['warning'] = 1; // Warning Enabled
             }
-            if ($current_date > $details->expiry_date) {
-                $details->warning = 2;  // Expired
+            if ($current_date > $details['expiry_date']) {
+                $details['warning'] = 2;  // Expired
             }
             $directors = DB::table('adv_active_agencydirectors')
                 ->select(
@@ -55,6 +62,7 @@ class AdvAgency extends Model
             'temp_id',
             'application_no',
             'application_date',
+            'entity_name',
             // 'entity_address',
             // 'old_application_no',
             'payment_status',
@@ -216,7 +224,7 @@ class AdvAgency extends Model
 
     public function getPaymentDetails($paymentId)
     {
-        $details = AdvAgency::select('payment_details')
+       $details = AdvAgency::select('payment_details')
             ->where('payment_id', $paymentId)
             ->first();
         return json_decode($details->payment_details);

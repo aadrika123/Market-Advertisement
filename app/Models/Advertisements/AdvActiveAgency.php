@@ -183,6 +183,7 @@ class AdvActiveAgency extends Model
                 ->select(
                     'adv_active_agencies.*',
                     'u.ulb_name',
+                    'et.string_parameter as entityType',
                 // 'p.string_parameter as m_license_year',
                 // 'w.ward_name as ward_no',
                 // 'pw.ward_name as permanent_ward_no',
@@ -193,6 +194,7 @@ class AdvActiveAgency extends Model
                 )
                 ->where('adv_active_agencies.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agencies.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_active_agencies.entity_type')
                     // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
                     // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
                     // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')
@@ -206,6 +208,7 @@ class AdvActiveAgency extends Model
             ->select(
                 'adv_rejected_agencies.*',
                 'u.ulb_name',
+                'et.string_parameter as entityType',
             // 'p.string_parameter as m_license_year',
             // 'w.ward_name as ward_no',
             // 'pw.ward_name as permanent_ward_no',
@@ -216,6 +219,7 @@ class AdvActiveAgency extends Model
             )
             ->where('adv_rejected_agencies.id', $id)
             ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_agencies.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_rejected_agencies.entity_type')
                 // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_agencies.license_year')
                 // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_agencies.ward_id')
                 // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_agencies.permanent_ward_id')
@@ -229,6 +233,7 @@ class AdvActiveAgency extends Model
             ->select(
                 'adv_agencies.*',
                 'u.ulb_name',
+                'et.string_parameter as entityType',
             // 'p.string_parameter as m_license_year',
             // 'w.ward_name as ward_no',
             // 'pw.ward_name as permanent_ward_no',
@@ -239,6 +244,7 @@ class AdvActiveAgency extends Model
             )
             ->where('adv_agencies.id', $id)
             ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_agencies.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
                 // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_agencies.license_year')
                 // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_agencies.ward_id')
                 // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_agencies.permanent_ward_id')
@@ -400,23 +406,23 @@ class AdvActiveAgency extends Model
             $ulbWorkflowReqs
         ); 
 
-        // $agencyDirector = new AdvActiveAgencydirector();
+        $agencyDirector = new AdvActiveAgencydirector();
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
         $mDocuments = $req->documents;
         $this->uploadDocument($agencyId, $mDocuments);
 
         // Store Director Details
-        // $mDocService = new DocumentUpload;
-        // $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
-        // collect($directors)->map(function ($director) use ($agencyId, $agencyDirector, $mDocService, $mRelativePath) {
-        //     // $mDocRelativeName = "AADHAR";
-        //     // $mImage = $director['aadhar'];
-        //     // $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-        //     $agencyDirector->store($director, $agencyId);       // Model function to store
-        // });
+        $mDocService = new DocumentUpload;
+        $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+        collect($directors)->map(function ($director) use ($agencyId, $agencyDirector, $mDocService, $mRelativePath) {
+            // $mDocRelativeName = "AADHAR";
+            // $mImage = $director['aadhar'];
+            // $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
+            $agencyDirector->store($director, $agencyId);       // Model function to store
+        });
 
         // return $mApplicationNo['application_no'];
-        return $req->application_no;
+        return $req->applicationNo;
     }
 }

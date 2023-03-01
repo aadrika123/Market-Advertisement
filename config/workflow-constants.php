@@ -28,8 +28,8 @@ return [
      */
     "AGENCY_HORDING" => "134",
     "AGENCY_HORDING_WORKFLOWS" => "251",
-    "AGENCY_REG_PRICE" => "200000",
-    "AGENCY_RENEW_PRICE" => "100000",
+    "AGENCY_REG_PRICE" => "20000",
+    "AGENCY_RENEW_PRICE" => "10000",
 
     /**
      * | =========== Market Section ==========

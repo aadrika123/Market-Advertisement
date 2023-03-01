@@ -7,6 +7,7 @@ use App\Http\Requests\Dharamshala\StoreRequest;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveDharamshala;
 use App\Models\Markets\MarDharamshala;
+use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedDharamshala;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WorkflowTrack;
@@ -456,8 +457,14 @@ class DharamshalaController extends Controller
             // Approval
             if ($req->status == 1) {
 
-                $payment_amount = ['payment_amount' => 1000];
+                
+                $mMarketPriceMstr = new MarketPriceMstr();
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveDharamshala->workflow_id, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+
+                // $payment_amount = ['payment_amount' => 1000];
+                // $req->request->add($payment_amount);
                 // dharamshala Application replication
 
                 $approveddharamshala = $mMarActiveDharamshala->replicate();

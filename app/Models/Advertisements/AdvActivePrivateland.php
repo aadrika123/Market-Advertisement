@@ -90,6 +90,7 @@ class AdvActivePrivateland extends Model
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];

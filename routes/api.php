@@ -63,7 +63,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');          // 22 ( Rejected list for JSK)    
         Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');          // 23 ( Generate Payment Order ID)
         Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
-        Route::post('advert/self/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
+        // Route::post('advert/self/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
         Route::post('advert/self/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/self/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/self/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
@@ -77,7 +77,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
         Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
         Route::post('crud/district-mstrs', 'districtMstrs');      // 03
-        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 06
+        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 06 
+        Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
     });
 
     /**
@@ -104,7 +105,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/vehicle/list-jsk-rejected-application', 'listJskRejectedApplication');          // 16 ( Rejected list for JSK)  
         Route::post('advert/vehicle/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
         Route::post('advert/vehicle/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 18 ( Application Details For Payments )
-        Route::post('advert/vehicle/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
+        // Route::post('advert/vehicle/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
@@ -135,7 +136,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/pvt-land/list-jsk-rejected-application', 'listJskRejectedApplication');          // 17 ( Rejected list for JSK)  
         Route::post('advert/pvt-land/generate-payment-order-id', 'generatePaymentOrderId');          // 17 ( Generate Payment Order ID)
         Route::post('advert/pvt-land/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 18 ( Application Details For Payments )
-        Route::post('advert/pvt-land/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
+        // Route::post('advert/pvt-land/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
         Route::post('advert/pvt-land/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/pvt-land/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/pvt-land/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
@@ -168,7 +169,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/list-jsk-rejected-application', 'listJskRejectedApplication');          // 17 ( Rejected list for JSK)  
         Route::post('advert/agency/generate-payment-order-id', 'generatePaymentOrderId');          // 18 ( Generate Payment Order ID)
         Route::post('advert/agency/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 19 ( Application Details For Payments )
-        Route::post('advert/agency/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
+        // Route::post('advert/agency/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/renewal-agency', 'renewalAgency');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
@@ -196,7 +197,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-jsk-rejected-license-application', 'listJskRejectedLicenseApplication');          // 36 ( Rejected list for JSK)  
         Route::post('advert/hording/generate-license-payment-order-id', 'generateLicensePaymentOrderId');          // 37 ( Generate Payment Order ID)
         Route::post('advert/hording/get-license-application-details-for-payment', 'getLicenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
-        Route::post('advert/hording/get-license-payment-details', 'getLicensePaymentDetails');          // 38 ( Application Details For Payments )
+        // Route::post('advert/hording/get-license-payment-details', 'getLicensePaymentDetails');          // 38 ( Application Details For Payments )
         // Route::post('advert/hording/renewal-agency', 'renewalAgency');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/entry-cheque-dd-license', 'entryChequeDdLicense');          // 19 ( Application Details For Payments )

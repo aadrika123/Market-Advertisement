@@ -17,7 +17,7 @@ trait MarDetailsTraits
         return new Collection([
             ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
-            // ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+            ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],

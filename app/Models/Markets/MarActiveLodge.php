@@ -64,6 +64,7 @@ class MarActiveLodge extends Model
             'four_wheelers_parking'=>$req->fourWheelersParking,
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
+            'rule'=>$req->rule,
         ];
     }
      // Store Application Foe Lodge(1)

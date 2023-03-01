@@ -12,7 +12,9 @@ use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarHostel;
+use App\Models\Markets\MarLodge;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -32,6 +34,8 @@ class ParamController extends Controller
     protected $_hording;
     protected $_banquetHall;
     protected $_hostel;
+    protected $_lodge;
+    protected $_dharamshala;
        //Constructor
        public function __construct()
        {
@@ -42,6 +46,8 @@ class ParamController extends Controller
            $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
            $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
            $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+           $this->_lodge = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+           $this->_dharamshala = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
        }
    
 
@@ -242,8 +248,35 @@ class ParamController extends Controller
                     ->where('id', $mMarHostel->last_renewal_id)
                     ->update($updateData);
 
-            }
+            } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
+                
+                DB::table('mar_lodges')
+                    ->where('id', $req->id)
+                    ->update($updateData);
 
+                $mMarLodge = MarLodge::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('mar_hostel_renewals')
+                    ->where('id', $mMarLodge->last_renewal_id)
+                    ->update($updateData);
+
+            } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
+                
+                DB::table('mar_dharamshalas')
+                    ->where('id', $req->id)
+                    ->update($updateData);
+
+                $mMarDharamshala = MarDharamshala::find($req->id);
+
+                $updateData['payment_amount'] = $req->amount;
+                // update in Renewals Table
+                DB::table('mar_dharamshala_renewals')
+                    ->where('id', $mMarDharamshala->last_renewal_id)
+                    ->update($updateData);
+
+            }
 
             DB::commit();
             $endTime = microtime(true);
@@ -253,6 +286,62 @@ class ParamController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'Post', $req->deviceId);
+        }
+    }
+
+
+    public function getPaymentDetails(Request $req){
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'workflowId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+
+            // Get Advertesement Payment Details
+            if($req->workflowId == $this->_selfAdvt){
+                $mAdvSelfadvertisement = new AdvSelfadvertisement();
+                $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId == $this->_pvtLand){
+                $mAdvPrivateland = new AdvPrivateland();
+                $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId ==  $this->_movableVehicle){
+                $mAdvVehicle = new AdvVehicle();
+                $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId == $this->_agency){
+                $mAdvAgency = new AdvAgency();
+                $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId == $this->_hording){
+                $mAdvAgencyLicense = new AdvAgencyLicense();
+                $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
+            }
+
+            // Get Market Payment Details
+            elseif($req->workflowId == $this->_banquetHall){
+                $mMarBanquteHall = new MarBanquteHall();
+                $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId == $this->_hostel){
+                $mMarHostel = new MarHostel();
+                $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
+            }
+            elseif($req->workflowId == $this->_lodge){
+                $mMarLodge = new MarLodge();
+                $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
+            }elseif($req->workflowId == $this->_dharamshala){
+                $mMarDharamshala = new MarDharamshala();
+                $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
+            }
+
+
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+            }
+        } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
         }
     }
 }

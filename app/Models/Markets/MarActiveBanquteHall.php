@@ -29,6 +29,7 @@ class MarActiveBanquteHall extends Model
     public function metaReqs($req)
     {
         return [
+            'rule' => $req->rule,
             'applicant' => $req->applicantName,
             'license_year' => $req->licenseYear,
             'father' => $req->fatherName,

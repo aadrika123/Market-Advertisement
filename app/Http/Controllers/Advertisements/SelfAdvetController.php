@@ -96,6 +96,8 @@ class SelfAdvetController extends Controller
     public function listInbox(Request $req)
     {
         try {
+
+            // Variable initialization
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
@@ -103,9 +105,11 @@ class SelfAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
+
             $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -118,6 +122,7 @@ class SelfAdvetController extends Controller
     public function listOutbox(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
@@ -125,9 +130,11 @@ class SelfAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
+
             $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050104", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050104", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -141,6 +148,7 @@ class SelfAdvetController extends Controller
     public function getDetailsById(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $fullDetailsData = array();
@@ -149,6 +157,8 @@ class SelfAdvetController extends Controller
             } else {
                 $type = NULL;
             }
+
+
             if ($req->applicationId) {
                 $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);
             } else {
@@ -157,6 +167,7 @@ class SelfAdvetController extends Controller
 
             if (!$data)
                 throw new Exception("Application Not Found");
+
             // Basic Details
             $basicDetails = $this->generateBasicDetails($data); // Trait function to get Basic Details
             $basicElement = [
@@ -171,8 +182,6 @@ class SelfAdvetController extends Controller
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
-
-            // return ($data);
 
             $metaReqs['customFor'] = 'Self Advertisement';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
@@ -936,26 +945,26 @@ class SelfAdvetController extends Controller
     /**
      * Get Payment Details
      */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mAdvSelfadvertisement = new AdvSelfadvertisement();
-            $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getPaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mAdvSelfadvertisement = new AdvSelfadvertisement();
+    //         $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         } else {
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 
     public function paymentByCash(Request $req)
     {

@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 

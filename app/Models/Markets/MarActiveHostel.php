@@ -64,6 +64,11 @@ class MarActiveHostel extends Model
             'four_wheelers_parking'=>$req->fourWheelersParking,
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
+            'rule'=>$req->rule,
+            'is_school_college_univ'=>$req->isSchoolCollegeUniv,
+            'school_college_univ_name'=>$req->schoolCollegeUnivName,
+            'is_approve_by_govt'=>$req->isApproveByGovt,
+            'govt_type'=>$req->govtType,
         ];
     }
      // Store Application Foe Hostel(1)

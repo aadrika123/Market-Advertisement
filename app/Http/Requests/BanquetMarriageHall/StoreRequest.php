@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'rule' => 'required|string',
             'licenseYear' => 'required|string',
             'applicantName' => 'required|string',
             'fatherName' => 'required|string',

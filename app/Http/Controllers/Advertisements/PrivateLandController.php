@@ -724,26 +724,26 @@ class PrivateLandController extends Controller
     /**
      * Get Payment Details
      */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mAdvPrivateland = new AdvPrivateland();
-            $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getPaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mAdvPrivateland = new AdvPrivateland();
+    //         $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         } else {
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 
     
     public function paymentByCash(Request $req)

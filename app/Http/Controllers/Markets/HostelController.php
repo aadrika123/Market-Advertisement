@@ -7,6 +7,7 @@ use App\Http\Requests\Hostel\StoreRequest;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveHostel;
 use App\Models\Markets\MarHostel;
+use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedHostel;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WorkflowTrack;
@@ -467,9 +468,19 @@ class HostelController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-
-                $payment_amount = ['payment_amount' => 1000];
+                
+                $mMarketPriceMstr = new MarketPriceMstr();
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveHostel->workflow_id, $mMarActiveHostel->no_of_beds, $mMarActiveHostel->ulb_id);
+              
+                if($mMarActiveHostel->is_approve_by_govt == true){
+                    $amount = $mMarketPriceMstr->getMarketTaxPriceGovtHostel($mMarActiveHostel->workflow_id, $mMarActiveHostel->ulb_id);
+                }
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+
+                // $payment_amount = ['payment_amount' => 1000];
+                // $req->request->add($payment_amount);
+
                 // Hostel Application replication
 
                 $approvedhostel = $mMarActiveHostel->replicate();
@@ -489,8 +500,6 @@ class HostelController extends Controller
 
                 
                 $mMarActiveHostel->delete();
-
-
 
                 // Update in mar_hostels (last_renewal_id)
 
@@ -652,24 +661,24 @@ class HostelController extends Controller
     /**
      * Get Payment Details
      */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mMarHostel = new MarHostel();
-            $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getPaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mMarHostel = new MarHostel();
+    //         $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         } else {
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Lodge\StoreRequest;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveLodge;
+use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarLodge;
 use App\Models\Markets\MarRejectedLodge;
 use App\Models\Workflows\WfWardUser;
@@ -458,8 +459,16 @@ class LodgeController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-                $payment_amount = ['payment_amount' => 1000];
+
+                 
+                $mMarketPriceMstr = new MarketPriceMstr();
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveLodge->workflow_id, $mMarActiveLodge->no_of_beds, $mMarActiveLodge->ulb_id);
+                $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+
+                // $payment_amount = ['payment_amount' => 1000];
+                // $req->request->add($payment_amount);
+
                 // Lodge Application replication
                 $approvedlodge = $mMarActiveLodge->replicate();
                 $approvedlodge->setTable('mar_lodges');
@@ -641,24 +650,24 @@ class LodgeController extends Controller
     /**
      * Get Payment Details
      */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mMarLodge = new MarLodge();
-            $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
+    // public function getPaymentDetails(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'paymentId' => 'required|string'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         $mMarLodge = new MarLodge();
+    //         $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
+    //         if (empty($paymentDetails)) {
+    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         } else {
+    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         responseMsgs(false, $e->getMessage(), "");
+    //     }
+    // }
 }

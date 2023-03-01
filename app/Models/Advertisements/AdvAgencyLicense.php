@@ -157,7 +157,7 @@ class AdvAgencyLicense extends Model
             $allRejected->push($item->count());
             return $data[$key] = $item->count();
         });
-        $data['countRejectAppl']['totalRejected'] = $allPending->sum();
+        $data['countRejectAppl']['totalRejected'] = $allRejected->sum();
         return $data;
     }
 
