@@ -757,7 +757,8 @@
             "docVal":"Entry and Exit Photograph"
         }
     ],
-    "AgencyRenew":[ {
+    "AgencyRenew":[ 
+        {
             "id":86,
             "document_name":"ITR",
             "workflow_id":132,
