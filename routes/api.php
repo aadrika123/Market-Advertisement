@@ -176,6 +176,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/list-approved-agency', 'listApprovedAgency');          // 19 ( Application Details For Payments )
 
         /*------------ Apply For Hording License -------------------*/
+        Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
         Route::post('advert/hording/list-typology', 'listTypology');  // 20 ( Get Typology List )
         Route::post('advert/hording/add-new-license', 'addNewLicense');  // 21 ( Save Application For Licence )
         Route::post('advert/hording/list-license-inbox', 'listLicenseInbox');             // 22 ( Application Inbox Lists )

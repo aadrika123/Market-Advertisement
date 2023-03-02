@@ -12,6 +12,7 @@ use App\Models\Advertisements\AdvRejectedSelfadvertisement;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\TradeLicence;
+use App\Models\Workflows\WfRoleusermap;
 use App\Traits\WorkflowTrait;
 use Exception;
 use Illuminate\Http\Request;
@@ -309,7 +310,10 @@ class SelfAdvetController extends Controller
 
         try {
             $startTime = microtime(true);
+            $userId = authUser()->id;
+            $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
+            $mWfRoleUsermap = new WfRoleusermap();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
@@ -322,9 +326,16 @@ class SelfAdvetController extends Controller
                 'refTableIdValue' => $adv->id,
                 'message' => $request->comment
             ];
+            
             // For Citizen Independent Comment
-            if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $adv->user_id]);
+            if ($userType != 'Citizen') {
+                $roleReqs = new Request([
+                    'workflowId' => $adv->workflow_id,
+                    'userId' => $userId, 
+                ]);
+                $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
+                $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
+                $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
 
             $request->request->add($metaReqs);
@@ -661,16 +672,7 @@ class SelfAdvetController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(
-                true,
-                "Approved Application List",
-                $data1,
-                "050118",
-                "1.0",
-                "$executionTime Sec",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Approved Application List",$data1,"050118","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050118", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -697,16 +699,7 @@ class SelfAdvetController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(
-                true,
-                "Rejected Application List",
-                $data1,
-                "050119",
-                "1.0",
-                "$executionTime Sec",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Rejected Application List",$data1,"050119","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050119", "1.0", "", 'POST', $req->deviceId ?? "");
         }

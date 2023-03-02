@@ -250,13 +250,13 @@
     "AgencyHordingLicense":[
         {
             "id":36,
-            "document_name":"Director Information Document",
+            "document_name":"Certificate of Structural Engineer Ownership Details",
             "workflow_id":134,
-            "relative_name":"DIRECTOR INFORMATION",
-            "docCode":"DIRECTOR_INFORMATION",
+            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS",
+            "docCode":"CERTIFICATE_OF_STRUCTURAL_ENGINEER_OWNERSHIP_DETAILS",
             "code":"AGENCY_HORDING_LICENSE",
             "module_id":5,
-            "docVal":"Director Information"
+            "docVal":"Certificate of Structural Engineer Ownership Details"
         },
         {
             "id":37,

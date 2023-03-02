@@ -9,6 +9,7 @@ use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvRejectedVehicle;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -299,7 +300,10 @@ class VehicleAdvetController extends Controller
         ]);
 
         try {
+            $userId = authUser()->id;
+            $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
+            $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);                // Advertisment Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
@@ -313,10 +317,15 @@ class VehicleAdvetController extends Controller
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
-            if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvActiveVehicle->user_id]);
+            if ($userType != 'Citizen') {
+                $roleReqs = new Request([
+                    'workflowId' => $mAdvActiveVehicle->workflow_id,
+                    'userId' => $userId, 
+                ]);
+                $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
+                $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
+                $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
-
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
 

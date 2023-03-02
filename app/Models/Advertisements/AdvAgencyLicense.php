@@ -102,7 +102,7 @@ class AdvAgencyLicense extends Model
     public function agencyDashboard($citizenId)
     {
         //Approved Application
-        $data['approvedAppl'] = AdvAgencyLicense::select('*')
+            $data['approvedAppl'] = AdvAgencyLicense::select('*')
             ->where(['payment_status' => 1, 'citizen_id' => $citizenId])
             ->get()
             ->groupBy(function ($date) {
@@ -158,6 +158,9 @@ class AdvAgencyLicense extends Model
             return $data[$key] = $item->count();
         });
         $data['countRejectAppl']['totalRejected'] = $allRejected->sum();
+
+        $data['ulb_id'] = AdvAgency::select('ulb_id')->where(['citizen_id' => $citizenId])->first()->ulb_id;
+        // $data['ulbId']=;
         return $data;
     }
 

@@ -28,20 +28,19 @@ class AdvActiveAgencyLicense extends Model
     public function licenceMetaReqs($req)
     {
         $metaReqs = [            
-            'district' => $req->district,
-            'city' => $req->city,
-            'ward_id' => $req->wardId,
-            'zone_id' => $req->zoneId,
-            'permit_no' => $req->permitNo,
-            'road_street_address' => $req->roadStreetAddress,
-            'date_granted' => $req->dateGranted,
-            'permit_date_issue' => $req->permitDateIssue,
-            'permit_expired_issue' => $req->permitExpiredIssue,
-            'application_no' => $req->applicationNo,
-            'account_no' => $req->accountNo,
-            'bank_name' => $req->bankName,
-            'ifsc_code' => $req->ifscCode,
-            'total_charge' => $req->totalCharge,
+            // 'district' => $req->district,
+            // 'city' => $req->city,
+            // 'ward_id' => $req->wardId,
+            // 'permit_no' => $req->permitNo,
+            // 'road_street_address' => $req->roadStreetAddress,
+            // 'date_granted' => $req->dateGranted,
+            // 'permit_date_issue' => $req->permitDateIssue,
+            // 'permit_expired_issue' => $req->permitExpiredIssue,
+            // 'application_no' => $req->applicationNo,
+            // 'account_no' => $req->accountNo,
+            // 'bank_name' => $req->bankName,
+            // 'ifsc_code' => $req->ifscCode,
+            // 'total_charge' => $req->totalCharge,
             // 'applicant_name' => $req->applicantName,
             // 'director_name' => $req->directorName,
             // 'registration_no' => $req->registrationNo,
@@ -54,24 +53,48 @@ class AdvActiveAgencyLicense extends Model
             // 'applicant_permanent_city' => $req->applicantPermanentCity,
             // 'applicant_permanent_state' => $req->applicantPermanentState,
             // 'applicant_pincode' => $req->applicantPincode,
-            'property_type' => $req->propertyType,
-            'property_owner_name' => $req->propertyOwnerName,
-            'property_owner_address' => $req->propertyOwnerAddress,
-            'property_owner_city' => $req->propertyOwnerCity,
-            'property_owner_pincode' => $req->propertyOwnerPincode,
-            'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
+            // 'property_type' => $req->propertyType,
+            // 'property_owner_name' => $req->propertyOwnerName,
+            // 'property_owner_address' => $req->propertyOwnerAddress,
+            // 'property_owner_city' => $req->propertyOwnerCity,
+            // 'property_owner_pincode' => $req->propertyOwnerPincode,
+            // 'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
+            // 'display_area' => $req->displayArea,
+            // 'display_location' => $req->displayLocation,
+            // 'display_street' => $req->displayStreet,
+            // 'display_land_mark' => $req->displayLandMark,
+            // 'heigth' => $req->heigth,
+            // 'length' => $req->length,
+            // 'size' => $req->size,
+            // 'material' => $req->material,
+            // 'illumination' => $req->illumination,
+            // 'indicate_facing' => $req->indicateFacing,
+            // 'user_id' => $req->userId,
+
+
+            
+            'zone_id' => $req->zoneId,
+            'license_year' => $req->licenseYear,  
+            'typology' => $req->HordingType,               // Hording Type is Convert Into typology
+            'display_location' => $req->displayLocation, 
+            'width' => $req->width,
+            'length' => $req->length,  
             'display_area' => $req->displayArea,
-            'display_location' => $req->displayLocation,
-            'display_street' => $req->displayStreet,
-            'display_land_mark' => $req->displayLandMark,
-            'heigth' => $req->heigth,
-            'length' => $req->length,
-            'size' => $req->size,
+            'longitude' => $req->longitude,   
+            'latitude' => $req->latitude,
             'material' => $req->material,
             'illumination' => $req->illumination,
             'indicate_facing' => $req->indicateFacing,
-            'typology' => $req->typology,
+            'property_type' => $req->propertyType,
+            'display_land_mark' => $req->displayLandMark,
+            'property_owner_name' => $req->propertyOwnerName,
+            'property_owner_address' => $req->propertyOwnerAddress,
+            'property_owner_city' => $req->propertyOwnerCity,
+            'property_owner_whatsapp_no' => $req->propertyOwnerPincode,
+            'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
             'user_id' => $req->userId,
+            
+
         ];
         return $metaReqs;
     }
@@ -295,6 +318,7 @@ class AdvActiveAgencyLicense extends Model
                 ->select(
                     'adv_active_agency_licenses.*',
                     'u.ulb_name',
+                    // 'ht.descriptions',
                 // 'p.string_parameter as m_license_year',
                 // 'w.ward_name as ward_no',
                 // 'pw.ward_name as permanent_ward_no',
@@ -305,6 +329,7 @@ class AdvActiveAgencyLicense extends Model
                 )
                 ->where('adv_active_agency_licenses.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agency_licenses.ulb_id')
+                // ->leftJoin('adv_typology_mstrs as ht', 'ht.id', '=', 'adv_active_agency_licenses.typology::int')
                     // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
                     // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
                     // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')

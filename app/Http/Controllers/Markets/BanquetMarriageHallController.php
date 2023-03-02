@@ -90,6 +90,7 @@ class BanquetMarriageHallController extends Controller
     public function listInbox(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
@@ -97,7 +98,9 @@ class BanquetMarriageHallController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds);
+
+            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds);                   // <----- Get Inbox List 
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -114,6 +117,7 @@ class BanquetMarriageHallController extends Controller
     public function listOutbox(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
@@ -121,7 +125,9 @@ class BanquetMarriageHallController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds);
+
+            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds);                 // <----- Get Outbox List
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050104", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -138,6 +144,7 @@ class BanquetMarriageHallController extends Controller
     public function getDetailsById(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $fullDetailsData = array();
@@ -154,14 +161,15 @@ class BanquetMarriageHallController extends Controller
 
             if (!$data)
                 throw new Exception("Application Not Found");
+
             // Basic Details
-            $basicDetails = $this->generateBasicDetails($data); // Trait function to get Basic Details
+            $basicDetails = $this->generateBasicDetails($data);                     // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
             ];
 
-            $cardDetails = $this->generateCardDetails($data);
+            $cardDetails = $this->generateCardDetails($data);                       // Trait function to get Card Details
             $cardElement = [
                 'headerTitle' => "About Banqute-Marriage Hall",
                 'data' => $cardDetails
@@ -169,22 +177,20 @@ class BanquetMarriageHallController extends Controller
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
-            // return ($data);
-
             $metaReqs['customFor'] = 'Banqute-Marrige Hall';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
 
             $req->request->add($metaReqs);
-            $forwardBackward = $this->getRoleDetails($req);
+            $forwardBackward = $this->getRoleDetails($req);                                      // Get Role Details
             $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
 
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
-            $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -230,14 +236,20 @@ class BanquetMarriageHallController extends Controller
     public function listAppliedApplications(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mMarActiveBanquteHall = $this->_modelObj;
-            $applications = $mMarActiveBanquteHall->listAppliedApplications($citizenId);
+
+            $applications = $mMarActiveBanquteHall->listAppliedApplications($citizenId);                // Get Citizen Apply List
+
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
+            if($totalApplication==0){
+                $data1['data'] = null;
+            }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? ""
@@ -325,6 +337,7 @@ class BanquetMarriageHallController extends Controller
 
         try {
             $startTime = microtime(true);
+            
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $adv = MarActiveBanquteHall::find($request->applicationId);

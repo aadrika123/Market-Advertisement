@@ -10,6 +10,7 @@ use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarDharamshala;
@@ -82,7 +83,12 @@ class ParamController extends Controller
 
                 $data['wards'] = $mWards['data'];
 
-                Cache::put('adv_param_strings' . $mUlbId, json_encode($data));  // Set Key on Param Strings
+                $mAdvTypologyMstr = new AdvTypologyMstr();
+                $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List
+                
+                $data['paramCategories']['typology'] = $typologyList;
+
+                Cache::put('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
             }
             return responseMsgs(true,"Param Strings",$data,"040201","1.0","","POST",$req->deviceId ?? "");
         } catch (Exception $e) {

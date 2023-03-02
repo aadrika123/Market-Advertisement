@@ -9,6 +9,7 @@ use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvRejectedPrivateland;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Workflows\WfRoleusermap;
 use Exception;
 
 use Illuminate\Http\Request;
@@ -43,12 +44,14 @@ class PrivateLandController extends Controller
     protected $_modelObj;
 
     protected $_workflowIds;
+    protected $_moduleId;
 
     protected $Repository;
     public function __construct(iSelfAdvetRepo $privateland_repo)
     {
         $this->_modelObj = new AdvActivePrivateland();
         $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->Repository = $privateland_repo;
     }
 
@@ -58,15 +61,18 @@ class PrivateLandController extends Controller
     public function addNew(StoreRequest $req)
     {
         try {
+            // Variable initialization
             $privateLand = new AdvActivePrivateland();
             if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
+                $userId = ['userId' => authUser()->id];                            // Find Jsk Id
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];
+                $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
                 $req->request->add($citizenId);
             }
-            $applicationNo = $privateLand->addNew($req);       //<--------------- Model function to store 
+
+            $applicationNo = $privateLand->addNew($req);                            // Model function to store 
+
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
@@ -81,13 +87,16 @@ class PrivateLandController extends Controller
     public function listInbox(Request $req)
     {
         try {
+            // Variable initialization
             $mAdvActivePrivateland = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActivePrivateland->listInbox($roleIds);
+
+            $inboxList = $mAdvActivePrivateland->listInbox($roleIds);                   // <----- Get Inbox List From Model
+
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -100,13 +109,16 @@ class PrivateLandController extends Controller
     public function listOutbox(Request $req)
     {
         try {
+            // Variable initialization
             $selfAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $selfAdvets->listOutbox($roleIds);
+
+            $outboxList = $selfAdvets->listOutbox($roleIds);                            // <----- Get Outbox List From Model
+
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -120,6 +132,7 @@ class PrivateLandController extends Controller
     public function getDetailsById(Request $req)
     {
         try {
+            // Variable initialization
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -127,8 +140,9 @@ class PrivateLandController extends Controller
             } else {
                 $type = NULL;
             }
+
             if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);
+                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -137,15 +151,14 @@ class PrivateLandController extends Controller
                 throw new Exception("Not Application Details Found");
             }
 
-            // return $data;
             //Basic Details
-            $basicDetails = $this->generatePrivateLandBasicDetails($data); // Trait function to get Basic Details
+            $basicDetails = $this->generatePrivateLandBasicDetails($data);              // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
             ];
 
-            $cardDetails = $this->generatePrivateLandCardDetails($data);
+            $cardDetails = $this->generatePrivateLandCardDetails($data);                // Trait function to get Card Details
             $cardElement = [
                 'headerTitle' => "About Advertisement",
                 'data' => $cardDetails
@@ -153,22 +166,22 @@ class PrivateLandController extends Controller
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
-            // return ($data);
-
             $metaReqs['customFor'] = 'Private Land Advertisement';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
 
             $req->request->add($metaReqs);
-            $forwardBackward = $this->getRoleDetails($req);
+
+            $forwardBackward = $this->getRoleDetails($req);                            // Get Role Ids
             $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
 
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
-            $fullDetailsData['timelineData'] = collect($req);
+
+            $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -210,13 +223,20 @@ class PrivateLandController extends Controller
     public function listAppliedApplications(Request $req)
     {
         try {
+            // Variable Initialization
             $citizenId = authUser()->id;
             $mAdvActivePrivateland = new AdvActivePrivateland();
-            $applications = $mAdvActivePrivateland->listAppliedApplications($citizenId);
-            $totalApplication = $applications->count();
+
+            $applications = $mAdvActivePrivateland->listAppliedApplications($citizenId);            // Find Applied Application By Citizen
+
+            $totalApplication = $applications->count();                                             
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
+            if($totalApplication==0){
+                $data1['data'] = NULL;                                                              
+            }
+
             return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -234,12 +254,13 @@ class PrivateLandController extends Controller
             "applicationId" => "required|int",
         ]);
         try {
+            // Variable Initialization
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
-            $data = AdvActivePrivateland::find($applicationId);
+            $data = AdvActivePrivateland::find($applicationId);    
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
-            $data->save();
+            $data->save();                                                               // Save After escalate or De-Escalate
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "010106", "1.0", "353ms", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
@@ -250,18 +271,16 @@ class PrivateLandController extends Controller
     public function listEscalated(Request $req)
     {
         try {
+            // Variable initialization
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
             $ulbId = authUser()->ulb_id;
-
-            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
-            $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
+            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);          // Get All Occupied Ward By user id using trait
+            $wardId = $occupiedWard->map(function ($item, $key) {             // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
 
-            // print_r($wardId);
-
-            $advData = $this->Repository->specialPrivateLandInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
+            $advData = $this->Repository->specialPrivateLandInbox($this->_workflowIds)          // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_privatelands.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -292,7 +311,7 @@ class PrivateLandController extends Controller
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
-            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['moduleId'] = $this->_moduleId;
             $metaReqs['workflowId'] = $adv->workflow_id;
             $metaReqs['refTableDotId'] = "adv_active_privatelands.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
@@ -319,22 +338,31 @@ class PrivateLandController extends Controller
         ]);
 
         try {
+            $userId = authUser()->id;
+            $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
+            $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActivePrivateland = AdvActivePrivateland::find($request->applicationId);                // Advertisment Details
-            $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
             DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mAdvActivePrivateland->workflow_id,
-                'moduleId' => $mModuleId,
+                'moduleId' =>$this->_moduleId,
                 'refTableDotId' => "adv_active_privatelands.id",
                 'refTableIdValue' => $mAdvActivePrivateland->id,
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
-            if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvActivePrivateland->user_id]);
+
+            if ($userType != 'Citizen') {
+                $roleReqs = new Request([
+                    'workflowId' => $mAdvActivePrivateland->workflow_id,
+                    'userId' => $userId, 
+                ]);
+                $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
+                $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
+                $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
 
             $request->request->add($metaReqs);
@@ -342,6 +370,9 @@ class PrivateLandController extends Controller
 
             DB::commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "010108", "1.0", "", "POST", "");
+
+
+
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "");

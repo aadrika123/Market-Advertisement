@@ -16,6 +16,7 @@ use App\Models\Advertisements\AdvCheckDtl;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
@@ -376,7 +377,10 @@ class AgencyController extends Controller
         ]);
 
         try {
+            $userId = authUser()->id;
+            $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
+            $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActiveAgency = AdvActiveAgency::find($request->applicationId);                // Agency Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
@@ -390,8 +394,14 @@ class AgencyController extends Controller
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
-            if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvActiveAgency->user_id]);
+            if ($userType != 'Citizen') {
+                $roleReqs = new Request([
+                    'workflowId' => $mAdvActiveAgency->workflow_id,
+                    'userId' => $userId, 
+                ]);
+                $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
+                $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
+                $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
 
             $request->request->add($metaReqs);
@@ -867,17 +877,33 @@ class AgencyController extends Controller
         try {
             $mAdvTypologyMstr = new AdvTypologyMstr();
             $typologyList = $mAdvTypologyMstr->listTypology();
-            $typologyList = $typologyList->groupBy('type');
-            foreach ($typologyList as $key => $data) {
-                $type = [
-                    'Type' => "Type " . $key,
-                    'data' => $typologyList[$key]
-                ];
-                $fData[] = $type;
-            }
-            $fullData['typology'] = $fData;
+            // $typologyList = $typologyList->groupBy('type');
+            // foreach ($typologyList as $key => $data) {
+            //     $type = [
+            //         'Type' => "Type " . $key,
+            //         'data' => $typologyList[$key]
+            //     ];
+            //     $fData[] = $type;
+            // }
+            // $fullData['typology'] = $fData;
 
-            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($fullData), "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($typologyList), "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    
+    /**
+     * | Get Typology List
+     */
+    public function getHordingCategory(Request $req)
+    {
+        try {
+            $mAdvTypologyMstr = new AdvTypologyMstr();
+            $typologyList = $mAdvTypologyMstr->getHordingCategory();
+
+            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($typologyList), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -976,7 +1002,7 @@ class AgencyController extends Controller
             if (!$data) {
                 throw new Exception("Not Application Details Found");
             }
-
+            // return $data;
             // Basic Details
             $basicDetails = $this->generatehordingLicenseDetails($data); // Trait function to get Basic Details
             $basicElement = [
@@ -1138,7 +1164,10 @@ class AgencyController extends Controller
         ]);
 
         try {
+            $userId = authUser()->id;
+            $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
+            $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActiveAgencyLicense = AdvActiveAgencyLicense::find($request->applicationId);                // Agency License Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
@@ -1152,10 +1181,15 @@ class AgencyController extends Controller
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
-            if (!$request->senderRoleId) {
-                $metaReqs = array_merge($metaReqs, ['citizenId' => $mAdvActiveAgencyLicense->user_id]);
+            if ($userType != 'Citizen') {
+                $roleReqs = new Request([
+                    'workflowId' => $mAdvActiveAgencyLicense->workflow_id,
+                    'userId' => $userId, 
+                ]);
+                $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
+                $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
+                $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
-
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
 
