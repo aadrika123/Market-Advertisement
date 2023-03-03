@@ -876,18 +876,18 @@ class AgencyController extends Controller
     {
         try {
             $mAdvTypologyMstr = new AdvTypologyMstr();
-            $typologyList = $mAdvTypologyMstr->listTypology();
-            // $typologyList = $typologyList->groupBy('type');
-            // foreach ($typologyList as $key => $data) {
-            //     $type = [
-            //         'Type' => "Type " . $key,
-            //         'data' => $typologyList[$key]
-            //     ];
-            //     $fData[] = $type;
-            // }
-            // $fullData['typology'] = $fData;
+            $typologyList = $mAdvTypologyMstr->listTypology1();
+            $typologyList = $typologyList->groupBy('type');
+            foreach ($typologyList as $key => $data) {
+                $type = [
+                    'Type' => "Type " . $key,
+                    'data' => $typologyList[$key]
+                ];
+                $fData[] = $type;
+            }
+            $fullData['typology'] = $fData;
 
-            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($typologyList), "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($fullData), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }

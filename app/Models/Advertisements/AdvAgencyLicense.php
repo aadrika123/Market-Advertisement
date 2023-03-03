@@ -18,6 +18,7 @@ class AdvAgencyLicense extends Model
                 'id',
                 'temp_id',
                 'application_no',
+                'license_no',
                 'application_date',
                 // 'entity_address',
                 // 'old_application_no',

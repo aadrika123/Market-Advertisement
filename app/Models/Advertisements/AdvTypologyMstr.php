@@ -45,4 +45,19 @@ class AdvTypologyMstr extends Model
 
         return $typology;
     }
+
+    public function listTypology1()
+    {
+        $typology = AdvTypologyMstr::where('status', '1')
+            ->select(
+                'id',
+                'type',
+                'type_inner as subtype',
+                'descriptions'
+            )
+            ->orderBy('type_inner')
+            ->get();
+
+       return  $typology;
+    }
 }

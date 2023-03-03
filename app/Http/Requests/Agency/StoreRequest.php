@@ -38,7 +38,7 @@ class StoreRequest extends FormRequest
             'gstNo' => 'required|string',
             'blacklisted' => 'required|bool',
             'pendingCourtCase' => 'required|bool',
-            'pendingAmount' => 'required|numeric',
+            'pendingAmount' => 'nullable|numeric',
             'directors' => 'required|array',
             'directors.*.name' => 'required|string',
             'directors.*.mobile' => 'required|numeric|digits:10',

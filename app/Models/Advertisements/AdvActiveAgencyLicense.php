@@ -402,6 +402,7 @@ class AdvActiveAgencyLicense extends Model
             ->select(
                 'id',
                 'application_no',
+                'license_no',
                 'application_date',
                 'license_no',
                 'bank_name',
@@ -426,6 +427,7 @@ class AdvActiveAgencyLicense extends Model
             ->select(
                 'id',
                 'application_no',
+                'license_no',
                 'application_date',
                 'license_no',
                 'bank_name',
@@ -447,6 +449,7 @@ class AdvActiveAgencyLicense extends Model
             ->select(
                 'id',
                 'application_no',
+                'license_no',
                 'application_date',
                 'license_no',
                 'bank_name',

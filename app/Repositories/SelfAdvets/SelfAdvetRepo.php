@@ -79,6 +79,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         ->select(
             'id',
             'application_no',
+            'license_no',
             'application_date',
             'license_no',
             'bank_name',

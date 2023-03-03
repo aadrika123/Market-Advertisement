@@ -316,7 +316,7 @@ trait AdvDetailsTraits
     public function generateLiceasneCardDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             // ['displayString' => 'Permit No', 'key' => 'permitNo', 'value' => $data['permit_no']],
             // ['displayString' => 'Road Street/Address', 'key' => 'roadStreetAddress', 'value' => $data['road_street_address']],
