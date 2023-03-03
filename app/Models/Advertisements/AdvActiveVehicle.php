@@ -198,6 +198,7 @@ class AdvActiveVehicle extends Model
             ->select(
                 'id',
                 'application_no',
+                'application_date',
                 'applicant',
                 'entity_name',
                 'created_at as applied_date'

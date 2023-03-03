@@ -276,7 +276,7 @@ trait AdvDetailsTraits
     public function generatehordingLicenseDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
+            ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             // ['displayString' => 'Permit No', 'key' => 'permitNo', 'value' => $data['permit_no']],
             // ['displayString' => 'Road Street/Address', 'key' => 'roadStreetAddress', 'value' => $data['road_street_address']],
@@ -303,8 +303,8 @@ trait AdvDetailsTraits
             // ['displayString' => 'Size', 'key' => 'size', 'value' => $data['size']],
             ['displayString' => 'Material', 'key' => 'material', 'value' => $data['material']],
             ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination']?"Yes":"No"],
-            ['displayString' => 'Indicate Facing', 'key' => 'indicateFacing', 'value' => $data['indicate_facing']],
-            ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']]
+            ['displayString' => 'Indicate Facing', 'key' => 'indicateFacing', 'value' => $data['indicate_facing']]
+            // ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']]
         ]);
     }
 

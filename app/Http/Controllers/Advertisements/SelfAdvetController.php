@@ -665,7 +665,7 @@ class SelfAdvetController extends Controller
             $applications = $mAdvSelfadvertisements->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
             if($totalApplication==0){
-                $applications=null; 
+                $applications=NULL; 
             }
             remove_null($applications);
             $data1['data'] = $applications;
