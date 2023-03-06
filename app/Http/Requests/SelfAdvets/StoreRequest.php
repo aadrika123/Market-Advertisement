@@ -49,6 +49,7 @@ class StoreRequest extends FormRequest
             'displayType' => 'required|integer',
             'installationLocation' => 'required|integer',
             'brandDisplayName' => 'required',
+            'advtCategory' => 'required|integer',
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
             'documents.*.docCode' => 'required|string',

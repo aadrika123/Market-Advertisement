@@ -23,7 +23,6 @@ class AdvSelfadvertisement extends Model
             'applicant',
             'entity_name',
             'entity_address',
-            'old_application_no',
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -81,7 +80,6 @@ class AdvSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
@@ -107,7 +105,6 @@ class AdvSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
@@ -137,7 +134,6 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_details = "By Cash";
             $mAdvSelfadvertisement->save();
             $renewal_id = $mAdvSelfadvertisement->last_renewal_id;
-
 
             // Renewal Table Updation
             $mAdvSelfAdvertRenewal = AdvSelfadvetRenewal::find($renewal_id);

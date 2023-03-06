@@ -17,11 +17,13 @@ class AdvActiveAgencyLicense extends Model
     use WorkflowTrait;
     protected $guarded = [];
     protected $_applicationDate;
+    protected $_workflowId;
 
     // Initializing construction
     public function __construct()
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
+        $this->_workflowId=Config::get('workflow-constants.AGENCY_HORDING');
     }
 
 
@@ -105,10 +107,10 @@ class AdvActiveAgencyLicense extends Model
      */
     public function addNewLicense($req)
     {
+        // Variable Initializing
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->licenceMetaReqs($req);
-
-        $workflowId = Config::get('workflow-constants.AGENCY_HORDING');
+        $workflowId = $this->_workflowId;
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
@@ -148,87 +150,87 @@ class AdvActiveAgencyLicense extends Model
      * | @param Client User Requested Data
      * | @param metaReqs More Added Filtered Data
      */
-    public function uploadLicenseDocument_old($req, $metaReqs)
-    {
-        $mDocUpload = new DocumentUpload();
-        $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
-        if($req->citizenId){
-            $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
-        }else{
-            $mDocSuffix = $this->_applicationDate . '-' . $req->userId;
-        }
+    // public function uploadLicenseDocument_old($req, $metaReqs)
+    // {
+    //     $mDocUpload = new DocumentUpload();
+    //     $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
+    //     if($req->citizenId){
+    //         $mDocSuffix = $this->_applicationDate . '-' . $req->citizenId;
+    //     }else{
+    //         $mDocSuffix = $this->_applicationDate . '-' . $req->userId;
+    //     }
 
-        // Document Upload
+    //     // Document Upload
 
-        // Director Information
-        if ($req->directorInformation) {
-            $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->directorInformation, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['deirctor_information_path' => $docName]);
-        }
-        // Building Property Tax
-        if ($req->buildingPropertyTax) {
-            $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->buildingPropertyTax, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['building_property_path' => $docName]);
-        }
-        // Pan No Document
-        if ($req->panNo) {
-            $mRefDocName = Config::get('constants.VEHICLE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->panNo, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['pan_no_path' => $docName]);
-        }
-        // Service Tax No Document
-        if ($req->serviceTaxNo) {
-            $mRefDocName = Config::get('constants.OWNER_BOOK_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->serviceTaxNo, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['service_tax_no_path' => $docName]);
-        }
-        // Certificate Structural Engineer Ownership Details Document
-        if ($req->certificateStructuralEngineerOwnershipDetails) {
-            $mRefDocName = Config::get('constants.DRIVING_LICENSE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->certificateStructuralEngineerOwnershipDetails, $mRelativePath);          // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['certificateS_structural_engineer_wnership_details_path' => $docName]);
-        }
-        // Aggrement Building And Agency Document
-        if ($req->aggrementBuildingAndAgency) {
-            $mRefDocName = Config::get('constants.INSURANCE_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->aggrementBuildingAndAgency, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['aggrement_building_and_agency_path' => $docName]);
-        }
-        // Site Photograph Document
-        if ($req->sitePhotograph) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->sitePhotograph, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['site_photograph_path' => $docName]);
-        }
-        // Sketch Plan Of Site Document
-        if ($req->sketchPlanOfSite) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->sketchPlanOfSite, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['sketch_plan_of_site_path' => $docName]);
-        }
-        // Pending Dues Document
-        if ($req->pendingDues) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->pendingDues, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['pending_dues_path' => $docName]);
-        }
-        // Architectural Drawings Document
-        if ($req->architecturalDrawings) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->architecturalDrawings, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['architectural_drawings_path' => $docName]);
-        }
-        // coordinate Of OMD With GPS Locatoion Drawings Document
-        if ($req->coordinateOfOmdWithGpsLocatoion) {
-            $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
-            $docName = $mDocUpload->upload($mRefDocName, $req->coordinateOfOmdWithGpsLocatoion, $mRelativePath);           // Micro Service for Uploading Document
-            $metaReqs = array_merge($metaReqs, ['coordinate_of_omd_with_gps_locatoion_path' => $docName]);
-        }
+    //     // Director Information
+    //     if ($req->directorInformation) {
+    //         $mRefDocName = Config::get('constants.AADHAR_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->directorInformation, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['deirctor_information_path' => $docName]);
+    //     }
+    //     // Building Property Tax
+    //     if ($req->buildingPropertyTax) {
+    //         $mRefDocName = Config::get('constants.TRADE_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->buildingPropertyTax, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['building_property_path' => $docName]);
+    //     }
+    //     // Pan No Document
+    //     if ($req->panNo) {
+    //         $mRefDocName = Config::get('constants.VEHICLE_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->panNo, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['pan_no_path' => $docName]);
+    //     }
+    //     // Service Tax No Document
+    //     if ($req->serviceTaxNo) {
+    //         $mRefDocName = Config::get('constants.OWNER_BOOK_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->serviceTaxNo, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['service_tax_no_path' => $docName]);
+    //     }
+    //     // Certificate Structural Engineer Ownership Details Document
+    //     if ($req->certificateStructuralEngineerOwnershipDetails) {
+    //         $mRefDocName = Config::get('constants.DRIVING_LICENSE_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->certificateStructuralEngineerOwnershipDetails, $mRelativePath);          // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['certificateS_structural_engineer_wnership_details_path' => $docName]);
+    //     }
+    //     // Aggrement Building And Agency Document
+    //     if ($req->aggrementBuildingAndAgency) {
+    //         $mRefDocName = Config::get('constants.INSURANCE_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->aggrementBuildingAndAgency, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['aggrement_building_and_agency_path' => $docName]);
+    //     }
+    //     // Site Photograph Document
+    //     if ($req->sitePhotograph) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->sitePhotograph, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['site_photograph_path' => $docName]);
+    //     }
+    //     // Sketch Plan Of Site Document
+    //     if ($req->sketchPlanOfSite) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->sketchPlanOfSite, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['sketch_plan_of_site_path' => $docName]);
+    //     }
+    //     // Pending Dues Document
+    //     if ($req->pendingDues) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->pendingDues, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['pending_dues_path' => $docName]);
+    //     }
+    //     // Architectural Drawings Document
+    //     if ($req->architecturalDrawings) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->architecturalDrawings, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['architectural_drawings_path' => $docName]);
+    //     }
+    //     // coordinate Of OMD With GPS Locatoion Drawings Document
+    //     if ($req->coordinateOfOmdWithGpsLocatoion) {
+    //         $mRefDocName = Config::get('constants.GST_RELATIVE_NAME') . '-' . $mDocSuffix;
+    //         $docName = $mDocUpload->upload($mRefDocName, $req->coordinateOfOmdWithGpsLocatoion, $mRelativePath);           // Micro Service for Uploading Document
+    //         $metaReqs = array_merge($metaReqs, ['coordinate_of_omd_with_gps_locatoion_path' => $docName]);
+    //     }
 
-        return $metaReqs;
-    }
+    //     return $metaReqs;
+    // }
 
 
         /**

@@ -9,6 +9,7 @@ use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvRejectedSelfadvertisement;
+use App\Models\Advertisements\AdvSelfadvCategory;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\TradeLicence;
@@ -24,9 +25,11 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\Workflows\WorkflowTrack;
 use Illuminate\Support\Facades\Config;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflowrolemap;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
@@ -57,6 +60,22 @@ class SelfAdvetController extends Controller
         $this->_workflowIds = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_repository = $self_repo;
+    }
+
+
+    /**
+     * | Get Self Advertisement Category List
+     */
+    public function listSelfAdvtCategory(){
+
+        $startTime = microtime(true);
+        $list=AdvSelfadvCategory::select('id','type','descriptions')
+                                ->where('status','1')
+                                ->orderBy('id','ASC')
+                                ->get();
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+         return responseMsgs(true, "Advertisement Catrgory", remove_null($list->toArray()), "050103", "1.0", "$executionTime Sec", "POST",  "");
     }
 
     /**
@@ -370,16 +389,7 @@ class SelfAdvetController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(
-                true,
-                "Applied Applications",
-                $data1,
-                "050106",
-                "1.0",
-                "$executionTime Sec",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -597,15 +607,24 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
+                $data['payment_amount'] = ['payment_amount' => 0];
+                $data['payment_status'] = ['payment_status' => 1];
+                if($mAdvActiveSelfadvertisement->advt_category > 10){
+                    $payment_amount=$this->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area);   // Calculate Price
+                    $data['payment_status'] = ['payment_status' => 0];
+                    $data['payment_amount'] = ['payment_amount' => $payment_amount];
+                }
+                $req->request->add($data['payment_amount']);
+                $req->request->add($data['payment_status']);
 
-                $payment_amount = ['payment_amount' => 1000];
-                $req->request->add($payment_amount);
+                // return $req;
+
                 // Selfadvertisement Application replication
-
                 $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $approvedSelfadvertisement->setTable('adv_selfadvertisements');
                 $temp_id = $approvedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
                 $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                $approvedSelfadvertisement->payment_status = $req->payment_status;
                 $approvedSelfadvertisement->approve_date = Carbon::now();
                 $approvedSelfadvertisement->save();
 
@@ -616,15 +635,12 @@ class SelfAdvetController extends Controller
                 $approvedSelfadvertisement->selfadvet_id = $temp_id;
                 $approvedSelfadvertisement->save();
 
-
                 $mAdvActiveSelfadvertisement->delete();
 
                 // Update in adv_selfadvertisements (last_renewal_id)
-
                 DB::table('adv_selfadvertisements')
                     ->where('temp_id', $temp_id)
                     ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
-
                 $msg = "Application Successfully Approved !!";
             }
             // Rejection
@@ -649,6 +665,11 @@ class SelfAdvetController extends Controller
             DB::rollBack();
             return responseMsgs(false,  $e->getMessage(), "", '050117', 01, "", 'Post', $req->deviceId);
         }
+    }
+
+
+    public function getAdvertisementPayment($displayArea){
+        return $displayArea*10;   // Rs. 10  per Square ft.
     }
 
     /**
@@ -1039,4 +1060,197 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+
+    
+    /**
+     * | Verify Single Application Approve or reject
+     * |
+     */
+    public function verifyOrRejectDoc(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks' =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus' => 'required|in:Verified,Rejected'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mWfDocument = new WfActiveDocument();
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $mWfRoleusermap = new WfRoleusermap();
+            $wfDocId = $req->id;
+            $userId = authUser()->id;
+            $applicationId = $req->applicationId;
+
+            $wfLevel = Config::get('constants.SELF-LABEL');
+            // Derivative Assigments
+            $appDetails = $mAdvActiveSelfadvertisement->getSelfAdvertNo($applicationId);
+
+            if (!$appDetails || collect($appDetails)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            $appReq = new Request([
+                'userId' => $userId,
+                'workflowId' => $appDetails->workflow_id
+            ]);
+           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+
+            if ($senderRoleId != $wfLevel['DA'])                                // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
+
+
+            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                $status = 2;
+                // For Rejection Doc Upload Status and Verify Status will disabled
+                $appDetails->doc_upload_status = 0;
+                $appDetails->doc_verify_status = 0;
+                $appDetails->save();
+            }
+
+
+            
+           $reqs = [
+                'remarks' => $req->docRemarks,
+                'verify_status' => $status,
+                'action_taken_by' => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $appDetails->doc_verify_status = 1;
+                $appDetails->save();
+            }
+
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+     /**
+     * | Check if the Document is Fully Verified or Not (4.1)
+     */
+    public function ifFullDocVerified($applicationId)
+    {
+        $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+        $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveSelfadvertisement = $mAdvActiveSelfadvertisement->getSelfAdvertNo($applicationId);                      // Get Application Details
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $mAdvActiveSelfadvertisement->workflow_id,
+            'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID')
+        ];
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        // Property List Documents
+        $ifPropDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifPropDocUnverified == 1)
+            return 0;
+        else
+            return 1;
+    }
+
+
+    
+
+    /**
+     *  send back to citizen
+     */
+    public function backToCitizen(Request $req)
+    {
+        $req->validate([
+            'applicationId' => "required"
+        ]);
+        try {
+            $redis = Redis::connection();
+            $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find($req->applicationId);
+
+            $workflowId = $mAdvActiveSelfadvertisement->workflow_id;
+            $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
+            if (!$backId) {
+                $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
+                    ->where('is_initiator', true)
+                    ->first();
+                $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
+            }
+
+            $mAdvActiveSelfadvertisement->current_role = $backId->wf_role_id;
+            $mAdvActiveSelfadvertisement->parked = 1;
+            $mAdvActiveSelfadvertisement->save();
+
+
+            $metaReqs['moduleId'] = $this->_moduleIds;
+            $metaReqs['workflowId'] = $mAdvActiveSelfadvertisement->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_selfadvertisments.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->verificationStatus;
+            $metaReqs['senderRoleId'] = $req->currentRoleId;
+            $req->request->add($metaReqs);
+
+            $req->request->add($metaReqs);
+            $track = new WorkflowTrack();
+            $track->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Back To Citizen Inbox
+     */
+    public function listBtcInbox()
+    {
+        try {
+            $auth = auth()->user();
+            $userId = $auth->id;
+            $ulbId = $auth->ulb_id;
+            $wardId = $this->getWardByUserId($userId);
+
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $btcList = $mAdvActiveSelfadvertisement->getSelfAdvertisementList($ulbId)
+                ->whereIn('adv_active_selfadvertisments.current_role', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('adv_active_selfadvertisments.id')
+                ->get();
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+  
 }

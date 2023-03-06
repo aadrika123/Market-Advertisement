@@ -40,6 +40,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      */
     Route::controller(SelfAdvetController::class)->group(function () {
         Route::post('advert/self/add-new', 'addNew');       // 01 ( Save Application )
+        Route::post('advert/self/list-self-advt-category', 'listSelfAdvtCategory');       // 01 ( Save Application )
         Route::post('advert/self/list-inbox', 'listInbox');      // 02 ( Application Inbox Lists )
         Route::post('advert/self/list-outbox', 'listOutbox');    // 03 ( Application Outbox Lists )
         Route::post('advert/self/get-details-by-id', 'getDetailsById');  // 04 ( Get Application Details By Application ID )
@@ -67,7 +68,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/self/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/self/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
+        Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');          // 19 ( Application Details For Payments )
+        Route::post('advert/self/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
+        Route::post('advert/self/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
     });
+    
 
     /**
      * | Param Strings 

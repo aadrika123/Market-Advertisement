@@ -43,11 +43,42 @@ class WfActiveDocument extends Model
         $metaReqs->save();
     }
 
-    
-    public function uploadDocumentsViewById($appId,$workflowId){
-        $data = WfActiveDocument::select('*',DB::raw("replace(doc_code,'_',' ') as doc_val"),DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
+
+    public function uploadDocumentsViewById($appId, $workflowId)
+    {
+        $data = WfActiveDocument::select('*', DB::raw("replace(doc_code,'_',' ') as doc_val"), DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
             ->where(['active_id' => $appId, 'workflow_id' => $workflowId])
             ->get();
         return $data;
+    }
+
+    /**
+     * | Document Verify Reject
+     */
+    public function docVerifyReject($id, $req)
+    {
+        $document = WfActiveDocument::find($id);
+        $document->remarks = $req['remarks'];
+        $document->verify_status = $req['verify_status'];
+        $document->action_taken_by = $req['action_taken_by'];
+        $document->save();
+    }
+
+    /**
+     * | Get Uploaded documents
+     */
+    public function getDocsByActiveId($req)
+    {
+        return WfActiveDocument::where('active_id', $req->activeId)
+            ->select(
+                'doc_code',
+                'owner_dtl_id',
+                'verify_status'
+            )
+            ->where('workflow_id', $req->workflowId)
+            ->where('module_id', $req->moduleId)
+            ->where('verify_status', '!=', 2)
+            ->where('status', 1)
+            ->get();
     }
 }

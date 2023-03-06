@@ -49,4 +49,10 @@ return [
     "DHARAMSHALA" => [
         "RELATIVE_PATH" => "Uploads/Dharamshala"
     ],
+
+    "SELF-LABEL" => [
+        "DA" => "6",
+        "SI" => "9",
+        "EO" => "10"
+    ],
 ];

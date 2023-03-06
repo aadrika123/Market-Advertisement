@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Params;
 
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
+use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
 use App\Models\Advertisements\AdvAgency;
@@ -12,10 +13,12 @@ use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\AdvVehicle;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarLodge;
+use App\Models\Workflows\WfRoleusermap;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -23,6 +26,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
 class ParamController extends Controller
@@ -37,20 +41,20 @@ class ParamController extends Controller
     protected $_hostel;
     protected $_lodge;
     protected $_dharamshala;
-       //Constructor
-       public function __construct()
-       {
-           $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
-           $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
-           $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
-           $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-           $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
-           $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
-           $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-           $this->_lodge = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-           $this->_dharamshala = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-       }
-   
+    //Constructor
+    public function __construct()
+    {
+        $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+        $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
+        $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+        $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        $this->_lodge = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        $this->_dharamshala = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+    }
+
 
 
     /**
@@ -59,9 +63,10 @@ class ParamController extends Controller
      */
     public function paramStrings(Request $req)
     {
+        $redis = Redis::connection();
         try {
             $mUlbId = $req->ulbId;
-            $data = json_decode(Cache::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
+            $data = json_decode(Redis::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
             $bearer = $req->bearerToken();
             if (!$data) {                                                        // If Cache Memory is not available
                 $data = array();
@@ -85,14 +90,14 @@ class ParamController extends Controller
 
                 $mAdvTypologyMstr = new AdvTypologyMstr();
                 $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List
-                
+
                 $data['paramCategories']['typology'] = $typologyList;
 
-                Cache::put('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
+                $redis->set('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
             }
-            return responseMsgs(true,"Param Strings",$data,"040201","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Param Strings", $data, "040201", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","040201","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -106,7 +111,7 @@ class ParamController extends Controller
         $documents = remove_null($documents);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(true,"Document Masters",$documents,"040202","1.0",$executionTime . " Sec","POST");
+        return responseMsgs(true, "Document Masters", $documents, "040202", "1.0", $executionTime . " Sec", "POST");
     }
 
 
@@ -121,7 +126,7 @@ class ParamController extends Controller
         $districts = remove_null($districts);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(true,"District Masters",$districts,"040202","1.0",$executionTime . " Sec","POST");
+        return responseMsgs(true, "District Masters", $districts, "040202", "1.0", $executionTime . " Sec", "POST");
     }
 
     public function metaReqs($req)
@@ -169,7 +174,6 @@ class ParamController extends Controller
                 DB::table('adv_selfadvet_renewals')
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
 
                 DB::table('adv_vehicles')
@@ -183,10 +187,9 @@ class ParamController extends Controller
                 DB::table('adv_vehicle_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
 
-                 DB::table('adv_agencies')
+                DB::table('adv_agencies')
                     ->where('id', $req->id)
                     ->update($updateData);
 
@@ -197,7 +200,6 @@ class ParamController extends Controller
                 DB::table('adv_agency_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
 
                 DB::table('adv_privatelands')
@@ -211,9 +213,8 @@ class ParamController extends Controller
                 DB::table('adv_privateland_renewals')
                     ->where('id', $mAdvPrivateland->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
-                
+
                 DB::table('adv_agency_licenses')
                     ->where('id', $req->id)
                     ->update($updateData);
@@ -225,9 +226,8 @@ class ParamController extends Controller
                 DB::table('adv_agency_license_renewals')
                     ->where('id', $mAdvAgencyLicense->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
-                
+
                 DB::table('mar_banqute_halls')
                     ->where('id', $req->id)
                     ->update($updateData);
@@ -239,9 +239,8 @@ class ParamController extends Controller
                 DB::table('mar_banqute_hall_renewals')
                     ->where('id', $mMarBanquteHall->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
-                
+
                 DB::table('mar_hostels')
                     ->where('id', $req->id)
                     ->update($updateData);
@@ -253,9 +252,8 @@ class ParamController extends Controller
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarHostel->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
-                
+
                 DB::table('mar_lodges')
                     ->where('id', $req->id)
                     ->update($updateData);
@@ -267,9 +265,8 @@ class ParamController extends Controller
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarLodge->last_renewal_id)
                     ->update($updateData);
-
             } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
-                
+
                 DB::table('mar_dharamshalas')
                     ->where('id', $req->id)
                     ->update($updateData);
@@ -281,7 +278,6 @@ class ParamController extends Controller
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
-
             }
 
             DB::commit();
@@ -296,7 +292,8 @@ class ParamController extends Controller
     }
 
 
-    public function getPaymentDetails(Request $req){
+    public function getPaymentDetails(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'paymentId' => 'required|string',
             'workflowId' => 'required|integer'
@@ -307,35 +304,34 @@ class ParamController extends Controller
         try {
 
             // Get Advertesement Payment Details
-            if($req->workflowId == $this->_selfAdvt){
+            if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId == $this->_pvtLand){
+            } elseif ($req->workflowId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId ==  $this->_movableVehicle){
+            } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId == $this->_agency){
+            } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId == $this->_hording){
+            } elseif ($req->workflowId == $this->_hording) {
                 $mAdvAgencyLicense = new AdvAgencyLicense();
                 $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
             }
 
             // Get Market Payment Details
-            elseif($req->workflowId == $this->_banquetHall){
+            elseif ($req->workflowId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId == $this->_hostel){
+            } elseif ($req->workflowId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-            }
-            elseif($req->workflowId == $this->_lodge){
+            } elseif ($req->workflowId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
-            }elseif($req->workflowId == $this->_dharamshala){
+            } elseif ($req->workflowId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
             }
@@ -350,4 +346,5 @@ class ParamController extends Controller
             responseMsgs(false, $e->getMessage(), "");
         }
     }
+
 }

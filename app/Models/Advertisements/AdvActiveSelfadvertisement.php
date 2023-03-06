@@ -47,7 +47,8 @@ class AdvActiveSelfadvertisement extends Model
             'display_type' => $req->displayType,
             'installation_location' => $req->installationLocation,
             'brand_display_name' => $req->brandDisplayName,
-            'user_id'=>$req->userId
+            'user_id'=>$req->userId,
+            'advt_category'=>$req->advtCategory
         ];
     }
 
@@ -150,7 +151,7 @@ class AdvActiveSelfadvertisement extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        return AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
+        $list=AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
                 'id',
                 'application_no',
@@ -158,11 +159,21 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status'
             )
             ->orderByDesc('id')
             ->get();
+
+            // $lists = $list->map(function($item, $key) {
+            //     $doclist = WfActiveDocument::where('active_id', '=', $item['id'])->where('current_status','=','1')->where('verify_status','=','2')->get();
+            //     $count = $doclist->count();
+            //     if($count>0){
+            //         return $key['documentReject']='1';
+            //     }else{
+            //         return $key['documentReject']='0';
+            //     }
+            // });
+            return $list;
     }
 
     /**
@@ -259,7 +270,6 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status'
             )
             ->orderByDesc('id')
@@ -281,7 +291,6 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status'
             )
             ->orderByDesc('id')
@@ -305,7 +314,6 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status'
             )
             ->orderByDesc('id')
@@ -317,6 +325,12 @@ class AdvActiveSelfadvertisement extends Model
         return AdvActiveSelfadvertisement::select('*')
             ->where('id', $appId)
             ->first();
+    }
+
+    public function getSelfAdvertisementList($ulbId)
+    {
+        return AdvActiveSelfadvertisement::select('*')
+            ->where('adv_active_selfadvertisements.ulb_id', $ulbId);
     }
 
 }

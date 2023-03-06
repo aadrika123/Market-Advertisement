@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Markets\MarketPriceMstrs;
+use App\Models\Workflows\WfRoleusermap;
+use App\Models\Workflows\WfWardUser;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
@@ -60,5 +62,32 @@ trait WorkflowTrait
                     INNER JOIN (SELECT * FROM wf_workflowrolemaps WHERE workflow_id=$wfWorkflowId) w ON w.wf_role_id=r.id
                     WHERE w.is_finisher=TRUE ";
         return $query;
+    }
+
+     /**
+     * | get Ward By Logged in User Id
+     * -------------------------------------------
+     * | @param userId > Current Logged In User Id
+     */
+    public function getWardByUserId($userId)
+    {
+        $occupiedWard = WfWardUser::select('id', 'ward_id')
+            ->where('user_id', $userId)
+            ->get();
+        return $occupiedWard;
+    }
+
+         /**
+     * | get workflow role Id by logged in User Id
+     * -------------------------------------------
+     * @param userId > current Logged in User
+     */
+    public function getRoleIdByUserId($userId)
+    {
+        $roles = WfRoleusermap::select('id', 'wf_role_id', 'user_id')
+            ->where('user_id', $userId)
+            ->where('is_suspended', false)
+            ->get();
+        return $roles;
     }
 }
