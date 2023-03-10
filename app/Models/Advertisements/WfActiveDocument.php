@@ -81,4 +81,22 @@ class WfActiveDocument extends Model
             ->where('status', 1)
             ->get();
     }
+
+    public function totalNoOfDocs($docCode){
+        $noOfDocs=RefRequiredDocument::select('requirements')
+                                    ->where('code',$docCode)
+                                    ->first();
+        $totalNoOfDocs=explode("#",$noOfDocs);
+        return count($totalNoOfDocs);
+    }
+
+
+    public function totalUploadedDocs($applicationId,$workflowId,$moduleId){
+        return WfActiveDocument::where('active_id',$applicationId)
+                                 ->where('workflow_id',$workflowId)
+                                 ->where('module_id',$moduleId)
+                                 ->where('current_status','1')
+                                 ->where('verify_status', '!=', 2)
+                                 ->count();
+    }
 }

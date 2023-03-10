@@ -425,4 +425,49 @@ class AdvActiveAgency extends Model
         // return $mApplicationNo['application_no'];
         return $req->applicationNo;
     }
+
+    public function getAgencyNo($appId)
+    {
+        return AdvActiveAgency::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
+
+    
+    public function getAgencyList($ulbId)
+    {
+        return AdvActiveAgency::select('*')
+            ->where('adv_active_agencies.ulb_id', $ulbId);
+    }
+
+     /**
+     * | Reupload Documents
+     */
+    public function reuploadDocument($req){
+        $docUpload = new DocumentUpload;
+        $docDetails=WfActiveDocument::find($req->id);
+        $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+
+        $refImageName = $docDetails['doc_code'];
+        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
+        $documentImg = $req->image;
+        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+
+        $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+        $metaReqs['activeId'] = $docDetails['active_id'];
+        $metaReqs['workflowId'] = $docDetails['workflow_id'];
+        $metaReqs['ulbId'] = $docDetails['ulb_id'];
+        $metaReqs['relativePath'] = $relativePath;
+        $metaReqs['document'] = $imageName;
+        $metaReqs['docCode'] = $docDetails['doc_code'];
+        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
+        $a = new Request($metaReqs);
+        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument->postDocuments($a);
+        $docDetails->current_status='0';
+        $docDetails->save();
+        return $docDetails['active_id'];
+    }
+
 }

@@ -71,6 +71,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');          // 19 ( Application Details For Payments )
         Route::post('advert/self/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
         Route::post('advert/self/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
+        // Route::post('advert/self/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
+        Route::post('advert/self/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
     });
     
 
@@ -115,6 +117,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/vehicle/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/entry-zone', 'entryZone');          // 19 ( Application Details For Payments )
+        Route::post('advert/vehicle/verify-or-reject-doc', 'verifyOrRejectDoc');          // 19 ( Application Details For Payments )
+        Route::post('advert/vehicle/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
+        Route::post('advert/vehicle/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )        
+        // Route::post('advert/vehicle/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
+        Route::post('advert/vehicle/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
     });
     
     /**
@@ -146,6 +153,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/pvt-land/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/pvt-land/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
         Route::post('advert/pvt-land/entry-zone', 'entryZone');          // 19 ( Application Details For Payments )
+        Route::post('advert/pvt-land/verify-or-reject-doc', 'verifyOrRejectDoc');          // 19 ( Application Details For Payments )
+        Route::post('advert/pvt-land/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
+        Route::post('advert/pvt-land/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
+        // Route::post('advert/pvt-land/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
+        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
     });
 
     /**
@@ -179,6 +191,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/list-approved-agency', 'listApprovedAgency');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
+        // Route::post('advert/agency/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
 
         /*------------ Apply For Hording License -------------------*/
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
@@ -208,6 +225,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/entry-cheque-dd-license', 'entryChequeDdLicense');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/clear-or-bounce-cheque-license', 'clearOrBounceChequeLicense');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/verify-or-reject-doc', 'verifyOrRejectLicenseDoc');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/back-to-citizen', 'backToCitizenLicense');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/list-btc-inbox', 'listLicenseBtcInbox');          // 19 ( Application Details For Payments )
+        // Route::post('advert/hording/check-full-upload', 'checkFullLicenseUpload1');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/reupload-document', 'reuploadLicenseDocument');          // 19 ( Application Details For Payments )
 
         //================================= Other Apis ===========================
         Route::post('advert/agency/is-agency', 'isAgency'); // (Get Agency Approve or not By Login Token)

@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Config;
 
 use App\Traits\AdvDetailsTraits;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflowrolemap;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 use App\Models\Workflows\WorkflowTrack;
 use App\Traits\WorkflowTrait;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\Validator;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 
 /**
  * | Created On-02-01-20222 
@@ -55,6 +57,9 @@ class AgencyController extends Controller
     protected $_hordingWorkflowIds;
     protected $_agencyRegPrice;
     protected $_agencyRenewPrice;
+    protected $_moduleId;
+    protected $_docCode;
+    protected $_hordingDocCode;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
@@ -62,6 +67,9 @@ class AgencyController extends Controller
         $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_agencyRegPrice = Config::get('workflow-constants.AGENCY_REG_PRICE');
         $this->_agencyRenewPrice = Config::get('workflow-constants.AGENCY_RENEW_PRICE');
+        $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+        $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
+        $this->_hordingDocCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
         $this->Repository = $agency_repo;
     }
 
@@ -858,8 +866,241 @@ class AgencyController extends Controller
     //     }
     // }
 
+        
+        
+    
+    /**
+     * | Verify Single Application Approve or reject
+     * |
+     */
+    public function verifyOrRejectDoc(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks' =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus' => 'required|in:Verified,Rejected'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mWfDocument = new WfActiveDocument();
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $mWfRoleusermap = new WfRoleusermap();
+            $wfDocId = $req->id;
+            $userId = authUser()->id;
+            $applicationId = $req->applicationId;
+
+            $wfLevel = Config::get('constants.SELF-LABEL');
+            // Derivative Assigments
+            $appDetails = $mAdvActiveAgency->getAgencyNo($applicationId);
+
+            if (!$appDetails || collect($appDetails)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            $appReq = new Request([
+                'userId' => $userId,
+                'workflowId' => $appDetails->workflow_id
+            ]);
+           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+
+            if ($senderRoleId != $wfLevel['DA'])                                // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
 
 
+            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                $status = 2;
+                // For Rejection Doc Upload Status and Verify Status will disabled
+                $appDetails->doc_upload_status = 0;
+                $appDetails->doc_verify_status = 0;
+                $appDetails->save();
+            }
+
+
+            
+           $reqs = [
+                'remarks' => $req->docRemarks,
+                'verify_status' => $status,
+                'action_taken_by' => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $appDetails->doc_verify_status = 1;
+                $appDetails->save();
+            }
+
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+     /**
+     * | Check if the Document is Fully Verified or Not (4.1)
+     */
+    public function ifFullDocVerified($applicationId)
+    {
+        $mAdvActiveVehicle = new AdvActiveAgency();
+        $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveVehicle = $mAdvActiveVehicle->getAgencyNo($applicationId);                      // Get Application Details
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $mAdvActiveVehicle->workflow_id,
+            'moduleId' =>  $this->_moduleId
+        ];
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        // Vehicle Advertiesement List Documents
+        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifAdvDocUnverified == 1)
+            return 0;
+        else
+            return 1;
+    }
+
+
+    
+
+    /**
+     *  send back to citizen
+     */
+    public function backToCitizen(Request $req)
+    {
+        $req->validate([
+            'applicationId' => "required"
+        ]);
+        try {
+            $redis = Redis::connection();
+            $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
+
+            $workflowId = $mAdvActiveAgency->workflow_id;
+            $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
+            if (!$backId) {
+                $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
+                    ->where('is_initiator', true)
+                    ->first();
+                $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
+            }
+
+            $mAdvActiveAgency->current_role_id = $backId->wf_role_id;
+            $mAdvActiveAgency->parked = 1;
+            $mAdvActiveAgency->save();
+
+
+            $metaReqs['moduleId'] = $this->_moduleId;
+            $metaReqs['workflowId'] = $mAdvActiveAgency->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_agencies.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->verificationStatus;
+            $metaReqs['senderRoleId'] = $req->currentRoleId;
+            $req->request->add($metaReqs);
+
+            $req->request->add($metaReqs);
+            $track = new WorkflowTrack();
+            $track->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    /**
+     * | Back To Citizen Inbox
+     */
+    public function listBtcInbox()
+    {
+        try {
+            $auth = auth()->user();
+            $userId = $auth->id;
+            $ulbId = $auth->ulb_id;
+            $wardId = $this->getWardByUserId($userId);
+
+           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $btcList = $mAdvActiveAgency->getAgencyList($ulbId)
+                ->whereIn('adv_active_agencies.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('adv_active_agencies.id')
+                ->get();
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+
+    public function checkFullUpload($applicationId)
+    {
+        $docCode = $this->_docCode;
+        $mWfActiveDocument = new WfActiveDocument();
+        $moduleId = $this->_moduleId;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $appDetails = AdvActiveAgency::find($applicationId);
+        $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
+        if ($totalRequireDocs == $totalUploadedDocs) {
+            $appDetails->doc_upload_status = '1';
+            // $appDetails->doc_verify_status = '1';
+            $appDetails->parked=NULL;
+            $appDetails->save();
+        } else {
+            $appDetails->doc_upload_status = '0';
+            $appDetails->doc_verify_status = '0';
+            $appDetails->save();
+        }
+    }
+
+    public function reuploadDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvActiveAgency = new AdvActiveAgency();
+            DB::beginTransaction();
+            $appId = $mAdvActiveAgency->reuploadDocument($req);
+            $this->checkFullUpload($appId);
+            DB::commit();
+            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
 
     /**
      * |==============================================================
@@ -1718,4 +1959,241 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+        
+    /**
+     * | Verify Single Application Approve or reject
+     * |
+     */
+    public function verifyOrRejectLicenseDoc(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks' =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus' => 'required|in:Verified,Rejected'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mWfDocument = new WfActiveDocument();
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            $mWfRoleusermap = new WfRoleusermap();
+            $wfDocId = $req->id;
+            $userId = authUser()->id;
+            $applicationId = $req->applicationId;
+
+            $wfLevel = Config::get('constants.SELF-LABEL');
+            // Derivative Assigments
+            $appDetails = $mAdvActiveAgencyLicense->getAgencyLicenseNo($applicationId);
+
+            if (!$appDetails || collect($appDetails)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            $appReq = new Request([
+                'userId' => $userId,
+                'workflowId' => $appDetails->workflow_id
+            ]);
+           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+
+            if ($senderRoleId != $wfLevel['DA'])                                // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
+
+
+            $ifFullDocVerified = $this->ifFullLicenseDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                $status = 2;
+                // For Rejection Doc Upload Status and Verify Status will disabled
+                $appDetails->doc_upload_status = 0;
+                $appDetails->doc_verify_status = 0;
+                $appDetails->save();
+            }
+
+
+            
+           $reqs = [
+                'remarks' => $req->docRemarks,
+                'verify_status' => $status,
+                'action_taken_by' => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            $ifFullDocVerifiedV1 = $this->ifFullLicenseDocVerified($applicationId);
+
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $appDetails->doc_verify_status = 1;
+                $appDetails->save();
+            }
+
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+     /**
+     * | Check if the Document is Fully Verified or Not (4.1)
+     */
+    public function ifFullLicenseDocVerified($applicationId)
+    {
+        $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+        $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveAgencyLicense = $mAdvActiveAgencyLicense->getAgencyLicenseNo($applicationId);                      // Get Application Details
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $mAdvActiveAgencyLicense->workflow_id,
+            'moduleId' =>  $this->_moduleId
+        ];
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        // Vehicle Advertiesement List Documents
+        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifAdvDocUnverified == 1)
+            return 0;
+        else
+            return 1;
+    }
+
+
+    
+
+    /**
+     *  send back to citizen
+     */
+    public function backToCitizenLicense(Request $req)
+    {
+        $req->validate([
+            'applicationId' => "required"
+        ]);
+        try {
+            $redis = Redis::connection();
+            $mAdvActiveAgencyLicense = AdvActiveAgencyLicense::find($req->applicationId);
+
+            $workflowId = $mAdvActiveAgencyLicense->workflow_id;
+            $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
+            if (!$backId) {
+                $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
+                    ->where('is_initiator', true)
+                    ->first();
+                $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
+            }
+
+            $mAdvActiveAgencyLicense->current_role_id = $backId->wf_role_id;
+            $mAdvActiveAgencyLicense->parked = 1;
+            $mAdvActiveAgencyLicense->save();
+
+
+            $metaReqs['moduleId'] = $this->_moduleId;
+            $metaReqs['workflowId'] = $mAdvActiveAgencyLicense->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_agency_licenses.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->verificationStatus;
+            $metaReqs['senderRoleId'] = $req->currentRoleId;
+            $req->request->add($metaReqs);
+
+            $req->request->add($metaReqs);
+            $track = new WorkflowTrack();
+            $track->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    /**
+     * | Back To Citizen Inbox
+     */
+    public function listLicenseBtcInbox()
+    {
+        try {
+            $auth = auth()->user();
+            $userId = $auth->id;
+            $ulbId = $auth->ulb_id;
+            $wardId = $this->getWardByUserId($userId);
+
+           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            $btcList = $mAdvActiveAgencyLicense->getAgencyLicenseList($ulbId)
+                ->whereIn('adv_active_agency_licenses.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('adv_active_agency_licenses.id')
+                ->get();
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    // public function checkFullLicenseUpload1(){
+    //     return $this->checkFullLicenseUpload(56);
+    // }
+    public function checkFullLicenseUpload($applicationId)
+    {
+        $docCode = $this->_hordingDocCode;
+        $mWfActiveDocument = new WfActiveDocument();
+        $moduleId = $this->_moduleId;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $appDetails = AdvActiveAgencyLicense::find($applicationId);
+        $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
+        if ($totalRequireDocs == $totalUploadedDocs) {
+            $appDetails->doc_upload_status = '1';
+            // $appDetails->doc_verify_status = '1';
+            $appDetails->parked=NULL;
+            $appDetails->save();
+        } else {
+            $appDetails->doc_upload_status = '0';
+            $appDetails->doc_verify_status = '0';
+            $appDetails->save();
+        }
+    }
+
+    public function reuploadLicenseDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            DB::beginTransaction();
+            $appId = $mAdvActiveAgencyLicense->reuploadDocument($req);
+            $this->checkFullLicenseUpload($appId);
+            DB::commit();
+            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
 }
