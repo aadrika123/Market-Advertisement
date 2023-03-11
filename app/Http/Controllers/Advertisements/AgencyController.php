@@ -444,6 +444,25 @@ class AgencyController extends Controller
         return $data1;
     }
 
+       
+    /**
+     * | Get Uploaded Active Document by application ID
+     */
+    public function viewActiveDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data1['data'] = $data;
+        return $data1;
+    }
+
 
     /**
      * | Workflow View Uploaded Document by application ID
@@ -1459,6 +1478,26 @@ class AgencyController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
+        $data1['data'] = $data;
+        return $data1;
+    }
+
+
+     
+    /**
+     * | Get Uploaded Active Document by application ID
+     */
+    public function viewActiveLicenseDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_hordingWorkflowIds);
         $data1['data'] = $data;
         return $data1;
     }

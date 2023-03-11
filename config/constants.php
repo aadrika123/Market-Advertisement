@@ -55,4 +55,12 @@ return [
         "SI" => "9",
         "EO" => "10"
     ],
+
+    "MARKET-LABEL" => [
+        "DA" => "6",
+        "SI" => "9",
+        "EO" => "10",
+        "Engineer" => "109",
+        "Commitee Member" => "110"
+    ],
 ];

@@ -362,6 +362,7 @@ class AdvActivePrivateland extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -399,6 +400,7 @@ class AdvActivePrivateland extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'doc_upload_status'
             )
             ->orderByDesc('id')
             ->get();

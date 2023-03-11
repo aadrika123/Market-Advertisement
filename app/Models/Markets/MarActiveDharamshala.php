@@ -265,9 +265,54 @@ class MarActiveDharamshala extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function getDharamshalaDetails($appId)
+    {
+        return MarActiveDharamshala::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
+    public function getDharamshalaList($ulbId)
+    {
+        return MarActiveDharamshala::select('*')
+            ->where('mar_active_dharamshalas.ulb_id', $ulbId);
+    }
+
+        
+
+    /**
+     * | Reupload Documents
+     */
+    public function reuploadDocument($req){
+        $docUpload = new DocumentUpload;
+        $docDetails=WfActiveDocument::find($req->id);
+        $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
+
+        $refImageName = $docDetails['doc_code'];
+        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
+        $documentImg = $req->image;
+        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+
+        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
+        $metaReqs['activeId'] = $docDetails['active_id'];
+        $metaReqs['workflowId'] = $docDetails['workflow_id'];
+        $metaReqs['ulbId'] = $docDetails['ulb_id'];
+        $metaReqs['relativePath'] = $relativePath;
+        $metaReqs['document'] = $imageName;
+        $metaReqs['docCode'] = $docDetails['doc_code'];
+        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
+        $a = new Request($metaReqs);
+        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument->postDocuments($a);
+        $docDetails->current_status='0';
+        $docDetails->save();
+        return $docDetails['active_id'];
     }
 
 }

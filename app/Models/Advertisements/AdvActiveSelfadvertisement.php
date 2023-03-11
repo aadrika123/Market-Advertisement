@@ -159,7 +159,9 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'payment_status'
+                'payment_status',
+                'doc_upload_status',
+                'workflow_id',
             )
             ->orderByDesc('id')
             ->get();

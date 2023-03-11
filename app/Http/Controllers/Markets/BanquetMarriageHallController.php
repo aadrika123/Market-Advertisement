@@ -11,7 +11,9 @@ use App\Models\Markets\MarActiveBanquteHall;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedBanquteHall;
+use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
 use App\Traits\WorkflowTrait;
@@ -24,6 +26,7 @@ use App\Traits\MarDetailsTraits;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -42,6 +45,7 @@ class BanquetMarriageHallController extends Controller
     protected $_repository;
     protected $_workflowIds;
     protected $_moduleIds;
+    protected $_docCode;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -50,6 +54,7 @@ class BanquetMarriageHallController extends Controller
         $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
+        $this->_docCode=config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
     }
 
     /**
@@ -439,6 +444,25 @@ class BanquetMarriageHallController extends Controller
         return $data1;
     }
 
+
+        
+    /**
+     * | Get Uploaded Active Document by application ID
+     */
+    public function viewActiveDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data1['data'] = $data;
+        return $data1;
+    }
     
     /**
     * | Workflow View Uploaded Document by application ID
@@ -702,4 +726,238 @@ class BanquetMarriageHallController extends Controller
     //         responseMsgs(false, $e->getMessage(), "");
     //     }
     // }
+
+    
+
+    /**
+     * | Verify Single Application Approve or reject
+     * |
+     */
+    public function verifyOrRejectDoc(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks' =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus' => 'required|in:Verified,Rejected'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mWfDocument = new WfActiveDocument();
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $mWfRoleusermap = new WfRoleusermap();
+            $wfDocId = $req->id;
+            $userId = authUser()->id;
+            $applicationId = $req->applicationId;
+
+            $wfLevel = Config::get('constants.MARKET-LABEL');
+            // Derivative Assigments
+            $appDetails = $mMarActiveBanquteHall->getBanquetMarriageHallDetails($applicationId);
+
+            if (!$appDetails || collect($appDetails)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            $appReq = new Request([
+                'userId' => $userId,
+                'workflowId' => $appDetails->workflow_id
+            ]);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+
+            if ($senderRoleId != $wfLevel['DA'])                                // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
+
+
+            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                $status = 2;
+                // For Rejection Doc Upload Status and Verify Status will disabled
+                $appDetails->doc_upload_status = 0;
+                $appDetails->doc_verify_status = 0;
+                $appDetails->save();
+            }
+
+
+
+            $reqs = [
+                'remarks' => $req->docRemarks,
+                'verify_status' => $status,
+                'action_taken_by' => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $appDetails->doc_verify_status = 1;
+                $appDetails->save();
+            }
+
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Check if the Document is Fully Verified or Not (4.1)
+     */
+    public function ifFullDocVerified($applicationId)
+    {
+        $mMarActiveBanquteHall = new MarActiveBanquteHall();
+        $mWfActiveDocument = new WfActiveDocument();
+        $mMarActiveBanquteHall = $mMarActiveBanquteHall->getBanquetMarriageHallDetails($applicationId);                      // Get Application Details
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $mMarActiveBanquteHall->workflow_id,
+            'moduleId' =>  $this->_moduleIds
+        ];
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        // self Advertiesement List Documents
+        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifAdvDocUnverified == 1)
+            return 0;
+        else
+            return 1;
+    }
+
+
+
+
+    /**
+     *  send back to citizen
+     */
+    public function backToCitizen(Request $req)
+    {
+        $req->validate([
+            'applicationId' => "required"
+        ]);
+        try {
+            $redis = Redis::connection();
+            $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
+
+            $workflowId = $mMarActiveBanquteHall->workflow_id;
+            $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
+            if (!$backId) {
+                $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
+                    ->where('is_initiator', true)
+                    ->first();
+                $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
+            }
+
+            $mMarActiveBanquteHall->current_role_id = $backId->wf_role_id;
+            $mMarActiveBanquteHall->parked = 1;
+            $mMarActiveBanquteHall->save();
+
+
+            $metaReqs['moduleId'] = $this->_moduleIds;
+            $metaReqs['workflowId'] = $mMarActiveBanquteHall->workflow_id;
+            $metaReqs['refTableDotId'] = "mar_active_banqute_halls.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->verificationStatus;
+            $metaReqs['senderRoleId'] = $req->currentRoleId;
+            $req->request->add($metaReqs);
+
+            $req->request->add($metaReqs);
+            $track = new WorkflowTrack();
+            $track->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    /**
+     * | Back To Citizen Inbox
+     */
+    public function listBtcInbox()
+    {
+        try {
+            $auth = auth()->user();
+            $userId = $auth->id;
+            $ulbId = $auth->ulb_id;
+            $wardId = $this->getWardByUserId($userId);
+
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $btcList = $mMarActiveBanquteHall->getBanquetMarriageHallList($ulbId)
+                ->whereIn('mar_active_banqute_halls.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('mar_active_banqute_halls.id')
+                ->get();
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    public function checkFullUpload($applicationId)
+    {
+        $docCode = $this->_docCode;
+        $mWfActiveDocument = new WfActiveDocument();
+        $moduleId = $this->_moduleIds;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $appDetails = MarActiveBanquteHall::find($applicationId);
+        $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
+        if ($totalRequireDocs == $totalUploadedDocs) {
+            $appDetails->doc_upload_status = '1';
+            // $appDetails->doc_verify_status = '1';
+            $appDetails->parked=NULL;
+            $appDetails->save();
+        } else {
+            $appDetails->doc_upload_status = '0';
+            $appDetails->doc_verify_status = '0';
+            $appDetails->save();
+        }
+    }
+
+    public function reuploadDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            DB::beginTransaction();
+            $appId = $mMarActiveBanquteHall->reuploadDocument($req);
+            $this->checkFullUpload($appId);
+            DB::commit();
+            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
 }

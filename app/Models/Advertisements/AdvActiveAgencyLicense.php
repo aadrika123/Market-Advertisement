@@ -435,7 +435,8 @@ class AdvActiveAgencyLicense extends Model
                 'bank_name',
                 'account_no',
                 'ifsc_code',
-                'total_charge'
+                'total_charge',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->get();

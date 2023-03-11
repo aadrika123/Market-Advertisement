@@ -289,7 +289,8 @@ class AdvActiveAgency extends Model
                 'application_no',
                 'application_date',
                 'entity_name',
-                'address'
+                'address',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -311,6 +312,7 @@ class AdvActiveAgency extends Model
                 'application_date',
                 'entity_name',
                 'address',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->get();

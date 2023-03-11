@@ -201,7 +201,8 @@ class AdvActiveVehicle extends Model
                 'application_date',
                 'applicant',
                 'entity_name',
-                'created_at as applied_date'
+                'created_at as applied_date',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->whereIn('current_roles', $roleIds)
@@ -316,6 +317,7 @@ class AdvActiveVehicle extends Model
                 'entity_name',
                 'vehicle_no',
                 'vehicle_name',
+                'doc_upload_status'
             )
             ->orderByDesc('id')
             ->get();

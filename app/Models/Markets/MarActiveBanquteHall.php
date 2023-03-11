@@ -140,7 +140,7 @@ class MarActiveBanquteHall extends Model
             ->first();
     }
 
-        /**
+    /**
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
@@ -283,10 +283,56 @@ class MarActiveBanquteHall extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'doc_upload_status',
             )
             ->orderByDesc('id')
             ->get();
     }
+
+    
+    public function getBanquetMarriageHallDetails($appId)
+    {
+        return MarActiveBanquteHall::select('*')
+            ->where('id', $appId)
+            ->first();
+    }
+
+    
+    public function getBanquetMarriageHallList($ulbId)
+    {
+        return MarActiveBanquteHall::select('*')
+            ->where('mar_active_banqute_halls.ulb_id', $ulbId);
+    }
+
+    /**
+     * | Reupload Documents
+     */
+    public function reuploadDocument($req){
+        $docUpload = new DocumentUpload;
+        $docDetails=WfActiveDocument::find($req->id);
+        $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
+
+        $refImageName = $docDetails['doc_code'];
+        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
+        $documentImg = $req->image;
+        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+
+        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
+        $metaReqs['activeId'] = $docDetails['active_id'];
+        $metaReqs['workflowId'] = $docDetails['workflow_id'];
+        $metaReqs['ulbId'] = $docDetails['ulb_id'];
+        $metaReqs['relativePath'] = $relativePath;
+        $metaReqs['document'] = $imageName;
+        $metaReqs['docCode'] = $docDetails['doc_code'];
+        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
+        $a = new Request($metaReqs);
+        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument->postDocuments($a);
+        $docDetails->current_status='0';
+        $docDetails->save();
+        return $docDetails['active_id'];
+    }
+
 
 
 }

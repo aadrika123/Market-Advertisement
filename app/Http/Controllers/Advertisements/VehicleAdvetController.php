@@ -45,7 +45,7 @@ class VehicleAdvetController extends Controller
     protected $Repository;
     protected $_workflowIds;
     protected $_moduleIds;
-    protected $_docCode; 
+    protected $_docCode;
     public function __construct(iSelfAdvetRepo $self_repo)
     {
         $this->_modelObj = new AdvActiveVehicle();
@@ -69,7 +69,7 @@ class VehicleAdvetController extends Controller
             $applicationNo = $advVehicle->addNew($req);               // Store Vehicle 
             DB::commit();
 
-            return responseMsgs(true,"Successfully Applied the Application !!",["status" => true, "ApplicationNo" => $applicationNo],"040301","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "040301", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -317,7 +317,7 @@ class VehicleAdvetController extends Controller
             if ($userType != 'Citizen') {
                 $roleReqs = new Request([
                     'workflowId' => $mAdvActiveVehicle->workflow_id,
-                    'userId' => $userId, 
+                    'userId' => $userId,
                 ]);
                 $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
                 $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
@@ -400,6 +400,25 @@ class VehicleAdvetController extends Controller
         return $data1;
     }
 
+ 
+    /**
+     * | Get Uploaded Active Document by application ID
+     */
+    public function viewActiveDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data1['data'] = $data;
+        return $data1;
+    }
+
     /**
      * | Workflow View Uploaded Document by application ID
      */
@@ -451,7 +470,7 @@ class VehicleAdvetController extends Controller
             if ($req->status == 1) {
                 $typology = $mAdvActiveVehicle->typology;
                 $zone = $mAdvActiveVehicle->zone;
-                if($zone===NULL){
+                if ($zone === NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
                 // $typology=13;
@@ -838,8 +857,8 @@ class VehicleAdvetController extends Controller
         }
     }
 
-        
-    
+
+
     /**
      * | Verify Single Application Approve or reject
      * |
@@ -874,7 +893,7 @@ class VehicleAdvetController extends Controller
                 'userId' => $userId,
                 'workflowId' => $appDetails->workflow_id
             ]);
-           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
             if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
                 throw new Exception("Role Not Available");
 
@@ -902,8 +921,8 @@ class VehicleAdvetController extends Controller
             }
 
 
-            
-           $reqs = [
+
+            $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
                 'action_taken_by' => $userId
@@ -924,7 +943,7 @@ class VehicleAdvetController extends Controller
         }
     }
 
-     /**
+    /**
      * | Check if the Document is Fully Verified or Not (4.1)
      */
     public function ifFullDocVerified($applicationId)
@@ -948,7 +967,7 @@ class VehicleAdvetController extends Controller
     }
 
 
-    
+
 
     /**
      *  send back to citizen
@@ -1006,7 +1025,7 @@ class VehicleAdvetController extends Controller
             $ulbId = $auth->ulb_id;
             $wardId = $this->getWardByUserId($userId);
 
-           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
                 return $ward->ward_id;
             });
 
@@ -1030,7 +1049,7 @@ class VehicleAdvetController extends Controller
         }
     }
 
-    
+
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1042,7 +1061,7 @@ class VehicleAdvetController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
