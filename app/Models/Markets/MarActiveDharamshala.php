@@ -66,7 +66,7 @@ class MarActiveDharamshala extends Model
             'rule'=>$req->rule,
         ];
     }
-     // Store Application Foe Dharamshala(1)
+     // Store Application For Dharamshala(1)
      public function addNew($req)
      {
          $bearerToken = $req->bearerToken();
@@ -100,7 +100,7 @@ class MarActiveDharamshala extends Model
          return $mApplicationNo['application_no'];
      }
 
-      /**
+    /**
      * upload Document By Citizen At the time of Registration
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -140,7 +140,7 @@ class MarActiveDharamshala extends Model
             ->first();
     }
 
-        /**
+    /**
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
@@ -161,7 +161,7 @@ class MarActiveDharamshala extends Model
         return $inbox;
     }
 
-      /**
+    /**
      * | Get Application Outbox List by Role Ids
      */
     public function listOutbox($roleIds)
@@ -251,7 +251,7 @@ class MarActiveDharamshala extends Model
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
-        /**
+    /**
      * | Get Citizen Applied applications
      * | @param citizenId
      */
@@ -271,6 +271,9 @@ class MarActiveDharamshala extends Model
             ->get();
     }
 
+    /**
+     * | Get Application Details By ID
+     */
     public function getDharamshalaDetails($appId)
     {
         return MarActiveDharamshala::select('*')
@@ -278,6 +281,9 @@ class MarActiveDharamshala extends Model
             ->first();
     }
 
+    /**
+     * | Get All Application According to ULBs
+     */
     public function getDharamshalaList($ulbId)
     {
         return MarActiveDharamshala::select('*')

@@ -2,6 +2,7 @@
 
 namespace App\Models\Markets;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -61,5 +62,29 @@ class MarDharamshala extends Model
                 'workflow_id',
             )
             ->first();
+    }
+
+    
+    public function paymentByCash($req){
+
+        if ($req->status == '1') {
+            // Dharamshala Table Update
+            $mMarDharamshala = MarDharamshala::find($req->applicationId);
+            $mMarDharamshala->payment_status = $req->status;
+            $pay_id=$mMarDharamshala->payment_id = "Cash-$req->applicationId/".time();
+            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mMarDharamshala->payment_date = Carbon::now();
+            $mMarDharamshala->payment_details = "By Cash";
+            $mMarDharamshala->save();
+            $renewal_id = $mMarDharamshala->last_renewal_id;
+
+            // Renewal Table Updation
+            $mMarDharamshalaRenewal = MarDharamshalaRenewal::find($renewal_id);
+            $mMarDharamshalaRenewal->payment_status = 1;
+            $mMarDharamshalaRenewal->payment_id =  $pay_id;
+            $mMarDharamshalaRenewal->payment_date = Carbon::now();
+            $mMarDharamshalaRenewal->payment_details = "By Cash";
+            return $mMarDharamshalaRenewal->save();
+        }
     }
 }

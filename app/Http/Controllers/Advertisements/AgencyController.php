@@ -226,6 +226,9 @@ class AgencyController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            if (isset($data['payment_amount'])) {
+                $fullDetailsData['payment_amount'] = $data['payment_amount'];
+            }
             $fullDetailsData['directors'] = $data['directors'];
             $fullDetailsData['timelineData'] = collect($req);
 
@@ -405,7 +408,7 @@ class AgencyController extends Controller
             if ($userType != 'Citizen') {
                 $roleReqs = new Request([
                     'workflowId' => $mAdvActiveAgency->workflow_id,
-                    'userId' => $userId, 
+                    'userId' => $userId,
                 ]);
                 $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
                 $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
@@ -444,7 +447,7 @@ class AgencyController extends Controller
         return $data1;
     }
 
-       
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -522,7 +525,7 @@ class AgencyController extends Controller
 
                 $approvedAgency = $mAdvActiveAgency->replicate();
                 $approvedAgency->setTable('adv_agencies');
-                $temp_id = $approvedAgency->temp_id = $mAdvActiveAgency->id;
+                $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
                 $approvedAgency->payment_amount = $req->payment_amount;
                 $approvedAgency->approve_date = Carbon::now();
                 $approvedAgency->save();
@@ -540,7 +543,7 @@ class AgencyController extends Controller
                 // Update in adv_agencies (last_renewal_id)
 
                 DB::table('adv_agencies')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedAgency->id]);
 
                 $msg = "Application Successfully Approved !!";
@@ -555,7 +558,7 @@ class AgencyController extends Controller
                 // Agency advertisement Application replication
                 $rejectedAgency = $mAdvActiveAgency->replicate();
                 $rejectedAgency->setTable('adv_rejected_agencies');
-                $rejectedAgency->temp_id = $mAdvActiveAgency->id;
+                $rejectedAgency->id = $mAdvActiveAgency->id;
                 $rejectedAgency->rejected_date = Carbon::now();
                 $rejectedAgency->save();
                 $mAdvActiveAgency->delete();
@@ -820,10 +823,37 @@ class AgencyController extends Controller
         }
     }
 
+
+
+    public function agencyPaymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgency = new AdvAgency();
+            DB::beginTransaction();
+            $status = $mAdvAgency->paymentByCash($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
+            'applicationId' => 'required|string',               //  id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
@@ -885,9 +915,9 @@ class AgencyController extends Controller
     //     }
     // }
 
-        
-        
-    
+
+
+
     /**
      * | Verify Single Application Approve or reject
      * |
@@ -922,7 +952,7 @@ class AgencyController extends Controller
                 'userId' => $userId,
                 'workflowId' => $appDetails->workflow_id
             ]);
-           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
             if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
                 throw new Exception("Role Not Available");
 
@@ -950,8 +980,8 @@ class AgencyController extends Controller
             }
 
 
-            
-           $reqs = [
+
+            $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
                 'action_taken_by' => $userId
@@ -972,7 +1002,7 @@ class AgencyController extends Controller
         }
     }
 
-     /**
+    /**
      * | Check if the Document is Fully Verified or Not (4.1)
      */
     public function ifFullDocVerified($applicationId)
@@ -996,7 +1026,7 @@ class AgencyController extends Controller
     }
 
 
-    
+
 
     /**
      *  send back to citizen
@@ -1054,7 +1084,7 @@ class AgencyController extends Controller
             $ulbId = $auth->ulb_id;
             $wardId = $this->getWardByUserId($userId);
 
-           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
                 return $ward->ward_id;
             });
 
@@ -1090,7 +1120,7 @@ class AgencyController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -1118,6 +1148,28 @@ class AgencyController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+
+    public function searchByNameorMobile(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'filterBy' => 'required|in:mobileNo,entityName',
+            'parameter' => $req->filterBy == 'mobileNo' ? 'required|digits:10' : 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgency = new AdvAgency();
+            $listApplications = $mAdvAgency->searchByNameorMobile($req);
+            if (!$listApplications)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched Successfully", $listApplications, 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), 010717, 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1153,7 +1205,7 @@ class AgencyController extends Controller
         }
     }
 
-    
+
     /**
      * | Get Typology List
      */
@@ -1444,7 +1496,7 @@ class AgencyController extends Controller
             if ($userType != 'Citizen') {
                 $roleReqs = new Request([
                     'workflowId' => $mAdvActiveAgencyLicense->workflow_id,
-                    'userId' => $userId, 
+                    'userId' => $userId,
                 ]);
                 $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
                 $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
@@ -1483,7 +1535,7 @@ class AgencyController extends Controller
     }
 
 
-     
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -1555,7 +1607,7 @@ class AgencyController extends Controller
                 // approved Vehicle Application replication
                 $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
                 $approvedAgencyLicense->setTable('adv_agency_licenses');
-                $temp_id = $approvedAgencyLicense->temp_id = $mAdvActiveAgencyLicense->id;
+                $temp_id = $approvedAgencyLicense->id = $mAdvActiveAgencyLicense->id;
                 $approvedAgencyLicense->payment_amount = $req->payment_amount;
                 $approvedAgencyLicense->approve_date = Carbon::now();
                 $approvedAgencyLicense->save();
@@ -1573,7 +1625,7 @@ class AgencyController extends Controller
                 // Update in adv_agency_licenses (last_renewal_id)
 
                 DB::table('adv_agency_licenses')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
 
                 $msg = "Application Successfully Approved !!";
@@ -1588,7 +1640,7 @@ class AgencyController extends Controller
                 // Agency advertisement Application replication
                 $rejectedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
                 $rejectedAgencyLicense->setTable('adv_rejected_agency_licenses');
-                $rejectedAgencyLicense->temp_id = $mAdvActiveAgencyLicense->id;
+                $rejectedAgencyLicense->id = $mAdvActiveAgencyLicense->id;
                 $rejectedAgencyLicense->rejected_date = Carbon::now();
                 $rejectedAgencyLicense->save();
                 $mAdvActiveAgencyLicense->delete();
@@ -1999,7 +2051,7 @@ class AgencyController extends Controller
         }
     }
 
-        
+
     /**
      * | Verify Single Application Approve or reject
      * |
@@ -2034,7 +2086,7 @@ class AgencyController extends Controller
                 'userId' => $userId,
                 'workflowId' => $appDetails->workflow_id
             ]);
-           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
             if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
                 throw new Exception("Role Not Available");
 
@@ -2062,8 +2114,8 @@ class AgencyController extends Controller
             }
 
 
-            
-           $reqs = [
+
+            $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
                 'action_taken_by' => $userId
@@ -2084,7 +2136,7 @@ class AgencyController extends Controller
         }
     }
 
-     /**
+    /**
      * | Check if the Document is Fully Verified or Not (4.1)
      */
     public function ifFullLicenseDocVerified($applicationId)
@@ -2108,7 +2160,7 @@ class AgencyController extends Controller
     }
 
 
-    
+
 
     /**
      *  send back to citizen
@@ -2166,7 +2218,7 @@ class AgencyController extends Controller
             $ulbId = $auth->ulb_id;
             $wardId = $this->getWardByUserId($userId);
 
-           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
                 return $ward->ward_id;
             });
 
@@ -2204,7 +2256,7 @@ class AgencyController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -2234,5 +2286,4 @@ class AgencyController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
-
 }

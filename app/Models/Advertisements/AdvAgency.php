@@ -228,4 +228,40 @@ class AdvAgency extends Model
             ->first();
         return json_decode($details->payment_details);
     }
+
+
+    public function searchByNameorMobile($req){
+       $list=AdvAgency::select('*');
+        if($req->filterBy=='mobileNo'){
+            $filterList=$list->where('mobile_no',$req->parameter);
+        }
+        if($req->filterBy=='entityName'){
+            $filterList=$list->where('entity_name',$req->parameter);
+        }
+        return $filterList->get();
+    }
+
+     
+    public function paymentByCash($req){
+
+        if ($req->status == '1') {
+            // Agency Table Update
+            $mAdvAgency = AdvAgency::find($req->applicationId);
+            $mAdvAgency->payment_status = $req->status;
+            $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId/".time();
+            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mAdvAgency->payment_date = Carbon::now();
+            $mAdvAgency->payment_details = "By Cash";
+            $mAdvAgency->save();
+            $renewal_id = $mAdvAgency->last_renewal_id;
+
+            // Renewal Table Updation
+            $mAdvAgencyRenewal = AdvAgencyRenewal::find($renewal_id);
+            $mAdvAgencyRenewal->payment_status = 1;
+            $mAdvAgencyRenewal->payment_id =  $pay_id;
+            $mAdvAgencyRenewal->payment_date = Carbon::now();
+            $mAdvAgencyRenewal->payment_details = "By Cash";
+            return $mAdvAgencyRenewal->save();
+        }
+    }
 }

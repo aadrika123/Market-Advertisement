@@ -507,7 +507,7 @@ class PrivateLandController extends Controller
 
                 $approvedPrivateland = $mAdvActivePrivateland->replicate();
                 $approvedPrivateland->setTable('adv_privatelands');
-                $temp_id = $approvedPrivateland->temp_id = $mAdvActivePrivateland->id;
+                $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
                 $approvedPrivateland->payment_amount = $req->payment_amount;
                 $approvedPrivateland->approve_date = Carbon::now();
                 $approvedPrivateland->zone = $zone;
@@ -517,7 +517,7 @@ class PrivateLandController extends Controller
                 $approvedPrivateland = $mAdvActivePrivateland->replicate();
                 $approvedPrivateland->approve_date = Carbon::now();
                 $approvedPrivateland->setTable('adv_privateland_renewals');
-                $approvedPrivateland->privateland_id = $temp_id;
+                $approvedPrivateland->id = $temp_id;
                 $approvedPrivateland->zone = $zone;
                 $approvedPrivateland->save();
 
@@ -527,7 +527,7 @@ class PrivateLandController extends Controller
                 // Update in adv_privatelands (last_renewal_id)
 
                 DB::table('adv_privatelands')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedPrivateland->id]);
 
                 $msg = "Application Successfully Approved !!";
@@ -542,7 +542,7 @@ class PrivateLandController extends Controller
                 // Privateland advertisement Application replication
                 $rejectedPrivateland = $mAdvActivePrivateland->replicate();
                 $rejectedPrivateland->setTable('adv_rejected_privatelands');
-                $rejectedPrivateland->temp_id = $mAdvActivePrivateland->id;
+                $rejectedPrivateland->id = $mAdvActivePrivateland->id;
                 $rejectedPrivateland->rejected_date = Carbon::now();
                 $rejectedPrivateland->save();
                 $mAdvActivePrivateland->delete();
@@ -827,7 +827,7 @@ class PrivateLandController extends Controller
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
+            'applicationId' => 'required|string',               //  id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',

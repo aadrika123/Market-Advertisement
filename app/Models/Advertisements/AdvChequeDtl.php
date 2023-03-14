@@ -2,6 +2,12 @@
 
 namespace App\Models\Advertisements;
 
+use App\Models\Markets\MarDharamshala;
+use App\Models\Markets\MarDharamshalaRenewal;
+use App\Models\Markets\MarHostel;
+use App\Models\Markets\MarHostelRenewal;
+use App\Models\Markets\MarLodge;
+use App\Models\Markets\MarLodgeRenewal;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +23,9 @@ class AdvChequeDtl extends Model
     protected $_movableVehicle;
     protected $_agency;
     protected $_hording;
+    protected $_lodge;
+    protected $_hostel;
+    protected $_dharamshala;
     public function __construct()
     {
         $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
@@ -24,6 +33,9 @@ class AdvChequeDtl extends Model
         $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
         $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        $this->_dharamshala=Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
     }
 
     public function entryChequeDd($req)
@@ -83,8 +95,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvAgency::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_agencies')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvAgency::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_agencies')->where('id', $applicationId)->first()->payment_amount;
                 // update on Agency  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -97,7 +109,6 @@ class AdvChequeDtl extends Model
                 );
                 return AdvAgencyRenewal::where('agencyadvet_id', $applicationId)->update($metaReqs);
             }
-
             elseif ($workflowId == $this->_selfAdvt) {
                 // update on SelfAdvertiesment Table
                 $metaReqs = array_merge(
@@ -108,8 +119,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvSelfadvertisement::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_selfadvertisements')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvSelfadvertisement::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_selfadvertisements')->where('id', $applicationId)->first()->payment_amount;
                 // update on SelfAdvertiesment  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -122,7 +133,6 @@ class AdvChequeDtl extends Model
                 );
                 return AdvSelfadvetRenewal::where('selfadvet_id', $applicationId)->update($metaReqs);
             }
-
             elseif ($workflowId == $this->_pvtLand) {
                 // update on Privateland Table
                 $metaReqs = array_merge(
@@ -133,8 +143,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvPrivateland::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_privatelands')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvPrivateland::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_privatelands')->where('id', $applicationId)->first()->payment_amount;
                 // update on Privateland  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -157,8 +167,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvVehicle::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_vehicles')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvVehicle::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_vehicles')->where('id', $applicationId)->first()->payment_amount;
                 // update on Vehicle  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -169,7 +179,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvVehicleRenewal::where('vechcleadvet_id', $applicationId)->update($metaReqs);
+                return AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_hording) {
                 // update on Vehicle Table
@@ -181,8 +191,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvAgencyLicense::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_agency_licenses')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvAgencyLicense::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_agency_licenses')->where('id', $applicationId)->first()->payment_amount;
                 // update on Agency Hording  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -194,6 +204,78 @@ class AdvChequeDtl extends Model
                     ],
                 );
                 return AdvAgencyLicenseRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_lodge) {
+                // update on Lodge Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarLodge::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_lodges')->where('id', $applicationId)->first()->payment_amount;
+                // update on Lodge renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarLodgeRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_hostel) {
+                // update on Hostel Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarHostel::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_hostels')->where('id', $applicationId)->first()->payment_amount;
+                // update on Hostel renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarHostelRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_dharamshala) {
+                // update on Dharamshala Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarDharamshala::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_dharamshalas')->where('id', $applicationId)->first()->payment_amount;
+                // update on Dharamshala renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarDharamshalaRenewal::where('app_id', $applicationId)->update($metaReqs);
             }
         }elseif($req->status=='2'){   // Cheque Cancelled 
             if ($workflowId == $this->_agency) {
@@ -206,8 +288,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvAgency::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_agencies')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvAgency::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_agencies')->where('id', $applicationId)->first()->payment_amount;
                 // update on Agency  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -220,7 +302,6 @@ class AdvChequeDtl extends Model
                 );
                 return AdvAgencyRenewal::where('agencyadvet_id', $applicationId)->update($metaReqs);
             }
-
             elseif ($workflowId == $this->_selfAdvt) {
                 // update on SelfAdvertiesment Table
                 $metaReqs = array_merge(
@@ -231,8 +312,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvSelfadvertisement::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_selfadvertisements')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvSelfadvertisement::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_selfadvertisements')->where('id', $applicationId)->first()->payment_amount;
                 // update on SelfAdvertiesment  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -245,7 +326,6 @@ class AdvChequeDtl extends Model
                 );
                 return AdvSelfadvetRenewal::where('selfadvet_id', $applicationId)->update($metaReqs);
             }
-
             elseif ($workflowId == $this->_pvtLand) {
                 // update on Privateland Table
                 $metaReqs = array_merge(
@@ -256,8 +336,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvPrivateland::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_privatelands')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvPrivateland::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_privatelands')->where('id', $applicationId)->first()->payment_amount;
                 // update on Privateland  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -268,7 +348,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvPrivatelandRenewal::where('privateland_id', $applicationId)->update($metaReqs);
+                return AdvPrivatelandRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_movableVehicle) {
                 // update on Vehicle Table
@@ -280,8 +360,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvVehicle::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_vehicles')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvVehicle::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_vehicles')->where('id', $applicationId)->first()->payment_amount;
                 // update on Vehicle  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -292,7 +372,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvVehicleRenewal::where('vechcleadvet_id', $applicationId)->update($metaReqs);
+                return AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_hording) {
                 // update on Vehicle Table
@@ -304,8 +384,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvAgencyLicense::where('temp_id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_agency_licenses')->where('temp_id', $applicationId)->first()->payment_amount;
+                AdvAgencyLicense::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_agency_licenses')->where('id', $applicationId)->first()->payment_amount;
                 // update on Agency Hording  renewal Table
                 $metaReqs = array_merge(
                     [
@@ -317,6 +397,78 @@ class AdvChequeDtl extends Model
                     ],
                 );
                 return AdvAgencyLicenseRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_lodge) {
+                // update on Vehicle Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarLodge::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_lodges')->where('id', $applicationId)->first()->payment_amount;
+                // update on Agency Hording  renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarLodgeRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_hostel) {
+                // update on Hostel Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarHostel::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_hostels')->where('id', $applicationId)->first()->payment_amount;
+                // update on Hostel  renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarHostelRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_dharamshala) {
+                // update on Dharamshala Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarDharamshala::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_dharamshalas')->where('id', $applicationId)->first()->payment_amount;
+                // update on Dharamshala  renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarDharamshalaRenewal::where('app_id', $applicationId)->update($metaReqs);
             }
         }
     }

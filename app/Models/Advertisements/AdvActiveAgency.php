@@ -262,15 +262,16 @@ class AdvActiveAgency extends Model
                 'adv_active_agencydirectors.*',
                 DB::raw("CONCAT(adv_active_agencydirectors.relative_path,'/',adv_active_agencydirectors.doc_name) as document_path")
             );
-            if($type=='Active'){
-                $directors = $directors->where('agency_id', $id);
-            }
-            elseif($type=='Reject'){
-                $directors = $directors->where('agency_id', $details['temp_id']);
-            }
-            elseif($type=='Approve'){
-                $directors = $directors->where('agency_id', $details['temp_id']);
-            }
+            // if($type=='Active'){
+            //     $directors = $directors->where('agency_id', $id);
+            // }
+            // elseif($type=='Reject'){
+            //     $directors = $directors->where('agency_id', $details['id']);
+            // }
+            // elseif($type=='Approve'){
+            //     $directors = $directors->where('agency_id', $details['id']);
+            // }
+            $directors = $directors->where('agency_id', $id);
             $directors=$directors->get();
         $details['directors'] = remove_null($directors->toArray());
         return $details;

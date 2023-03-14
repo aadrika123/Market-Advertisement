@@ -52,6 +52,38 @@ class AdvActiveSelfadvertisement extends Model
         ];
     }
 
+     // helper meta reqs
+     public function metaRenewalReqs($req)
+     {
+         return [
+            'applicant' => $req->applicantName,
+            'application_no' => $req->applicaationNo,
+             'license_year' => $req->licenseYear,
+             'father' => $req->fatherName,
+             'email' => $req->email,
+             'residence_address' => $req->residenceAddress,
+             'ward_id' => $req->wardId,
+             'permanent_address' => $req->permanentAddress,
+             'permanent_ward_id' => $req->permanentWardId,
+             'entity_name' => $req->entityName,
+             'entity_address' => $req->entityAddress,
+             'entity_ward_id' => $req->entityWardId,
+             'mobile_no' => $req->mobileNo,
+             'aadhar_no' => $req->aadharNo,
+             'trade_license_no' => $req->tradeLicenseNo,
+             'holding_no' => $req->holdingNo,
+             'gst_no' => $req->gstNo,
+             'longitude' => $req->longitude,
+             'latitude' => $req->latitude,
+             'display_area' => $req->displayArea,
+             'display_type' => $req->displayType,
+             'installation_location' => $req->installationLocation,
+             'brand_display_name' => $req->brandDisplayName,
+             'user_id'=>$req->userId,
+             'advt_category'=>$req->advtCategory
+         ];
+     }
+
     // Store Self Advertisements(1)
     public function addNew($req)
     {
@@ -85,6 +117,40 @@ class AdvActiveSelfadvertisement extends Model
 
         return $mApplicationNo['application_no'];
     }
+
+     // Renewal Self Advertisements(1)
+     public function renewalSelfAdvt($req)
+     {
+         $bearerToken = $req->bearerToken();
+         $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
+         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+         $ipAddress = getClientIpAddress();
+        //  $mApplicationNo = ['application_no' => 'SELF-' . random_int(100000, 999999)];                  // Generate Application No
+         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+             'workflow_id' => $ulbWorkflows['id'],
+             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+             'current_role_id' => $ulbWorkflows['initiator_role_id'],
+             'last_role_id' => $ulbWorkflows['initiator_role_id'],
+             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+         ];
+         $mDocuments = $req->documents;
+ 
+         $metaReqs = array_merge(
+             [
+                 'ulb_id' => $req->ulbId,
+                 'citizen_id' => $req->citizenId,
+                 'application_date' => $this->_applicationDate,
+                 'ip_address' => $ipAddress
+             ],
+             $this->metaRenewalReqs($req),
+            //  $mApplicationNo,
+             $ulbWorkflowReqs
+         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
+         $this->uploadDocument($tempId, $mDocuments);
+ 
+         return $req->application_no;
+     }
 
 
        /**

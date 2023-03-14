@@ -192,6 +192,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 19 ( Application Details For Payments )
         // Route::post('advert/agency/get-payment-details', 'getPaymentDetails');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/renewal-agency', 'renewalAgency');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/payment-by-cash', 'agencyPaymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/list-approved-agency', 'listApprovedAgency');          // 19 ( Application Details For Payments )
@@ -200,6 +201,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('advert/agency/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
+        Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          // 19 ( Application Details For Payments )
 
         /*------------ Apply For Hording License -------------------*/
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
@@ -273,6 +275,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/lodge/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('market/lodge/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('market/lodge/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
+        Route::post('market/lodge/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
+        Route::post('market/lodge/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
+        Route::post('market/lodge/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
     });
 
     /**
@@ -306,6 +311,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bm-hall/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('market/bm-hall/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('market/bm-hall/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
+        Route::post('market/bm-hall/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
+        Route::post('market/bm-hall/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
+        Route::post('market/bm-hall/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
     });
 
 
@@ -338,7 +346,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/hostel/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
         Route::post('market/hostel/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('market/hostel/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
-        Route::post('market/hostel/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments 
+        Route::post('market/hostel/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
+        Route::post('market/hostel/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
+        Route::post('market/hostel/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
+        Route::post('market/hostel/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
     });
 
     /**
@@ -370,7 +381,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/back-to-citizen', 'backToCitizen');          // 19 ( Application Details For Payments )
         Route::post('market/dharamshala/list-btc-inbox', 'listBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('market/dharamshala/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
-        Route::post('market/dharamshala/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments 
+        Route::post('market/dharamshala/reupload-document', 'reuploadDocument');          // 19 ( Application Details For Payments )
+        Route::post('market/dharamshala/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
+        Route::post('market/dharamshala/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
+        Route::post('market/dharamshala/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
      });
 
 });

@@ -2,6 +2,7 @@
 
 namespace App\Models\Markets;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -59,5 +60,29 @@ class MarLodge extends Model
                 'workflow_id',
             )
             ->first();
+    }
+
+    
+    public function paymentByCash($req){
+
+        if ($req->status == '1') {
+            // Lodge Table Update
+            $mMarLodge = MarLodge::find($req->applicationId);
+            $mMarLodge->payment_status = $req->status;
+            $pay_id=$mMarLodge->payment_id = "Cash-$req->applicationId/".time();
+            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mMarLodge->payment_date = Carbon::now();
+            $mMarLodge->payment_details = "By Cash";
+            $mMarLodge->save();
+            $renewal_id = $mMarLodge->last_renewal_id;
+
+            // Renewal Table Updation
+            $mMarLodgeRenewal = MarLodgeRenewal::find($renewal_id);
+            $mMarLodgeRenewal->payment_status = 1;
+            $mMarLodgeRenewal->payment_id =  $pay_id;
+            $mMarLodgeRenewal->payment_date = Carbon::now();
+            $mMarLodgeRenewal->payment_details = "By Cash";
+            return $mMarLodgeRenewal->save();
+        }
     }
 }

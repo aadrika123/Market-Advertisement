@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SelfAdvets\RenewalRequest;
 use App\Http\Requests\SelfAdvets\StoreRequest;
 use App\MicroServices\DocumentUpload;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
@@ -102,6 +103,37 @@ class SelfAdvetController extends Controller
 
             DB::beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Renewal for Self Advertisements 
+     * | @param StoreRequest 
+     */
+    public function renewalSelfAdvt(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mAdvActiveSelfadvertisement = $this->_modelObj;
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+
+            DB::beginTransaction();
+            $applicationNo = $mAdvActiveSelfadvertisement->renewalSelfAdvt($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -646,7 +678,7 @@ class SelfAdvetController extends Controller
                 // Selfadvertisement Application replication
                 $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $approvedSelfadvertisement->setTable('adv_selfadvertisements');
-                $temp_id = $approvedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
+                $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                 $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                 $approvedSelfadvertisement->payment_status = $req->payment_status;
                 $approvedSelfadvertisement->approve_date = Carbon::now();
@@ -663,7 +695,7 @@ class SelfAdvetController extends Controller
 
                 // Update in adv_selfadvertisements (last_renewal_id)
                 DB::table('adv_selfadvertisements')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
                 $msg = "Application Successfully Approved !!";
             }
@@ -675,7 +707,7 @@ class SelfAdvetController extends Controller
                 // Selfadvertisement Application replication
                 $rejectedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                 $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
-                $rejectedSelfadvertisement->temp_id = $mAdvActiveSelfadvertisement->id;
+                $rejectedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                 $rejectedSelfadvertisement->rejected_date = Carbon::now();
                 $rejectedSelfadvertisement->save();
                 $mAdvActiveSelfadvertisement->delete();

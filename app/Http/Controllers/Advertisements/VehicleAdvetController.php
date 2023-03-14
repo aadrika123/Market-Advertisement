@@ -482,7 +482,7 @@ class VehicleAdvetController extends Controller
 
                 $approvedVehicle = $mAdvActiveVehicle->replicate();
                 $approvedVehicle->setTable('adv_vehicles');
-                $temp_id = $approvedVehicle->temp_id = $mAdvActiveVehicle->id;
+                $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
                 $approvedVehicle->payment_amount = $req->payment_amount;
                 $approvedVehicle->approve_date = Carbon::now();
                 $approvedVehicle->zone = $zone;
@@ -492,7 +492,7 @@ class VehicleAdvetController extends Controller
                 $approvedVehicle = $mAdvActiveVehicle->replicate();
                 $approvedVehicle->approve_date = Carbon::now();
                 $approvedVehicle->setTable('adv_vehicle_renewals');
-                $approvedVehicle->vechcleadvet_id = $temp_id;
+                $approvedVehicle->id = $temp_id;
                 $approvedVehicle->zone = $zone;
                 $approvedVehicle->save();
 
@@ -502,7 +502,7 @@ class VehicleAdvetController extends Controller
                 // Update in adv_vehicles (last_renewal_id)
 
                 DB::table('adv_vehicles')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedVehicle->id]);
 
                 $msg = "Application Successfully Approved !!";
@@ -517,7 +517,7 @@ class VehicleAdvetController extends Controller
                 // Vehicles advertisement Application replication
                 $rejectedVehicle = $mAdvActiveVehicle->replicate();
                 $rejectedVehicle->setTable('adv_rejected_vehicles');
-                $rejectedVehicle->temp_id = $mAdvActiveVehicle->id;
+                $rejectedVehicle->id = $mAdvActiveVehicle->id;
                 $rejectedVehicle->rejected_date = Carbon::now();
                 $rejectedVehicle->save();
                 $mAdvActiveVehicle->delete();

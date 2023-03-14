@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
+use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveBanquteHall;
 use App\Models\Markets\MarBanquteHall;
@@ -528,7 +529,7 @@ class BanquetMarriageHallController extends Controller
 
                 $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                 $approvedbanqutehall->setTable('mar_banqute_halls');
-                $temp_id = $approvedbanqutehall->temp_id = $mMarActiveBanquteHall->id;
+                $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
                 $approvedbanqutehall->payment_amount = $req->payment_amount;
                 $approvedbanqutehall->approve_date = Carbon::now();
                 $approvedbanqutehall->save();
@@ -546,7 +547,7 @@ class BanquetMarriageHallController extends Controller
                 // Update in mar_banqute_halls (last_renewal_id)
 
                 DB::table('mar_banqute_halls')
-                    ->where('temp_id', $temp_id)
+                    ->where('id', $temp_id)
                     ->update(['last_renewal_id' => $approvedbanqutehall->id]);
 
                 $msg = "Application Successfully Approved !!";
@@ -559,7 +560,7 @@ class BanquetMarriageHallController extends Controller
                 // Banqute Hall Application replication
                 $rejectedbanqutehall = $mMarActiveBanquteHall->replicate();
                 $rejectedbanqutehall->setTable('mar_rejected_banqute_halls');
-                $rejectedbanqutehall->temp_id = $mMarActiveBanquteHall->id;
+                $rejectedbanqutehall->id = $mMarActiveBanquteHall->id;
                 $rejectedbanqutehall->rejected_date = Carbon::now();
                 $rejectedbanqutehall->save();
                 $mMarActiveBanquteHall->delete();
@@ -726,6 +727,83 @@ class BanquetMarriageHallController extends Controller
     //         responseMsgs(false, $e->getMessage(), "");
     //     }
     // }
+
+
+    
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarBanquteHall = new MarBanquteHall();
+            DB::beginTransaction();
+            $status = $mMarBanquteHall->paymentByCash($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
     
 
