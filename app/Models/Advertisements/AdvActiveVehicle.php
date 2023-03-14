@@ -62,6 +62,42 @@ class AdvActiveVehicle extends Model
         return $metaReqs;
     }
 
+
+    public function metaRenewReqs($req)
+    {
+        $metaReqs = [
+            'applicant' => $req->applicant,
+            'application_no' => $req->applicationNo,
+            'father' => $req->father,
+            'email' => $req->email,
+            'residence_address' => $req->residenceAddress,
+            'ward_id' => $req->wardId,
+            'permanent_address' => $req->permanentAddress,
+            'permanent_ward_id' => $req->permanentWardId,
+            'mobile_no' => $req->mobile,
+            'aadhar_no' => $req->aadharNo,
+            'license_from' => $req->licenseFrom,
+            'license_to' => $req->licenseTo,
+            'entity_name' => $req->entityName,
+            'trade_license_no' => $req->tradeLicenseNo,
+            'gst_no' => $req->gstNo,
+            'vehicle_name' => $req->vehicleName,
+            'vehicle_no' => $req->vehicleNo,
+            'vehicle_type' => $req->vehicleType,
+            'brand_display' => $req->brandDisplayed,
+            'front_area' => $req->frontArea,
+            'rear_area' => $req->rearArea,
+            'side_area' => $req->sideArea,
+            'top_area' => $req->topArea,
+            'display_type' => $req->displayType,
+            'citizen_id' => $req->citizenId,
+            'ulb_id' => $req->ulbId,
+            'user_id' => $req->userId,
+            'typology' => $req->typology
+        ];
+        return $metaReqs;
+    }
+
     /**
      * | Store function to apply(1)
      * | @param request 
@@ -98,6 +134,45 @@ class AdvActiveVehicle extends Model
         $this->uploadDocument($tempId, $mDocuments);
 
         return $mApplicationNo['application_no'];
+    }
+
+    
+    /**
+     * | Store function for Renew(1)
+     * | @param request 
+     */
+    public function renewalApplication($req)
+    {
+        $metaReqs = $this->metaReqs($req);
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role' => $ulbWorkflows['initiator_role_id'],
+            'current_roles' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress
+            ],
+            $this->metaRenewReqs($req),
+            $mRenew,
+            $ulbWorkflowReqs
+        );
+        // return $metaReqs;
+        $tempId = AdvActiveVehicle::create($metaReqs)->id;
+        $mDocuments = $req->documents;
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $mRenew['renew_no'];
     }
 
 

@@ -15,7 +15,6 @@ class AdvVehicle extends Model
     {
         return AdvVehicle::select(
             'id',
-            'temp_id',
             'application_no',
             'application_date',
             'applicant',
@@ -28,7 +27,7 @@ class AdvVehicle extends Model
             'citizen_id',
             'user_id',
         )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -47,7 +46,6 @@ class AdvVehicle extends Model
         // return AdvVehicle::where('citizen_id', $citizenId)
         //     ->select(
         //         'id',
-        //         'temp_id',
         //         'application_no',
         //         'application_date',
         //         'applicant',
@@ -70,7 +68,6 @@ class AdvVehicle extends Model
         return AdvVehicle::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -93,7 +90,6 @@ class AdvVehicle extends Model
         return AdvVehicle::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -137,6 +133,17 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_details = "By Cash";
             return $mAdvVehicleRenewal->save();
         }
+    }
+
+    
+    public function applicationDetailsForRenew($appId){
+        $details=AdvVehicle::find($appId);
+        if(!empty($details)){
+            $mWfActiveDocument = new WfActiveDocument();
+            $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);
+            $details['documents']=$documents;
+        }
+        return $details;
     }
 
 

@@ -18,7 +18,6 @@ class AdvRejectedVehicle extends Model
         return AdvRejectedVehicle::where('citizen_id', $citizenId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -28,7 +27,7 @@ class AdvRejectedVehicle extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
     
@@ -40,7 +39,6 @@ class AdvRejectedVehicle extends Model
         return AdvRejectedVehicle::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -50,7 +48,7 @@ class AdvRejectedVehicle extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 }

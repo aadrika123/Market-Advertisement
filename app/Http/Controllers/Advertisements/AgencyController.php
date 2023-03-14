@@ -962,9 +962,9 @@ class AgencyController extends Controller
                 throw new Exception("You are not Authorized");
 
 
-            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+            $ifFullDocVerified1 = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
 
-            if ($ifFullDocVerified == 1)
+            if ($ifFullDocVerified1 == 1)
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();

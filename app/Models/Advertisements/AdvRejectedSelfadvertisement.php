@@ -17,7 +17,6 @@ class AdvRejectedSelfadvertisement extends Model
         return AdvRejectedSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -27,7 +26,7 @@ class AdvRejectedSelfadvertisement extends Model
                 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
     
@@ -39,7 +38,6 @@ class AdvRejectedSelfadvertisement extends Model
         return AdvRejectedSelfadvertisement::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -49,7 +47,7 @@ class AdvRejectedSelfadvertisement extends Model
                 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 }

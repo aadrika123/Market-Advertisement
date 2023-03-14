@@ -111,12 +111,27 @@ class AdvChequeDtl extends Model
             }
             elseif ($workflowId == $this->_selfAdvt) {
                 // update on SelfAdvertiesment Table
+                $mAdvSelfadvertisement=AdvSelfadvertisement::find($applicationId);
+                if($mAdvSelfadvertisement->renew_no==NULL){
+                    $valid_from = Carbon::now();
+                    $valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    // $previousApplication=$this->findPreviousApplication($mAdvSelfadvertisement->application_no);
+                    $details=AdvSelfadvetRenewal::select('payment_date')
+                                    ->where('application_no',$mAdvSelfadvertisement->application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+                    $valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                } 
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'valid_from' => $valid_from,
+                        'valid_upto' => $valid_upto,
                     ],
                 );
                 AdvSelfadvertisement::where('id', $applicationId)->update($metaReqs);
@@ -131,7 +146,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvSelfadvetRenewal::where('selfadvet_id', $applicationId)->update($metaReqs);
+                return AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_pvtLand) {
                 // update on Privateland Table
@@ -324,7 +339,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvSelfadvetRenewal::where('selfadvet_id', $applicationId)->update($metaReqs);
+                return AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_pvtLand) {
                 // update on Privateland Table

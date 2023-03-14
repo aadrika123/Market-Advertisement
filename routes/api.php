@@ -40,6 +40,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      */
     Route::controller(SelfAdvetController::class)->group(function () {
         Route::post('advert/self/add-new', 'addNew');       // 01 ( Save Application )
+        Route::post('advert/self/get-application-details-for-renew', 'applicationDetailsForRenew');       // 01 ( Renew Application )
+        Route::post('advert/self/renewal-selfAdvt', 'renewalSelfAdvt');       // 01 ( Renew Application )
         Route::post('advert/self/list-self-advt-category', 'listSelfAdvtCategory');       // 01 ( Save Application )
         Route::post('advert/self/list-inbox', 'listInbox');      // 02 ( Application Inbox Lists )
         Route::post('advert/self/list-outbox', 'listOutbox');    // 03 ( Application Outbox Lists )
@@ -94,7 +96,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-03
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
-        Route::post('advert/vehicle/add-new', 'addNew');    // 01 ( Save Application )\
+        Route::post('advert/vehicle/add-new', 'addNew');    // 01 ( Save Application )
+        Route::post('advert/vehicle/get-application-details-for-renew', 'applicationDetailsForRenew');       // 01 ( Renew Application )
+        Route::post('advert/vehicle/renewal-application', 'renewalApplication');       // 01 ( Renew Application )
         Route::post('advert/vehicle/list-inbox', 'listInbox');    // 03 ( Application Inbox Lists )
         Route::post('advert/vehicle/list-outbox', 'listOutbox');    // 04 ( Application Outbox Lists )
         Route::post('advert/vehicle/get-details-by-id', 'getDetailsById');  // 05 ( Get Application Details By Application ID )
@@ -131,7 +135,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-04 
      */
     Route::controller(PrivateLandController::class)->group(function () {
-        Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  
+        Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  Route::post('advert/vehicle/get-application-details-for-renew', 'applicationDetailsForRenew');       // 01 ( Renew Application )
+        Route::post('advert/pvt-land/get-application-details-for-renew', 'applicationDetailsForRenew');       // 01 ( Renew Application )
+        Route::post('advert/pvt-land/renewal-application', 'renewalApplication');       // 01 ( Renew Application ) 
         Route::post('advert/pvt-land/list-inbox', 'listInbox');    // 03 ( Application Inbox Lists )
         Route::post('advert/pvt-land/list-outbox', 'listOutbox');    // 04 ( Application Outbox Lists )
         Route::post('advert/pvt-land/get-details-by-id', 'getDetailsById');  // 05 ( Get Application Details By Application ID )

@@ -17,7 +17,6 @@ class AdvPrivateland extends Model
     public function allApproveList(){
         return AdvPrivateland::select(
             'id',
-            'temp_id',
             'application_no',
             'application_date',
             'payment_amount',
@@ -25,7 +24,7 @@ class AdvPrivateland extends Model
             'citizen_id',
             'user_id',
         )
-        ->orderByDesc('temp_id')
+        ->orderByDesc('id')
         ->get();
     }
 
@@ -51,7 +50,6 @@ class AdvPrivateland extends Model
         return AdvPrivateland::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -60,7 +58,7 @@ class AdvPrivateland extends Model
                 'payment_amount',
                 'approve_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -73,7 +71,6 @@ class AdvPrivateland extends Model
         return AdvPrivateland::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'applicant',

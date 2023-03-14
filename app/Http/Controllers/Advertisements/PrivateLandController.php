@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PrivateLand\RenewalRequest;
 use App\Http\Requests\PrivateLand\StoreRequest;
 use App\Models\Advertisements\AdvActivePrivateland;
 use App\Models\Advertisements\AdvChequeDtl;
@@ -83,6 +84,30 @@ class PrivateLandController extends Controller
         }
     }
 
+
+    /**
+     * | Apply For Private Land Advertisement
+     */
+    public function renewalApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $privateLand = new AdvActivePrivateland();
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];                            // Find Jsk Id
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
+                $req->request->add($citizenId);
+            }
+
+            $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
+
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
     /**
      * | Inbox List

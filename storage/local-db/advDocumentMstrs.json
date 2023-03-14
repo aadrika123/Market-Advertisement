@@ -123,7 +123,7 @@
             "docVal":"Gst"
         }
     ],
-    "Agency":[
+    "Agency":[  
         {
             "id":24,
             "document_name":"GST No Document",
@@ -777,6 +777,132 @@
             "code":"AGENCY",
             "module_id":5,
             "docVal":"Experience"
+        }
+    ],
+    "SelfAdvertRenew":[ 
+        {
+            "id":88,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":129,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":89,
+            "document_name":"Holding No Document",
+            "workflow_id":129,
+            "relative_name":"HOLDING",
+            "docCode":"HORDING_NO",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Hording No"
+        }
+    ],
+    "PrivateLandsRenew":[ 
+        {
+            "id":90,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":133,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":91,
+            "document_name":"GPS Map Camera Photograph",
+            "workflow_id":133,
+            "relative_name":"GPS MAP CAMERA",
+            "docCode":"GPS_MAP_CAMERA",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gps Map Camera"
+        },
+        {
+            "id":92,
+            "document_name":"Holding No Document",
+            "workflow_id":133,
+            "relative_name":"HOLDING",
+            "docCode":"HOLDING_NO",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Holding No"
+        },
+        {
+            "id":93,
+            "document_name":"GST No Document",
+            "workflow_id":133,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gst"
+        }
+    ],
+    "VehicleRenew":[ 
+        {
+            "id":94,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":131,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":95,
+            "document_name":"Vehicle Photograph",
+            "workflow_id":131,
+            "relative_name":"VEHICLE",
+            "docCode":"VEHICLE_PHOTOGRAPH",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Vehicle Photograph"
+        },
+        {
+            "id":96,
+            "document_name":"Owner Book",
+            "workflow_id":131,
+            "relative_name":"OWNERBOOK",
+            "docCode":"OWNERBOOK",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Ownerbook"
+        },
+        {
+            "id":97,
+            "document_name":"Driving License",
+            "workflow_id":131,
+            "relative_name":"DRIVINGLICENSE",
+            "docCode":"DRIVING_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Driving License"
+        },
+        {
+            "id":98,
+            "document_name":"Insurance Photo",
+            "workflow_id":131,
+            "relative_name":"INSURANCE",
+            "docCode":"INSURANCE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Insurance"
+        },
+        {
+            "id":99,
+            "document_name":"GST No Document",
+            "workflow_id":131,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Gst"
         }
     ]
 }

@@ -387,7 +387,7 @@ class AdvActiveAgency extends Model
         $workflowId = Config::get('workflow-constants.AGENCY');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
-        // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
+        $mRenewNo = ['renew_no' => 'AGENCY/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -405,7 +405,7 @@ class AdvActiveAgency extends Model
                 'renewal' => 1
             ],
             $this->renewalReqs($req),
-            // $mApplicationNo,
+            $mRenewNo,
             $ulbWorkflowReqs
         ); 
 
@@ -425,8 +425,8 @@ class AdvActiveAgency extends Model
             $agencyDirector->store($director, $agencyId);       // Model function to store
         });
 
-        // return $mApplicationNo['application_no'];
-        return $req->applicationNo;
+        return $mRenewNo['renew_no'];
+        // return $req->applicationNo;
     }
 
     public function getAgencyNo($appId)

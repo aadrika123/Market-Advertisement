@@ -17,7 +17,6 @@ class AdvRejectedAgency extends Model
         return AdvRejectedAgency::where('citizen_id', $citizenId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'entity_name',
@@ -26,7 +25,7 @@ class AdvRejectedAgency extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
     
@@ -38,7 +37,6 @@ class AdvRejectedAgency extends Model
         return AdvRejectedAgency::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -46,7 +44,7 @@ class AdvRejectedAgency extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 }

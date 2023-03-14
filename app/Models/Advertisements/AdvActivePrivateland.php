@@ -63,6 +63,47 @@ class AdvActivePrivateland extends Model
         return $metaReqs;
     }
 
+    
+    /**
+     * | Meta Data Uses to Renewal Application
+     */
+    public function metaRenewReqs($req)
+    {
+        $metaReqs = [
+            'applicant' => $req->applicant,
+            'application_no' => $req->applicationNo,
+            'father' => $req->father,
+            'email' => $req->email,
+            'residence_address' => $req->residenceAddress,
+            'ward_id' => $req->wardId,
+            'permanent_address' => $req->permanentAddress,
+            'permanent_ward_id' => $req->permanentWardId,
+            'mobile_no' => $req->mobileNo,
+            'aadhar_no' => $req->aadharNo,
+            'license_from' => $req->licenseFrom,
+            'license_to' => $req->licenseTo,
+            'holding_no' => $req->holdingNo,
+            'trade_license_no' => $req->tradeLicenseNo,
+            'gst_no' => $req->gstNo,
+            'entity_name' => $req->entityName,
+            'entity_address' => $req->entityAddress,
+            'entity_ward_id' => $req->entityWardId,
+            'brand_display_name' => $req->brandDisplayName,
+            'brand_display_address' => $req->brandDisplayAddress,
+            'display_area' => $req->displayArea,
+            'display_type' => $req->displayType,
+            'no_of_hoardings' => $req->noOfHoardings,
+            'longitude' => $req->longitude,
+            'latitude' => $req->latitude,
+            'installation_location' => $req->installationLocation,
+            'citizen_id' => $req->citizenId,
+            'ulb_id' => $req->ulbId,
+            'user_id' => $req->userId,
+            'typology' => $req->typology
+        ];
+        return $metaReqs;
+    }
+
     /**
      * | Store function to apply(1)
      * | @param request 
@@ -112,6 +153,41 @@ class AdvActivePrivateland extends Model
         $this->uploadDocument($tempId, $mDocuments);
 
         return $mApplicationNo['application_no'];
+    }
+
+    
+    public function renewalApplication($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mRenewalNo = ['renew_no' => 'LAND/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress
+            ],
+            $this->metaRenewReqs($req),
+            $mRenewalNo,
+            $ulbWorkflowReqs
+        );
+        // return $metaReqs;                                                                                      // Add Relative Path as Request and Client Ip Address etc.
+        $tempId = AdvActivePrivateland::create($metaReqs)->id;
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $mRenewalNo['renew_no'];
     }
 
 

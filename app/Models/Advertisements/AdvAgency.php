@@ -58,7 +58,6 @@ class AdvAgency extends Model
     {
         return AdvAgency::select(
             'id',
-            'temp_id',
             'application_no',
             'application_date',
             'entity_name',
@@ -70,7 +69,7 @@ class AdvAgency extends Model
             'citizen_id',
             'user_id',
         )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -95,7 +94,6 @@ class AdvAgency extends Model
         return AdvAgency::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -104,7 +102,7 @@ class AdvAgency extends Model
                 'payment_amount',
                 'approve_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -118,7 +116,6 @@ class AdvAgency extends Model
         return AdvAgency::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'applicant',
@@ -142,7 +139,7 @@ class AdvAgency extends Model
             ->first();
         $details = json_decode(json_encode($details), true);
         if (!empty($details)) {
-            $temp_id = $details['temp_id'];
+            $temp_id = $details['id'];
             // Convert Std Class to Array
             $directors = DB::table('adv_active_agencydirectors')
                 ->select(
@@ -231,12 +228,13 @@ class AdvAgency extends Model
 
 
     public function searchByNameorMobile($req){
-       $list=AdvAgency::select('*');
+       $list=AdvAgency::select('adv_agencies.*','et.string_parameter as entityType','adv_agencies.entity_type as entity_type_id')
+             ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type');
         if($req->filterBy=='mobileNo'){
-            $filterList=$list->where('mobile_no',$req->parameter);
+            $filterList=$list->where('adv_agencies.mobile_no',$req->parameter);
         }
         if($req->filterBy=='entityName'){
-            $filterList=$list->where('entity_name',$req->parameter);
+            $filterList=$list->where('adv_agencies.entity_name',$req->parameter);
         }
         return $filterList->get();
     }

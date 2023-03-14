@@ -115,6 +115,29 @@ class SelfAdvetController extends Controller
     }
 
     /**
+     * | Get Application Details For Renew
+     */
+    public function applicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvSelfadvertisement = new AdvSelfadvertisement();
+            $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
      * | Renewal for Self Advertisements 
      * | @param StoreRequest 
      */
@@ -523,7 +546,7 @@ class SelfAdvetController extends Controller
     }
 
 
-    
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -675,29 +698,64 @@ class SelfAdvetController extends Controller
 
                 // return $req;
 
-                // Selfadvertisement Application replication
-                $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
-                $approvedSelfadvertisement->setTable('adv_selfadvertisements');
-                $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                $approvedSelfadvertisement->payment_amount = $req->payment_amount;
-                $approvedSelfadvertisement->payment_status = $req->payment_status;
-                $approvedSelfadvertisement->approve_date = Carbon::now();
-                $approvedSelfadvertisement->save();
+                if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
+                    // Selfadvertisement Application replication
+                    $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                    $approvedSelfadvertisement->setTable('adv_selfadvertisements');
+                    $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
+                    $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                    $approvedSelfadvertisement->payment_status = $req->payment_status;
+                    $approvedSelfadvertisement->approve_date = Carbon::now();
+                    // $approvedSelfadvertisement->valid_from = Carbon::now();
+                    // $approvedSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                    $approvedSelfadvertisement->save();
 
-                // Save in self Advertisement Renewal
-                $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
-                $approvedSelfadvertisement->approve_date = Carbon::now();
-                $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
-                $approvedSelfadvertisement->selfadvet_id = $temp_id;
-                $approvedSelfadvertisement->save();
+                    // Save in self Advertisement Renewal
+                    $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                    $approvedSelfadvertisement->approve_date = Carbon::now();
+                    $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                    $approvedSelfadvertisement->id = $temp_id;
+                    $approvedSelfadvertisement->save();
 
-                $mAdvActiveSelfadvertisement->delete();
+                    $mAdvActiveSelfadvertisement->delete();
 
-                // Update in adv_selfadvertisements (last_renewal_id)
-                DB::table('adv_selfadvertisements')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
-                $msg = "Application Successfully Approved !!";
+                    // Update in adv_selfadvertisements (last_renewal_id)
+                    DB::table('adv_selfadvertisements')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+                    $msg = "Application Successfully Approved !!";
+                }else{
+
+                    //  Renewal Case
+                     // Selfadvertisement Application replication
+                    $application_no=$mAdvActiveSelfadvertisement->application_no;
+                    AdvSelfadvertisement::where('application_no', $application_no)->delete();
+
+                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
+                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
+                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                     $approvedSelfadvertisement->payment_status = $req->payment_status;
+                     $approvedSelfadvertisement->approve_date = Carbon::now();
+                    //  $approvedSelfadvertisement->valid_from = Carbon::now();
+                    //  $approvedSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                     $approvedSelfadvertisement->save();
+ 
+                     // Save in self Advertisement Renewal
+                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                     $approvedSelfadvertisement->approve_date = Carbon::now();
+                     $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                     $approvedSelfadvertisement->id = $temp_id;
+                     $approvedSelfadvertisement->save();
+ 
+                     $mAdvActiveSelfadvertisement->delete();
+ 
+                     // Update in adv_selfadvertisements (last_renewal_id)
+                     DB::table('adv_selfadvertisements')
+                         ->where('id', $temp_id)
+                         ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+                     $msg = "Application Successfully Approved !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -1321,7 +1379,7 @@ class SelfAdvetController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

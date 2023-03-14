@@ -17,7 +17,6 @@ class AdvRejectedPrivateland extends Model
         return AdvRejectedPrivateland::where('citizen_id', $citizenId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -37,7 +36,6 @@ class AdvRejectedPrivateland extends Model
         return AdvRejectedPrivateland::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -45,7 +43,7 @@ class AdvRejectedPrivateland extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 }

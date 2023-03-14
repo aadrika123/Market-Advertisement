@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vehicles\RenewalRequest;
 use App\Http\Requests\Vehicles\StoreRequest;
 use App\Models\Advertisements\AdvActiveVehicle;
 use App\Models\Advertisements\AdvChequeDtl;
@@ -75,6 +76,54 @@ class VehicleAdvetController extends Controller
         }
     }
 
+
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function applicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvVehicle = new AdvVehicle();
+            $details = $mAdvVehicle->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Vehicle Application Renewal
+     */
+    public function renewalApplication(RenewalRequest $req)
+    {
+        try {
+            $advVehicle = new AdvActiveVehicle();
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+            DB::beginTransaction();
+            $applicationNo = $advVehicle->renewalApplication($req);               // Store Vehicle 
+            DB::commit();
+
+            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
     /**
      * | Inbox List
@@ -400,7 +449,7 @@ class VehicleAdvetController extends Controller
         return $data1;
     }
 
- 
+
     /**
      * | Get Uploaded Active Document by application ID
      */

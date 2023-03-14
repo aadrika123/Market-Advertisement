@@ -17,7 +17,6 @@ class AdvSelfadvertisement extends Model
 
         return AdvSelfadvertisement::select(
             'id',
-            'temp_id',
             'application_no',
             'application_date',
             'applicant',
@@ -31,7 +30,7 @@ class AdvSelfadvertisement extends Model
             'citizen_id',
             'user_id',
         )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -49,7 +48,6 @@ class AdvSelfadvertisement extends Model
         // return AdvSelfadvertisement::where('citizen_id', $citizenId)
         //     ->select(
         //         'id',
-        //         'temp_id',
         //         'application_no',
         //         'application_date',
         //         'applicant',
@@ -74,7 +72,6 @@ class AdvSelfadvertisement extends Model
         return AdvSelfadvertisement::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -86,7 +83,7 @@ class AdvSelfadvertisement extends Model
                 'ulb_id',
                 'workflow_id',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -99,7 +96,6 @@ class AdvSelfadvertisement extends Model
         return AdvSelfadvertisement::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 'applicant',
@@ -132,6 +128,14 @@ class AdvSelfadvertisement extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_details = "By Cash";
+            if($mAdvSelfadvertisement->renew_no==NULL){
+                $mAdvSelfadvertisement->valid_from = Carbon::now();
+                $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+            }else{
+                $previousApplication=$this->findPreviousApplication($mAdvSelfadvertisement->application_no);
+                $mAdvSelfadvertisement->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
+                $mAdvSelfadvertisement->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+            }   
             $mAdvSelfadvertisement->save();
             $renewal_id = $mAdvSelfadvertisement->last_renewal_id;
 
@@ -143,5 +147,24 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_details = "By Cash";
             return $mAdvSelfAdvertRenewal->save();
         }
+    }
+
+    public function findPreviousApplication($application_no){
+        return $details=AdvSelfadvetRenewal::select('payment_date')
+                                    ->where('application_no',$application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+    }
+
+
+
+    public function applicationDetailsForRenew($appId){
+        $details=AdvSelfadvertisement::find($appId);
+        if(!empty($details)){
+            $mWfActiveDocument = new WfActiveDocument();
+            $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);
+            $details['documents']=$documents;
+        }
+        return $details;
     }
 }
