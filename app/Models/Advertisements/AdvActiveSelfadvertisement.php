@@ -57,7 +57,7 @@ class AdvActiveSelfadvertisement extends Model
      {
          return [
              'applicant' => $req->applicantName,
-             'application_no' => $req->applicationNo,
+            //  'application_no' => $req->applicationNo,
              'license_year' => $req->licenseYear,
              'father' => $req->fatherName,
              'email' => $req->email,
@@ -126,6 +126,8 @@ class AdvActiveSelfadvertisement extends Model
          $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
          $ipAddress = getClientIpAddress();
          $mRenewNo = ['renew_no' => 'SELF/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
+         $details=AdvSelfadvertisement::find($req->applicationId);                              // Find Previous Application No
+         $mApplicationNo=['application_no'=>$details->application_no];
          $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
              'workflow_id' => $ulbWorkflows['id'],
              'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -144,6 +146,7 @@ class AdvActiveSelfadvertisement extends Model
              ],
              $this->metaRenewalReqs($req),
              $mRenewNo,
+             $mApplicationNo,
              $ulbWorkflowReqs
          );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
          $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;

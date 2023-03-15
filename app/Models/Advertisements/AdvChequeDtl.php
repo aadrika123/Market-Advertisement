@@ -86,13 +86,27 @@ class AdvChequeDtl extends Model
         if ($req->status == '1') {   // Paid Case
 
             if ($workflowId == $this->_agency) {
+                $mAdvAgency=AdvAgency::find($applicationId);
+                if($mAdvAgency->renew_no==NULL){
+                    $valid_from = Carbon::now();
+                    $valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvVehicleRenewal::select('payment_date')
+                                    ->where('application_no',$mAdvAgency->application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+                    $valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                } 
                 // update on Agency Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'valid_from' => $valid_from,
+                        'valid_upto' => $valid_upto,
                     ],
                 );
                 AdvAgency::where('id', $applicationId)->update($metaReqs);
@@ -149,13 +163,27 @@ class AdvChequeDtl extends Model
                 return AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_pvtLand) {
+                $mAdvPrivateland=AdvPrivateland::find($applicationId);
+                if($mAdvPrivateland->renew_no==NULL){
+                    $valid_from = Carbon::now();
+                    $valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvPrivatelandRenewal::select('payment_date')
+                                    ->where('application_no',$mAdvPrivateland->application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+                    $valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                } 
                 // update on Privateland Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'valid_from' => $valid_from,
+                        'valid_upto' => $valid_upto,
                     ],
                 );
                 AdvPrivateland::where('id', $applicationId)->update($metaReqs);
@@ -170,16 +198,30 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvPrivatelandRenewal::where('privateland_id', $applicationId)->update($metaReqs);
+                return AdvPrivatelandRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_movableVehicle) {
+                $mAdvVehicle=AdvVehicle::find($applicationId);
+                if($mAdvVehicle->renew_no==NULL){
+                    $valid_from = Carbon::now();
+                    $valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvVehicleRenewal::select('payment_date')
+                                    ->where('application_no',$mAdvVehicle->application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+                    $valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                } 
                 // update on Vehicle Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'valid_from' => $valid_from,
+                        'valid_upto' => $valid_upto,
                     ],
                 );
                 AdvVehicle::where('id', $applicationId)->update($metaReqs);

@@ -28,6 +28,7 @@ class AdvSelfadvertisement extends Model
             'ulb_id',
             'workflow_id',
             'citizen_id',
+            'valid_upto',
             'user_id',
         )
             ->orderByDesc('id')
@@ -40,6 +41,19 @@ class AdvSelfadvertisement extends Model
     public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
+        foreach($allApproveList as $key => $list){
+            $current_date=carbon::now()->format('Y-m-d');
+            $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+            if($current_date >= $notify_date){
+                $allApproveList[$key]['renew_option']='1';     // Renew option Show
+            }
+            if($current_date < $notify_date){
+                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show
+            }
+            if($list['valid_upto'] < $current_date){
+                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired
+            }
+        }
         if ($userType == 'Citizen') {
             return collect($allApproveList->where('citizen_id', $citizenId))->values();
         } else {

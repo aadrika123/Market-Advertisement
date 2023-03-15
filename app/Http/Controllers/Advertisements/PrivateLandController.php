@@ -85,6 +85,25 @@ class PrivateLandController extends Controller
     }
 
 
+    public function applicationDetailsForRenew(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvPrivateland = new AdvPrivateland();
+            $details = $mAdvPrivateland->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
     /**
      * | Apply For Private Land Advertisement
      */
@@ -209,6 +228,7 @@ class PrivateLandController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['zone'] = $data['zone'];
 
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
 
@@ -258,12 +278,12 @@ class PrivateLandController extends Controller
 
             $applications = $mAdvActivePrivateland->listAppliedApplications($citizenId);            // Find Applied Application By Citizen
 
-            $totalApplication = $applications->count();                                             
+            $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if($totalApplication==0){
-                $data1['data'] = NULL;                                                              
+            if ($totalApplication == 0) {
+                $data1['data'] = NULL;
             }
 
             return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -286,7 +306,7 @@ class PrivateLandController extends Controller
             // Variable Initialization
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
-            $data = AdvActivePrivateland::find($applicationId);    
+            $data = AdvActivePrivateland::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();                                                               // Save After escalate or De-Escalate
@@ -377,7 +397,7 @@ class PrivateLandController extends Controller
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mAdvActivePrivateland->workflow_id,
-                'moduleId' =>$this->_moduleId,
+                'moduleId' => $this->_moduleId,
                 'refTableDotId' => "adv_active_privatelands.id",
                 'refTableIdValue' => $mAdvActivePrivateland->id,
                 'message' => $request->comment
@@ -387,7 +407,7 @@ class PrivateLandController extends Controller
             if ($userType != 'Citizen') {
                 $roleReqs = new Request([
                     'workflowId' => $mAdvActivePrivateland->workflow_id,
-                    'userId' => $userId, 
+                    'userId' => $userId,
                 ]);
                 $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
                 $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
@@ -399,9 +419,6 @@ class PrivateLandController extends Controller
 
             DB::commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "010108", "1.0", "", "POST", "");
-
-
-
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "");
@@ -450,7 +467,7 @@ class PrivateLandController extends Controller
         $data1['data'] = $data;
         return $data1;
     }
-   
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -519,7 +536,7 @@ class PrivateLandController extends Controller
             if ($req->status == 1) {
                 $typology = $mAdvActivePrivateland->typology;
                 $zone = $mAdvActivePrivateland->zone;
-                if($zone===NULL){
+                if ($zone === NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $amount = $this->getPrivateLandPayment($typology, $zone);
@@ -528,34 +545,64 @@ class PrivateLandController extends Controller
                 // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
 
-                // approved Private Land Application replication
+                if ($mAdvActivePrivateland->renew_no == NULL) {
+                    // approved Private Land Application replication
+                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                    $approvedPrivateland->setTable('adv_privatelands');
+                    $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
+                    $approvedPrivateland->payment_amount = $req->payment_amount;
+                    $approvedPrivateland->approve_date = Carbon::now();
+                    $approvedPrivateland->zone = $zone;
+                    $approvedPrivateland->save();
 
-                $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                $approvedPrivateland->setTable('adv_privatelands');
-                $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                $approvedPrivateland->payment_amount = $req->payment_amount;
-                $approvedPrivateland->approve_date = Carbon::now();
-                $approvedPrivateland->zone = $zone;
-                $approvedPrivateland->save();
-
-                // Save in Priate Land Application Advertisement Renewal
-                $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                $approvedPrivateland->approve_date = Carbon::now();
-                $approvedPrivateland->setTable('adv_privateland_renewals');
-                $approvedPrivateland->id = $temp_id;
-                $approvedPrivateland->zone = $zone;
-                $approvedPrivateland->save();
+                    // Save in Priate Land Application Advertisement Renewal
+                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                    $approvedPrivateland->approve_date = Carbon::now();
+                    $approvedPrivateland->setTable('adv_privateland_renewals');
+                    $approvedPrivateland->id = $temp_id;
+                    $approvedPrivateland->zone = $zone;
+                    $approvedPrivateland->save();
 
 
-                $mAdvActivePrivateland->delete();
+                    $mAdvActivePrivateland->delete();
 
-                // Update in adv_privatelands (last_renewal_id)
+                    // Update in adv_privatelands (last_renewal_id)
 
-                DB::table('adv_privatelands')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedPrivateland->id]);
+                    DB::table('adv_privatelands')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedPrivateland->id]);
 
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                    
+                     //  Renewal Case
+                     // Privateland Advert Application replication
+                     $application_no=$mAdvActivePrivateland->application_no;
+                     AdvPrivateland::where('application_no', $application_no)->delete();
+ 
+                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                      $approvedPrivateland->setTable('adv_privatelands');
+                      $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
+                      $approvedPrivateland->payment_amount = $req->payment_amount;
+                      $approvedPrivateland->payment_status = $req->payment_status;
+                      $approvedPrivateland->approve_date = Carbon::now();
+                      $approvedPrivateland->save();
+  
+                      // Save in Privateland Advertisement Renewal
+                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                      $approvedPrivateland->approve_date = Carbon::now();
+                      $approvedPrivateland->setTable('adv_privateland_renewals');
+                      $approvedPrivateland->id = $temp_id;
+                      $approvedPrivateland->save();
+  
+                      $mAdvActivePrivateland->delete();
+  
+                      // Update in adv_privatelands (last_renewal_id)
+                      DB::table('adv_privatelands')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedPrivateland->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -823,7 +870,7 @@ class PrivateLandController extends Controller
     //     }
     // }
 
-    
+
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -848,7 +895,7 @@ class PrivateLandController extends Controller
         }
     }
 
-    
+
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -871,12 +918,13 @@ class PrivateLandController extends Controller
         }
     }
 
-    public function clearOrBounceCheque(Request $req){
+    public function clearOrBounceCheque(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'paymentId' => 'required|string',
             'status' => 'required|string',
-            'remarks' => $req->status==1?'nullable|string':'required|string',
-            'bounceAmount' => $req->status==1?'nullable|numeric':'required|numeric',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -886,12 +934,11 @@ class PrivateLandController extends Controller
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
-            if($req->status == '1' && $status == 1){
-                return responseMsgs(true, "Payment Successfully !!",'', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }else{
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
-            
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
@@ -914,19 +961,19 @@ class PrivateLandController extends Controller
         try {
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $status = $mAdvActivePrivateland->entryZone($req);
-            if ($status=='1') {
-                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);                
+            if ($status == '1') {
+                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);
             } else {
                 throw new Exception("Zone Not Added !!!");
             }
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
 
-    
-    
+
+
     /**
      * | Verify Single Application Approve or reject
      * |
@@ -961,7 +1008,7 @@ class PrivateLandController extends Controller
                 'userId' => $userId,
                 'workflowId' => $appDetails->workflow_id
             ]);
-           $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($appReq);
             if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
                 throw new Exception("Role Not Available");
 
@@ -989,8 +1036,8 @@ class PrivateLandController extends Controller
             }
 
 
-            
-           $reqs = [
+
+            $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
                 'action_taken_by' => $userId
@@ -1011,7 +1058,7 @@ class PrivateLandController extends Controller
         }
     }
 
-     /**
+    /**
      * | Check if the Document is Fully Verified or Not (4.1)
      */
     public function ifFullDocVerified($applicationId)
@@ -1035,7 +1082,7 @@ class PrivateLandController extends Controller
     }
 
 
-    
+
 
     /**
      *  send back to citizen
@@ -1093,7 +1140,7 @@ class PrivateLandController extends Controller
             $ulbId = $auth->ulb_id;
             $wardId = $this->getWardByUserId($userId);
 
-           $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
                 return $ward->ward_id;
             });
 
@@ -1128,7 +1175,7 @@ class PrivateLandController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -1158,5 +1205,4 @@ class PrivateLandController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
-
 }

@@ -250,6 +250,14 @@ class AdvAgency extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
             $mAdvAgency->payment_details = "By Cash";
+            if($mAdvAgency->renew_no==NULL){
+                $mAdvAgency->valid_from = Carbon::now();
+                $mAdvAgency->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+            }else{
+                $previousApplication=$this->findPreviousApplication($mAdvAgency->application_no);
+                $mAdvAgency->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
+                $mAdvAgency->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+            }
             $mAdvAgency->save();
             $renewal_id = $mAdvAgency->last_renewal_id;
 
@@ -261,5 +269,14 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->payment_details = "By Cash";
             return $mAdvAgencyRenewal->save();
         }
+    }
+
+    
+    // Find Previous Payment Date
+    public function findPreviousApplication($application_no){
+        return $details=AdvAgency::select('payment_date')
+                                    ->where('application_no',$application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
     }
 }

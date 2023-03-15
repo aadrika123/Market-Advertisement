@@ -49,6 +49,7 @@ class AdvActivePrivateland extends Model
             'entity_ward_id' => $req->entityWardId,
             'brand_display_name' => $req->brandDisplayName,
             'brand_display_address' => $req->brandDisplayAddress,
+            'holding_brand_display_address' => $req->brandDisplayHoldingNo,
             'display_area' => $req->displayArea,
             'display_type' => $req->displayType,
             'no_of_hoardings' => $req->noOfHoardings,
@@ -71,7 +72,7 @@ class AdvActivePrivateland extends Model
     {
         $metaReqs = [
             'applicant' => $req->applicant,
-            'application_no' => $req->applicationNo,
+            // 'application_no' => $req->applicationNo,
             'father' => $req->father,
             'email' => $req->email,
             'residence_address' => $req->residenceAddress,
@@ -163,6 +164,8 @@ class AdvActivePrivateland extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewalNo = ['renew_no' => 'LAND/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $details=AdvPrivateland::find($req->applicationId);                              // Find Previous Application No
+        $mApplicationNo=['application_no'=>$details->application_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -181,6 +184,7 @@ class AdvActivePrivateland extends Model
             ],
             $this->metaRenewReqs($req),
             $mRenewalNo,
+            $mApplicationNo,
             $ulbWorkflowReqs
         );
         // return $metaReqs;                                                                                      // Add Relative Path as Request and Client Ip Address etc.

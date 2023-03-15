@@ -5,6 +5,7 @@ namespace App\Models\Advertisements;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdvVehicle extends Model
 {
@@ -122,6 +123,14 @@ class AdvVehicle extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
             $mAdvVehicle->payment_details = "By Cash";
+            if($mAdvVehicle->renew_no==NULL){
+                $mAdvVehicle->valid_from = Carbon::now();
+                $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+            }else{
+                $previousApplication=$this->findPreviousApplication($mAdvVehicle->application_no);
+                $mAdvVehicle->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
+                $mAdvVehicle->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+            }  
             $mAdvVehicle->save();
             $renewal_id = $mAdvVehicle->last_renewal_id;
 
@@ -135,9 +144,29 @@ class AdvVehicle extends Model
         }
     }
 
+    // Find Previous Payment Date
+    public function findPreviousApplication($application_no){
+        return $details=AdvVehicle::select('payment_date')
+                                    ->where('application_no',$application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+    }
+
     
     public function applicationDetailsForRenew($appId){
-        $details=AdvVehicle::find($appId);
+        $details=AdvVehicle::select('adv_vehicles.*',
+                            'adv_vehicles.typology as typology_id',
+                            'adv_vehicles.display_type as display_type_id',
+                            'adv_vehicles.vehicle_type as vehicle_type_id',
+                            // 'adv_privatelands.installation_location as installation_location_id',
+                            'dt.string_parameter as display_type',
+                            'vt.string_parameter as vehicle_type',
+                            'typo.descriptions as typology',
+                            )
+                            ->leftJoin('ref_adv_paramstrings as dt','dt.id','=',DB::raw('adv_vehicles.display_type::int'))
+                            ->leftJoin('ref_adv_paramstrings as vt','vt.id','=',DB::raw('adv_vehicles.vehicle_type::int'))
+                            ->leftJoin('adv_typology_mstrs as typo','typo.id','=','adv_vehicles.typology')
+                            ->where('adv_vehicles.id',$appId)->first();
         if(!empty($details)){
             $mWfActiveDocument = new WfActiveDocument();
             $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);

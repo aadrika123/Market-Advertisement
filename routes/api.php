@@ -211,6 +211,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
 
         /*------------ Apply For Hording License -------------------*/
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
+        Route::post('advert/hording/renewal-hording', 'renewalHording');  // 20 ( Get Typology List )
         Route::post('advert/hording/list-typology', 'listTypology');  // 20 ( Get Typology List )
         Route::post('advert/hording/add-new-license', 'addNewLicense');  // 21 ( Save Application For Licence )
         Route::post('advert/hording/list-license-inbox', 'listLicenseInbox');             // 22 ( Application Inbox Lists )
@@ -233,8 +234,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-jsk-rejected-license-application', 'listJskRejectedLicenseApplication');          // 36 ( Rejected list for JSK)  
         Route::post('advert/hording/generate-license-payment-order-id', 'generateLicensePaymentOrderId');          // 37 ( Generate Payment Order ID)
         Route::post('advert/hording/get-license-application-details-for-payment', 'getLicenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
-        // Route::post('advert/hording/get-license-payment-details', 'getLicensePaymentDetails');          // 38 ( Application Details For Payments )
-        // Route::post('advert/hording/renewal-agency', 'renewalAgency');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/get-hording-details-for-renew', 'getHordingDetailsForRenew');          // 38 ( Application Details For Payments )
+        Route::post('advert/hording/renewal-hording', 'renewalHording');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/entry-cheque-dd-license', 'entryChequeDdLicense');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/clear-or-bounce-cheque-license', 'clearOrBounceChequeLicense');          // 19 ( Application Details For Payments )

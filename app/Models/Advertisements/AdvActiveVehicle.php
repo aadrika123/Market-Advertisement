@@ -149,6 +149,8 @@ class AdvActiveVehicle extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $details=AdvVehicle::find($req->applicationId);                              // Find Previous Application No
+        $mApplicationNo=['application_no'=>$details->application_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role' => $ulbWorkflows['initiator_role_id'],
@@ -165,6 +167,7 @@ class AdvActiveVehicle extends Model
             ],
             $this->metaRenewReqs($req),
             $mRenew,
+            $mApplicationNo,
             $ulbWorkflowReqs
         );
         // return $metaReqs;

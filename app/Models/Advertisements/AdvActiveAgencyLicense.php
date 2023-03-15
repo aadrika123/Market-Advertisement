@@ -99,10 +99,36 @@ class AdvActiveAgencyLicense extends Model
 
         ];
         return $metaReqs;
+    } public function hordingRenewMetaReqs($req)
+    {
+        $metaReqs = [      
+            'zone_id' => $req->zoneId,
+            // 'license_no' => $req->licenseNo,
+            'license_year' => $req->licenseYear,  
+            'typology' => $req->HordingType,               // Hording Type is Convert Into typology
+            'display_location' => $req->displayLocation, 
+            'width' => $req->width,
+            'length' => $req->length,  
+            'display_area' => $req->displayArea,
+            'longitude' => $req->longitude,   
+            'latitude' => $req->latitude,
+            'material' => $req->material,
+            'illumination' => $req->illumination,
+            'indicate_facing' => $req->indicateFacing,
+            'property_type' => $req->propertyType,
+            'display_land_mark' => $req->displayLandMark,
+            'property_owner_name' => $req->propertyOwnerName,
+            'property_owner_address' => $req->propertyOwnerAddress,
+            'property_owner_city' => $req->propertyOwnerCity,
+            'property_owner_whatsapp_no' => $req->propertyOwnerPincode,
+            'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
+            'user_id' => $req->userId,
+        ];
+        return $metaReqs;
     }
 
     /**
-     * | Store function to Licence apply
+     * | Store function to Hording apply
      * | @param request 
      */
     public function addNewLicense($req)
@@ -143,6 +169,55 @@ class AdvActiveAgencyLicense extends Model
         $this->uploadDocument($licenceId, $mDocuments);
 
         return $mLecenseNo['license_no'];
+    }
+
+
+    
+    /**
+     * | Store function to Licence apply
+     * | @param request 
+     */
+    public function renewalHording($req)
+    {
+        // Variable Initializing
+        $bearerToken = $req->bearerToken();
+        $LicencesMetaReqs = $this->hordingRenewMetaReqs($req);
+        $workflowId = $this->_workflowId;
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
+        $details=AdvAgency::find($req->applicationId);                              // Find Previous Application No
+        $mLicenseNo=['license_no'=>$details->license_no];
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+
+        // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
+
+        $LicencesMetaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress
+            ],
+            $this->hordingRenewMetaReqs($req),
+            $mRenewNo,
+            $mLicenseNo,
+            $ulbWorkflowReqs
+        );
+
+
+        $licenceId=AdvActiveAgencyLicense::create($LicencesMetaReqs)->id;
+
+        $mDocuments = $req->documents;
+        $this->uploadDocument($licenceId, $mDocuments);
+
+        return $mRenewNo['renew_no'];
     }
 
         /**

@@ -217,6 +217,7 @@ class VehicleAdvetController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['created_at'];
+            $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['timelineData'] = collect($req);
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
@@ -522,39 +523,68 @@ class VehicleAdvetController extends Controller
                 if ($zone === NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
-                // $typology=13;
+
                 $amount = $this->getMovableVehiclePayment($typology, $zone);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
                 // approved Vehicle Application replication
+                if ($mAdvActiveVehicle->renew_no == NULL) {
+                    $approvedVehicle = $mAdvActiveVehicle->replicate();
+                    $approvedVehicle->setTable('adv_vehicles');
+                    $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
+                    $approvedVehicle->payment_amount = $req->payment_amount;
+                    $approvedVehicle->approve_date = Carbon::now();
+                    $approvedVehicle->zone = $zone;
+                    $approvedVehicle->save();
 
-                $approvedVehicle = $mAdvActiveVehicle->replicate();
-                $approvedVehicle->setTable('adv_vehicles');
-                $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
-                $approvedVehicle->payment_amount = $req->payment_amount;
-                $approvedVehicle->approve_date = Carbon::now();
-                $approvedVehicle->zone = $zone;
-                $approvedVehicle->save();
-
-                // Save in vehicle Advertisement Renewal
-                $approvedVehicle = $mAdvActiveVehicle->replicate();
-                $approvedVehicle->approve_date = Carbon::now();
-                $approvedVehicle->setTable('adv_vehicle_renewals');
-                $approvedVehicle->id = $temp_id;
-                $approvedVehicle->zone = $zone;
-                $approvedVehicle->save();
+                    // Save in vehicle Advertisement Renewal
+                    $approvedVehicle = $mAdvActiveVehicle->replicate();
+                    $approvedVehicle->approve_date = Carbon::now();
+                    $approvedVehicle->setTable('adv_vehicle_renewals');
+                    $approvedVehicle->id = $temp_id;
+                    $approvedVehicle->zone = $zone;
+                    $approvedVehicle->save();
 
 
-                $mAdvActiveVehicle->delete();
+                    $mAdvActiveVehicle->delete();
 
-                // Update in adv_vehicles (last_renewal_id)
+                    // Update in adv_vehicles (last_renewal_id)
 
-                DB::table('adv_vehicles')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedVehicle->id]);
+                    DB::table('adv_vehicles')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedVehicle->id]);
 
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+
+                     //  Renewal Case
+                     // Vehicle Advert Application replication
+                     $application_no=$mAdvActiveVehicle->application_no;
+                     AdvVehicle::where('application_no', $application_no)->delete();
+ 
+                      $approvedVehicle = $mAdvActiveVehicle->replicate();
+                      $approvedVehicle->setTable('adv_vehicles');
+                      $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
+                      $approvedVehicle->payment_amount = $req->payment_amount;
+                      $approvedVehicle->approve_date = Carbon::now();
+                      $approvedVehicle->save();
+  
+                      // Save in Vehicle Advertisement Renewal
+                      $approvedVehicle = $mAdvActiveVehicle->replicate();
+                      $approvedVehicle->approve_date = Carbon::now();
+                      $approvedVehicle->setTable('adv_vehicle_renewals');
+                      $approvedVehicle->id = $temp_id;
+                      $approvedVehicle->save();
+  
+                      $mAdvActiveVehicle->delete();
+  
+                      // Update in adv_vehicles (last_renewal_id)
+                      DB::table('adv_vehicles')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedVehicle->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {

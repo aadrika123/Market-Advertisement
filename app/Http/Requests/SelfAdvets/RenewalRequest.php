@@ -28,7 +28,7 @@ class RenewalRequest extends FormRequest
         return [
             'ulbId' => 'required|integer',
             'applicantName' => 'required|string',
-            'applicationNo' => 'required|string',
+            'applicationId' => 'required|integer',
             'licenseYear' => 'required',
             'fatherName' => 'required',
             'email' => 'nullable|email',

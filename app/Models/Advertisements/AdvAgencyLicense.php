@@ -182,9 +182,16 @@ class AdvAgencyLicense extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgencyLicense->payment_date = Carbon::now();
             $mAdvAgencyLicense->payment_details = "By Cash";
+            if($mAdvAgencyLicense->renew_no==NULL){
+                $mAdvAgencyLicense->valid_from = Carbon::now();
+                $mAdvAgencyLicense->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+            }else{
+                $previousApplication=$this->findPreviousApplication($mAdvAgencyLicense->application_no);
+                $mAdvAgencyLicense->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
+                $mAdvAgencyLicense->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+            }
             $mAdvAgencyLicense->save();
             $renewal_id = $mAdvAgencyLicense->last_renewal_id;
-
 
             // Agency License Renewal Table Updation
             $mAdvAgencyLicenseRenewal = AdvAgencyLicenseRenewal::find($renewal_id);
@@ -196,4 +203,22 @@ class AdvAgencyLicense extends Model
         }
     }
 
+    
+    // Find Previous Payment Date
+    public function findPreviousApplication($application_no){
+        return $details=AdvAgencyLicense::select('payment_date')
+                                    ->where('application_no',$application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+    }
+    
+    public function applicationDetailsForRenew($appId){
+        $details=AdvAgencyLicense::find($appId);
+        if(!empty($details)){
+            $mWfActiveDocument = new WfActiveDocument();
+            $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);
+            $details['documents']=$documents;
+        }
+        return $details;
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agency\RenewalHordingRequest;
 use App\Http\Requests\Agency\RenewalRequest;
 use App\Http\Requests\Agency\StoreRequest;
 use App\Http\Requests\Agency\StoreLicenceRequest;
@@ -522,31 +523,62 @@ class AgencyController extends Controller
                 $req->request->add($payment_amount);
 
                 // approved Vehicle Application replication
+                $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
+                $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
+                if ($mAdvActiveAgency->renew_no == NULL) {
+                    $approvedAgency = $mAdvActiveAgency->replicate();
+                    $approvedAgency->setTable('adv_agencies');
+                    $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
+                    $approvedAgency->payment_amount = $req->payment_amount;
+                    $approvedAgency->approve_date = Carbon::now();
+                    $approvedAgency->save();
 
-                $approvedAgency = $mAdvActiveAgency->replicate();
-                $approvedAgency->setTable('adv_agencies');
-                $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
-                $approvedAgency->payment_amount = $req->payment_amount;
-                $approvedAgency->approve_date = Carbon::now();
-                $approvedAgency->save();
-
-                // Save in Agency Advertisement Renewal
-                $approvedAgency = $mAdvActiveAgency->replicate();
-                $approvedAgency->approve_date = Carbon::now();
-                $approvedAgency->setTable('adv_agency_renewals');
-                $approvedAgency->agencyadvet_id = $temp_id;
-                $approvedAgency->save();
+                    // Save in Agency Advertisement Renewal
+                    $approvedAgency = $mAdvActiveAgency->replicate();
+                    $approvedAgency->approve_date = Carbon::now();
+                    $approvedAgency->setTable('adv_agency_renewals');
+                    $approvedAgency->agencyadvet_id = $temp_id;
+                    $approvedAgency->save();
 
 
-                $mAdvActiveAgency->delete();
+                    $mAdvActiveAgency->delete();
 
-                // Update in adv_agencies (last_renewal_id)
+                    // Update in adv_agencies (last_renewal_id)
 
-                DB::table('adv_agencies')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedAgency->id]);
+                    DB::table('adv_agencies')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedAgency->id]);
 
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                    //  Renewal Case
+                    // Agency Advert Application replication
+                    $application_no = $mAdvActiveAgency->application_no;
+                    AdvAgency::where('application_no', $application_no)->delete();
+
+                    $approvedAgency = $mAdvActiveAgency->replicate();
+                    $approvedAgency->setTable('adv_agencies');
+                    $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
+                    $approvedAgency->payment_amount = $req->payment_amount;
+                    $approvedAgency->payment_status = $req->payment_status;
+                    $approvedAgency->approve_date = Carbon::now();
+                    $approvedAgency->save();
+
+                    // Save in Agency Advertisement Renewal
+                    $approvedAgency = $mAdvActiveAgency->replicate();
+                    $approvedAgency->approve_date = Carbon::now();
+                    $approvedAgency->setTable('adv_agency_renewals');
+                    $approvedAgency->id = $temp_id;
+                    $approvedAgency->save();
+
+                    $mAdvActiveAgency->delete();
+
+                    // Update in adv_agencies (last_renewal_id)
+                    DB::table('adv_agencies')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedAgency->id]);
+                    $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -1245,6 +1277,48 @@ class AgencyController extends Controller
         }
     }
 
+    public function getHordingDetailsForRenew(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $details = $mAdvAgencyLicense->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+     /**
+     * | Save Application For Licence
+     */
+    public function renewalHording(RenewalHordingRequest $req)
+    { 
+        try {
+            $mAdvActiveAgencyLicense = new AdvActiveAgencyLicense();
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+            DB::beginTransaction();
+            $RenewNo = $mAdvActiveAgencyLicense->renewalHording($req);       //<--------------- Model function to store 
+            DB::commit();
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $RenewNo['renew_no']], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
 
     /**
@@ -1604,38 +1678,67 @@ class AgencyController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // approved Vehicle Application replication
-                $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
-                $approvedAgencyLicense->setTable('adv_agency_licenses');
-                $temp_id = $approvedAgencyLicense->id = $mAdvActiveAgencyLicense->id;
-                $approvedAgencyLicense->payment_amount = $req->payment_amount;
-                $approvedAgencyLicense->approve_date = Carbon::now();
-                $approvedAgencyLicense->save();
+                if ($mAdvActiveAgencyLicense->renew_no == NULL) {
+                    // approved Hording Application replication
+                    $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
+                    $approvedAgencyLicense->setTable('adv_agency_licenses');
+                    $temp_id = $approvedAgencyLicense->id = $mAdvActiveAgencyLicense->id;
+                    $approvedAgencyLicense->payment_amount = $req->payment_amount;
+                    $approvedAgencyLicense->approve_date = Carbon::now();
+                    $approvedAgencyLicense->save();
 
-                // Save in Agency Advertisement Renewal
-                $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
-                $approvedAgencyLicense->approve_date = Carbon::now();
-                $approvedAgencyLicense->setTable('adv_agency_license_renewals');
-                $approvedAgencyLicense->licenseadvet_id = $temp_id;
-                $approvedAgencyLicense->save();
+                    // Save in Hording Renewal
+                    $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
+                    $approvedAgencyLicense->approve_date = Carbon::now();
+                    $approvedAgencyLicense->setTable('adv_agency_license_renewals');
+                    $approvedAgencyLicense->id = $temp_id;
+                    $approvedAgencyLicense->save();
 
+                    $mAdvActiveAgencyLicense->delete();
 
-                $mAdvActiveAgencyLicense->delete();
+                    // Update in adv_agency_licenses (last_renewal_id)
 
-                // Update in adv_agency_licenses (last_renewal_id)
+                    DB::table('adv_agency_licenses')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
 
-                DB::table('adv_agency_licenses')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
-
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                     
+                     //  Renewal Case
+                     // Hording Application replication
+                     $license_no=$mAdvActiveAgencyLicense->license_no;
+                     AdvAgencyLicense::where('license_no', $license_no)->delete();
+ 
+                      $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
+                      $approvedAgencyLicense->setTable('adv_agency_licenses');
+                      $temp_id = $approvedAgencyLicense->id = $mAdvActiveAgencyLicense->id;
+                      $approvedAgencyLicense->payment_amount = $req->payment_amount;
+                      $approvedAgencyLicense->payment_status = $req->payment_status;
+                      $approvedAgencyLicense->approve_date = Carbon::now();
+                      $approvedAgencyLicense->save();
+  
+                      // Save in Hording Advertisement Renewal
+                      $approvedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
+                      $approvedAgencyLicense->approve_date = Carbon::now();
+                      $approvedAgencyLicense->setTable('adv_agency_license_renewals');
+                      $approvedAgencyLicense->id = $temp_id;
+                      $approvedAgencyLicense->save();
+  
+                      $mAdvActiveAgencyLicense->delete();
+  
+                      // Update in adv_agency_licenses (last_renewal_id)
+                      DB::table('adv_agency_licenses')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
 
                 $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
-
 
                 // Agency advertisement Application replication
                 $rejectedAgencyLicense = $mAdvActiveAgencyLicense->replicate();
@@ -1654,7 +1757,7 @@ class AgencyController extends Controller
         }
     }
 
-    public function  getHordingPrice($typology_id, $zone = 'A')
+    public function getHordingPrice($typology_id, $zone = 'A')
     {
         return DB::table('adv_typology_mstrs')
             ->select(DB::raw("case when $zone = 1 then rate_zone_a

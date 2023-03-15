@@ -388,6 +388,8 @@ class AdvActiveAgency extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'AGENCY/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $details=AdvAgency::find($req->applicationId);                              // Find Previous Application No
+        $mApplicationNo=['application_no'=>$details->application_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -406,6 +408,7 @@ class AdvActiveAgency extends Model
             ],
             $this->renewalReqs($req),
             $mRenewNo,
+            $mApplicationNo,
             $ulbWorkflowReqs
         ); 
 

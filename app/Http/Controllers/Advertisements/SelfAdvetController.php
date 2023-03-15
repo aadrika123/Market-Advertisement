@@ -161,7 +161,7 @@ class SelfAdvetController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo['renew_no']], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -754,7 +754,7 @@ class SelfAdvetController extends Controller
                      DB::table('adv_selfadvertisements')
                          ->where('id', $temp_id)
                          ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
-                     $msg = "Application Successfully Approved !!";
+                     $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection

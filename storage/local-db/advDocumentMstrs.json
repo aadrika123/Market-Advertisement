@@ -904,5 +904,48 @@
             "module_id":5,
             "docVal":"Gst"
         }
+    ],
+    "HordingRenew":[
+        
+        {
+            "id":100,
+            "document_name":"Building Permit/Property Tax",
+            "workflow_id":134,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"BUILDING_PERMIT/PROPERTY_TAX",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Building Permit/Property Tax"
+        },
+        {
+            "id":101,
+            "document_name":"Pan No Document",
+            "workflow_id":134,
+            "relative_name":"PAN NO",
+            "docCode":"PAN_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pan No Document"
+        },
+        {
+            "id":102,
+            "document_name":"Service Tax No",
+            "workflow_id":134,
+            "relative_name":"SERVICE TAX NO",
+            "docCode":"SERVICE_TAX_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Service Tax No"
+        },
+        {
+            "id":103,
+            "document_name":"Pending Dues Document",
+            "workflow_id":134,
+            "relative_name":"PENDING DUES",
+            "docCode":"PENDING_DUES",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pending Dues"
+        }
     ]
 }

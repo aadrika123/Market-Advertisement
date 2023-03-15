@@ -27,7 +27,7 @@ class RenewalRequest extends FormRequest
     {
         return [
             'applicant' => 'required',
-            'applicationNo'=>'required|string',
+            'applicationId'=>'required|integer',
             'father' => 'required',
             'email' => 'required|email',
             'residenceAddress' => 'required',
