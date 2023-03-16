@@ -37,8 +37,20 @@ class AdvVehicle extends Model
      */
     public function listApproved($citizenId,$userType)
     {
-
         $allApproveList = $this->allApproveList();
+        foreach($allApproveList as $key => $list){
+            $current_date=carbon::now()->format('Y-m-d');
+            $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+            if($current_date >= $notify_date){
+                $allApproveList[$key]['renew_option']='1';     // Renew option Show
+            }
+            if($current_date < $notify_date){
+                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show
+            }
+            if($list['valid_upto'] < $current_date){
+                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired
+            }
+        }
         if($userType=='Citizen'){
             return collect($allApproveList->where('citizen_id', $citizenId))->values();
         }else{
@@ -158,14 +170,19 @@ class AdvVehicle extends Model
                             'adv_vehicles.typology as typology_id',
                             'adv_vehicles.display_type as display_type_id',
                             'adv_vehicles.vehicle_type as vehicle_type_id',
-                            // 'adv_privatelands.installation_location as installation_location_id',
                             'dt.string_parameter as display_type',
                             'vt.string_parameter as vehicle_type',
                             'typo.descriptions as typology',
+                            'w.ward_name',
+                            'pw.ward_name as permanent_ward_name',
+                            'ulb.ulb_name',
                             )
                             ->leftJoin('ref_adv_paramstrings as dt','dt.id','=',DB::raw('adv_vehicles.display_type::int'))
                             ->leftJoin('ref_adv_paramstrings as vt','vt.id','=',DB::raw('adv_vehicles.vehicle_type::int'))
                             ->leftJoin('adv_typology_mstrs as typo','typo.id','=','adv_vehicles.typology')
+                            ->leftJoin('ulb_ward_masters as w','w.id','=','adv_vehicles.ward_id')
+                            ->leftJoin('ulb_ward_masters as pw','pw.id','=','adv_vehicles.permanent_ward_id')
+                            ->leftJoin('ulb_masters as ulb','ulb.id','=','adv_vehicles.ulb_id')
                             ->where('adv_vehicles.id',$appId)->first();
         if(!empty($details)){
             $mWfActiveDocument = new WfActiveDocument();

@@ -5,7 +5,7 @@ namespace App\Models\Advertisements;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 
 class AdvSelfadvertisement extends Model
 {
@@ -42,10 +42,15 @@ class AdvSelfadvertisement extends Model
     {
         $allApproveList = $this->allApproveList();
         foreach($allApproveList as $key => $list){
+            $activeSelf=AdvActiveSelfadvertisement::where('application_no',$list['application_no'])->count();
             $current_date=carbon::now()->format('Y-m-d');
             $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
             if($current_date >= $notify_date){
-                $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                if($activeSelf==0){
+                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                }else{
+                    $allApproveList[$key]['renew_option']='0';     // Already Renew
+                }
             }
             if($current_date < $notify_date){
                 $allApproveList[$key]['renew_option']='0';      // Renew option Not Show
@@ -59,23 +64,6 @@ class AdvSelfadvertisement extends Model
         } else {
             return collect($allApproveList)->values();
         }
-        // return AdvSelfadvertisement::where('citizen_id', $citizenId)
-        //     ->select(
-        //         'id',
-        //         'application_no',
-        //         'application_date',
-        //         'applicant',
-        //         'entity_name',
-        //         'entity_address',
-        //         'old_application_no',
-        //         'payment_status',
-        //         'payment_amount',
-        //         'approve_date',
-        //         'ulb_id',
-        //         'workflow_id',
-        //     )
-        //     ->orderByDesc('temp_id')
-        //     ->get();
     }
 
     /**
@@ -139,7 +127,6 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id=$mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId/".time();
-            // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_details = "By Cash";
             if($mAdvSelfadvertisement->renew_no==NULL){
@@ -173,7 +160,23 @@ class AdvSelfadvertisement extends Model
 
 
     public function applicationDetailsForRenew($appId){
-        $details=AdvSelfadvertisement::find($appId);
+        $details=AdvSelfadvertisement::select('adv_selfadvertisements.*',
+                                        'adv_selfadvertisements.license_year as license_year_id',
+                                        'adv_selfadvertisements.installation_location as installation_location_id',
+                                        'ly.string_parameter as license_year_name',
+                                        'ew.string_parameter as entity_ward_name',
+                                        'il.string_parameter as installation_location_name',
+                                        'w.ward_name',
+                                        'pw.ward_name as permanent_ward_name',
+                                        'ulb.ulb_name',
+                                        )
+                                        ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('adv_selfadvertisements.license_year::int'))
+                                        ->leftJoin('ref_adv_paramstrings as ew','ew.id','=',DB::raw('adv_selfadvertisements.entity_ward_id::int'))
+                                        ->leftJoin('ref_adv_paramstrings as il','il.id','=',DB::raw('adv_selfadvertisements.installation_location::int'))
+                                        ->leftJoin('ulb_ward_masters as w','w.id','=','adv_selfadvertisements.ward_id')
+                                        ->leftJoin('ulb_ward_masters as pw','pw.id','=','adv_selfadvertisements.permanent_ward_id')
+                                        ->leftJoin('ulb_masters as ulb','ulb.id','=','adv_selfadvertisements.ulb_id')
+                                        ->where('adv_selfadvertisements.id',$appId)->first();
         if(!empty($details)){
             $mWfActiveDocument = new WfActiveDocument();
             $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);

@@ -66,27 +66,29 @@ class ParamController extends Controller
         $redis = Redis::connection();
         try {
             $mUlbId = $req->ulbId;
-            $data = json_decode(Redis::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
-            $bearer = $req->bearerToken();
+            // $data = json_decode(Redis::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
+            $data = json_decode(Redis::get('adv_param_strings'));      // Get Value from Redis Cache Memory
+            // $bearer = $req->bearerToken();
             if (!$data) {                                                        // If Cache Memory is not available
                 $data = array();
-                $baseUrl = Config::get('constants.BASE_URL');
+                // $baseUrl = Config::get('constants.BASE_URL');
                 $mParamString = new RefAdvParamstring();
-                $strings = $mParamString->masters($mUlbId);
+                // $strings = $mParamString->masters($mUlbId);
+                $strings = $mParamString->masters();
                 $data['paramCategories'] = remove_null($strings->groupBy('param_category')->toArray());
                 // Get Wards By Ulb Id
-                $mWards = Http::withHeaders([
-                    "Authorization" => "Bearer $bearer",
-                    "contentType" => "application/json"
+                // $mWards = Http::withHeaders([
+                //     "Authorization" => "Bearer $bearer",
+                //     "contentType" => "application/json"
 
-                ])->post($baseUrl . 'api/workflow/getWardByUlb', [
-                    "ulbId" => $mUlbId
-                ]);
+                // ])->post($baseUrl . 'api/workflow/getWardByUlb', [
+                //     "ulbId" => $mUlbId
+                // ]);
 
-                if (!$mWards)
-                    throw new Exception("Wards not found");
+                // if (!$mWards)
+                //     throw new Exception("Wards not found");
 
-                $data['wards'] = $mWards['data'];
+                // $data['wards'] = $mWards['data'];
 
                 $mAdvTypologyMstr = new AdvTypologyMstr();
                 $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List

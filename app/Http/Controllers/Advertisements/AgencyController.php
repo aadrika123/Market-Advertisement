@@ -1313,7 +1313,7 @@ class AgencyController extends Controller
             DB::beginTransaction();
             $RenewNo = $mAdvActiveAgencyLicense->renewalHording($req);       //<--------------- Model function to store 
             DB::commit();
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $RenewNo['renew_no']], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $RenewNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1593,14 +1593,16 @@ class AgencyController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = AdvRejectedAgencyLicense::find($req->applicationId)->temp_id;
-            } elseif ($req->type == 'Approve') {
-                $appId = AdvActiveAgencyLicense::find($req->applicationId)->temp_id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId,  $this->_hordingWorkflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     // $appId = AdvRejectedAgencyLicense::find($req->applicationId)->temp_id;
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Approve') {
+            //     // $appId = AdvActiveAgencyLicense::find($req->applicationId)->temp_id;
+            //     $appId = $req->applicationId;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $this->_hordingWorkflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -1704,8 +1706,8 @@ class AgencyController extends Controller
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                     
-                     //  Renewal Case
+                     //  Renewal Application Case
+
                      // Hording Application replication
                      $license_no=$mAdvActiveAgencyLicense->license_no;
                      AdvAgencyLicense::where('license_no', $license_no)->delete();
@@ -1766,7 +1768,6 @@ class AgencyController extends Controller
                         else 0 end as rate"))
             ->where('id', $typology_id)
             ->first()->rate;
-        //    return $price;
     }
 
     /**
@@ -2345,9 +2346,6 @@ class AgencyController extends Controller
         }
     }
 
-    // public function checkFullLicenseUpload1(){
-    //     return $this->checkFullLicenseUpload(56);
-    // }
     public function checkFullLicenseUpload($applicationId)
     {
         $docCode = $this->_hordingDocCode;
@@ -2387,6 +2385,30 @@ class AgencyController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+        /**
+     * | Approve License Application List for Citzen
+     * | @param Request $req
+     */
+    public function getRenewActiveApplications(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->getRenewActiveApplications($citizenId, $userId);
+            $totalApplication = count($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 }

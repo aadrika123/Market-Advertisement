@@ -22,7 +22,6 @@ class AdvRejectedSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status',
                 'rejected_date',
             )
@@ -43,7 +42,6 @@ class AdvRejectedSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
                 'payment_status',
                 'rejected_date',
             )

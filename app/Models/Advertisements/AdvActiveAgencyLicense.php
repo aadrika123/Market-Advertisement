@@ -186,7 +186,7 @@ class AdvActiveAgencyLicense extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
-        $details=AdvAgency::find($req->applicationId);                              // Find Previous Application No
+        $req->applicationId; $details=AdvAgencyLicense::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo=['license_no'=>$details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -195,8 +195,6 @@ class AdvActiveAgencyLicense extends Model
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
-
-        // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
 
         $LicencesMetaReqs = array_merge(
             [
@@ -210,13 +208,9 @@ class AdvActiveAgencyLicense extends Model
             $mLicenseNo,
             $ulbWorkflowReqs
         );
-
-
-        $licenceId=AdvActiveAgencyLicense::create($LicencesMetaReqs)->id;
-
+       $licenceId=AdvActiveAgencyLicense::create($LicencesMetaReqs)->id;
         $mDocuments = $req->documents;
         $this->uploadDocument($licenceId, $mDocuments);
-
         return $mRenewNo['renew_no'];
     }
 
@@ -380,9 +374,6 @@ class AdvActiveAgencyLicense extends Model
             ->first();
     }
 
-
-
-    
     /**
      * | Get Application License Details by id
      * | @param Agencies License id

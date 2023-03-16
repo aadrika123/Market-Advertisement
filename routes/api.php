@@ -211,7 +211,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
 
         /*------------ Apply For Hording License -------------------*/
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
-        Route::post('advert/hording/renewal-hording', 'renewalHording');  // 20 ( Get Typology List )
+        // Route::post('advert/hording/renewal-hording', 'renewalHording');  // 20 ( Get Typology List )
         Route::post('advert/hording/list-typology', 'listTypology');  // 20 ( Get Typology List )
         Route::post('advert/hording/add-new-license', 'addNewLicense');  // 21 ( Save Application For Licence )
         Route::post('advert/hording/list-license-inbox', 'listLicenseInbox');             // 22 ( Application Inbox Lists )
@@ -244,12 +244,12 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-btc-inbox', 'listLicenseBtcInbox');          // 19 ( Application Details For Payments )
         // Route::post('advert/hording/check-full-upload', 'checkFullLicenseUpload1');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/reupload-document', 'reuploadLicenseDocument');          // 19 ( Application Details For Payments )
+        Route::post('advert/hording/get-renew-active-applications', 'getRenewActiveApplications'); // (Get Agency Dashboard)
 
         //================================= Other Apis ===========================
         Route::post('advert/agency/is-agency', 'isAgency'); // (Get Agency Approve or not By Login Token)
         Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); // (Get Agency Dashboard)
-
-
+        Route::post('advert/hording/get-renew-application', 'getRenewApplication'); // (Get Agency Dashboard)
     });
 
     /**

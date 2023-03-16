@@ -14,7 +14,6 @@ class AdvAgency extends Model
 
     public function getagencyDetails($id)
     {
-        // $details = AdvAgency::where('id', $id)->first(); 
        $details1=DB::table('adv_agencies')
                     ->select('adv_agencies.*','et.string_parameter as entity_type_name')
                     ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
@@ -41,7 +40,7 @@ class AdvAgency extends Model
                     'adv_active_agencydirectors.*',
                     DB::raw("CONCAT(adv_active_agencydirectors.relative_path,'/',adv_active_agencydirectors.doc_name) as document_path")
                 )
-                ->where('agency_id', $details['temp_id'])
+                ->where('agency_id', $details['id'])
                 ->get();
             $details['directors'] = remove_null($directors->toArray());
         }
