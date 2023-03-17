@@ -9,10 +9,14 @@ use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyLicense;
+use App\Models\Advertisements\AdvAgencyRenewal;
 use App\Models\Advertisements\AdvPrivateland;
+use App\Models\Advertisements\AdvPrivatelandRenewal;
 use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Advertisements\AdvSelfadvetRenewal;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\AdvVehicle;
+use App\Models\Advertisements\AdvVehicleRenewal;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarDharamshala;
@@ -142,9 +146,6 @@ class ParamController extends Controller
         return $metaReqs;
     }
 
-
-
-
     /**
      * Summary of payment Success Failure of all Types of Advertisment 
      * @return void
@@ -162,14 +163,30 @@ class ParamController extends Controller
                 'payment_details' => $req->all(),
             ];
 
-
             if ($req->workflowId == $this->_selfAdvt) { // Self Advertisement Payment
-
-                DB::table('adv_selfadvertisements')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('adv_selfadvertisements')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
+
+                $mAdvSelfadvertisement->payment_date= Carbon::now();
+                $mAdvSelfadvertisement->payment_status= 1;
+                $mAdvSelfadvertisement->payment_id= $req->paymentId;
+                $mAdvSelfadvertisement->payment_details= $req->all();
+
+                if($mAdvSelfadvertisement->renew_no==NULL){
+                    $mAdvSelfadvertisement->valid_from = Carbon::now();
+                    $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvSelfadvetRenewal::select('payment_date')
+                                                ->where('application_no',$mAdvSelfadvertisement->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mAdvSelfadvertisement->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $mAdvSelfadvertisement->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                }
+                $mAdvSelfadvertisement->save();
 
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
@@ -177,13 +194,26 @@ class ParamController extends Controller
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
-
-                DB::table('adv_vehicles')
-                    ->where('id', $req->id)
-                    ->update($updateData);
-
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
+                $mAdvVehicle->payment_date= Carbon::now();
+                $mAdvVehicle->payment_status= 1;
+                $mAdvVehicle->payment_id= $req->paymentId;
+                $mAdvVehicle->payment_details= $req->all();
+
+                if($mAdvVehicle->renew_no==NULL){
+                    $mAdvVehicle->valid_from = Carbon::now();
+                    $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvVehicleRenewal::select('payment_date')
+                                                ->where('application_no',$mAdvVehicle->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mAdvVehicle->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $mAdvVehicle->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                }
+                $mAdvVehicle->save();
+               
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
                 DB::table('adv_vehicle_renewals')
@@ -191,24 +221,59 @@ class ParamController extends Controller
                     ->update($updateData);
             } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
 
-                DB::table('adv_agencies')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('adv_agencies')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
-                $mAdvVehicle = AdvAgency::find($req->id);
+                $mAdvAgency = AdvAgency::find($req->id);
+
+                $mAdvAgency->payment_date= Carbon::now();
+                $mAdvAgency->payment_status= 1;
+                $mAdvAgency->payment_id= $req->paymentId;
+                $mAdvAgency->payment_details= $req->all();
+
+                if($mAdvAgency->renew_no==NULL){
+                    $mAdvAgency->valid_from = Carbon::now();
+                    $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
+                }else{
+                    $details=AdvAgencyRenewal::select('payment_date')
+                                                ->where('license_no',$mAdvAgency->license_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mAdvAgency->valid_from = date("Y-m-d ",strtotime("+5 Years -1 days", $details->Payment_date));
+                    $mAdvAgency->valid_upto = date("Y-m-d ",strtotime("+10 Years -1 days", $details->Payment_date));
+                }
+                $mAdvAgency->save();
 
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
                 DB::table('adv_agency_renewals')
-                    ->where('id', $mAdvVehicle->last_renewal_id)
+                    ->where('id', $mAdvAgency->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
 
-                DB::table('adv_privatelands')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('adv_privatelands')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
+                $mAdvPrivateland->payment_date= Carbon::now();
+                $mAdvPrivateland->payment_status= 1;
+                $mAdvPrivateland->payment_id= $req->paymentId;
+                $mAdvPrivateland->payment_details= $req->all();
+
+                if($mAdvPrivateland->renew_no==NULL){
+                    $mAdvPrivateland->valid_from = Carbon::now();
+                    $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvPrivatelandRenewal::select('payment_date')
+                                                ->where('license_no',$mAdvPrivateland->license_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mAdvPrivateland->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $mAdvPrivateland->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                }
+                $mAdvPrivateland->save();
 
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
@@ -217,11 +282,28 @@ class ParamController extends Controller
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
 
-                DB::table('adv_agency_licenses')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('adv_agency_licenses')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mAdvAgencyLicense = AdvAgencyLicense::find($req->id);
+                $mAdvAgencyLicense->payment_date= Carbon::now();
+                $mAdvAgencyLicense->payment_status= 1;
+                $mAdvAgencyLicense->payment_id= $req->paymentId;
+                $mAdvAgencyLicense->payment_details= $req->all();
+
+                if($mAdvAgencyLicense->renew_no==NULL){
+                    $mAdvAgencyLicense->valid_from = Carbon::now();
+                    $mAdvAgencyLicense->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvAgencyLicense::select('payment_date')
+                                                ->where('license_no',$mAdvAgencyLicense->license_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mAdvAgencyLicense->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $mAdvAgencyLicense->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                }
+                $mAdvAgencyLicense->save();
 
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
@@ -281,7 +363,6 @@ class ParamController extends Controller
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
             }
-
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -304,7 +385,6 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-
             // Get Advertesement Payment Details
             if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();

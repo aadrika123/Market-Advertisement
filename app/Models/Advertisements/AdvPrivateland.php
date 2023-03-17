@@ -114,7 +114,11 @@ class AdvPrivateland extends Model
             $pay_id=$mAdvPrivateland->payment_id = "Cash-$req->applicationId/".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
-            $mAdvPrivateland->payment_details = "By Cash";
+            // $mAdvPrivateland->payment_details = "By Cash";
+
+            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvPrivateland->payment_amount,'workflowId'=>$mAdvPrivateland->workflow_id,'userId'=>$mAdvPrivateland->citizen_id,'ulbId'=>$mAdvPrivateland->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+            
+            $mAdvPrivateland->payment_details = json_encode($payDetails);
             if($mAdvPrivateland->renew_no==NULL){
                 $mAdvPrivateland->valid_from = Carbon::now();
                 $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -132,7 +136,7 @@ class AdvPrivateland extends Model
             $mAdvPrivatelandRenewal->payment_status = 1;
             $mAdvPrivatelandRenewal->payment_id =  $pay_id;
             $mAdvPrivatelandRenewal->payment_date = Carbon::now();
-            $mAdvPrivatelandRenewal->payment_details = "By Cash";
+            $mAdvPrivatelandRenewal->payment_details = json_encode($payDetails);
             return $mAdvPrivatelandRenewal->save();
         }
     }
@@ -155,6 +159,7 @@ class AdvPrivateland extends Model
                                         'typo.descriptions as typology',
                                         'w.ward_name',
                                         'pw.ward_name as permanent_ward_name',
+                                        'ew.ward_name as entity_ward_name',
                                         'ulb.ulb_name',
                                         )
                                 ->leftJoin('ref_adv_paramstrings as il','il.id','=',DB::raw('adv_privatelands.installation_location::int'))
@@ -162,6 +167,7 @@ class AdvPrivateland extends Model
                                 ->leftJoin('ref_adv_paramstrings as dt','dt.id','=',DB::raw('adv_privatelands.display_type::int'))
                                 ->leftJoin('ulb_ward_masters as w','w.id','=',DB::raw('adv_privatelands.ward_id::int'))
                                 ->leftJoin('ulb_ward_masters as pw','pw.id','=',DB::raw('adv_privatelands.permanent_ward_id::int'))
+                                ->leftJoin('ulb_ward_masters as ew','ew.id','=',DB::raw('adv_privatelands.entity_ward_id::int'))
                                 ->leftJoin('ulb_masters as ulb','ulb.id','=',DB::raw('adv_privatelands.ulb_id::int'))
                                 ->where('adv_privatelands.id',$appId)->first();
         if(!empty($details)){

@@ -229,9 +229,8 @@ class PrivateLandController extends Controller
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
             $fullDetailsData['zone'] = $data['zone'];
-
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
-
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
@@ -429,38 +428,20 @@ class PrivateLandController extends Controller
     /**
      * | Get Uploaded Document by application ID
      */
-    // public function uploadDocumentsView(Request $req)
-    // {
-    //     $mAdvActivePrivateland = new AdvActivePrivateland();
-    //     $data = array();
-    //     $fullDetailsData = array();
-    //     if ($req->applicationId) {
-    //         $data = $mAdvActivePrivateland->details($req->applicationId, $this->_workflowIds);
-    //     }
-
-    //     // $fullDetailsData['application_no'] = $data['application_no'];
-    //     // $fullDetailsData['apply_date'] = $data['application_date'];
-    //     $fullDetailsData = $data['documents'];
-
-
-    //     $data1['data'] = $fullDetailsData;
-    //     return $data1;
-    // }
-
 
     public function viewPvtLandDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = AdvRejectedPrivateland::find($req->applicationId)->temp_id;
-            } elseif ($req->type == 'Approve') {
-                $appId = AdvPrivateland::find($req->applicationId)->temp_id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     $appId = AdvRejectedPrivateland::find($req->applicationId)->temp_id;
+            // } elseif ($req->type == 'Approve') {
+            //     $appId = AdvPrivateland::find($req->applicationId)->temp_id;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -563,18 +544,14 @@ class PrivateLandController extends Controller
                     $approvedPrivateland->zone = $zone;
                     $approvedPrivateland->save();
 
-
                     $mAdvActivePrivateland->delete();
-
                     // Update in adv_privatelands (last_renewal_id)
-
                     DB::table('adv_privatelands')
                         ->where('id', $temp_id)
                         ->update(['last_renewal_id' => $approvedPrivateland->id]);
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                    
                      //  Renewal Case
                      // Privateland Advert Application replication
                      $application_no=$mAdvActivePrivateland->application_no;
@@ -596,7 +573,6 @@ class PrivateLandController extends Controller
                       $approvedPrivateland->save();
   
                       $mAdvActivePrivateland->delete();
-  
                       // Update in adv_privatelands (last_renewal_id)
                       DB::table('adv_privatelands')
                           ->where('id', $temp_id)
@@ -606,11 +582,8 @@ class PrivateLandController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
-
                 $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
-
-
                 // Privateland advertisement Application replication
                 $rejectedPrivateland = $mAdvActivePrivateland->replicate();
                 $rejectedPrivateland->setTable('adv_rejected_privatelands');

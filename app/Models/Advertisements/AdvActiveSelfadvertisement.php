@@ -151,12 +151,11 @@ class AdvActiveSelfadvertisement extends Model
          );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
          $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
          $this->uploadDocument($tempId, $mDocuments);
- 
          return $mRenewNo;
      }
 
 
-       /**
+   /**
      * upload Document By Admin
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -188,31 +187,6 @@ class AdvActiveSelfadvertisement extends Model
         });
     }
 
-    /**
-     * | Document Upload (1.1)
-     * | @param applicationId Application Id
-     * | @param document Uploading Document
-      * */
-    // public function workflowUploadDocument($req)
-    // {
-    //     // return $req;
-    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
-    //     $mDocService = new DocumentUpload;
-    //     $mRelativePath = Config::get('constants.SELF_ADVET.RELATIVE_PATH');
-    //     $workflowId = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
-
-    //     $mDocName = $mDocService->upload($req->docRefName, $req->document, $mRelativePath);
-    //     $docUploadReqs = [
-    //         'tempId' => $req->applicationId,
-    //         'docTypeCode' => 'Test-Code',
-    //         'documentId' => $req->docMstrId,
-    //         'relativePath' => $mRelativePath,
-    //         'docName' => $mDocName,
-    //         'workflowId'=>$workflowId
-    //     ];
-    //     $docUploadReqs = new Request($docUploadReqs);
-    //     $mAdvDocument->store($docUploadReqs);
-    // }
 
     /**
      * | Get Citizen Applied applications
@@ -234,17 +208,7 @@ class AdvActiveSelfadvertisement extends Model
             )
             ->orderByDesc('id')
             ->get();
-
-            // $lists = $list->map(function($item, $key) {
-            //     $doclist = WfActiveDocument::where('active_id', '=', $item['id'])->where('current_status','=','1')->where('verify_status','=','2')->get();
-            //     $count = $doclist->count();
-            //     if($count>0){
-            //         return $key['documentReject']='1';
-            //     }else{
-            //         return $key['documentReject']='0';
-            //     }
-            // });
-            return $list;
+        return $list;
     }
 
     /**
@@ -371,7 +335,7 @@ class AdvActiveSelfadvertisement extends Model
     }
 
 
-      /**
+    /**
      * | Get Jsk Applied applications
      * | @param userId
      */
@@ -390,7 +354,10 @@ class AdvActiveSelfadvertisement extends Model
             ->orderByDesc('id')
             ->get();
     }
-
+    
+    /**
+     * | Get Application Details By Id
+     */
     public function getSelfAdvertNo($appId)
     {
         return AdvActiveSelfadvertisement::select('*')
@@ -398,12 +365,14 @@ class AdvActiveSelfadvertisement extends Model
             ->first();
     }
 
+    /**
+     * | Get Self Advertesement List ULB Wise
+     */
     public function getSelfAdvertisementList($ulbId)
     {
         return AdvActiveSelfadvertisement::select('*')
             ->where('adv_active_selfadvertisements.ulb_id', $ulbId);
     }
-
 
     /**
      * | Reupload Documents
@@ -432,8 +401,5 @@ class AdvActiveSelfadvertisement extends Model
         $docDetails->current_status='0';
         $docDetails->save();
         return $docDetails['active_id'];
-    }
-
-   
-
+    } 
 }

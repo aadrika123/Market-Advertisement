@@ -246,6 +246,13 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/reupload-document', 'reuploadLicenseDocument');          // 19 ( Application Details For Payments )
         Route::post('advert/hording/get-renew-active-applications', 'getRenewActiveApplications'); // (Get Agency Dashboard)
 
+        Route::post('advert/hording/list-expired-hording', 'listExpiredHording'); // (Get Expired Hording)
+        Route::post('advert/hording/archived-hording', 'archivedHording'); // (Archieves Hording)
+        Route::post('advert/hording/list-hording-archived', 'listHordingArchived'); // (list Expired Hording)
+        Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // (Blacklist Hording)
+        Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // (list Blacklist Hording)
+
+
         //================================= Other Apis ===========================
         Route::post('advert/agency/is-agency', 'isAgency'); // (Get Agency Approve or not By Login Token)
         Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); // (Get Agency Dashboard)

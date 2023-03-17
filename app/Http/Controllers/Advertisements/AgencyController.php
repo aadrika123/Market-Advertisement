@@ -193,7 +193,6 @@ class AgencyController extends Controller
                 throw new Exception("Not Pass Application Id");
             }
 
-
             // Basic Details
             $basicDetails = $this->generateAgencyBasicDetails($data); // Trait function to get Basic Details
             $basicElement = [
@@ -226,7 +225,8 @@ class AgencyController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['apply_date'] = $data['application_date'];            
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
@@ -433,14 +433,14 @@ class AgencyController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = AdvRejectedAgency::find($req->applicationId)->temp_id;
-            } elseif ($req->type == 'Approve') {
-                $appId = AdvAgency::find($req->applicationId)->temp_id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     $appId = AdvRejectedAgency::find($req->applicationId)->temp_id;
+            // } elseif ($req->type == 'Approve') {
+            //     $appId = AdvAgency::find($req->applicationId)->temp_id;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -485,9 +485,6 @@ class AgencyController extends Controller
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
-
-
-
     /**
      * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
      * | Rating-
@@ -514,14 +511,12 @@ class AgencyController extends Controller
 
             DB::beginTransaction();
             // Approval
-
             if ($req->status == 1) {
                 $payment_amount = ['payment_amount' =>  $this->_agencyRegPrice];                            // Agency Reg Price
                 if ($mAdvActiveAgency->renewal == 1) {
                     $payment_amount = ['payment_amount' => $this->_agencyRenewPrice];                        // Agency Renew Price
                 }
                 $req->request->add($payment_amount);
-
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
@@ -540,11 +535,8 @@ class AgencyController extends Controller
                     $approvedAgency->agencyadvet_id = $temp_id;
                     $approvedAgency->save();
 
-
                     $mAdvActiveAgency->delete();
-
                     // Update in adv_agencies (last_renewal_id)
-
                     DB::table('adv_agencies')
                         ->where('id', $temp_id)
                         ->update(['last_renewal_id' => $approvedAgency->id]);
@@ -572,7 +564,6 @@ class AgencyController extends Controller
                     $approvedAgency->save();
 
                     $mAdvActiveAgency->delete();
-
                     // Update in adv_agencies (last_renewal_id)
                     DB::table('adv_agencies')
                         ->where('id', $temp_id)
@@ -582,10 +573,8 @@ class AgencyController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
-
                 $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
-
 
                 // Agency advertisement Application replication
                 $rejectedAgency = $mAdvActiveAgency->replicate();
@@ -619,7 +608,6 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
@@ -653,10 +641,6 @@ class AgencyController extends Controller
         }
     }
 
-
-
-
-
     /**
      * | Get Applied Applications by Logged In JSK
      */
@@ -679,7 +663,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Approve Application List for JSK
@@ -704,7 +687,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * | Reject Application List for JSK
      * | @param Request $req
@@ -727,9 +709,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
-
 
     /**
      * | Generate Payment Order ID
@@ -776,7 +755,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * Summary of application Details For Payment
@@ -855,8 +833,6 @@ class AgencyController extends Controller
         }
     }
 
-
-
     public function agencyPaymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -930,8 +906,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Approved Agency List
@@ -1057,9 +1031,6 @@ class AgencyController extends Controller
             return 1;
     }
 
-
-
-
     /**
      *  send back to citizen
      */
@@ -1104,7 +1075,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * | Back To Citizen Inbox
      */
@@ -1139,7 +1109,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
-
 
     public function checkFullUpload($applicationId)
     {
@@ -1182,7 +1151,6 @@ class AgencyController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
-
 
     public function searchByNameorMobile(Request $req)
     {
@@ -1320,7 +1288,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * | License Inbox List
      * | @param Request $req
@@ -1341,8 +1308,6 @@ class AgencyController extends Controller
         }
     }
 
-
-
     /**
      * | License Outbox List
      */
@@ -1361,7 +1326,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
 
     /**
@@ -1388,7 +1352,6 @@ class AgencyController extends Controller
             if (!$data) {
                 throw new Exception("Not Application Details Found");
             }
-            // return $data;
             // Basic Details
             $basicDetails = $this->generatehordingLicenseDetails($data); // Trait function to get Basic Details
             $basicElement = [
@@ -1404,7 +1367,6 @@ class AgencyController extends Controller
 
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
-
 
             $metaReqs['customFor'] = 'Agency Hording License';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
@@ -1422,15 +1384,13 @@ class AgencyController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
-
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
-
 
     /**
      * | Get Applied Applications by Logged In Citizen
@@ -1450,8 +1410,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | License Escalate
@@ -1539,7 +1497,6 @@ class AgencyController extends Controller
         }
     }
 
-
     // License Post Independent Comment
     public function commentLicenseApplication(Request $request)
     {
@@ -1587,7 +1544,6 @@ class AgencyController extends Controller
         }
     }
 
-
     public function viewLicenseDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
@@ -1609,8 +1565,6 @@ class AgencyController extends Controller
         $data1['data'] = $data;
         return $data1;
     }
-
-
 
     /**
      * | Get Uploaded Active Document by application ID
@@ -1646,8 +1600,6 @@ class AgencyController extends Controller
 
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
-
-
 
     /**
      * | Final Approval and Rejection of the Application
@@ -1759,6 +1711,9 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Get Hording price
+     */
     public function getHordingPrice($typology_id, $zone = 'A')
     {
         return DB::table('adv_typology_mstrs')
@@ -1788,7 +1743,6 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1813,7 +1767,6 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Unpaid Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1864,7 +1817,6 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1896,7 +1848,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * | Reject License Application List for JSK
      * | @param Request $req
@@ -1921,14 +1872,10 @@ class AgencyController extends Controller
         }
     }
 
-
-
-
     /**
      * | Generate Payment Order ID
      * | @param Request $req
      */
-
     public function generateLicensePaymentOrderId(Request $req)
     {
         $req->validate([
@@ -1970,7 +1917,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * License (Hording) application Details For Payment
      * @param Request $req
@@ -1999,9 +1945,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
-
-
 
     /**
      * Check isAgency or Not
@@ -2055,31 +1998,6 @@ class AgencyController extends Controller
         }
     }
 
-    /**
-     * Get Payment Details
-     */
-    // public function getLicensePaymentDetails(Request $req)
-    // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
-    //     try {
-    //         $mAdvAgencyLicense = new AdvAgencyLicense();
-    //         $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-    //         } else {
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-    //         }
-    //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
-    //     }
-    // }
-
-
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -2104,7 +2022,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     public function entryChequeDdLicense(Request $req)
     {
@@ -2154,7 +2071,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Verify Single Application Approve or reject
@@ -2267,7 +2183,7 @@ class AgencyController extends Controller
 
 
     /**
-     *  send back to citizen
+     *  | Send Application back to citizen
      */
     public function backToCitizenLicense(Request $req)
     {
@@ -2309,7 +2225,6 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
 
     /**
      * | Back To Citizen Inbox
@@ -2388,7 +2303,7 @@ class AgencyController extends Controller
         }
     }
 
-        /**
+    /**
      * | Approve License Application List for Citzen
      * | @param Request $req
      */
@@ -2405,8 +2320,114 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    public function listExpiredHording(Request $req){
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->listExpiredHording($citizenId, $userId);
+            $totalApplication = count($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Archived Application By Id 
+     */
+    public function archivedHording(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+         try {
+            $mAdvAgencyLicense = AdvAgencyLicense::find($req->applicationId);
+            $mAdvAgencyLicense->is_archived=1;
+            $mAdvAgencyLicense->save();
+            return responseMsgs(true, "Archived Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+       /**
+     * | Hording Archived List for Citizen
+     * | @param Request $req
+     */
+    public function listHordingArchived(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->listHordingArchived($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Archived Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    
+    /**
+     * | Blacklist Application By Id 
+     */
+    public function blacklistHording(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+         try {
+            $mAdvAgencyLicense = AdvAgencyLicense::find($req->applicationId);
+            $mAdvAgencyLicense->is_blacklist=1;
+            $mAdvAgencyLicense->save();
+            return responseMsgs(true, "Blacklist Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+       /**
+     * | Hording Archived List for Citizen
+     * | @param Request $req
+     */
+    public function listHordingBlacklist(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvAgencyLicense = new AdvAgencyLicense();
+            $applications = $mAdvAgencyLicense->listHordingArchived($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Blacklist Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }

@@ -60,8 +60,6 @@ class AdvAgency extends Model
             'application_no',
             'application_date',
             'entity_name',
-            // 'entity_address',
-            // 'old_application_no',
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -95,8 +93,6 @@ class AdvAgency extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'entity_address',
-                // 'old_application_no',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
@@ -117,7 +113,6 @@ class AdvAgency extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'applicant',
                 'entity_name',
                 'payment_status',
                 'payment_amount',
@@ -248,7 +243,10 @@ class AdvAgency extends Model
             $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId/".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
-            $mAdvAgency->payment_details = "By Cash";
+            
+            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvAgency->payment_amount,'workflowId'=>$mAdvAgency->workflow_id,'userId'=>$mAdvAgency->citizen_id,'ulbId'=>$mAdvAgency->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+
+            $mAdvAgency->payment_details = json_encode($payDetails);
             if($mAdvAgency->renew_no==NULL){
                 $mAdvAgency->valid_from = Carbon::now();
                 $mAdvAgency->valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -265,7 +263,7 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->payment_status = 1;
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
-            $mAdvAgencyRenewal->payment_details = "By Cash";
+            $mAdvAgencyRenewal->payment_details = json_encode($payDetails);
             return $mAdvAgencyRenewal->save();
         }
     }
@@ -273,7 +271,7 @@ class AdvAgency extends Model
     
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvAgency::select('payment_date')
+        return $details=AdvAgencyRenewal::select('payment_date')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();

@@ -11,10 +11,8 @@ class AdvSelfadvertisement extends Model
 {
     use HasFactory;
 
-
     public function allApproveList()
     {
-
         return AdvSelfadvertisement::select(
             'id',
             'application_no',
@@ -128,7 +126,11 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id=$mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId/".time();
             $mAdvSelfadvertisement->payment_date = Carbon::now();
-            $mAdvSelfadvertisement->payment_details = "By Cash";
+            // $mAdvSelfadvertisement->payment_details = "By Cash";
+            
+            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvSelfadvertisement->payment_amount,'workflowId'=>$mAdvSelfadvertisement->workflow_id,'userId'=>$mAdvSelfadvertisement->citizen_id,'ulbId'=>$mAdvSelfadvertisement->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+
+            $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
             if($mAdvSelfadvertisement->renew_no==NULL){
                 $mAdvSelfadvertisement->valid_from = Carbon::now();
                 $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -145,7 +147,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_status = 1;
             $mAdvSelfAdvertRenewal->payment_id =  $pay_id;
             $mAdvSelfAdvertRenewal->payment_date = Carbon::now();
-            $mAdvSelfAdvertRenewal->payment_details = "By Cash";
+            $mAdvSelfAdvertRenewal->payment_details = json_encode($payDetails);
             return $mAdvSelfAdvertRenewal->save();
         }
     }
@@ -164,14 +166,14 @@ class AdvSelfadvertisement extends Model
                                         'adv_selfadvertisements.license_year as license_year_id',
                                         'adv_selfadvertisements.installation_location as installation_location_id',
                                         'ly.string_parameter as license_year_name',
-                                        'ew.string_parameter as entity_ward_name',
+                                        'ew.ward_name as entity_ward_name',
                                         'il.string_parameter as installation_location_name',
                                         'w.ward_name',
                                         'pw.ward_name as permanent_ward_name',
                                         'ulb.ulb_name',
                                         )
                                         ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('adv_selfadvertisements.license_year::int'))
-                                        ->leftJoin('ref_adv_paramstrings as ew','ew.id','=',DB::raw('adv_selfadvertisements.entity_ward_id::int'))
+                                        ->leftJoin('ulb_ward_masters as ew','ew.id','=',DB::raw('adv_selfadvertisements.entity_ward_id::int'))
                                         ->leftJoin('ref_adv_paramstrings as il','il.id','=',DB::raw('adv_selfadvertisements.installation_location::int'))
                                         ->leftJoin('ulb_ward_masters as w','w.id','=','adv_selfadvertisements.ward_id')
                                         ->leftJoin('ulb_ward_masters as pw','pw.id','=','adv_selfadvertisements.permanent_ward_id')

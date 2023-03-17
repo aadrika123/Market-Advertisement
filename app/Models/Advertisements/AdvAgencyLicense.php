@@ -20,14 +20,14 @@ class AdvAgencyLicense extends Model
                 'application_no',
                 'license_no',
                 'application_date',
-                // 'entity_address',
-                // 'old_application_no',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
                 'citizen_id',
                 'valid_upto',
-                'user_id'
+                'user_id',
+                'is_archived',
+                'is_blacklist',
             )
             ->orderByDesc('id')
             ->get();
@@ -53,9 +53,9 @@ class AdvAgencyLicense extends Model
             }
         }
         if($usertype == 'Citizen'){
-            return collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->values();
+            return collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->where('is_archived',false)->where('is_blacklist',false)->values();
         }else{
-            return collect($allApproveList)->where('payment_status','1')->values();
+            return collect($allApproveList)->where('payment_status','1')->where('is_archived',false)->where('is_blacklist',false)->values();
         }
     }
 
@@ -66,7 +66,19 @@ class AdvAgencyLicense extends Model
     {
        $allApproveList=$this->allApproveList();
         if($usertype == 'Citizen'){
-            
+            foreach($allApproveList as $key => $list){
+                $current_date=carbon::now()->format('Y-m-d');
+                $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+                if($current_date >= $notify_date){
+                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                }
+                if($current_date < $notify_date){
+                    $allApproveList[$key]['renew_option']='0';      // Renew option Not Show
+                }
+                if($list['valid_upto'] < $current_date){
+                    $allApproveList[$key]['renew_option']='Expired';    // Renew Expired
+                }
+            }
             $list=collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->values();
         }else{
             $list=collect($allApproveList)->where('payment_status','1')->values();
@@ -104,13 +116,13 @@ class AdvAgencyLicense extends Model
         return AdvAgencyLicense::where('user_id', $userId)
             ->select(
                 'id',
-                'temp_id',
+                'id',
                 'application_no',
                 'application_date',
                 'payment_amount',
                 'approve_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -123,12 +135,12 @@ class AdvAgencyLicense extends Model
         return AdvAgencyLicense::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
-                'application_no',
+                'license_no',
                 'application_date',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'property_type',
                 'ulb_id',
                 'workflow_id',
             )
@@ -219,7 +231,10 @@ class AdvAgencyLicense extends Model
             $pay_id=$mAdvAgencyLicense->payment_id = "Cash-$req->applicationId/".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgencyLicense->payment_date = Carbon::now();
-            $mAdvAgencyLicense->payment_details = "By Cash";
+
+            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvAgencyLicense->payment_amount,'workflowId'=>$mAdvAgencyLicense->workflow_id,'userId'=>$mAdvAgencyLicense->citizen_id,'ulbId'=>$mAdvAgencyLicense->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+
+            $mAdvAgencyLicense->payment_details = json_encode($payDetails);
             if($mAdvAgencyLicense->renew_no==NULL){
                 $mAdvAgencyLicense->valid_from = Carbon::now();
                 $mAdvAgencyLicense->valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -236,7 +251,7 @@ class AdvAgencyLicense extends Model
             $mAdvAgencyLicenseRenewal->payment_status = 1;
             $mAdvAgencyLicenseRenewal->payment_id =  $pay_id;
             $mAdvAgencyLicenseRenewal->payment_date = Carbon::now();
-            $mAdvAgencyLicenseRenewal->payment_details = "By Cash";
+            $mAdvAgencyLicenseRenewal->payment_details = json_encode($payDetails);;
             return $mAdvAgencyLicenseRenewal->save();
         }
     }
@@ -291,5 +306,49 @@ class AdvAgencyLicense extends Model
             $details['documents']=$documents;
         }
         return $details;
+    }
+
+        /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function listExpiredHording($citizenId,$usertype)
+    {
+         $allApproveList=$this->allApproveList();
+         $current_date=carbon::now()->format('Y-m-d');
+        if($usertype == 'Citizen'){
+            return collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->where('valid_upto','<',$current_date)->values();
+        }else{
+            return collect($allApproveList)->where('payment_status','1')->values();
+        }
+    }
+
+
+    /**
+     * | Get Application Archieved List by Role Ids
+     */
+    public function listHordingArchived($citizenId,$usertype)
+    {
+         $allApproveList=$this->allApproveList();
+        
+        if($usertype == 'Citizen'){
+            return collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->where('is_archived',true)->values();
+        }else{
+            return collect($allApproveList)->where('payment_status','1')->where('is_archived',true)->values();
+        }
+    }
+
+    
+    /**
+     * | Get Application Blacklist List by Role Ids
+     */
+    public function listHordingBlacklist($citizenId,$usertype)
+    {
+         $allApproveList=$this->allApproveList();
+        
+        if($usertype == 'Citizen'){
+            return collect($allApproveList)->where('citizen_id',$citizenId)->where('payment_status','1')->where('is_blacklist',true)->values();
+        }else{
+            return collect($allApproveList)->where('payment_status','1')->where('is_blacklist',true)->values();
+        }
     }
 }

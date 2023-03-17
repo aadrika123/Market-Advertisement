@@ -39,16 +39,21 @@ class AdvVehicle extends Model
     {
         $allApproveList = $this->allApproveList();
         foreach($allApproveList as $key => $list){
+            $activeVehicle=AdvActiveVehicle::where('application_no',$list['application_no'])->count();
             $current_date=carbon::now()->format('Y-m-d');
             $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
             if($current_date >= $notify_date){
-                $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                if($activeVehicle==0){
+                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                }else{
+                    $allApproveList[$key]['renew_option']='0';     // Already Renew
+                }
             }
             if($current_date < $notify_date){
-                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show
+                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show 0
             }
             if($list['valid_upto'] < $current_date){
-                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired
+                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired 
             }
         }
         if($userType=='Citizen'){
@@ -134,7 +139,11 @@ class AdvVehicle extends Model
             $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId/".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
-            $mAdvVehicle->payment_details = "By Cash";
+
+            // Payment Details
+            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvVehicle->payment_amount,'workflowId'=>$mAdvVehicle->workflow_id,'userId'=>$mAdvVehicle->citizen_id,'ulbId'=>$mAdvVehicle->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+
+            $mAdvVehicle->payment_details =  json_encode($payDetails);
             if($mAdvVehicle->renew_no==NULL){
                 $mAdvVehicle->valid_from = Carbon::now();
                 $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -151,14 +160,14 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_status = 1;
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
-            $mAdvVehicleRenewal->payment_details = "By Cash";
+            $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;
             return $mAdvVehicleRenewal->save();
         }
     }
 
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvVehicle::select('payment_date')
+        return $details=AdvVehicleRenewal::select('payment_date')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();

@@ -20,9 +20,6 @@ class AdvRejectedAgencyLicense extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
                 'rejected_date',
             )
             ->orderByDesc('id')
@@ -39,9 +36,6 @@ class AdvRejectedAgencyLicense extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
                 'rejected_date',
             )
             ->orderByDesc('id')

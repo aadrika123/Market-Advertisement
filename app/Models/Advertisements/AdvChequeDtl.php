@@ -87,6 +87,9 @@ class AdvChequeDtl extends Model
 
             if ($workflowId == $this->_agency) {
                 $mAdvAgency=AdvAgency::find($applicationId);
+
+                $payDetails=array('paymentMode'=>'CHEQUE/DD','id'=>$req->applicationId,'amount'=>$mAdvAgency->payment_amount,'workflowId'=>$mAdvAgency->workflow_id,'userId'=>$mAdvAgency->citizen_id,'ulbId'=>$mAdvAgency->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$payment_id);
+
                 if($mAdvAgency->renew_no==NULL){
                     $valid_from = Carbon::now();
                     $valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -102,7 +105,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
@@ -115,7 +118,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
@@ -126,6 +129,9 @@ class AdvChequeDtl extends Model
             elseif ($workflowId == $this->_selfAdvt) {
                 // update on SelfAdvertiesment Table
                 $mAdvSelfadvertisement=AdvSelfadvertisement::find($applicationId);
+
+                $payDetails=array('paymentMode'=>'CHEQUE/DD','id'=>$req->applicationId,'amount'=>$mAdvSelfadvertisement->payment_amount,'workflowId'=>$mAdvSelfadvertisement->workflow_id,'userId'=>$mAdvSelfadvertisement->citizen_id,'ulbId'=>$mAdvSelfadvertisement->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$payment_id);
+
                 if($mAdvSelfadvertisement->renew_no==NULL){
                     $valid_from = Carbon::now();
                     $valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -141,7 +147,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
@@ -154,7 +160,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
@@ -164,6 +170,9 @@ class AdvChequeDtl extends Model
             }
             elseif ($workflowId == $this->_pvtLand) {
                 $mAdvPrivateland=AdvPrivateland::find($applicationId);
+
+                $payDetails=array('paymentMode'=>'CHEQUE/DD','id'=>$req->applicationId,'amount'=>$mAdvPrivateland->payment_amount,'workflowId'=>$mAdvPrivateland->workflow_id,'userId'=>$mAdvPrivateland->citizen_id,'ulbId'=>$mAdvPrivateland->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$payment_id);
+
                 if($mAdvPrivateland->renew_no==NULL){
                     $valid_from = Carbon::now();
                     $valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -179,7 +188,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
@@ -192,7 +201,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
@@ -202,6 +211,9 @@ class AdvChequeDtl extends Model
             }
             elseif ($workflowId == $this->_movableVehicle) {
                 $mAdvVehicle=AdvVehicle::find($applicationId);
+                
+                $payDetails=array('paymentMode'=>'CHEQUE/DD','id'=>$req->applicationId,'amount'=>$mAdvVehicle->payment_amount,'workflowId'=>$mAdvVehicle->workflow_id,'userId'=>$mAdvVehicle->citizen_id,'ulbId'=>$mAdvVehicle->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$payment_id);
+
                 if($mAdvVehicle->renew_no==NULL){
                     $valid_from = Carbon::now();
                     $valid_upto = Carbon::now()->addYears(1)->subDay(1);
@@ -217,7 +229,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
@@ -230,7 +242,7 @@ class AdvChequeDtl extends Model
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
@@ -239,22 +251,38 @@ class AdvChequeDtl extends Model
                 return AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_hording) {
+                $mAdvAgencyLicense=AdvAgencyLicense::find($applicationId);
+                
+                $payDetails=array('paymentMode'=>'CHEQUE/DD','id'=>$req->applicationId,'amount'=>$mAdvAgencyLicense->payment_amount,'workflowId'=>$mAdvAgencyLicense->workflow_id,'userId'=>$mAdvAgencyLicense->citizen_id,'ulbId'=>$mAdvAgencyLicense->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$payment_id);
+
+                if($mAdvAgencyLicense->renew_no==NULL){
+                    $valid_from = Carbon::now();
+                    $valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=AdvVehicleRenewal::select('payment_date')
+                                    ->where('application_no',$mAdvAgencyLicense->application_no)
+                                    ->orderByDesc('id')
+                                    ->skip(1)->first();
+                    $valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                } 
                 // update on Vehicle Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now()
                     ],
                 );
                 AdvAgencyLicense::where('id', $applicationId)->update($metaReqs);
+                
                 $amount = DB::table('adv_agency_licenses')->where('id', $applicationId)->first()->payment_amount;
                 // update on Agency Hording  renewal Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
-                        'payment_details' => "By CHEQUE/DD",
+                        'payment_details' => json_encode($payDetails),
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
