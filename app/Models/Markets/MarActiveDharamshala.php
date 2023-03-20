@@ -88,7 +88,8 @@ class MarActiveDharamshala extends Model
                  'ulb_id' => $req->ulbId,
                  'citizen_id' => $req->citizenId,
                  'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress
+                 'ip_address' => $ipAddress,
+                 'application_type' => "New Apply"
              ],
              $this->metaReqs($req),
              $mApplicationNo,
@@ -99,6 +100,45 @@ class MarActiveDharamshala extends Model
  
          return $mApplicationNo['application_no'];
      }
+
+
+          // Store Application For Dharamshala(1)
+          public function renewApplication($req)
+          {
+              $bearerToken = $req->bearerToken();
+              $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
+              $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+              $ipAddress = getClientIpAddress();
+              $details=MarDharamshala::find($req->applicationId);                              // Find Previous Application No
+              $mApplicationNo=['application_no'=>$details->application_no];
+              $mRenewNo = ['renew_no' => 'DHARAMSHALA/REN-' . random_int(100000, 999999)];                  // Generate Application No
+              $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+                  'workflow_id' => $ulbWorkflows['id'],
+                  'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+                  'current_role_id' => $ulbWorkflows['initiator_role_id'],
+                  'last_role_id' => $ulbWorkflows['initiator_role_id'],
+                  'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+              ];
+              $mDocuments = $req->documents;
+      
+              $metaReqs = array_merge(
+                  [
+                      'ulb_id' => $req->ulbId,
+                      'citizen_id' => $req->citizenId,
+                      'application_date' => $this->_applicationDate,
+                      'ip_address' => $ipAddress,
+                      'application_type' => "Renew"
+                  ],
+                  $this->metaReqs($req),
+                  $mApplicationNo,
+                  $mRenewNo,
+                  $ulbWorkflowReqs
+              );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+             $tempId = MarActiveDharamshala::create($metaReqs)->id;
+              $this->uploadDocument($tempId, $mDocuments);
+      
+              return $mApplicationNo['application_no'];
+          }
 
     /**
      * upload Document By Citizen At the time of Registration

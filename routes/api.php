@@ -260,7 +260,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
 
     /**
      * | Hoarding 
-     * | Controller-05 
+     * | Controller-06 
      */
     Route::controller(HoardingController::class)->group(function () {
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
@@ -306,7 +306,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     });
     /**
      * | Lodge Controller
-     * | Controller-06
+     * | Controller-07
      * | By - Bikash Kumar
      * | Date 21-02-2023
      */
@@ -337,11 +337,14 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/lodge/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('market/lodge/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('market/lodge/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
+        
+        Route::post('market/lodge/get-renew-application-details', 'getApplicationDetailsForRenew');          // 19 ( Application Details For Payments )
+        Route::post('market/lodge/renew-application', 'renewApplication');          // 19 ( Application Details For Payments )
     });
 
     /**
      * | Banquet Marriage Hall Controller
-     * | Controller-07
+     * | Controller-08
      * | By - Bikash Kumar
      * | Date 18-02-2023
      * | Status - Open
@@ -373,12 +376,15 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bm-hall/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('market/bm-hall/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('market/bm-hall/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
+    
+        Route::post('market/bm-hall/get-renew-application-details', 'getApplicationDetailsForRenew');          // 19 ( Application Details For Payments )
+        Route::post('market/bm-hall/renew-application', 'renewApplication');          // 19 ( Application Details For Payments )
     });
 
 
     /**
      * | Hostel Controller
-     * | Controller-08
+     * | Controller-09
      * | By - Bikash Kumar
      * | Date 20-02-2023
      */
@@ -409,11 +415,14 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/hostel/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('market/hostel/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('market/hostel/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
+        
+        Route::post('market/hostel/get-renew-application-details', 'getApplicationDetailsForRenew');          // 19 ( Application Details For Payments )
+        Route::post('market/hostel/renew-application', 'renewApplication');          // 19 ( Application Details For Payments )
     });
 
     /**
      * | Dharamshala Controller
-     * | Controller-09
+     * | Controller-10
      * | By - Bikash Kumar
      * | Date 21-02-2023
      */
@@ -444,6 +453,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
         Route::post('market/dharamshala/entry-cheque-dd', 'entryChequeDd');          // 19 ( Application Details For Payments )
         Route::post('market/dharamshala/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 19 ( Application Details For Payments )
-     });
+         
+        Route::post('market/dharamshala/get-renew-application-details', 'getApplicationDetailsForRenew');          // 19 ( Application Details For Payments )
+        Route::post('market/dharamshala/renew-application', 'renewApplication');          // 19 ( Application Details For Payments )
+    });
 
 });

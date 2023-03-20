@@ -274,29 +274,6 @@ class AdvActivePrivateland extends Model
                 // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_privatelands.current_role_id')
                 ->first();
         } elseif ($type == 'Approve') {
-            $details = DB::table('adv_active_privatelands')
-                ->select(
-                    'adv_active_privatelands.*',
-                    'u.ulb_name',
-                    // 'p.string_parameter as m_license_year',
-                    // 'w.ward_name as ward_no',
-                    // 'pw.ward_name as permanent_ward_no',
-                    // 'ew.ward_name as entity_ward_no',
-                    // 'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    // 'r.role_name as m_current_role'
-                )
-                ->where('adv_active_privatelands.id', $id)
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_privatelands.ulb_id')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_privatelands.license_year')
-                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_privatelands.ward_id')
-                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_privatelands.permanent_ward_id')
-                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_privatelands.entity_ward_id')
-                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_privatelands.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_privatelands.installation_location')
-                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_privatelands.current_role_id')
-                ->first();
-        } elseif ($type == "Reject") {
             $details = DB::table('adv_privatelands')
                 ->select(
                     'adv_privatelands.*',
@@ -319,7 +296,31 @@ class AdvActivePrivateland extends Model
                 // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_privatelands.installation_location')
                 // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_privatelands.current_role_id')
                 ->first();
-        }
+        } 
+        // elseif ($type == "Reject") {
+        //     $details = DB::table('adv_privatelands')
+        //         ->select(
+        //             'adv_privatelands.*',
+        //             'u.ulb_name',
+        //             // 'p.string_parameter as m_license_year',
+        //             // 'w.ward_name as ward_no',
+        //             // 'pw.ward_name as permanent_ward_no',
+        //             // 'ew.ward_name as entity_ward_no',
+        //             // 'dp.string_parameter as m_display_type',
+        //             // 'il.string_parameter as m_installation_location',
+        //             // 'r.role_name as m_current_role'
+        //         )
+        //         ->where('adv_privatelands.id', $id)
+        //         ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')
+        //         // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_privatelands.license_year')
+        //         // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_privatelands.ward_id')
+        //         // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_privatelands.permanent_ward_id')
+        //         // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_privatelands.entity_ward_id')
+        //         // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_privatelands.display_type')
+        //         // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_privatelands.installation_location')
+        //         // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_privatelands.current_role_id')
+        //         ->first();
+        // }
 
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }

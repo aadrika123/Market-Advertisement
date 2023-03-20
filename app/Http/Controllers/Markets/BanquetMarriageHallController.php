@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BanquetMarriageHall\RenewalRequest;
 use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
@@ -41,7 +42,7 @@ class BanquetMarriageHallController extends Controller
 
     use WorkflowTrait;
     use MarDetailsTraits;
-    
+
     protected $_modelObj;  //  Generate Model Instance
     protected $_repository;
     protected $_workflowIds;
@@ -55,7 +56,7 @@ class BanquetMarriageHallController extends Controller
         $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
-        $this->_docCode=config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
+        $this->_docCode = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
     }
 
     /**
@@ -83,6 +84,56 @@ class BanquetMarriageHallController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarBanquteHall = new MarBanquteHall();
+            $details = $mMarBanquteHall->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Renew For Banquet Marriage Hall
+     * | @param StoreRequest 
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveBanquteHall = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -253,15 +304,23 @@ class BanquetMarriageHallController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if($totalApplication==0){
+            if ($totalApplication == 0) {
                 $data1['data'] = null;
             }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? ""
+            return responseMsgs(
+                true,
+                "Applied Applications",
+                $data1,
+                "050106",
+                "1.0",
+                "$executionTime Sec",
+                "POST",
+                $req->deviceId ?? ""
             );
         } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(),"","050106","1.0","","POST",$req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -317,8 +376,8 @@ class BanquetMarriageHallController extends Controller
                 ->where('mar_active_banqute_halls.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
-                $endTime = microtime(true);
-                $executionTime = $endTime - $startTime;
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
@@ -343,7 +402,7 @@ class BanquetMarriageHallController extends Controller
 
         try {
             $startTime = microtime(true);
-            
+
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $adv = MarActiveBanquteHall::find($request->applicationId);
@@ -360,7 +419,7 @@ class BanquetMarriageHallController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-                    
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
@@ -409,7 +468,7 @@ class BanquetMarriageHallController extends Controller
             $workflowTrack->saveTrack($request);
 
             DB::commit();
-            
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
@@ -430,15 +489,15 @@ class BanquetMarriageHallController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if($req->type=='Active'){
-                $appId=$req->applicationId;
-            }elseif($req->type=='Reject'){
-                $appId=MarRejectedBanquteHall::find($req->applicationId)->temp_id;
-            }elseif($req->type=='Approve'){
-                $appId=MarBanquteHall::find($req->applicationId)->temp_id;
+            if ($req->type == 'Active') {
+                $appId = $req->applicationId;
+            } elseif ($req->type == 'Reject') {
+                $appId = MarRejectedBanquteHall::find($req->applicationId)->temp_id;
+            } elseif ($req->type == 'Approve') {
+                $appId = MarBanquteHall::find($req->applicationId)->temp_id;
             }
             $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
-        }else{
+        } else {
             throw new Exception("Required Application Id And Application Type");
         }
         $data1['data'] = $data;
@@ -446,7 +505,7 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-        
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -464,23 +523,23 @@ class BanquetMarriageHallController extends Controller
         $data1['data'] = $data;
         return $data1;
     }
-    
-    /**
-    * | Workflow View Uploaded Document by application ID
-    */
-   public function viewDocumentsOnWorkflow(Request $req)
-   {
-       $startTime = microtime(true);
-       $mWfActiveDocument = new WfActiveDocument();
-       $data = array();
-       if ($req->applicationId) {
-           $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-       }
-       $endTime = microtime(true);
-       $executionTime = $endTime - $startTime;
 
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
-   }
+    /**
+     * | Workflow View Uploaded Document by application ID
+     */
+    public function viewDocumentsOnWorkflow(Request $req)
+    {
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        }
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+    }
 
 
 
@@ -497,7 +556,6 @@ class BanquetMarriageHallController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            // 'payment_amount' => 'required',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -511,7 +569,6 @@ class BanquetMarriageHallController extends Controller
             if ($refGetFinisher->role_id != $req->roleId) {
                 return responseMsgs(false, " Access Forbidden", "");
             }
-               
 
             DB::beginTransaction();
             // Approval
@@ -524,39 +581,63 @@ class BanquetMarriageHallController extends Controller
                 // $payment_amount = ['payment_amount' => 1000];
                 // $req->request->add($payment_amount);
 
+                if ($mMarActiveBanquteHall->renew_no == NULL) {
+                    // Banqute Hall Application replication
 
-                // Banqute Hall Application replication
+                    $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
+                    $approvedbanqutehall->setTable('mar_banqute_halls');
+                    $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
+                    $approvedbanqutehall->payment_amount = $req->payment_amount;
+                    $approvedbanqutehall->approve_date = Carbon::now();
+                    $approvedbanqutehall->save();
 
-                $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
-                $approvedbanqutehall->setTable('mar_banqute_halls');
-                $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
-                $approvedbanqutehall->payment_amount = $req->payment_amount;
-                $approvedbanqutehall->approve_date = Carbon::now();
-                $approvedbanqutehall->save();
+                    // Save in Banqute Hall Renewal
+                    $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
+                    $approvedbanqutehall->approve_date = Carbon::now();
+                    $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
+                    $approvedbanqutehall->app_id = $temp_id;
+                    $approvedbanqutehall->save();
 
-                // Save in Banqute Hall Renewal
-                $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
-                $approvedbanqutehall->approve_date = Carbon::now();
-                $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
-                $approvedbanqutehall->app_id = $temp_id;
-                $approvedbanqutehall->save();
+                    $mMarActiveBanquteHall->delete();
 
+                    // Update in mar_banqute_halls (last_renewal_id)
+                    DB::table('mar_banqute_halls')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedbanqutehall->id]);
 
-                $mMarActiveBanquteHall->delete();
-
-                // Update in mar_banqute_halls (last_renewal_id)
-
-                DB::table('mar_banqute_halls')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedbanqutehall->id]);
-
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                }else{
+                     //  Renewal Case
+                     // BanquteHall Application replication
+                     $application_no=$mMarActiveBanquteHall->application_no;
+                     MarBanquteHall::where('application_no', $application_no)->delete();
+ 
+                      $approvedBanquteHall = $mMarActiveBanquteHall->replicate();
+                      $approvedBanquteHall->setTable('mar_banqute_halls');
+                      $temp_id = $approvedBanquteHall->id = $mMarActiveBanquteHall->id;
+                      $approvedBanquteHall->payment_amount = $req->payment_amount;
+                      $approvedBanquteHall->payment_status = $req->payment_status;
+                      $approvedBanquteHall->approve_date = Carbon::now();
+                      $approvedBanquteHall->save();
+  
+                      // Save in BanquteHall Renewal
+                      $approvedBanquteHall = $mMarActiveBanquteHall->replicate();
+                      $approvedBanquteHall->approve_date = Carbon::now();
+                      $approvedBanquteHall->setTable('mar_banqute_hall_renewals');
+                      $approvedBanquteHall->id = $temp_id;
+                      $approvedBanquteHall->save();
+  
+                      $approvedBanquteHall->delete();
+  
+                      // Update in mar_banqute_halls (last_renewal_id)
+                      DB::table('mar_banqute_halls')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedBanquteHall->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
-
-                // $payment_amount = ['payment_amount' => 0];
-                // $req->request->add($payment_amount);
                 // Banqute Hall Application replication
                 $rejectedbanqutehall = $mMarActiveBanquteHall->replicate();
                 $rejectedbanqutehall->setTable('mar_rejected_banqute_halls');
@@ -704,7 +785,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-     /**
+    /**
      * Get Payment Details
      */
     // public function getPaymentDetails(Request $req)
@@ -729,7 +810,7 @@ class BanquetMarriageHallController extends Controller
     // }
 
 
-    
+
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -805,7 +886,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-    
+
 
     /**
      * | Verify Single Application Approve or reject
@@ -1008,7 +1089,7 @@ class BanquetMarriageHallController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

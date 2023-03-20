@@ -51,9 +51,7 @@ class MarActiveLodge extends Model
             'no_of_beds'=>$req->noOfBeds,
             'no_of_rooms'=>$req->noOfRooms,
 
-
-            
-            'water_supply_ype'=>$req->waterSupplyType,
+            'water_supply_type'=>$req->waterSupplyType,
             'electricity_type'=>$req->electricityType,
             'security_type'=>$req->securityType,
             'cctv_camera'=>$req->cctvCamera,
@@ -67,7 +65,7 @@ class MarActiveLodge extends Model
             'rule'=>$req->rule,
         ];
     }
-     // Store Application Foe Lodge(1)
+     // Store Application For Lodge(1)
      public function addNew($req)
      {
          $bearerToken = $req->bearerToken();
@@ -89,7 +87,8 @@ class MarActiveLodge extends Model
                  'ulb_id' => $req->ulbId,
                  'citizen_id' => $req->citizenId,
                  'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress
+                 'ip_address' => $ipAddress,
+                 'application_type'=>"New Apply"
              ],
              $this->metaReqs($req),
              $mApplicationNo,
@@ -100,7 +99,45 @@ class MarActiveLodge extends Model
  
          return $mApplicationNo['application_no'];
      }
+     
 
+       // Store Application Foe Lodge(1)
+       public function renewApplication($req)
+       {
+           $bearerToken = $req->bearerToken();
+           $workflowId = Config::get('workflow-constants.LODGE');                            // 350
+           $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+           $ipAddress = getClientIpAddress();
+           $mRenewNo = ['renew_no' => 'LODGE/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
+           $details=MarLodge::find($req->applicationId);                              // Find Previous Application No
+           $mApplicationNo=['application_no'=>$details->application_no];
+           $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+               'workflow_id' => $ulbWorkflows['id'],
+               'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+               'current_role_id' => $ulbWorkflows['initiator_role_id'],
+               'last_role_id' => $ulbWorkflows['initiator_role_id'],
+               'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+           ];
+           $mDocuments = $req->documents;
+   
+           $metaReqs = array_merge(
+               [
+                   'ulb_id' => $req->ulbId,
+                   'citizen_id' => $req->citizenId,
+                   'application_date' => $this->_applicationDate,
+                   'ip_address' => $ipAddress,
+                   'application_type'=>"Renew"
+               ],
+               $this->metaReqs($req),
+               $mApplicationNo,
+               $mRenewNo,
+               $ulbWorkflowReqs
+           );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+          $tempId = MarActiveLodge::create($metaReqs)->id;
+           $this->uploadDocument($tempId, $mDocuments);
+   
+           return $mRenewNo['renew_no'];
+       }
       /**
      * upload Document By Citizen At the time of Registration
      * @param Request $req

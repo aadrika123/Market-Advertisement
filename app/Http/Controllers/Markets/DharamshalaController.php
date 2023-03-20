@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dharamshala\RenewalRequest;
 use App\Http\Requests\Dharamshala\StoreRequest;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
@@ -67,6 +68,58 @@ class DharamshalaController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+
+
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarDharamshala = new MarDharamshala();
+            $details = $mMarDharamshala->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Apply for Lodge
+     * | @param StoreRequest 
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveLodge = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -228,7 +281,7 @@ class DharamshalaController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -413,7 +466,7 @@ class DharamshalaController extends Controller
     }
 
 
-        
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -482,7 +535,7 @@ class DharamshalaController extends Controller
             // Approval
             if ($req->status == 1) {
 
-                
+
                 $mMarketPriceMstr = new MarketPriceMstr();
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveDharamshala->workflow_id, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
@@ -490,37 +543,59 @@ class DharamshalaController extends Controller
 
                 // $payment_amount = ['payment_amount' => 1000];
                 // $req->request->add($payment_amount);
-                // dharamshala Application replication
+                if ($mMarActiveDharamshala->renew_no == NULL) {
+                    // dharamshala Application replication
+                    $approveddharamshala = $mMarActiveDharamshala->replicate();
+                    $approveddharamshala->setTable('mar_dharamshalas');
+                    $temp_id = $approveddharamshala->id = $mMarActiveDharamshala->id;
+                    $approveddharamshala->payment_amount = $req->payment_amount;
+                    $approveddharamshala->approve_date = Carbon::now();
+                    $approveddharamshala->save();
 
-                $approveddharamshala = $mMarActiveDharamshala->replicate();
-                $approveddharamshala->setTable('mar_dharamshalas');
-                $temp_id = $approveddharamshala->id = $mMarActiveDharamshala->id;
-                $approveddharamshala->payment_amount = $req->payment_amount;
-                $approveddharamshala->approve_date = Carbon::now();
-                $approveddharamshala->save();
-                
-                
-                $mMarActiveDharamshala->delete();
+                    $mMarActiveDharamshala->delete();
 
-                
-                // Save in dharamshala Renewal
-                $approveddharamshala = $mMarActiveDharamshala->replicate();
-                $approveddharamshala->approve_date = Carbon::now();
-                $approveddharamshala->setTable('mar_dharamshala_renewals');
-                $approveddharamshala->app_id = $mMarActiveDharamshala->id;
-                $approveddharamshala->save();
+                    // Save in dharamshala Renewal
+                    $approveddharamshala = $mMarActiveDharamshala->replicate();
+                    $approveddharamshala->approve_date = Carbon::now();
+                    $approveddharamshala->setTable('mar_dharamshala_renewals');
+                    $approveddharamshala->app_id = $mMarActiveDharamshala->id;
+                    $approveddharamshala->save();
 
-                
+                    // Update in mar_dharamshalas (last_renewal_id)
+                    DB::table('mar_dharamshalas')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approveddharamshala->id]);
 
-
-
-                // Update in mar_dharamshalas (last_renewal_id)
-
-                DB::table('mar_dharamshalas')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approveddharamshala->id]);
-
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                     //  Renewal Case
+                     // Dharamshala Application replication
+                     $application_no=$mMarActiveDharamshala->application_no;
+                     MarDharamshala::where('application_no', $application_no)->delete();
+ 
+                      $approvedDharamshala = $mMarActiveDharamshala->replicate();
+                      $approvedDharamshala->setTable('mar_dharamshalas');
+                      $temp_id = $approvedDharamshala->id = $mMarActiveDharamshala->id;
+                      $approvedDharamshala->payment_amount = $req->payment_amount;
+                      $approvedDharamshala->payment_status = $req->payment_status;
+                      $approvedDharamshala->approve_date = Carbon::now();
+                      $approvedDharamshala->save();
+  
+                      // Save in Dharamshala Renewal
+                      $approvedDharamshala = $mMarActiveDharamshala->replicate();
+                      $approvedDharamshala->approve_date = Carbon::now();
+                      $approvedDharamshala->setTable('mar_dharamshala_renewals');
+                      $approvedDharamshala->id = $temp_id;
+                      $approvedDharamshala->save();
+  
+                      $approvedDharamshala->delete();
+  
+                      // Update in mar_dharamshalas (last_renewal_id)
+                      DB::table('mar_dharamshalas')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedDharamshala->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -695,7 +770,7 @@ class DharamshalaController extends Controller
         }
     }
 
-        
+
 
     public function paymentByCash(Request $req)
     {
@@ -771,8 +846,8 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-    
-    
+
+
 
     /**
      * | Verify Single Application Approve or reject
@@ -975,7 +1050,7 @@ class DharamshalaController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

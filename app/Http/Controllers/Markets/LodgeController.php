@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Lodge\RenewalRequest;
 use App\Http\Requests\Lodge\StoreRequest;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
@@ -29,11 +30,10 @@ use Illuminate\Support\Facades\Validator;
 
 class LodgeController extends Controller
 {
-    
+
     use WorkflowTrait;
 
     use MarDetailsTraits;
-
 
     protected $_modelObj;
     protected $_workflowIds;
@@ -48,7 +48,7 @@ class LodgeController extends Controller
         $this->_workflowIds = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
-        $this->_docCode=config::get('workflow-constants.LODGE_DOC_CODE');
+        $this->_docCode = config::get('workflow-constants.LODGE_DOC_CODE');
     }
     /**
      * | Apply for Lodge
@@ -65,6 +65,56 @@ class LodgeController extends Controller
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->addNew($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarLodge = new MarLodge();
+            $details = $mMarLodge->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Apply for Lodge
+     * | @param StoreRequest 
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveLodge = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -231,7 +281,7 @@ class LodgeController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -282,7 +332,7 @@ class LodgeController extends Controller
                 return $item->ward_id;
             });
 
-                $advData = $this->_repository->specialInboxLodge($this->_workflowIds)                      // Repository function to get Markets Details
+            $advData = $this->_repository->specialInboxLodge($this->_workflowIds)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
                 ->where('mar_active_lodges.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -415,7 +465,7 @@ class LodgeController extends Controller
         return $data1;
     }
 
-        
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -465,8 +515,7 @@ class LodgeController extends Controller
         $validator = Validator::make($req->all(), [
             'roleId' => 'required',
             'applicationId' => 'required|integer',
-            'status' => 'required|integer',
-            // 'payment_amount' => 'required',
+            'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -484,8 +533,6 @@ class LodgeController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-
-                 
                 $mMarketPriceMstr = new MarketPriceMstr();
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveLodge->workflow_id, $mMarActiveLodge->no_of_beds, $mMarActiveLodge->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
@@ -494,34 +541,59 @@ class LodgeController extends Controller
                 // $payment_amount = ['payment_amount' => 1000];
                 // $req->request->add($payment_amount);
 
-                // Lodge Application replication
-                $approvedlodge = $mMarActiveLodge->replicate();
-                $approvedlodge->setTable('mar_lodges');
-                $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
-                $approvedlodge->payment_amount = $req->payment_amount;
-                $approvedlodge->approve_date = Carbon::now();
-                $approvedlodge->save();
-                
+                if ($mMarActiveLodge->renew_no == NULL) {
+                    // Lodge Application replication
+                    $approvedlodge = $mMarActiveLodge->replicate();
+                    $approvedlodge->setTable('mar_lodges');
+                    $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
+                    $approvedlodge->payment_amount = $req->payment_amount;
+                    $approvedlodge->approve_date = Carbon::now();
+                    $approvedlodge->save();
 
-                // Save in Lodge Renewal
-                $approvedlodge = $mMarActiveLodge->replicate();
-                $approvedlodge->approve_date = Carbon::now();
-                $approvedlodge->setTable('mar_lodge_renewals');
-                $approvedlodge->app_id = $mMarActiveLodge->id;
-                $approvedlodge->save();
+                    // Save in Lodge Renewal
+                    $approvedlodge = $mMarActiveLodge->replicate();
+                    $approvedlodge->approve_date = Carbon::now();
+                    $approvedlodge->setTable('mar_lodge_renewals');
+                    $approvedlodge->app_id = $mMarActiveLodge->id;
+                    $approvedlodge->save();
 
-                
-                $mMarActiveLodge->delete();
+                    $mMarActiveLodge->delete();
 
+                    // Update in mar_lodges (last_renewal_id)
+                    DB::table('mar_lodges')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedlodge->id]);
 
-
-                // Update in mar_lodges (last_renewal_id)
-
-                DB::table('mar_lodges')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedlodge->id]);
-
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                     //  Renewal Case
+                     // Lodge Application replication
+                     $application_no=$mMarActiveLodge->application_no;
+                     MarLodge::where('application_no', $application_no)->delete();
+ 
+                      $approvedlodge = $mMarActiveLodge->replicate();
+                      $approvedlodge->setTable('mar_lodges');
+                      $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
+                      $approvedlodge->payment_amount = $req->payment_amount;
+                      $approvedlodge->payment_status = $req->payment_status;
+                      $approvedlodge->approve_date = Carbon::now();
+                      $approvedlodge->save();
+  
+                      // Save in Lodge Renewal
+                      $approvedlodge = $mMarActiveLodge->replicate();
+                      $approvedlodge->approve_date = Carbon::now();
+                      $approvedlodge->setTable('mar_lodge_renewals');
+                      $approvedlodge->id = $temp_id;
+                      $approvedlodge->save();
+  
+                      $approvedlodge->delete();
+  
+                      // Update in amar_lodges (last_renewal_id)
+                      DB::table('mar_lodges')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedlodge->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -696,7 +768,7 @@ class LodgeController extends Controller
     //     }
     // }
 
-    
+
 
     public function paymentByCash(Request $req)
     {
@@ -976,7 +1048,7 @@ class LodgeController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

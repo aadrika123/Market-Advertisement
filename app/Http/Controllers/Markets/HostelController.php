@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Markets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Hostel\RenewalRequest;
 use App\Http\Requests\Hostel\StoreRequest;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
@@ -46,7 +47,7 @@ class HostelController extends Controller
         $this->_workflowIds = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
-        $this->_docCode=Config::get('workflow-constants.HOSTEL_DOC_CODE');
+        $this->_docCode = Config::get('workflow-constants.HOSTEL_DOC_CODE');
     }
 
     /**
@@ -69,6 +70,57 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarHostel = new MarHostel();
+            $details = $mMarHostel->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Apply for Lodge
+     * | @param StoreRequest 
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveLodge = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -424,7 +476,7 @@ class HostelController extends Controller
         return $data1;
     }
 
-        
+
     /**
      * | Get Uploaded Active Document by application ID
      */
@@ -493,11 +545,11 @@ class HostelController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-                
+
                 $mMarketPriceMstr = new MarketPriceMstr();
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveHostel->workflow_id, $mMarActiveHostel->no_of_beds, $mMarActiveHostel->ulb_id);
-              
-                if($mMarActiveHostel->is_approve_by_govt == true){
+
+                if ($mMarActiveHostel->is_approve_by_govt == true) {
                     $amount = $mMarketPriceMstr->getMarketTaxPriceGovtHostel($mMarActiveHostel->workflow_id, $mMarActiveHostel->ulb_id);
                 }
                 $payment_amount = ['payment_amount' => $amount];
@@ -506,33 +558,59 @@ class HostelController extends Controller
                 // $payment_amount = ['payment_amount' => 1000];
                 // $req->request->add($payment_amount);
 
-                // Hostel Application replication
+                if ($mMarActiveHostel->renew_no == NULL) {
+                    // Hostel Application replication
+                    $approvedhostel = $mMarActiveHostel->replicate();
+                    $approvedhostel->setTable('mar_hostels');
+                    $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
+                    $approvedhostel->payment_amount = $req->payment_amount;
+                    $approvedhostel->approve_date = Carbon::now();
+                    $approvedhostel->save();
 
-                $approvedhostel = $mMarActiveHostel->replicate();
-                $approvedhostel->setTable('mar_hostels');
-                $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
-                $approvedhostel->payment_amount = $req->payment_amount;
-                $approvedhostel->approve_date = Carbon::now();
-                $approvedhostel->save();
-                
+                    // Save in Hostel Renewal
+                    $approvedhostel = $mMarActiveHostel->replicate();
+                    $approvedhostel->approve_date = Carbon::now();
+                    $approvedhostel->setTable('mar_hostel_renewals');
+                    $approvedhostel->app_id = $mMarActiveHostel->id;
+                    $approvedhostel->save();
 
-                // Save in Hostel Renewal
-                $approvedhostel = $mMarActiveHostel->replicate();
-                $approvedhostel->approve_date = Carbon::now();
-                $approvedhostel->setTable('mar_hostel_renewals');
-                $approvedhostel->app_id = $mMarActiveHostel->id;
-                $approvedhostel->save();
+                    $mMarActiveHostel->delete();
 
-                
-                $mMarActiveHostel->delete();
+                    // Update in mar_hostels (last_renewal_id)
+                    DB::table('mar_hostels')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedhostel->id]);
 
-                // Update in mar_hostels (last_renewal_id)
-
-                DB::table('mar_hostels')
-                    ->where('id', $temp_id)
-                    ->update(['last_renewal_id' => $approvedhostel->id]);
-
-                $msg = "Application Successfully Approved !!";
+                    $msg = "Application Successfully Approved !!";
+                } else {
+                     //  Renewal Case
+                     // Hostel Application replication
+                     $application_no=$mMarActiveHostel->application_no;
+                     MarHostel::where('application_no', $application_no)->delete();
+ 
+                      $approvedHostel = $mMarActiveHostel->replicate();
+                      $approvedHostel->setTable('mar_hostels');
+                      $temp_id = $approvedHostel->id = $mMarActiveHostel->id;
+                      $approvedHostel->payment_amount = $req->payment_amount;
+                      $approvedHostel->payment_status = $req->payment_status;
+                      $approvedHostel->approve_date = Carbon::now();
+                      $approvedHostel->save();
+  
+                      // Save in Hostel Renewal
+                      $approvedHostel = $mMarActiveHostel->replicate();
+                      $approvedHostel->approve_date = Carbon::now();
+                      $approvedHostel->setTable('mar_hostel_renewals');
+                      $approvedHostel->id = $temp_id;
+                      $approvedHostel->save();
+  
+                      $approvedHostel->delete();
+  
+                      // Update in mar_hostels (last_renewal_id)
+                      DB::table('mar_hostels')
+                          ->where('id', $temp_id)
+                          ->update(['last_renewal_id' => $approvedHostel->id]);
+                      $msg = "Application Successfully Renewal !!";
+                }
             }
             // Rejection
             if ($req->status == 0) {
@@ -708,7 +786,7 @@ class HostelController extends Controller
     // }
 
 
-       
+
 
     public function paymentByCash(Request $req)
     {
@@ -783,8 +861,8 @@ class HostelController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
-    } 
-    
+    }
+
 
 
 
@@ -989,7 +1067,7 @@ class HostelController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked=NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

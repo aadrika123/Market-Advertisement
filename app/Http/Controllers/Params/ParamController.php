@@ -11,6 +11,7 @@ use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvAgencyRenewal;
 use App\Models\Advertisements\AdvHoarding;
+use App\Models\Advertisements\AdvHoardingRenewal;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvPrivatelandRenewal;
 use App\Models\Advertisements\AdvSelfadvertisement;
@@ -20,9 +21,12 @@ use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvVehicleRenewal;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarBanquteHallRenewal;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarHostel;
+use App\Models\Markets\MarHostelRenewal;
 use App\Models\Markets\MarLodge;
+use App\Models\Markets\MarLodgeRenewal;
 use App\Models\Workflows\WfRoleusermap;
 use Carbon\Carbon;
 use Exception;
@@ -297,7 +301,7 @@ class ParamController extends Controller
                     $mAdvHoarding->valid_from = Carbon::now();
                     $mAdvHoarding->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvHoarding::select('payment_date')
+                    $details=AdvHoardingRenewal::select('payment_date')
                                                 ->where('license_no',$mAdvHoarding->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
@@ -313,56 +317,139 @@ class ParamController extends Controller
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
 
-                DB::table('mar_banqute_halls')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('mar_banqute_halls')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
+                $mMarBanquteHall->payment_date= Carbon::now();
+                $mMarBanquteHall->payment_status= 1;
+                $mMarBanquteHall->payment_id= $req->paymentId;
+                $mMarBanquteHall->payment_details= $req->all();
+
+                if($mMarBanquteHall->renew_no==NULL){
+                    $mMarBanquteHall->valid_from = Carbon::now();
+                    $mMarBanquteHall->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=MarBanquteHallRenewal::select('valid_upto')
+                                                ->where('application_no',$mMarBanquteHall->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mMarBanquteHall->valid_from = $details->valid_upto;
+                    $mMarBanquteHall->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                }
+                $mMarBanquteHall->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mMarBanquteHall->valid_from;
+                $updateData['valid_upto'] = $mMarBanquteHall->valid_upto;
                 // update in Renewals Table
                 DB::table('mar_banqute_hall_renewals')
                     ->where('id', $mMarBanquteHall->last_renewal_id)
                     ->update($updateData);
+
+                // $updateData['payment_amount'] = $req->amount;
+                // // update in Renewals Table
+                // DB::table('mar_banqute_hall_renewals')
+                //     ->where('id', $mMarBanquteHall->last_renewal_id)
+                //     ->update($updateData);
             } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
 
-                DB::table('mar_hostels')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('mar_hostels')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mMarHostel = MarHostel::find($req->id);
+                $mMarHostel->payment_date= Carbon::now();
+                $mMarHostel->payment_status= 1;
+                $mMarHostel->payment_id= $req->paymentId;
+                $mMarHostel->payment_details= $req->all();
+
+                if($mMarHostel->renew_no==NULL){
+                    $mMarHostel->valid_from = Carbon::now();
+                    $mMarHostel->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=MarHostelRenewal::select('valid_upto')
+                                                ->where('application_no',$mMarHostel->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mMarHostel->valid_from = $details->valid_upto;
+                    $mMarHostel->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                }
+                $mMarHostel->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mMarHostel->valid_from;
+                $updateData['valid_upto'] = $mMarHostel->valid_upto;
                 // update in Renewals Table
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarHostel->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
 
-                DB::table('mar_lodges')
-                    ->where('id', $req->id)
-                    ->update($updateData);
-
                 $mMarLodge = MarLodge::find($req->id);
+                $mMarLodge->payment_date= Carbon::now();
+                $mMarLodge->payment_status= 1;
+                $mMarLodge->payment_id= $req->paymentId;
+                $mMarLodge->payment_details= $req->all();
+
+                if($mMarLodge->renew_no==NULL){
+                    $mMarLodge->valid_from = Carbon::now();
+                    $mMarLodge->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=MarLodgeRenewal::select('valid_upto')
+                                                ->where('application_no',$mMarLodge->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mMarLodge->valid_from = $details->valid_upto;
+                    $mMarLodge->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                }
+                $mMarLodge->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mMarLodge->valid_from;
+                $updateData['valid_upto'] = $mMarLodge->valid_upto;
                 // update in Renewals Table
-                DB::table('mar_hostel_renewals')
+                DB::table('mar_lodge_renewals')
                     ->where('id', $mMarLodge->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
 
-                DB::table('mar_dharamshalas')
-                    ->where('id', $req->id)
-                    ->update($updateData);
+                // DB::table('mar_dharamshalas')
+                //     ->where('id', $req->id)
+                //     ->update($updateData);
 
                 $mMarDharamshala = MarDharamshala::find($req->id);
+                $mMarDharamshala->payment_date= Carbon::now();
+                $mMarDharamshala->payment_status= 1;
+                $mMarDharamshala->payment_id= $req->paymentId;
+                $mMarDharamshala->payment_details= $req->all();
+
+                if($mMarDharamshala->renew_no==NULL){
+                    $mMarDharamshala->valid_from = Carbon::now();
+                    $mMarDharamshala->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                }else{
+                    $details=MarLodgeRenewal::select('valid_upto')
+                                                ->where('application_no',$mMarDharamshala->application_no)
+                                                ->orderByDesc('id')
+                                                ->skip(1)->first();
+                    $mMarDharamshala->valid_from = $details->valid_upto;
+                    $mMarDharamshala->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                }
+                $mMarDharamshala->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mMarDharamshala->valid_from;
+                $updateData['valid_upto'] = $mMarDharamshala->valid_upto;
                 // update in Renewals Table
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
+                // $updateData['payment_amount'] = $req->amount;
+                // // update in Renewals Table
+                // DB::table('mar_dharamshala_renewals')
+                //     ->where('id', $mMarDharamshala->last_renewal_id)
+                //     ->update($updateData);
             }
             DB::commit();
             $endTime = microtime(true);
