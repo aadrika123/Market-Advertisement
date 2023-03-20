@@ -126,7 +126,8 @@ class AdvActivePrivateland extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
             $mApplicationNo,
@@ -162,7 +163,8 @@ class AdvActivePrivateland extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
             ],
             $this->metaRenewReqs($req),
             $mRenewalNo,
@@ -337,6 +339,7 @@ class AdvActivePrivateland extends Model
                 'entity_name',
                 'entity_address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -357,6 +360,7 @@ class AdvActivePrivateland extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)

@@ -3,89 +3,121 @@
 namespace App\Http\Controllers\Advertisements;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PrivateLand\RenewalRequest;
-use App\Http\Requests\PrivateLand\StoreRequest;
-use App\Models\Advertisements\AdvActivePrivateland;
+
+use App\Http\Requests\Agency\RenewalHordingRequest;
+use App\Http\Requests\Agency\StoreLicenceRequest;
+use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\AdvChequeDtl;
-use App\Models\Advertisements\AdvPrivateland;
-use App\Models\Advertisements\AdvRejectedPrivateland;
+use App\Models\Advertisements\AdvHoarding;
+use App\Models\Advertisements\AdvRejectedHoarding;
+use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Workflows\WfRoleusermap;
-use Exception;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Database\Eloquent\Collection;
-use App\Traits\AdvDetailsTraits;
-
-
-use App\Traits\WorkflowTrait;
-use App\Models\Workflows\WorkflowTrack;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
+use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
-
-
+use App\Traits\AdvDetailsTraits;
+use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Expr\Empty_;
 
-/**
- * | Created On-02-01-2022 
- * | Created By-Anshu Kumar
- * | Private Land Operations
- */
-
-class PrivateLandController extends Controller
+class HoardingController extends Controller
 {
+    use AdvDetailsTraits;
 
     use WorkflowTrait;
-    use AdvDetailsTraits;
+
     protected $_modelObj;
+
+    protected $Repository;
 
     protected $_workflowIds;
     protected $_moduleId;
-
-    protected $Repository;
     protected $_docCode;
-    public function __construct(iSelfAdvetRepo $privateland_repo)
+    public function __construct(iSelfAdvetRepo $agency_repo)
     {
-        $this->_modelObj = new AdvActivePrivateland();
-        $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        $this->_modelObj = new AdvActivehoarding();
+        $this->_workflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-        $this->_docCode = Config::get('workflow-constants.PRIVATE_LANDS_DOC_CODE');
-        $this->Repository = $privateland_repo;
+        $this->_docCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
+        $this->Repository = $agency_repo;
     }
 
-    /**
-     * | Apply For Private Land Advertisement
+
+
+      /**
+     * | Get Typology List
      */
-    public function addNew(StoreRequest $req)
+    public function listTypology(Request $req)
     {
         try {
-            // Variable initialization
-            $privateLand = new AdvActivePrivateland();
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];                            // Find Jsk Id
-                $req->request->add($userId);
-            } else {
-                $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
-                $req->request->add($citizenId);
+            $mAdvTypologyMstr = new AdvTypologyMstr();
+            $typologyList = $mAdvTypologyMstr->listTypology1();
+            $typologyList = $typologyList->groupBy('type');
+            foreach ($typologyList as $key => $data) {
+                $type = [
+                    'Type' => "Type " . $key,
+                    'data' => $typologyList[$key]
+                ];
+                $fData[] = $type;
             }
+            $fullData['typology'] = $fData;
 
-            $applicationNo = $privateLand->addNew($req);                            // Model function to store 
-
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($fullData), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
 
-    public function applicationDetailsForRenew(Request $req){
+    /**
+     * | Get Typology List
+     */
+    public function getHordingCategory(Request $req)
+    {
+        try {
+            $mAdvTypologyMstr = new AdvTypologyMstr();
+            $typologyList = $mAdvTypologyMstr->getHordingCategory();
+
+            return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($typologyList), "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Save Application For Licence
+     */
+    public function addNewLicense(StoreLicenceRequest $req)
+    {
+        try {
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            if (authUser()->user_type == 'JSK') {
+                $userId = ['userId' => authUser()->id];
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => authUser()->id];
+                $req->request->add($citizenId);
+            }
+            DB::beginTransaction();
+            $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
+            DB::commit();
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $LicenseNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function getHordingDetailsForRenew(Request $req){
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
@@ -93,8 +125,8 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mAdvPrivateland = new AdvPrivateland();
-            $details = $mAdvPrivateland->applicationDetailsForRenew($req->applicationId);
+            $mAdvHoarding = new AdvHoarding();
+            $details = $mAdvHoarding->applicationDetailsForRenew($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
@@ -104,47 +136,44 @@ class PrivateLandController extends Controller
         }
     }
 
-    /**
-     * | Apply For Private Land Advertisement
+     /**
+     * | Save Application For Licence
      */
-    public function renewalApplication(RenewalRequest $req)
-    {
+    public function renewalHording(RenewalHordingRequest $req)
+    { 
         try {
-            // Variable initialization
-            $privateLand = new AdvActivePrivateland();
+            $mAdvActiveHoarding = new AdvActiveHoarding();
             if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];                            // Find Jsk Id
+                $userId = ['userId' => authUser()->id];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
+                $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-
-            $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
-
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
+            DB::beginTransaction();
+            $RenewNo = $mAdvActiveHoarding->renewalHording($req);       //<--------------- Model function to store 
+            DB::commit();
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $RenewNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
+            DB::rollBack();
+            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
     /**
-     * | Inbox List
+     * | License Inbox List
      * | @param Request $req
      */
-    public function listInbox(Request $req)
+    public function listLicenseInbox(Request $req)
     {
         try {
-            // Variable initialization
-            $mAdvActivePrivateland = $this->_modelObj;
+            $mAdvActiveHoarding = new AdvActiveHoarding();
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-
-            $inboxList = $mAdvActivePrivateland->listInbox($roleIds);                   // <----- Get Inbox List From Model
-
+            $inboxList = $mAdvActiveHoarding->listInbox($roleIds);
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -152,45 +181,42 @@ class PrivateLandController extends Controller
     }
 
     /**
-     * | Outbox List
+     * | License Outbox List
      */
-    public function listOutbox(Request $req)
+    public function listLicenseOutbox(Request $req)
     {
         try {
-            // Variable initialization
-            $selfAdvets = $this->_modelObj;
+            $mAdvActiveHoarding = new AdvActiveHoarding();
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-
-            $outboxList = $selfAdvets->listOutbox($roleIds);                            // <----- Get Outbox List From Model
-
+            $outboxList = $mAdvActiveHoarding->listOutbox($roleIds);
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
+
     /**
-     * | Application Details
+     * | License Application Details
      */
 
-    public function getDetailsById(Request $req)
+    public function getLicenseDetailsById(Request $req)
     {
         try {
-            // Variable initialization
-            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            // $data = array();
             $fullDetailsData = array();
             if (isset($req->type)) {
                 $type = $req->type;
             } else {
                 $type = NULL;
             }
-
             if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
+                $data = $mAdvActiveHoarding->getDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -198,45 +224,45 @@ class PrivateLandController extends Controller
             if (!$data) {
                 throw new Exception("Not Application Details Found");
             }
-
-            //Basic Details
-            $basicDetails = $this->generatePrivateLandBasicDetails($data);              // Trait function to get Basic Details
+            // Basic Details
+            $basicDetails = $this->generatehordingDetails($data); // Trait function to get Basic Details
             $basicElement = [
-                'headerTitle' => "Basic Details",
+                'headerTitle' => "Basic License Details",
                 "data" => $basicDetails
             ];
 
-            $cardDetails = $this->generatePrivateLandCardDetails($data);                // Trait function to get Card Details
+            $cardDetails = $this->generateHoardingCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Advertisement",
+                'headerTitle' => "License Details",
                 'data' => $cardDetails
             ];
+
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
-            $metaReqs['customFor'] = 'Private Land Advertisement';
+            $metaReqs['customFor'] = 'Agency Hording License';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
-
+            // return $metaReqs;
             $req->request->add($metaReqs);
 
-            $forwardBackward = $this->getRoleDetails($req);                            // Get Role Ids
+            $forwardBackward = $this->getRoleDetails($req);
+            // return $forwardBackward;
             $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
+            // return $fullDetailsData['roleDetails'];
 
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
-            $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
-            $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
+            $fullDetailsData['timelineData'] = collect($req);
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
 
     public function getRoleDetails(Request $request)
     {
@@ -268,69 +294,67 @@ class PrivateLandController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      */
-    public function listAppliedApplications(Request $req)
+    public function listLicenseAppliedApplications(Request $req)
     {
         try {
-            // Variable Initialization
             $citizenId = authUser()->id;
-            $mAdvActivePrivateland = new AdvActivePrivateland();
-
-            $applications = $mAdvActivePrivateland->listAppliedApplications($citizenId);            // Find Applied Application By Citizen
-
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $applications = $mAdvActiveHoarding->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($totalApplication == 0) {
-                $data1['data'] = NULL;
-            }
-
             return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
-
     /**
-     * | Escalate
+     * | License Escalate
      */
-    public function escalateApplication(Request $request)
+    public function escalateLicenseApplication(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             "escalateStatus" => "required|int",
             "applicationId" => "required|int",
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
-            // Variable Initialization
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
-            $data = AdvActivePrivateland::find($applicationId);
+            $data = AdvActiveHoarding::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
-            $data->save();                                                               // Save After escalate or De-Escalate
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "010106", "1.0", "353ms", "POST", $request->deviceId);
+            $data->save();
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Hording is Escalated' : "Hording is removed from Escalated", '', "010106", "1.0", "353ms", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
         }
     }
 
-
-    public function listEscalated(Request $req)
+    /**
+     * | Special Inbox
+     */
+    public function listLicenseEscalated(Request $req)
     {
         try {
-            // Variable initialization
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
             $ulbId = authUser()->ulb_id;
-            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);          // Get All Occupied Ward By user id using trait
-            $wardId = $occupiedWard->map(function ($item, $key) {             // Filter All ward_id in an array using laravel collections
+
+            $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
+            $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
 
-            $advData = $this->Repository->specialPrivateLandInbox($this->_workflowIds)          // Repository function to get Advertiesment Details
+            // print_r($wardId);
+
+            $advData = $this->Repository->specialAgencyLicenseInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_active_privatelands.ulb_id', $ulbId)
+                ->where('adv_active_agency_licenses.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
             return responseMsgs(true, "Data Fetched", remove_null($advData), "010107", "1.0", "251ms", "POST", "");
@@ -340,28 +364,30 @@ class PrivateLandController extends Controller
     }
 
     /**
-     * | Forward or Backward Application
+     * | License Forward or Backward Application
      */
-    public function forwardNextLevel(Request $request)
+    public function forwardLicenseNextLevel(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'applicationId' => 'required|integer',
             'senderRoleId' => 'required|integer',
             'receiverRoleId' => 'required|integer',
             'comment' => 'required',
         ]);
-
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
-            // Advertisment Application Update Current Role Updation
+            // Hording  Application Update Current Role Updation
             DB::beginTransaction();
-            $adv = AdvActivePrivateland::find($request->applicationId);
-            $adv->last_role_id = $request->current_role_id;
+            $adv = AdvActiveHoarding::find($request->applicationId);
+            $adv->last_role_id = $request->senderRoleId;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
 
-            $metaReqs['moduleId'] = $this->_moduleId;
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['workflowId'] = $adv->workflow_id;
-            $metaReqs['refTableDotId'] = "adv_active_privatelands.id";
+            $metaReqs['refTableDotId'] = "adv_active_hoardings.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
             $request->request->add($metaReqs);
 
@@ -375,9 +401,8 @@ class PrivateLandController extends Controller
         }
     }
 
-
-    // Post Independent Comment
-    public function commentApplication(Request $request)
+    // License Post Independent Comment
+    public function commentLicenseApplication(Request $request)
     {
         $request->validate([
             'comment' => 'required',
@@ -390,29 +415,28 @@ class PrivateLandController extends Controller
             $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
             $mWfRoleUsermap = new WfRoleusermap();
-            $mAdvActivePrivateland = AdvActivePrivateland::find($request->applicationId);                // Advertisment Details
+            $mAdvActiveHoarding = AdvActiveHoarding::find($request->applicationId);                // Agency License Details
+            $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
             DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
-                'workflowId' => $mAdvActivePrivateland->workflow_id,
-                'moduleId' => $this->_moduleId,
-                'refTableDotId' => "adv_active_privatelands.id",
-                'refTableIdValue' => $mAdvActivePrivateland->id,
+                'workflowId' => $mAdvActiveHoarding->workflow_id,
+                'moduleId' => $mModuleId,
+                'refTableDotId' => "adv_active_hoardings.id",
+                'refTableIdValue' => $mAdvActiveHoarding->id,
                 'message' => $request->comment
             ];
             // For Citizen Independent Comment
-
             if ($userType != 'Citizen') {
                 $roleReqs = new Request([
-                    'workflowId' => $mAdvActivePrivateland->workflow_id,
+                    'workflowId' => $mAdvActiveHoarding->workflow_id,
                     'userId' => $userId,
                 ]);
                 $wfRoleId = $mWfRoleUsermap->getRoleByUserWfId($roleReqs);
                 $metaReqs = array_merge($metaReqs, ['senderRoleId' => $wfRoleId->wf_role_id]);
                 $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
-
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
 
@@ -424,12 +448,7 @@ class PrivateLandController extends Controller
         }
     }
 
-
-    /**
-     * | Get Uploaded Document by application ID
-     */
-
-    public function viewPvtLandDocuments(Request $req)
+    public function viewLicenseDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -437,11 +456,13 @@ class PrivateLandController extends Controller
             // if ($req->type == 'Active') {
             //     $appId = $req->applicationId;
             // } elseif ($req->type == 'Reject') {
-            //     $appId = AdvRejectedPrivateland::find($req->applicationId)->temp_id;
+            //     // $appId = AdvRejectedAgencyLicense::find($req->applicationId)->temp_id;
+            //     $appId = $req->applicationId;
             // } elseif ($req->type == 'Approve') {
-            //     $appId = AdvPrivateland::find($req->applicationId)->temp_id;
+            //     // $appId = AdvActiveAgencyLicense::find($req->applicationId)->temp_id;
+            //     $appId = $req->applicationId;
             // }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -452,7 +473,7 @@ class PrivateLandController extends Controller
     /**
      * | Get Uploaded Active Document by application ID
      */
-    public function viewActiveDocument(Request $req)
+    public function viewActiveLicenseDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
@@ -466,10 +487,11 @@ class PrivateLandController extends Controller
         $data1['data'] = $data;
         return $data1;
     }
+
     /**
      * | Workflow View Uploaded Document by application ID
      */
-    public function viewDocumentsOnWorkflow(Request $req)
+    public function viewLicenseDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
@@ -483,30 +505,27 @@ class PrivateLandController extends Controller
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
-
-
-
-
     /**
-     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
+     * | Final Approval and Rejection of the Application
      * | Rating-
      * | Status- Open
      */
-    public function approvedOrReject(Request $req)
+    public function approvalOrRejectionLicense(Request $req)
     {
-        $validator = Validator::make($req->all(), [
-            'roleId' => 'required',
-            'applicationId' => 'required|integer',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
         try {
+            $validator = Validator::make($req->all(), [
+                'roleId' => 'required',
+                'applicationId' => 'required|integer',
+                'status' => 'required|integer',
+                // 'payment_amount' => 'required',
+            ]);
+            if ($validator->fails()) {
+                return ['status' => false, 'message' => $validator->errors()];
+            }
 
             // Check if the Current User is Finisher or Not         
-            $mAdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);
-            $getFinisherQuery = $this->getFinisherId($mAdvActivePrivateland->workflow_id);                                 // Get Finisher using Trait
+            $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
+            $getFinisherQuery = $this->getFinisherId($mAdvActiveHoarding->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
             if ($refGetFinisher->role_id != $req->roleId) {
                 return responseMsgs(false, " Access Forbidden", "");
@@ -515,82 +534,79 @@ class PrivateLandController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
-                $typology = $mAdvActivePrivateland->typology;
-                $zone = $mAdvActivePrivateland->zone;
-                if ($zone === NULL) {
-                    throw new Exception("Zone Not Selected !!!");
-                }
-                $amount = $this->getPrivateLandPayment($typology, $zone);
+                $amount = $this->getHordingPrice($mAdvActiveHoarding->typology, $mAdvActiveHoarding->zone_id);
                 $payment_amount = ['payment_amount' => $amount];
-
-                // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
 
-                if ($mAdvActivePrivateland->renew_no == NULL) {
-                    // approved Private Land Application replication
-                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                    $approvedPrivateland->setTable('adv_privatelands');
-                    $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                    $approvedPrivateland->payment_amount = $req->payment_amount;
-                    $approvedPrivateland->approve_date = Carbon::now();
-                    $approvedPrivateland->zone = $zone;
-                    $approvedPrivateland->save();
+                if ($mAdvActiveHoarding->renew_no == NULL) {
+                    // approved Hording Application replication
+                    $approvedAgencyLicense = $mAdvActiveHoarding->replicate();
+                    $approvedAgencyLicense->setTable('adv_hoardings');
+                    $temp_id = $approvedAgencyLicense->id = $mAdvActiveHoarding->id;
+                    $approvedAgencyLicense->payment_amount = $req->payment_amount;
+                    $approvedAgencyLicense->approve_date = Carbon::now();
+                    $approvedAgencyLicense->save();
 
-                    // Save in Priate Land Application Advertisement Renewal
-                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                    $approvedPrivateland->approve_date = Carbon::now();
-                    $approvedPrivateland->setTable('adv_privateland_renewals');
-                    $approvedPrivateland->id = $temp_id;
-                    $approvedPrivateland->zone = $zone;
-                    $approvedPrivateland->save();
+                    // Save in Hording Renewal
+                    $approvedAgencyLicense = $mAdvActiveHoarding->replicate();
+                    $approvedAgencyLicense->approve_date = Carbon::now();
+                    $approvedAgencyLicense->setTable('adv_hoarding_renewals');
+                    $approvedAgencyLicense->id = $temp_id;
+                    $approvedAgencyLicense->save();
 
-                    $mAdvActivePrivateland->delete();
-                    // Update in adv_privatelands (last_renewal_id)
-                    DB::table('adv_privatelands')
+                    $mAdvActiveHoarding->delete();
+
+                    // Update in adv_hoardings (last_renewal_id)
+
+                    DB::table('adv_hoardings')
                         ->where('id', $temp_id)
-                        ->update(['last_renewal_id' => $approvedPrivateland->id]);
+                        ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                     //  Renewal Case
-                     // Privateland Advert Application replication
-                     $application_no=$mAdvActivePrivateland->application_no;
-                     AdvPrivateland::where('application_no', $application_no)->delete();
+                     //  Renewal Application Case
+
+                     // Hording Application replication
+                     $license_no=$mAdvActiveHoarding->license_no;
+                     AdvHoarding::where('license_no', $license_no)->delete();
  
-                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                      $approvedPrivateland->setTable('adv_privatelands');
-                      $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                      $approvedPrivateland->payment_amount = $req->payment_amount;
-                      $approvedPrivateland->payment_status = $req->payment_status;
-                      $approvedPrivateland->approve_date = Carbon::now();
-                      $approvedPrivateland->save();
+                      $approvedHoarding = $mAdvActiveHoarding->replicate();
+                      $approvedHoarding->setTable('adv_hoardings');
+                      $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
+                      $approvedHoarding->payment_amount = $req->payment_amount;
+                      $approvedHoarding->payment_status = $req->payment_status;
+                      $approvedHoarding->approve_date = Carbon::now();
+                      $approvedHoarding->save();
   
-                      // Save in Privateland Advertisement Renewal
-                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                      $approvedPrivateland->approve_date = Carbon::now();
-                      $approvedPrivateland->setTable('adv_privateland_renewals');
-                      $approvedPrivateland->id = $temp_id;
-                      $approvedPrivateland->save();
+                      // Save in Hording Advertisement Renewal
+                      $approvedHoarding = $approvedHoarding->replicate();
+                      $approvedHoarding->approve_date = Carbon::now();
+                      $approvedHoarding->setTable('adv_hoarding_renewals');
+                      $approvedHoarding->id = $temp_id;
+                      $approvedHoarding->save();
   
-                      $mAdvActivePrivateland->delete();
-                      // Update in adv_privatelands (last_renewal_id)
-                      DB::table('adv_privatelands')
+                      $approvedHoarding->delete();
+  
+                      // Update in adv_hoardings (last_renewal_id)
+                      DB::table('adv_hoardings')
                           ->where('id', $temp_id)
-                          ->update(['last_renewal_id' => $approvedPrivateland->id]);
+                          ->update(['last_renewal_id' => $approvedHoarding->id]);
                       $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection
             if ($req->status == 0) {
+
                 $payment_amount = ['payment_amount' => 0];
                 $req->request->add($payment_amount);
-                // Privateland advertisement Application replication
-                $rejectedPrivateland = $mAdvActivePrivateland->replicate();
-                $rejectedPrivateland->setTable('adv_rejected_privatelands');
-                $rejectedPrivateland->id = $mAdvActivePrivateland->id;
-                $rejectedPrivateland->rejected_date = Carbon::now();
-                $rejectedPrivateland->save();
-                $mAdvActivePrivateland->delete();
+
+                // Agency advertisement Application replication
+                $rejectedAgencyLicense = $mAdvActiveHoarding->replicate();
+                $rejectedAgencyLicense->setTable('adv_rejected_hoardings');
+                $rejectedAgencyLicense->id = $mAdvActiveHoarding->id;
+                $rejectedAgencyLicense->rejected_date = Carbon::now();
+                $rejectedAgencyLicense->save();
+                $mAdvActiveHoarding->delete();
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
@@ -601,29 +617,31 @@ class PrivateLandController extends Controller
         }
     }
 
-
-    public function getPrivateLandPayment($typology, $zone)
+    /**
+     * | Get Hording price
+     */
+    public function getHordingPrice($typology_id, $zone = 'A')
     {
         return DB::table('adv_typology_mstrs')
             ->select(DB::raw("case when $zone = 1 then rate_zone_a
                               when $zone = 2 then rate_zone_b
                               when $zone = 3 then rate_zone_c
                         else 0 end as rate"))
-            ->where('id', $typology)
+            ->where('id', $typology_id)
             ->first()->rate;
     }
 
     /**
-     * | Approve Application List for Citzen
+     * | Approve License Application List for Citzen
      * | @param Request $req
      */
-    public function listApproved(Request $req)
+    public function listApprovedLicense(Request $req)
     {
         try {
             $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
-            $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->listApproved($citizenId, $userType);
+            $userId = authUser()->user_type;
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listApproved($citizenId, $userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -631,8 +649,31 @@ class PrivateLandController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Unpaid License Application List for Citzen
+     * | @param Request $req
+     */
+    public function listUnpaidLicenses(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listUnpaid($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Unpaid Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -640,15 +681,15 @@ class PrivateLandController extends Controller
 
 
     /**
-     * | Reject Application List for Citizen
+     * | Reject License Application List for Citizen
      * | @param Request $req
      */
-    public function listRejected(Request $req)
+    public function listRejectedLicense(Request $req)
     {
         try {
             $citizenId = authUser()->id;
-            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->listRejected($citizenId);
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $applications = $mAdvRejectedHoarding->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -656,7 +697,6 @@ class PrivateLandController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -665,15 +705,17 @@ class PrivateLandController extends Controller
 
 
 
+
+
     /**
-     * | Get Applied Applications by Logged In JSK
+     * | Get Applied License Applications by Logged In JSK
      */
-    public function getJSKApplications(Request $req)
+    public function getJskLicenseApplications(Request $req)
     {
         try {
             $userId = authUser()->id;
-            $mAdvActivePrivateland = new AdvActivePrivateland();
-            $applications = $mAdvActivePrivateland->getJSKApplications($userId);
+            $mmAdvRejectedHoarding = new AdvActiveHoarding();
+            $applications = $mmAdvRejectedHoarding->getJskLicenseApplications($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -681,7 +723,6 @@ class PrivateLandController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
             return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
@@ -690,15 +731,15 @@ class PrivateLandController extends Controller
 
 
     /**
-     * | Approve Application List for JSK
+     * | Approve License Application List for JSK
      * | @param Request $req
      */
-    public function listjskApprovedApplication(Request $req)
+    public function listJskApprovedLicenseApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
-            $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->listjskApprovedApplication($userId);
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listJskApprovedLicenseApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -713,17 +754,16 @@ class PrivateLandController extends Controller
         }
     }
 
-
     /**
-     * | Reject Application List for JSK
+     * | Reject License Application List for JSK
      * | @param Request $req
      */
-    public function listJskRejectedApplication(Request $req)
+    public function listJskRejectedLicenseApplication(Request $req)
     {
         try {
             $userId = authUser()->id;
-            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $applications = $mAdvRejectedHoarding->listJskRejectedLicenseApplication($userId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -738,28 +778,26 @@ class PrivateLandController extends Controller
         }
     }
 
-
-
-
-
     /**
      * | Generate Payment Order ID
      * | @param Request $req
      */
-
-    public function generatePaymentOrderId(Request $req)
+    public function generateLicensePaymentOrderId(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             $startTime = microtime(true);
-            $mAdvPrivateland = AdvPrivateland::find($req->id);
+            $mAdvHoarding = AdvHoarding::find($req->id);
             $reqData = [
-                "id" => $mAdvPrivateland->id,
-                'amount' => $mAdvPrivateland->payment_amount,
-                'workflowId' => $mAdvPrivateland->workflow_id,
-                'ulbId' => $mAdvPrivateland->ulb_id,
+                "id" => $mAdvHoarding->id,
+                'amount' => $mAdvHoarding->payment_amount,
+                'workflowId' => $mAdvHoarding->workflow_id,
+                'ulbId' => $mAdvHoarding->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
@@ -774,10 +812,10 @@ class PrivateLandController extends Controller
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
-            $data->name = $mAdvPrivateland->applicant;
-            $data->email = $mAdvPrivateland->email;
-            $data->contact = $mAdvPrivateland->mobile_no;
-            $data->type = "Private Lands";
+            $data->name = $mAdvHoarding->applicant;
+            $data->email = $mAdvHoarding->email;
+            $data->contact = $mAdvHoarding->mobile_no;
+            $data->type = "Hording";
             // return $data;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -788,29 +826,30 @@ class PrivateLandController extends Controller
         }
     }
 
-
     /**
-     * Summary of application Details For Payment
+     * License (Hording) application Details For Payment
      * @param Request $req
      * @return void
      */
-    public function getApplicationDetailsForPayment(Request $req)
+    public function getLicenseApplicationDetailsForPayment(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'applicationId' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             $startTime = microtime(true);
-            $mAdvPrivateland = new AdvPrivateland();
-            $workflowId = $this->_workflowIds;
+            $mAdvHoarding = new AdvHoarding();
             if ($req->applicationId) {
-                $data = $mAdvPrivateland->getApplicationDetailsForPayment($req->applicationId, $workflowId);
+                $data = $mAdvHoarding->getApplicationDetailsForPayment($req->applicationId);
             }
 
             if (!$data)
                 throw new Exception("Application Not Found");
 
-            $data['type'] = "Private Lands";
+            $data['type'] = "Hording";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -820,59 +859,87 @@ class PrivateLandController extends Controller
     }
 
     /**
-     * Get Payment Details
+     * Check isAgency or Not      
+     * | It is a case of agency=========================================================
+     * @return void
      */
-    // public function getPaymentDetails(Request $req)
+    // public function isAgency(Request $req)
     // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
     //     try {
-    //         $mAdvPrivateland = new AdvPrivateland();
-    //         $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+    //         $userType = authUser()->user_type;
+    //         if ($userType == "Citizen") {
+    //             $startTime = microtime(true);
+    //             $citizenId = authUser()->id;
+    //             $mAdvAgency = new AdvAgency();
+    //             $isAgency = $mAdvAgency->checkAgency($citizenId);
+    //             $endTime = microtime(true);
+    //             $executionTime = $endTime - $startTime;
+    //             if (empty($isAgency)) {
+    //                 throw new Exception("You Have Not Agency !!");
+    //             } else {
+    //                 return responseMsgs(true, "Data Fetched !!!", $isAgency, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+    //             }
     //         } else {
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+    //             throw new Exception("You Are Not Citizen");
     //         }
     //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
+    //         return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
     //     }
     // }
 
+    public function getAgencyDashboard(Request $req)
+    {
+        try {
+            $userType = authUser()->user_type;
+            if ($userType == "Citizen") {
+                $startTime = microtime(true);
+                $citizenId = authUser()->id;
+                $mAdvHoarding = new AdvHoarding();
+                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId);
+                $endTime = microtime(true);
+                $executionTime = $endTime - $startTime;
+                if (empty($agencyDashboard)) {
+                    throw new Exception("You Have Not Agency !!");
+                } else {
+                    return responseMsgs(true, "Data Fetched !!!", $agencyDashboard, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+                }
+            } else {
+                throw new Exception("You Are Not Citizen");
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
 
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string'
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mAdvPrivateland = new AdvPrivateland();
+            $mAdvHoarding = new AdvHoarding();
             DB::beginTransaction();
-            $status = $mAdvPrivateland->paymentByCash($req);
+            $status = $mAdvHoarding->paymentByCash($req);
             DB::commit();
             if ($req->status == '1' && $status == 1) {
                 return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
-                return responseMsgs(true, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
-
-    public function entryChequeDd(Request $req)
+    public function entryChequeDdLicense(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  id of Application
+            'applicationId' => 'required|string',               //  temp_id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
@@ -891,7 +958,7 @@ class PrivateLandController extends Controller
         }
     }
 
-    public function clearOrBounceCheque(Request $req)
+    public function clearOrBounceChequeLicense(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'paymentId' => 'required|string',
@@ -919,39 +986,10 @@ class PrivateLandController extends Controller
     }
 
     /**
-     * | Entry Zone of the Application 
-     * | Status- Open
-     */
-    public function entryZone(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|integer',
-            'zone' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mAdvActivePrivateland = new AdvActivePrivateland();
-            $status = $mAdvActivePrivateland->entryZone($req);
-            if ($status == '1') {
-                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-            } else {
-                throw new Exception("Zone Not Added !!!");
-            }
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-
-
-
-    /**
      * | Verify Single Application Approve or reject
      * |
      */
-    public function verifyOrRejectDoc(Request $req)
+    public function verifyOrRejectLicenseDoc(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|digits_between:1,9223372036854775807',
@@ -964,7 +1002,7 @@ class PrivateLandController extends Controller
         }
         try {
             $mWfDocument = new WfActiveDocument();
-            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $mAdvActiveHoarding = new AdvActiveHoarding();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
             $userId = authUser()->id;
@@ -972,7 +1010,7 @@ class PrivateLandController extends Controller
 
             $wfLevel = Config::get('constants.SELF-LABEL');
             // Derivative Assigments
-            $appDetails = $mAdvActivePrivateland->getPrivateLandNo($applicationId);
+            $appDetails = $mAdvActiveHoarding->getHoardingNo($applicationId);
 
             if (!$appDetails || collect($appDetails)->isEmpty())
                 throw new Exception("Application Details Not Found");
@@ -991,7 +1029,7 @@ class PrivateLandController extends Controller
                 throw new Exception("You are not Authorized");
 
 
-            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+            $ifFullDocVerified = $this->ifFullLicenseDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
 
             if ($ifFullDocVerified == 1)
                 throw new Exception("Document Fully Verified");
@@ -1016,7 +1054,7 @@ class PrivateLandController extends Controller
                 'action_taken_by' => $userId
             ];
             $mWfDocument->docVerifyReject($wfDocId, $reqs);
-            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+            $ifFullDocVerifiedV1 = $this->ifFullLicenseDocVerified($applicationId);
 
             if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
                 $appDetails->doc_verify_status = 1;
@@ -1034,19 +1072,19 @@ class PrivateLandController extends Controller
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
      */
-    public function ifFullDocVerified($applicationId)
+    public function ifFullLicenseDocVerified($applicationId)
     {
-        $mAdvActivePrivateland = new AdvActivePrivateland();
+        $mAdvActiveHoarding = new AdvActiveHoarding();
         $mWfActiveDocument = new WfActiveDocument();
-        $mAdvActivePrivateland = $mAdvActivePrivateland->getPrivateLandNo($applicationId);                      // Get Application Details
+        $mAdvActiveHoarding = $mAdvActiveHoarding->getHoardingNo($applicationId);                      // Get Application Details
         $refReq = [
             'activeId' => $applicationId,
-            'workflowId' => $mAdvActivePrivateland->workflow_id,
+            'workflowId' => $mAdvActiveHoarding->workflow_id,
             'moduleId' =>  $this->_moduleId
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // self Advertiesement List Documents
+        // Vehicle Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         if ($ifAdvDocUnverified == 1)
             return 0;
@@ -1058,18 +1096,18 @@ class PrivateLandController extends Controller
 
 
     /**
-     *  send back to citizen
+     *  | Send Application back to citizen
      */
-    public function backToCitizen(Request $req)
+    public function backToCitizenLicense(Request $req)
     {
         $req->validate([
             'applicationId' => "required"
         ]);
         try {
             $redis = Redis::connection();
-            $mAdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);
+            $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
 
-            $workflowId = $mAdvActivePrivateland->workflow_id;
+            $workflowId = $mAdvActiveHoarding->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
             if (!$backId) {
                 $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
@@ -1078,14 +1116,14 @@ class PrivateLandController extends Controller
                 $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
             }
 
-            $mAdvActivePrivateland->current_role_id = $backId->wf_role_id;
-            $mAdvActivePrivateland->parked = 1;
-            $mAdvActivePrivateland->save();
+            $mAdvActiveHoarding->current_role_id = $backId->wf_role_id;
+            $mAdvActiveHoarding->parked = 1;
+            $mAdvActiveHoarding->save();
 
 
             $metaReqs['moduleId'] = $this->_moduleId;
-            $metaReqs['workflowId'] = $mAdvActivePrivateland->workflow_id;
-            $metaReqs['refTableDotId'] = "adv_active_privatelands.id";
+            $metaReqs['workflowId'] = $mAdvActiveHoarding->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_agency_licenses.id";
             $metaReqs['refTableIdValue'] = $req->applicationId;
             $metaReqs['verificationStatus'] = $req->verificationStatus;
             $metaReqs['senderRoleId'] = $req->currentRoleId;
@@ -1101,11 +1139,10 @@ class PrivateLandController extends Controller
         }
     }
 
-
     /**
      * | Back To Citizen Inbox
      */
-    public function listBtcInbox()
+    public function listLicenseBtcInbox()
     {
         try {
             $auth = auth()->user();
@@ -1123,12 +1160,12 @@ class PrivateLandController extends Controller
                 return $role->wf_role_id;
             });
 
-            $mAdvActivePrivateland = new AdvActivePrivateland();
-            $btcList = $mAdvActivePrivateland->getPrivateLandList($ulbId)
-                ->whereIn('adv_active_privatelands.current_role_id', $roleId)
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $btcList = $mAdvActiveHoarding->getHoardingList($ulbId)
+                ->whereIn('adv_active_hoardings.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_privatelands.id')
+                ->orderByDesc('adv_active_hoardings.id')
                 ->get();
 
             return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
@@ -1137,13 +1174,13 @@ class PrivateLandController extends Controller
         }
     }
 
-    public function checkFullUpload($applicationId)
+    public function checkFullLicenseUpload($applicationId)
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleId;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
-        $appDetails = AdvActivePrivateland::find($applicationId);
+        $appDetails = AdvActiveHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
@@ -1157,7 +1194,7 @@ class PrivateLandController extends Controller
         }
     }
 
-    public function reuploadDocument(Request $req)
+    public function reuploadLicenseDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|digits_between:1,9223372036854775807',
@@ -1167,10 +1204,10 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $mAdvActivehoarding = new AdvActivehoarding();
             DB::beginTransaction();
-            $appId = $mAdvActivePrivateland->reuploadDocument($req);
-            $this->checkFullUpload($appId);
+            $appId = $mAdvActivehoarding->reuploadDocument($req);
+            $this->checkFullLicenseUpload($appId);
             DB::commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
         } catch (Exception $e) {
@@ -1178,4 +1215,135 @@ class PrivateLandController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
+
+    /**
+     * | Approve License Application List for Citzen
+     * | @param Request $req
+     */
+    public function getRenewActiveApplications(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $AdvHoarding = new AdvHoarding();
+            $applications = $AdvHoarding->getRenewActiveApplications($citizenId, $userId);
+            $totalApplication = count($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    public function listExpiredHording(Request $req){
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listExpiredHording($citizenId, $userId);
+            $totalApplication = count($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Archived Application By Id 
+     */
+    public function archivedHording(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+         try {
+            $mAdvHoarding = AdvHoarding::find($req->applicationId);
+            $mAdvHoarding->is_archived=1;
+            $mAdvHoarding->save();
+            return responseMsgs(true, "Archived Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+       /**
+     * | Hording Archived List for Citizen
+     * | @param Request $req
+     */
+    public function listHordingArchived(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listHordingArchived($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Archived Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    
+    /**
+     * | Blacklist Application By Id 
+     */
+    public function blacklistHording(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+         try {
+            $mmAdvHoarding = AdvHoarding::find($req->applicationId);
+            $mmAdvHoarding->is_blacklist=1;
+            $mmAdvHoarding->save();
+            return responseMsgs(true, "Blacklist Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+       /**
+     * | Hording Archived List for Citizen
+     * | @param Request $req
+     */
+    public function listHordingBlacklist(Request $req)
+    {
+        try {
+            $citizenId = authUser()->id;
+            $userId = authUser()->user_type;
+            $mAdvHoarding = new AdvHoarding();
+            $applications = $mAdvHoarding->listHordingArchived($citizenId, $userId);
+            $totalApplication = $applications->count();
+            remove_null($applications);
+            $data1['data'] = $applications;
+            $data1['arrayCount'] =  $totalApplication;
+            if ($data1['arrayCount'] == 0) {
+                $data1 = null;
+            }
+            return responseMsgs(true, "Blacklist Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
 }

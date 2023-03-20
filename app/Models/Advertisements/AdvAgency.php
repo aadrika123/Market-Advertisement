@@ -214,10 +214,10 @@ class AdvAgency extends Model
 
     public function getPaymentDetails($paymentId)
     {
-       $details = AdvAgency::select('payment_details')
+       return $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name')
             ->where('payment_id', $paymentId)
             ->first();
-        return json_decode($details->payment_details);
+        // return json_decode($details->payment_details);
     }
 
 
@@ -240,7 +240,7 @@ class AdvAgency extends Model
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $mAdvAgency->payment_status = $req->status;
-            $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId/".time();
+            $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
             
@@ -264,7 +264,9 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
             $mAdvAgencyRenewal->payment_details = json_encode($payDetails);
-            return $mAdvAgencyRenewal->save();
+            $ret['status']=$mAdvAgencyRenewal->save();
+            $ret['paymentId']=$pay_id;
+            return  $ret;
         }
     }
 

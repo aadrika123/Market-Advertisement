@@ -24,7 +24,7 @@ class AdvRejectedPrivateland extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
     

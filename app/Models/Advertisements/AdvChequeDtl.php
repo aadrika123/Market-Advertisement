@@ -55,7 +55,7 @@ class AdvChequeDtl extends Model
         );
         // return $metaReqs;
         $id = AdvChequeDtl::create($metaReqs)->id;
-        return $financial_year . "/" . $id;
+        return $financial_year . "-" . $id;
     }
 
     public function getFinancialYear($inputDate, $format = "Y")
@@ -81,7 +81,7 @@ class AdvChequeDtl extends Model
         $payId = $mAdvCheckDtls->id;
         $applicationId = $mAdvCheckDtls->application_id;
         $workflowId = $mAdvCheckDtls->workflow_id;
-        $payment_id = $mAdvCheckDtls->transaction_no . "/" . $payId;
+        $payment_id = $mAdvCheckDtls->transaction_no . "-" . $payId;
 
         if ($req->status == '1') {   // Paid Case
 
@@ -469,9 +469,9 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now()
                     ],
                 );
-                AdvAgencyLicense::where('id', $applicationId)->update($metaReqs);
-                $amount = DB::table('adv_agency_licenses')->where('id', $applicationId)->first()->payment_amount;
-                // update on Agency Hording  renewal Table
+                AdvHoarding::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('adv_Hoardings')->where('id', $applicationId)->first()->payment_amount;
+                // update on Hording  renewal Table
                 $metaReqs = array_merge(
                     [
                         'payment_id' => $payment_id,
@@ -481,7 +481,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvAgencyLicenseRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
+                return AdvHoardingRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
             }
             elseif ($workflowId == $this->_lodge) {
                 // update on Vehicle Table

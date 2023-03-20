@@ -122,7 +122,8 @@ class AdvActiveVehicle extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
             $mApplicationNo,
@@ -163,7 +164,8 @@ class AdvActiveVehicle extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
             ],
             $this->metaRenewReqs($req),
             $mRenew,
@@ -191,6 +193,7 @@ class AdvActiveVehicle extends Model
                 'application_date',
                 'applicant',
                 'entity_name',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_roles', $roleIds)
@@ -281,6 +284,7 @@ class AdvActiveVehicle extends Model
                 'entity_name',
                 'created_at as applied_date',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_roles', $roleIds)

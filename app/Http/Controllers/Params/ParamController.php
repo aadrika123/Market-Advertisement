@@ -10,6 +10,7 @@ use App\Models\Advertisements\AdvActiveSelfadvetdocument;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvAgencyRenewal;
+use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvPrivatelandRenewal;
 use App\Models\Advertisements\AdvSelfadvertisement;
@@ -286,29 +287,29 @@ class ParamController extends Controller
                 //     ->where('id', $req->id)
                 //     ->update($updateData);
 
-                $mAdvAgencyLicense = AdvAgencyLicense::find($req->id);
-                $mAdvAgencyLicense->payment_date= Carbon::now();
-                $mAdvAgencyLicense->payment_status= 1;
-                $mAdvAgencyLicense->payment_id= $req->paymentId;
-                $mAdvAgencyLicense->payment_details= $req->all();
+                $mAdvHoarding = AdvHoarding::find($req->id);
+                $mAdvHoarding->payment_date= Carbon::now();
+                $mAdvHoarding->payment_status= 1;
+                $mAdvHoarding->payment_id= $req->paymentId;
+                $mAdvHoarding->payment_details= $req->all();
 
-                if($mAdvAgencyLicense->renew_no==NULL){
-                    $mAdvAgencyLicense->valid_from = Carbon::now();
-                    $mAdvAgencyLicense->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                if($mAdvHoarding->renew_no==NULL){
+                    $mAdvHoarding->valid_from = Carbon::now();
+                    $mAdvHoarding->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvAgencyLicense::select('payment_date')
-                                                ->where('license_no',$mAdvAgencyLicense->license_no)
+                    $details=AdvHoarding::select('payment_date')
+                                                ->where('license_no',$mAdvHoarding->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvAgencyLicense->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
-                    $mAdvAgencyLicense->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                    $mAdvHoarding->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
+                    $mAdvHoarding->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
                 }
-                $mAdvAgencyLicense->save();
+                $mAdvHoarding->save();
 
                 $updateData['payment_amount'] = $req->amount;
                 // update in Renewals Table
-                DB::table('adv_agency_license_renewals')
-                    ->where('id', $mAdvAgencyLicense->last_renewal_id)
+                DB::table('adv_hoarding_renewals')
+                    ->where('id', $mAdvHoarding->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
 
@@ -398,9 +399,11 @@ class ParamController extends Controller
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
+                // $paymentDetails->inWords='Twenty Thousand Rupees Only';
+                $paymentDetails->inWords=getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_hording) {
-                $mAdvAgencyLicense = new AdvAgencyLicense();
-                $paymentDetails = $mAdvAgencyLicense->getLicensePaymentDetails($req->paymentId);
+                $mAdvHoarding = new AdvHoarding();
+                $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
             }
 
             // Get Market Payment Details
@@ -417,7 +420,6 @@ class ParamController extends Controller
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
             }
-
 
             if (empty($paymentDetails)) {
                 throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");

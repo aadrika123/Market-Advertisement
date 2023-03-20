@@ -109,7 +109,8 @@ class AdvActiveAgency extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
             $mApplicationNo,
@@ -292,6 +293,7 @@ class AdvActiveAgency extends Model
                 'entity_name',
                 'address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -314,6 +316,7 @@ class AdvActiveAgency extends Model
                 'entity_name',
                 'address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->get();
@@ -332,6 +335,7 @@ class AdvActiveAgency extends Model
                 'application_date',
                 'entity_name',
                 'address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -404,7 +408,8 @@ class AdvActiveAgency extends Model
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
                 'ip_address' => $ipAddress,
-                'renewal' => 1
+                'renewal' => 1,
+                'application_type' => "Renew"
             ],
             $this->renewalReqs($req),
             $mRenewNo,

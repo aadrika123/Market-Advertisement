@@ -25,7 +25,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'old_application_no',
+                'application_type',
                 'payment_status'
             )
             ->orderByDesc('id');
@@ -41,6 +41,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             'application_date',
             'applicant',
             'entity_name',
+            'application_type',
         )
         ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
@@ -55,6 +56,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             'application_no',
             'application_date',
             'entity_name',
+            'application_type',
         )
         ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
@@ -68,6 +70,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             'application_no',
             'application_date',
             'entity_name',
+            'application_type',
         )
         ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);

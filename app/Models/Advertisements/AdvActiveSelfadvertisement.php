@@ -106,7 +106,8 @@ class AdvActiveSelfadvertisement extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply",
             ],
             $this->metaReqs($req),
             $mApplicationNo,
@@ -142,7 +143,8 @@ class AdvActiveSelfadvertisement extends Model
                  'ulb_id' => $req->ulbId,
                  'citizen_id' => $req->citizenId,
                  'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress
+                 'ip_address' => $ipAddress,
+                 'application_type' => "Renew"
              ],
              $this->metaRenewalReqs($req),
              $mRenewNo,
@@ -305,7 +307,8 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'payment_status'
+                'payment_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -326,7 +329,8 @@ class AdvActiveSelfadvertisement extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
-                'payment_status'
+                'payment_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)

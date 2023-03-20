@@ -273,7 +273,7 @@ trait AdvDetailsTraits
     /**
      * | Get Basic Details
      */
-    public function generatehordingLicenseDetails($data)
+    public function generatehordingDetails($data)
     {
         return new Collection([
             ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
@@ -313,7 +313,7 @@ trait AdvDetailsTraits
     /**
      * | Get Card Details
      */
-    public function generateLiceasneCardDetails($data)
+    public function generateHoardingCardDetails($data)
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['license_no']],
