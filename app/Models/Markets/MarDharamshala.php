@@ -23,11 +23,11 @@ class MarDharamshala extends Model
             'application_no',
             'application_date',
             'entity_address',
-            // 'old_application_no',
-            // 'payment_status',
             'payment_amount',
             'approve_date',
+            'payment_status',
             'citizen_id',
+            'valid_upto',
         )
             ->orderByDesc('id')
             ->get();
@@ -39,6 +39,24 @@ class MarDharamshala extends Model
     public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
+        foreach($allApproveList as $key => $list){
+            $activeDharamashala=MarActiveDharamshala::where('application_no',$list['application_no'])->count();
+            $current_date=carbon::now()->format('Y-m-d');
+            $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+            if($current_date >= $notify_date){
+                if($activeDharamashala==0){
+                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                }else{
+                    $allApproveList[$key]['renew_option']='0';     // Already Renew
+                }
+            }
+            if($current_date < $notify_date){
+                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show 0
+            }
+            if($list['valid_upto'] < $current_date){
+                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired 
+            }
+        }
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
         } else {
@@ -56,7 +74,6 @@ class MarDharamshala extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'applicant',
                 'entity_name',
                 'payment_amount',
                 'approve_date',
@@ -129,12 +146,13 @@ class MarDharamshala extends Model
                         'ldt.string_parameter as land_deed_type_name',
                         'wt.string_parameter as water_supply_type_name',
                         'et.string_parameter as electricity_type_name',
+                        'ew.ward_name as entity_ward_name',
                         'st.string_parameter as security_type_name',
                         'pw.ward_name as permanent_ward_name',
                         'ulb.ulb_name',
                         )
                         ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_dharamshalas.license_year::int'))
-                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_dharamshalas.entity_ward_id::int'))
+                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_dharamshalas.residential_ward_id::int'))
                         ->leftJoin('ref_adv_paramstrings as ot','ot.id','=',DB::raw('mar_dharamshalas.organization_type::int'))
                         ->leftJoin('ref_adv_paramstrings as ldt','ldt.id','=',DB::raw('mar_dharamshalas.land_deed_type::int'))
                         ->leftJoin('ref_adv_paramstrings as wt','wt.id','=',DB::raw('mar_dharamshalas.water_supply_type::int'))
@@ -150,5 +168,15 @@ class MarDharamshala extends Model
             $details['documents']=$documents;
         }
         return $details;
+    }
+
+     /**
+     * | Get Payment Details After Payment
+     */
+    public function getPaymentDetails($paymentId){
+        $details=MarDharamshala::select('payment_details')
+        ->where('payment_id', $paymentId)
+        ->first();
+       return json_decode($details->payment_details);
     }
 }

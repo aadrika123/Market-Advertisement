@@ -23,6 +23,7 @@ use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarBanquteHallRenewal;
 use App\Models\Markets\MarDharamshala;
+use App\Models\Markets\MarDharamshalaRenewal;
 use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarHostelRenewal;
 use App\Models\Markets\MarLodge;
@@ -60,8 +61,8 @@ class ParamController extends Controller
         $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-        $this->_lodge = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-        $this->_dharamshala = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
     }
 
 
@@ -336,7 +337,8 @@ class ParamController extends Controller
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mMarBanquteHall->valid_from = $details->valid_upto;
-                    $mMarBanquteHall->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                    // $mMarBanquteHall->valid_upto = date("Y-m-d",strtotime("+1 Years -1 days", $details->valid_upto));
+                    $mMarBanquteHall->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarBanquteHall->save();
 
@@ -374,7 +376,7 @@ class ParamController extends Controller
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mMarHostel->valid_from = $details->valid_upto;
-                    $mMarHostel->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                    $mMarHostel->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarHostel->save();
 
@@ -402,7 +404,7 @@ class ParamController extends Controller
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mMarLodge->valid_from = $details->valid_upto;
-                    $mMarLodge->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                    $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarLodge->save();
 
@@ -414,11 +416,6 @@ class ParamController extends Controller
                     ->where('id', $mMarLodge->last_renewal_id)
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
-
-                // DB::table('mar_dharamshalas')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
-
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date= Carbon::now();
                 $mMarDharamshala->payment_status= 1;
@@ -429,15 +426,15 @@ class ParamController extends Controller
                     $mMarDharamshala->valid_from = Carbon::now();
                     $mMarDharamshala->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=MarLodgeRenewal::select('valid_upto')
+                    $details=MarDharamshalaRenewal::select('valid_upto')
                                                 ->where('application_no',$mMarDharamshala->application_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mMarDharamshala->valid_from = $details->valid_upto;
-                    $mMarDharamshala->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $details->valid_upto));
+                    $mMarDharamshala->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarDharamshala->save();
-
+                $a=$mMarDharamshala->valid_upto;
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarDharamshala->valid_from;
                 $updateData['valid_upto'] = $mMarDharamshala->valid_upto;

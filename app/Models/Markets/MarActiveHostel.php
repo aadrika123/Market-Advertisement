@@ -63,10 +63,10 @@ class MarActiveHostel extends Model
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
             'rule'=>$req->rule,
-            'is_school_college_univ'=>$req->isSchoolCollegeUniv,
-            'school_college_univ_name'=>$req->schoolCollegeUnivName,
+            // 'is_school_college_univ'=>$req->isSchoolCollegeUniv,
+            // 'school_college_univ_name'=>$req->schoolCollegeUnivName,
             'is_approve_by_govt'=>$req->isApproveByGovt,
-            'govt_type'=>$req->govtType,
+            // 'govt_type'=>$req->govtType,
         ];
     }
      // Store Application Foe Hostel(1)
@@ -196,6 +196,7 @@ class MarActiveHostel extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -216,6 +217,7 @@ class MarActiveHostel extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -320,6 +322,8 @@ class MarActiveHostel extends Model
                 'entity_name',
                 'entity_address',
                 'doc_upload_status',
+                'doc_verify_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->get();

@@ -114,4 +114,13 @@ class WfActiveDocument extends Model
                                  ->where('verify_status', '!=', 2)
                                  ->count();
     }
+
+    // public function totalApproveDoc($applicationId,$workflowId,$moduleId){
+    //     return WfActiveDocument::where('active_id',$applicationId)
+    //                             ->where('workflow_id',$workflowId)
+    //                             ->where('module_id',$moduleId)
+    //                             ->where('current_status','1')
+    //                             ->where('verify_status', '!=', 2)
+    //                             ->count();
+    // }
 }

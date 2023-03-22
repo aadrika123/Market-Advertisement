@@ -226,6 +226,7 @@ class LodgeController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -450,14 +451,14 @@ class LodgeController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = MarRejectedLodge::find($req->applicationId)->id;
-            } elseif ($req->type == 'Approve') {
-                $appId = MarLodge::find($req->applicationId)->id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     $appId = MarRejectedLodge::find($req->applicationId)->id;
+            // } elseif ($req->type == 'Approve') {
+            //     $appId = MarLodge::find($req->applicationId)->id;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -554,7 +555,7 @@ class LodgeController extends Controller
                     $approvedlodge = $mMarActiveLodge->replicate();
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->setTable('mar_lodge_renewals');
-                    $approvedlodge->app_id = $mMarActiveLodge->id;
+                    $approvedlodge->app_id = $temp_id;
                     $approvedlodge->save();
 
                     $mMarActiveLodge->delete();
@@ -577,16 +578,16 @@ class LodgeController extends Controller
                       $approvedlodge->payment_amount = $req->payment_amount;
                       $approvedlodge->payment_status = $req->payment_status;
                       $approvedlodge->approve_date = Carbon::now();
-                      $approvedlodge->save();
-  
+                      $approvedlodge->save(); 
+
                       // Save in Lodge Renewal
                       $approvedlodge = $mMarActiveLodge->replicate();
                       $approvedlodge->approve_date = Carbon::now();
                       $approvedlodge->setTable('mar_lodge_renewals');
-                      $approvedlodge->id = $temp_id;
+                      $approvedlodge->app_id = $temp_id;
                       $approvedlodge->save();
   
-                      $approvedlodge->delete();
+                      $mMarActiveLodge->delete();
   
                       // Update in amar_lodges (last_renewal_id)
                       DB::table('mar_lodges')
@@ -947,11 +948,23 @@ class LodgeController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         // self Advertiesement List Documents
+        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        // if ($ifAdvDocUnverified == 1)
+        //     return 0;
+        // else
+        //     return 1;
+        $totalApproveDoc=$refDocList->count();
+        // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
 
 
@@ -1047,7 +1060,7 @@ class LodgeController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
-            // $appDetails->doc_verify_status = '1';
+            $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;
             $appDetails->save();
         } else {

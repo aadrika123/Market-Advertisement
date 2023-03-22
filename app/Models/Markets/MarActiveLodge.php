@@ -192,6 +192,7 @@ class MarActiveLodge extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -212,6 +213,7 @@ class MarActiveLodge extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -316,6 +318,7 @@ class MarActiveLodge extends Model
                 'entity_name',
                 'entity_address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->get();
@@ -333,9 +336,7 @@ class MarActiveLodge extends Model
     {
         return MarActiveLodge::select('*')
             ->where('mar_active_lodges.ulb_id', $ulbId);
-    }
-
-        
+    } 
 
     /**
      * | Reupload Documents

@@ -246,6 +246,7 @@ class BanquetMarriageHallController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['apply_date'] = $data['application_date'];
             $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
             $endTime = microtime(true);
@@ -489,14 +490,7 @@ class BanquetMarriageHallController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = MarRejectedBanquteHall::find($req->applicationId)->temp_id;
-            } elseif ($req->type == 'Approve') {
-                $appId = MarBanquteHall::find($req->applicationId)->temp_id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById( $req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -578,12 +572,9 @@ class BanquetMarriageHallController extends Controller
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveBanquteHall->workflow_id, $mMarActiveBanquteHall->floor_area, $mMarActiveBanquteHall->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-                // $payment_amount = ['payment_amount' => 1000];
-                // $req->request->add($payment_amount);
 
                 if ($mMarActiveBanquteHall->renew_no == NULL) {
                     // Banqute Hall Application replication
-
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                     $approvedbanqutehall->setTable('mar_banqute_halls');
                     $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
@@ -624,10 +615,10 @@ class BanquetMarriageHallController extends Controller
                       $approvedBanquteHall = $mMarActiveBanquteHall->replicate();
                       $approvedBanquteHall->approve_date = Carbon::now();
                       $approvedBanquteHall->setTable('mar_banqute_hall_renewals');
-                      $approvedBanquteHall->id = $temp_id;
+                      $approvedBanquteHall->app_id = $temp_id;
                       $approvedBanquteHall->save();
   
-                      $approvedBanquteHall->delete();
+                      $mMarActiveBanquteHall->delete();
   
                       // Update in mar_banqute_halls (last_renewal_id)
                       DB::table('mar_banqute_halls')
@@ -776,7 +767,7 @@ class BanquetMarriageHallController extends Controller
             if (!$data)
                 throw new Exception("Application Not Found");
 
-            $data['type'] = "Agency";
+            $data['type'] = "Banquet Marriage Hall";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -987,12 +978,18 @@ class BanquetMarriageHallController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $totalApproveDoc=$refDocList->count();
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
 
 
@@ -1088,7 +1085,7 @@ class BanquetMarriageHallController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
-            // $appDetails->doc_verify_status = '1';
+            $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;
             $appDetails->save();
         } else {

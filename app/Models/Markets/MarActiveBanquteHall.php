@@ -194,6 +194,7 @@ class MarActiveBanquteHall extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -214,6 +215,7 @@ class MarActiveBanquteHall extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -234,74 +236,58 @@ class MarActiveBanquteHall extends Model
                 ->select(
                     'mar_active_banqute_halls.*',
                     // 'u.ulb_name',
-                    // 'p.string_parameter as m_license_year',
                     'w.string_parameter as ward_no',
                     'pw.string_parameter as permanent_ward_no',
                     'ew.string_parameter as entity_ward_no',
                     'ht.string_parameter as halltype',
                     'ot.string_parameter as organizationtype',
-                    // 'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    // 'r.role_name as m_current_role'
                 )
                 ->where('mar_active_banqute_halls.id', $id)
-                // ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_active_banqute_halls.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_active_banqute_halls.hall_type')
                 ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_active_banqute_halls.residential_ward_id')
                 ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_active_banqute_halls.permanent_ward_id')
                 ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_active_banqute_halls.entity_ward_id')
                 ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_active_banqute_halls.organization_type')
-                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_active_banqute_halls.ward_id')
-                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_banqute_halls.permanent_ward_id')
-                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'mar_active_banqute_halls.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'mar_active_banqute_halls.installation_location')
-                // ->leftJoin('wf_roles as r', 'r.id', '=', 'mar_active_banqute_halls.current_role_id')
+                // ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_active_banqute_halls.ulb_id')
                 ->first();
         } elseif ($type == 'Reject') {
             $details = DB::table('mar_rejected_banqute_halls')
             ->select(
                 'mar_rejected_banqute_halls.*',
-                'u.ulb_name',
-                'p.string_parameter as m_license_year',
                 'w.ward_name as ward_no',
                 'pw.ward_name as permanent_ward_no',
                 'ew.ward_name as entity_ward_no',
-                'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location',
-                'r.role_name as m_current_role'
+                'ht.string_parameter as halltype',
+                'ot.string_parameter as organizationtype'
             )
             ->where('mar_rejected_banqute_halls.id', $id)
             ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_banqute_halls.ulb_id')
-            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_rejected_banqute_halls.license_year')
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_banqute_halls.ward_id')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_banqute_halls.residential_ward_id')
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_banqute_halls.permanent_ward_id')
             ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_banqute_halls.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'mar_rejected_banqute_halls.display_type')
-            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'mar_rejected_banqute_halls.installation_location')
+            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_rejected_banqute_halls.hall_type')
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_banqute_halls.organization_type')
             ->leftJoin('wf_roles as r', 'r.id', '=', 'mar_rejected_banqute_halls.current_role_id')
             ->first();
         }elseif ($type == 'Approve'){
-            $details = DB::table('mar_bnqute_halls')
+            $details = DB::table('mar_banqute_halls')
             ->select(
-                'mar_bnqute_halls.*',
+                'mar_banqute_halls.*',
                 'u.ulb_name',
-                'p.string_parameter as m_license_year',
                 'w.ward_name as ward_no',
                 'pw.ward_name as permanent_ward_no',
                 'ew.ward_name as entity_ward_no',
-                'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location',
-                'r.role_name as m_current_role'
+                'ht.string_parameter as halltype',
+                'ot.string_parameter as organizationtype',
             )
-            ->where('mar_bnqute_halls.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_bnqute_halls.ulb_id')
-            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_bnqute_halls.license_year')
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_bnqute_halls.ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_bnqute_halls.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_bnqute_halls.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'mar_bnqute_halls.display_type')
-            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'mar_bnqute_halls.installation_location')
-            ->leftJoin('wf_roles as r', 'r.id', '=', 'mar_bnqute_halls.current_role_id')
+            ->where('mar_banqute_halls.id', $id)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_banqute_halls.ulb_id')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_banqute_halls.residential_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_banqute_halls.permanent_ward_id')
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_banqute_halls.entity_ward_id')
+            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_banqute_halls.hall_type')
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_banqute_halls.organization_type')
+            ->leftJoin('wf_roles as r', 'r.id', '=', 'mar_banqute_halls.current_role_id')
             ->first();
         }
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
@@ -324,6 +310,7 @@ class MarActiveBanquteHall extends Model
                 'entity_name',
                 'entity_address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->get();

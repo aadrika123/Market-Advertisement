@@ -101,7 +101,7 @@ class DharamshalaController extends Controller
     }
 
     /**
-     * | Apply for Lodge
+     * | Apply for Dharamshala
      * | @param StoreRequest 
      */
     public function renewApplication(RenewalRequest $req)
@@ -109,12 +109,12 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $mMarActiveLodge = $this->_modelObj;
+            $mActiveDharamshala = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
             DB::beginTransaction();
-            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
+            $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -226,6 +226,7 @@ class DharamshalaController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -450,14 +451,14 @@ class DharamshalaController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = MarRejectedDharamshala::find($req->applicationId)->id;
-            } elseif ($req->type == 'Approve') {
-                $appId = MarDharamshala::find($req->applicationId)->id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     $appId = MarRejectedDharamshala::find($req->applicationId)->id;
+            // } elseif ($req->type == 'Approve') {
+            //     $appId = MarDharamshala::find($req->applicationId)->id;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -585,10 +586,10 @@ class DharamshalaController extends Controller
                       $approvedDharamshala = $mMarActiveDharamshala->replicate();
                       $approvedDharamshala->approve_date = Carbon::now();
                       $approvedDharamshala->setTable('mar_dharamshala_renewals');
-                      $approvedDharamshala->id = $temp_id;
+                      $approvedDharamshala->app_id = $temp_id;
                       $approvedDharamshala->save();
   
-                      $approvedDharamshala->delete();
+                      $mMarActiveDharamshala->delete();
   
                       // Update in mar_dharamshalas (last_renewal_id)
                       DB::table('mar_dharamshalas')
@@ -948,12 +949,24 @@ class DharamshalaController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        // // self Advertiesement List Documents
+        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        // if ($ifAdvDocUnverified == 1)
+        //     return 0;
+        // else
+        //     return 1;
+        $totalApproveDoc=$refDocList->count();
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
 
 
@@ -1049,7 +1062,7 @@ class DharamshalaController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
-            // $appDetails->doc_verify_status = '1';
+            $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;
             $appDetails->save();
         } else {

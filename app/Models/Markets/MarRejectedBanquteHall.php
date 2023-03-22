@@ -18,7 +18,6 @@ class MarRejectedBanquteHall extends Model
         return MarRejectedBanquteHall::where('citizen_id', $citizenId)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
                 // 'entity_address',
@@ -26,7 +25,7 @@ class MarRejectedBanquteHall extends Model
                 // 'payment_status',
                 'rejected_date',
             )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 }

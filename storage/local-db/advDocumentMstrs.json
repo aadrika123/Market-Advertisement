@@ -571,6 +571,16 @@
             "code":"HOSTEL",
             "module_id":6,
             "docVal":"Entry and Exit Photograph"
+        },
+        {
+            "id":104,
+            "document_name":"Certificate of Approval If State Or Indian Govt",
+            "workflow_id":398,
+            "relative_name":"CERTIFICATE OF APPROVAL IF STATE OR INDIAN GOVT",
+            "docCode":"CERTIFICATE_OF_APPROVAL_IF_STATE_OR_INDIAN_GOVT",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Certificate of Approval If State Or Indian Govt"
         }
     ],
     "Lodge":[

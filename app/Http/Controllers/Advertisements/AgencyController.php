@@ -66,12 +66,12 @@ class AgencyController extends Controller
     {
         $this->_modelObj = new AdvActiveAgency();
         $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-        $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        // $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_agencyRegPrice = Config::get('workflow-constants.AGENCY_REG_PRICE');
         $this->_agencyRenewPrice = Config::get('workflow-constants.AGENCY_RENEW_PRICE');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
-        $this->_hordingDocCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
+        // $this->_hordingDocCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
         $this->Repository = $agency_repo;
     }
 
@@ -787,7 +787,7 @@ class AgencyController extends Controller
     }
 
     /**
-     * Get Payment Details
+     * | Get Payment Details
      */
     public function getPaymentDetails(Request $req)
     {

@@ -21,18 +21,20 @@ class MarBanquteHall extends Model
     {
         return MarBanquteHall::select(
             'id',
-            'temp_id',
             'application_no',
             'application_date',
-            // 'entity_address',
-            // 'old_application_no',
+            'applicant as applicant_name',
+            'entity_address',
+            'entity_name',
             'payment_status',
             'payment_amount',
             'approve_date',
             'citizen_id',
             'user_id',
+            'application_type',
+            'valid_upto',
         )
-            ->orderByDesc('temp_id')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -42,6 +44,25 @@ class MarBanquteHall extends Model
     public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
+
+        foreach($allApproveList as $key => $list){
+            $activeBanquetHall=MarActiveBanquteHall::where('application_no',$list['application_no'])->count();
+            $current_date=carbon::now()->format('Y-m-d');
+            $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+            if($current_date >= $notify_date){
+                if($activeBanquetHall==0){
+                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
+                }else{
+                    $allApproveList[$key]['renew_option']='0';     // Already Renew
+                }
+            }
+            if($current_date < $notify_date){
+                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show 0
+            }
+            if($list['valid_upto'] < $current_date){
+                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired 
+            }
+        }
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
         } else {
@@ -59,10 +80,9 @@ class MarBanquteHall extends Model
         return MarBanquteHall::where('id', $id)
             ->select(
                 'id',
-                'temp_id',
                 'application_no',
                 'application_date',
-                // 'applicant',
+                'applicant',
                 'entity_name',
                 'payment_status',
                 'payment_amount',
@@ -130,6 +150,7 @@ class MarBanquteHall extends Model
                         'mar_banqute_halls.security_type as security_type_id',
                         'ly.string_parameter as license_year_name',
                         'rw.ward_name as resident_ward_name',
+                        'ew.ward_name as entity_ward_name',
                         'ot.string_parameter as organization_type_name',
                         'ldt.string_parameter as land_deed_type_name',
                         'ldt.string_parameter as water_supply_type_name',
@@ -157,5 +178,15 @@ class MarBanquteHall extends Model
             $details['documents']=$documents;
         }
         return $details;
+    }
+
+    /**
+     * | Get Payment Details After Payment
+     */
+    public function getPaymentDetails($paymentId){
+        $details=MarBanquteHall::select('payment_details')
+        ->where('payment_id', $paymentId)
+        ->first();
+       return json_decode($details->payment_details);
     }
 }

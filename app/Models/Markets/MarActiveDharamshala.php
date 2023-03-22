@@ -194,6 +194,7 @@ class MarActiveDharamshala extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -214,6 +215,7 @@ class MarActiveDharamshala extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'application_type',
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -306,6 +308,7 @@ class MarActiveDharamshala extends Model
                 'entity_name',
                 'entity_address',
                 'doc_upload_status',
+                'application_type',
             )
             ->orderByDesc('id')
             ->get();

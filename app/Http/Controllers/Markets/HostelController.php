@@ -228,6 +228,7 @@ class HostelController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -461,14 +462,14 @@ class HostelController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            if ($req->type == 'Active') {
-                $appId = $req->applicationId;
-            } elseif ($req->type == 'Reject') {
-                $appId = MarRejectedHostel::find($req->applicationId)->temp_id;
-            } elseif ($req->type == 'Approve') {
-                $appId = MarHostel::find($req->applicationId)->temp_id;
-            }
-            $data = $mWfActiveDocument->uploadDocumentsViewById($appId, $this->_workflowIds);
+            // if ($req->type == 'Active') {
+            //     $appId = $req->applicationId;
+            // } elseif ($req->type == 'Reject') {
+            //     $appId = MarRejectedHostel::find($req->applicationId)->temp_id;
+            // } elseif ($req->type == 'Approve') {
+            //     $appId = MarHostel::find($req->applicationId)->temp_id;
+            // }
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -600,10 +601,10 @@ class HostelController extends Controller
                       $approvedHostel = $mMarActiveHostel->replicate();
                       $approvedHostel->approve_date = Carbon::now();
                       $approvedHostel->setTable('mar_hostel_renewals');
-                      $approvedHostel->id = $temp_id;
+                      $approvedHostel->app_id = $temp_id;
                       $approvedHostel->save();
   
-                      $approvedHostel->delete();
+                      $mMarActiveHostel->delete();
   
                       // Update in mar_hostels (last_renewal_id)
                       DB::table('mar_hostels')
@@ -966,11 +967,23 @@ class HostelController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         // self Advertiesement List Documents
+        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        // if ($ifAdvDocUnverified == 1)
+        //     return 0;
+        // else
+        //     return 1;
+        $totalApproveDoc=$refDocList->count();
+        // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
 
 
@@ -1066,7 +1079,7 @@ class HostelController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
-            // $appDetails->doc_verify_status = '1';
+            $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;
             $appDetails->save();
         } else {
