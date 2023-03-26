@@ -17,4 +17,12 @@ class RefRequiredDocument extends Model
             ->first();
     }
 
+    public function listDocument($advtModuleId,$marketModuleId){
+        return RefRequiredDocument::select('requirements','module_id','code')
+        ->where('module_id', $advtModuleId)
+        ->Orwhere('module_id', $marketModuleId)
+        ->get();
+
+    }
+
 }

@@ -213,7 +213,7 @@ class LodgeController extends Controller
 
             // return ($data);
 
-            $metaReqs['customFor'] = 'Lodge';
+            $metaReqs['customFor'] = 'LODGE';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];

@@ -203,7 +203,7 @@ class VehicleAdvetController extends Controller
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
-            $metaReqs['customFor'] = 'Movable Vehical Advertisement';
+            $metaReqs['customFor'] = 'MOVABLE';
             $metaReqs['wfRoleId'] = $data['current_roles'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];

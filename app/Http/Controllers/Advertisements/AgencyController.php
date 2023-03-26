@@ -16,6 +16,7 @@ use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvCheckDtl;
 use App\Models\Advertisements\AdvChequeDtl;
+use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Workflows\WfRoleusermap;
@@ -211,7 +212,7 @@ class AgencyController extends Controller
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
 
-            $metaReqs['customFor'] = 'Agency Advertisement';
+            $metaReqs['customFor'] = 'AGENCY';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
@@ -329,9 +330,6 @@ class AgencyController extends Controller
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
-
-            // print_r($wardId);
-
             $advData = $this->Repository->specialAgencyInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_agencies.ulb_id', $ulbId)
@@ -498,7 +496,6 @@ class AgencyController extends Controller
                 'roleId' => 'required',
                 'applicationId' => 'required|integer',
                 'status' => 'required|integer',
-                // 'payment_amount' => 'required',
 
             ]);
 
@@ -520,7 +517,7 @@ class AgencyController extends Controller
                 $req->request->add($payment_amount);
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
-                $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
+                // $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
                     $approvedAgency = $mAdvActiveAgency->replicate();
                     $approvedAgency->setTable('adv_agencies');
@@ -1982,8 +1979,8 @@ class AgencyController extends Controller
             if ($userType == "Citizen") {
                 $startTime = microtime(true);
                 $citizenId = authUser()->id;
-                $mAdvAgencyLicense = new AdvAgencyLicense();
-                $agencyDashboard = $mAdvAgencyLicense->agencyDashboard($citizenId);
+                $mAdvHoarding = new AdvHoarding();
+                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId);
                 $endTime = microtime(true);
                 $executionTime = $endTime - $startTime;
                 if (empty($agencyDashboard)) {

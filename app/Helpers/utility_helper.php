@@ -54,7 +54,7 @@ if (!function_exists('remove_null')) {
     {
         if (is_object($data)) {
             $filtered = collect($data)->map(function ($val) {
-                if (is_null($val) || $val == 'NULL::character varying') {
+                if (is_null($val)) {
                     $val = '';
                 }
                 return $val;
@@ -66,14 +66,14 @@ if (!function_exists('remove_null')) {
             return collect($value)->map(function ($val) {
                 if (is_array($val) || $val instanceof stdClass) {   // Check the function is in array form or std class
                     return collect($val)->map(function ($vals) {
-                        if (is_null($vals || $vals == 'NULL::character varying')) {
+                        if (is_null($vals)) {
                             $vals = '';
                         }
                         return $vals;
                     });
                 }
 
-                if (is_null($val) || $val == 'NULL::character varying') {
+                if (is_null($val)) {
                     $val = '';
                 }
                 return $val;

@@ -215,7 +215,7 @@ class HostelController extends Controller
 
             // return ($data);
 
-            $metaReqs['customFor'] = 'Hostel';
+            $metaReqs['customFor'] = 'HOSTEL';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
@@ -284,16 +284,7 @@ class HostelController extends Controller
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(
-                true,
-                "Applied Applications",
-                $data1,
-                "050106",
-                "1.0",
-                "$executionTime Sec",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -462,13 +453,6 @@ class HostelController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            // if ($req->type == 'Active') {
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Reject') {
-            //     $appId = MarRejectedHostel::find($req->applicationId)->temp_id;
-            // } elseif ($req->type == 'Approve') {
-            //     $appId = MarHostel::find($req->applicationId)->temp_id;
-            // }
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
@@ -976,7 +960,7 @@ class HostelController extends Controller
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        if($totalApproveDoc==$totalNoOfDoc){
+        if($totalApproveDoc>=$totalNoOfDoc){
             if ($ifAdvDocUnverified == 1)
                 return 0;
             else
@@ -1077,7 +1061,7 @@ class HostelController extends Controller
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
         $appDetails = MarActiveHostel::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
-        if ($totalRequireDocs == $totalUploadedDocs) {
+        if ($totalUploadedDocs >= $totalRequireDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;

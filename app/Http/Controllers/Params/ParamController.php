@@ -19,6 +19,7 @@ use App\Models\Advertisements\AdvSelfadvetRenewal;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvVehicleRenewal;
+use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarBanquteHallRenewal;
@@ -51,6 +52,9 @@ class ParamController extends Controller
     protected $_hostel;
     protected $_lodge;
     protected $_dharamshala;
+    protected $_advtModuleId;
+    protected $_marketModuleId;
+    
     //Constructor
     public function __construct()
     {
@@ -63,6 +67,10 @@ class ParamController extends Controller
         $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+
+        
+        $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+        $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
     }
 
 
@@ -126,6 +134,26 @@ class ParamController extends Controller
         return responseMsgs(true, "Document Masters", $documents, "040202", "1.0", $executionTime . " Sec", "POST");
     }
 
+    /**
+     * | All Document List
+     */
+    public function listDocument(){
+      $mRefRequiredDocument=new RefRequiredDocument();
+      $listDocs=$mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
+      $documentList=array();
+      foreach($listDocs as $key => $val){
+         $alldocs=explode("#",$val['requirements']);
+          foreach($alldocs as $kinn => $valinn){
+              $arr=explode(',',$valinn);
+              $documentList[$val['code']][$kinn]['docType']=$arr[0];
+              $documentList[$val['code']][$kinn]['docCode']=$arr[1];
+              $documentList[$val['code']][$kinn]['docVal']=ucwords(strtolower(str_replace('_',' ',$arr[1])));
+              $documentList[$val['code']][$kinn]['code']=$val['code'];
+          }
+      }
+      return $documentList;
+    }
+
 
 
     /**
@@ -159,6 +187,7 @@ class ParamController extends Controller
      */
     public function paymentSuccessFailure(Request $req)
     {
+        $workflowid=$req->workflowId;
         try {
             $startTime = microtime(true);
             DB::beginTransaction();
@@ -405,6 +434,7 @@ class ParamController extends Controller
                                                 ->skip(1)->first();
                     $mMarLodge->valid_from = $details->valid_upto;
                     $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
+                    $sad=$mMarLodge->valid_upto;
                 }
                 $mMarLodge->save();
 
@@ -442,11 +472,6 @@ class ParamController extends Controller
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
-                // $updateData['payment_amount'] = $req->amount;
-                // // update in Renewals Table
-                // DB::table('mar_dharamshala_renewals')
-                //     ->where('id', $mMarDharamshala->last_renewal_id)
-                //     ->update($updateData);
             }
             DB::commit();
             $endTime = microtime(true);

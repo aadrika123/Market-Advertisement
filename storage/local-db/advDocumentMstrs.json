@@ -2,7 +2,7 @@
     "SelfAdvertisements":[
         {
             "id":2,
-            "document_name":"Aadhar Document",
+            "document_name":"Aadhar",
             "workflow_id":129,
             "relative_name":"AADHAR",
             "docCode":"AADHAR_CARD",
@@ -12,7 +12,7 @@
         },
         {
             "id":4,
-            "document_name":"Municipal Trade License Document",
+            "document_name":"Municipal Trade License",
             "workflow_id":129,
             "relative_name":"TRADE",
             "docCode":"TRADE_LICENSE",
@@ -22,7 +22,7 @@
         },
         {
             "id":7,
-            "document_name":"Holding No Document",
+            "document_name":"Holding No",
             "workflow_id":129,
             "relative_name":"HOLDING",
             "docCode":"HORDING_NO",
@@ -32,7 +32,7 @@
         },
         {
             "id":11,
-            "document_name":"GPS Document",
+            "document_name":"GPS",
             "workflow_id":129,
             "relative_name":"GPS",
             "docCode":"GPS",
@@ -792,7 +792,7 @@
     "SelfAdvertRenew":[ 
         {
             "id":88,
-            "document_name":"Municipal Trade License Document",
+            "document_name":"Municipal Trade License",
             "workflow_id":129,
             "relative_name":"TRADE",
             "docCode":"TRADE_LICENSE",
@@ -802,7 +802,7 @@
         },
         {
             "id":89,
-            "document_name":"Holding No Document",
+            "document_name":"Holding No",
             "workflow_id":129,
             "relative_name":"HOLDING",
             "docCode":"HORDING_NO",

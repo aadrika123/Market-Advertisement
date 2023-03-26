@@ -21,10 +21,10 @@ class AdvAgency extends Model
                     ->first();
         $details = json_decode(json_encode($details1), true);
         if (!empty($details)) {
-            // $details['expiry_date']=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years"));
-            // $warning_date=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years -1 months"));
-            $details['expiry_date'] = date('Y-m-d', strtotime($details['payment_date'] . "+ 1 months"));
-            $warning_date = date('Y-m-d', strtotime($details['payment_date'] . "+ 15 days"));
+            $details['expiry_date']=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years"));
+            $warning_date=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years -1 months"));
+            // $details['expiry_date'] = date('Y-m-d', strtotime($details['payment_date'] . "+ 1 months"));
+            // $warning_date = date('Y-m-d', strtotime($details['payment_date'] . "+ 15 days"));
             $details['warning_date'] = $warning_date;
             $current_date = date('Y-m-d');
             if ($current_date < $warning_date) {

@@ -257,7 +257,7 @@ class SelfAdvetController extends Controller
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
-            $metaReqs['customFor'] = 'Self Advertisement';
+            $metaReqs['customFor'] = 'SELF';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];

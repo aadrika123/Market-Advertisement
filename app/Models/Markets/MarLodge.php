@@ -40,11 +40,11 @@ class MarLodge extends Model
     {
         $allApproveList = $this->allApproveList();
         foreach($allApproveList as $key => $list){
-            $activeHostel=MarActiveHostel::where('application_no',$list['application_no'])->count();
+            $activeLodge=MarActiveLodge::where('application_no',$list['application_no'])->count();
             $current_date=carbon::now()->format('Y-m-d');
             $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
             if($current_date >= $notify_date){
-                if($activeHostel==0){
+                if($activeLodge==0){
                     $allApproveList[$key]['renew_option']='1';     // Renew option Show
                 }else{
                     $allApproveList[$key]['renew_option']='0';     // Already Renew

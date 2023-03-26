@@ -21,6 +21,8 @@ class MarRejectedHostel extends Model
                 'application_no',
                 'application_date',
                 'entity_address',
+                'entity_name',
+                'applicant',
                 // 'old_application_no',
                 // 'payment_status',
                 'rejected_date',

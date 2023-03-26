@@ -24,6 +24,7 @@ class AdvPrivateland extends Model
             'entity_name',
             'entity_address',
             'payment_amount',
+            'payment_status',
             'approve_date',
             'citizen_id',
             'user_id',

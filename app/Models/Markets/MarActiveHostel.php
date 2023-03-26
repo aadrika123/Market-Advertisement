@@ -332,7 +332,7 @@ class MarActiveHostel extends Model
         
     public function getHostelDetails($appId)
     {
-        return MarActiveBanquteHall::select('*')
+        return MarActiveHostel::select('*')
             ->where('id', $appId)
             ->first();
     }

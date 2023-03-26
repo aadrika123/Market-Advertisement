@@ -213,7 +213,7 @@ class DharamshalaController extends Controller
 
             // return ($data);
 
-            $metaReqs['customFor'] = 'Dharamshala';
+            $metaReqs['customFor'] = 'DHARAMSHALA';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];

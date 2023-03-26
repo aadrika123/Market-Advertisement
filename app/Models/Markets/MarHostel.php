@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use PhpParser\Node\Stmt\Return_;
 
 class MarHostel extends Model
 {
@@ -24,7 +25,8 @@ class MarHostel extends Model
             'application_no',
             'application_date',
             'entity_address',
-            // 'old_application_no',
+            'entity_name',
+            'applicant',
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -77,7 +79,7 @@ class MarHostel extends Model
                 'id',
                 'application_no',
                 'application_date',
-                // 'applicant',
+                'applicant',
                 'entity_name',
                 'payment_amount',
                 'approve_date',
@@ -123,7 +125,6 @@ class MarHostel extends Model
         }
     }
 
-
      // Find Previous Payment Date
      public function findPreviousApplication($application_no){
         return $details=MarHostelRenewal::select('valid_upto')
@@ -132,13 +133,11 @@ class MarHostel extends Model
                                     ->skip(1)->first();
     }
 
-
-    
     /**
      * | Get Application Details For Renew Applications
      */
     public function applicationDetailsForRenew($appId){
-        $details=MarHostel::select('mar_hostels.*',
+      $details=MarHostel::select('mar_hostels.*',
                         'mar_hostels.hostel_type as hostel_type_id',
                         'mar_hostels.organization_type as organization_type_id',
                         'mar_hostels.land_deed_type as land_deed_type_id',
@@ -147,6 +146,10 @@ class MarHostel extends Model
                         'mar_hostels.electricity_type as electricity_type_id',
                         'mar_hostels.security_type as security_type_id',
                         'ly.string_parameter as license_year_name',
+                        DB::raw("case when mar_hostels.is_approve_by_govt = true then 'Yes'
+                        else 'No' end as is_approve_by_govt_name"),
+                        DB::raw("case when mar_hostels.is_approve_by_govt = true then 1
+                        else 0 end as is_approve_by_govt_id"),
                         'lt.string_parameter as hostel_type_name',
                         'ot.string_parameter as organization_type_name',
                         'ldt.string_parameter as land_deed_type_name',
@@ -156,6 +159,7 @@ class MarHostel extends Model
                         'st.string_parameter as security_type_name',
                         'pw.ward_name as permanent_ward_name',
                         'ew.ward_name as entity_ward_name',
+                        'rw.ward_name as residential_ward_name',
                         'ulb.ulb_name',
                         )
                         ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_hostels.license_year::int'))

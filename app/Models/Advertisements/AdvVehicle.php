@@ -20,8 +20,6 @@ class AdvVehicle extends Model
             'application_date',
             'applicant',
             'entity_name',
-            // 'entity_address',
-            // 'old_application_no',
             'payment_status',
             'payment_amount',
             'approve_date',
