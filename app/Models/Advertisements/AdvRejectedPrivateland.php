@@ -46,4 +46,22 @@ class AdvRejectedPrivateland extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+     /**
+     * | Get All Application Reject List
+     */
+    public function rejectedApplication()
+    {
+        return AdvRejectedPrivateland::select(
+                'id',
+                'application_no',
+                'application_date',
+                // 'entity_address',
+                // 'old_application_no',
+                // 'payment_status',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

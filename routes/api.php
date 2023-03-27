@@ -90,6 +90,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advertisements/crud/v1/list-document', 'listDocument');      // 02
         Route::post('crud/district-mstrs', 'districtMstrs');      // 03
         Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 04
+        Route::post('advertisements/dashboard', 'advertDashboard'); // 04
+        Route::post('markets/dashboard', 'marketDashboard'); // 04
         Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 05 ( Application Details For Payments )
      });
 

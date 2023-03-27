@@ -170,6 +170,7 @@ class AdvSelfadvertisement extends Model
                                         'il.string_parameter as installation_location_name',
                                         'w.ward_name',
                                         'pw.ward_name as permanent_ward_name',
+                                        'cat.type as advt_category_name',
                                         'ulb.ulb_name',
                                         )
                                         ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('adv_selfadvertisements.license_year::int'))
@@ -178,6 +179,7 @@ class AdvSelfadvertisement extends Model
                                         ->leftJoin('ulb_ward_masters as w','w.id','=','adv_selfadvertisements.ward_id')
                                         ->leftJoin('ulb_ward_masters as pw','pw.id','=','adv_selfadvertisements.permanent_ward_id')
                                         ->leftJoin('ulb_masters as ulb','ulb.id','=','adv_selfadvertisements.ulb_id')
+                                        ->leftJoin('adv_selfadv_categories as cat','cat.id','=','adv_selfadvertisements.advt_category')
                                         ->where('adv_selfadvertisements.id',$appId)->first();
         if(!empty($details)){
             $mWfActiveDocument = new WfActiveDocument();
@@ -186,4 +188,11 @@ class AdvSelfadvertisement extends Model
         }
         return $details;
     }
+
+    /**
+     * | Get Total Approved Self Advertisement Application
+     */
+    // public function getApprovedApplication(){
+    //     return 
+    // }
 }

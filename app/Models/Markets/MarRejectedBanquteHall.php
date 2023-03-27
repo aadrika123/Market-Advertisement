@@ -28,4 +28,17 @@ class MarRejectedBanquteHall extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    
+    public function rejectedApplication()
+    {
+        return MarRejectedBanquteHall::select(
+                'id',
+                'application_no',
+                'application_date',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

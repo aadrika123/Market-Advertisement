@@ -48,4 +48,24 @@ class AdvRejectedSelfadvertisement extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    
+     /**
+     * | Get Application Reject List by Role Ids
+     */
+    public function rejectedApplication()
+    {
+        return AdvRejectedSelfadvertisement::select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'payment_status',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

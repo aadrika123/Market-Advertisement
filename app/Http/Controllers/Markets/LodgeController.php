@@ -40,6 +40,7 @@ class LodgeController extends Controller
     protected $_moduleIds;
     protected $_repository;
     protected $_docCode;
+    protected $_docCodeRenew;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -49,6 +50,7 @@ class LodgeController extends Controller
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.LODGE_DOC_CODE');
+        $this->_docCodeRenew = config::get('workflow-constants.LODGE_DOC_CODE_RENEW');
     }
     /**
      * | Apply for Lodge
@@ -451,13 +453,6 @@ class LodgeController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            // if ($req->type == 'Active') {
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Reject') {
-            //     $appId = MarRejectedLodge::find($req->applicationId)->id;
-            // } elseif ($req->type == 'Approve') {
-            //     $appId = MarLodge::find($req->applicationId)->id;
-            // }
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
@@ -947,16 +942,14 @@ class LodgeController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // self Advertiesement List Documents
-        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        // if ($ifAdvDocUnverified == 1)
-        //     return 0;
-        // else
-        //     return 1;
         $totalApproveDoc=$refDocList->count();
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveLodge->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
         if($totalApproveDoc==$totalNoOfDoc){
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1052,11 +1045,17 @@ class LodgeController extends Controller
 
     public function checkFullUpload($applicationId)
     {
+        
+        $appDetails = MarActiveLodge::find($applicationId);
+        $docCode = $this->_docCode;
+        // $docCode = $this->_docCodeRenew;
+        // if($appDetails->renew_no==NULL){
+        //     $docCode = $this->_docCode;
+        // }
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
-        $appDetails = MarActiveLodge::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';

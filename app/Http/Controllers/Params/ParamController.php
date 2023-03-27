@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Params;
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
+use App\Models\Markets\MarRejectedDharamshala;
 use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
 use App\Models\Advertisements\AdvAgency;
@@ -14,6 +15,11 @@ use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvHoardingRenewal;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvPrivatelandRenewal;
+use App\Models\Advertisements\AdvRejectedAgency;
+use App\Models\Advertisements\AdvRejectedHoarding;
+use App\Models\Advertisements\AdvRejectedPrivateland;
+use App\Models\Advertisements\AdvRejectedSelfadvertisement;
+use App\Models\Advertisements\AdvRejectedVehicle;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvSelfadvetRenewal;
 use App\Models\Advertisements\AdvTypologyMstr;
@@ -29,6 +35,9 @@ use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarHostelRenewal;
 use App\Models\Markets\MarLodge;
 use App\Models\Markets\MarLodgeRenewal;
+use App\Models\Markets\MarRejectedBanquteHall;
+use App\Models\Markets\MarRejectedHostel;
+use App\Models\Markets\MarRejectedLodge;
 use App\Models\Workflows\WfRoleusermap;
 use Carbon\Carbon;
 use Exception;
@@ -536,6 +545,103 @@ class ParamController extends Controller
                 return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
             }
         } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    public function advertDashboard(){
+        try{
+            $madvSelfAdvertisement=new AdvSelfadvertisement(); 
+            $approveList=$madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
+            $advert['selfApprovedApplications']=$approveList;
+
+            $mAdvRejectedSelfadvertisement=new AdvRejectedSelfadvertisement();
+            $rejectList=$mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
+            $advert['selfRejectedApplications']=$rejectList;
+
+            
+            $mAdvPrivateland=new AdvPrivateland(); 
+            $pvtapproveList=$mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
+            $advert['pvtLandApprovedApplications']=$pvtapproveList;
+
+            $mAdvRejectedPrivateland=new AdvRejectedPrivateland();
+            $pvtRejectList=$mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
+            $advert['pvtLandRejectedApplications']=$pvtRejectList;
+
+            
+            $mAdvVehicle=new AdvVehicle(); 
+            $vehicleApproveList=$mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
+            $advert['vehicleApprovedApplications']=$vehicleApproveList;
+
+            $mAdvRejectedVehicle=new AdvRejectedVehicle();
+            $vehicleRejectList=$mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
+            $advert['vehicleRejectedApplications']=$vehicleRejectList;
+            
+
+            $mAdvAgency=new AdvAgency(); 
+            $agencyApproveList=$mAdvAgency->allApproveList();                  // Find Agency Approve Applications
+            $advert['agencyApprovedApplications']=$agencyApproveList;
+
+            $mAdvRejectedAgency=new AdvRejectedAgency();
+            $agencyRejectList=$mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
+            $advert['agencyRejectedApplications']=$agencyRejectList;
+
+
+            $mAdvHoarding=new AdvHoarding(); 
+            $hoardingApproveList=$mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
+            $advert['hoardingApprovedApplications']=$hoardingApproveList;
+
+            $mAdvRejectedHoarding=new AdvRejectedHoarding();
+            $hoardingRejectList=$mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
+            $advert['hoardingRejectedApplications']=$hoardingRejectList;
+
+            return responseMsgs(true, 'Data Fetched',  $advert, "050124", "1.0", "2 Sec", "POST");
+        }catch(Exception $e){
+            responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+
+    public function marketDashboard(){
+        try{
+            $mMarBanquteHall=new MarBanquteHall(); 
+            $approveList=$mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
+            $market['banquetApprovedApplications']=$approveList;
+
+            $mMarRejectedBanquteHall=new MarRejectedBanquteHall();
+            $rejectList=$mMarRejectedBanquteHall->rejectedApplication();  // Find Banquet Hall Rejected Applications
+            $market['banquetRejectedApplications']=$rejectList;
+
+            
+            $mMarHostel=new MarHostel(); 
+            $hostelapproveList=$mMarHostel->allApproveList();                 // Find Hostel Approve Applications
+            $market['hostelApprovedApplications']=$hostelapproveList;
+
+            $mMarRejectedHostel=new MarRejectedHostel();
+            $hostelRejectList=$mMarRejectedHostel->rejectedApplication();     // Find Hostel Rejected Applications
+            $market['hostelRejectedApplications']=$hostelRejectList;
+
+            
+            $mMarLodge=new MarLodge(); 
+            $lodgeApproveList=$mMarLodge->allApproveList();                // Find Lodge Approve Applications
+            $market['lodgeApprovedApplications']=$lodgeApproveList;
+
+            $mMarRejectedLodge=new MarRejectedLodge();
+            $lodgeRejectList=$mMarRejectedLodge->rejectedApplication();    // Find Lodge Rejected Applications
+            $market['lodgeRejectedApplications']=$lodgeRejectList;
+            
+
+            $mMarDharamshala=new MarDharamshala(); 
+            $dharamshalaApproveList=$mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
+            $market['dharamshalaApprovedApplications']=$dharamshalaApproveList;
+
+            $mMarRejectedDharamshala=new MarRejectedDharamshala();
+            $dharamshalaRejectList=$mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
+            $market['dharamshalaRejectedApplications']=$dharamshalaRejectList;
+
+
+            return responseMsgs(true, 'Data Fetched',  $market, "050124", "1.0", "2 Sec", "POST");
+        }catch(Exception $e){
             responseMsgs(false, $e->getMessage(), "");
         }
     }

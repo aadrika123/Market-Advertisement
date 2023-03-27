@@ -28,5 +28,23 @@ class MarRejectedLodge extends Model
             )
             ->orderByDesc('id')
             ->get();
-    }
+    }    
+    
+    
+    /**
+    * | Get All Application Reject List
+    */
+   public function rejectedApplication()
+   {
+       return MarRejectedLodge::select(
+               'id',
+               'application_no',
+               'application_date',
+               'entity_address',
+               'rejected_date',
+               'citizen_id',
+           )
+           ->orderByDesc('id')
+           ->get();
+   }
 }

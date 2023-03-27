@@ -42,4 +42,21 @@ class AdvRejectedHoarding extends Model
            ->orderByDesc('id')
            ->get();
    }
+
+            
+    /**
+    * | Get Application Reject List by Role Ids
+    */
+    public function rejectedApplication()
+    {
+        return AdvRejectedHoarding::select(
+                'id',
+                'application_no',
+                'license_no',
+                'application_date',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

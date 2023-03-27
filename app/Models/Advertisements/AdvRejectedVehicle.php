@@ -51,4 +51,21 @@ class AdvRejectedVehicle extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    /**
+     * | Get All Application Reject List
+     */
+    public function rejectedApplication()
+    {
+        return AdvRejectedVehicle::select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

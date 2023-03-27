@@ -47,4 +47,20 @@ class AdvRejectedAgency extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+       /**
+     * | Get All Application Reject List
+     */
+    public function rejectedApplication()
+    {
+        return AdvRejectedAgency::select(
+                'id',
+                'application_no',
+                'application_date',
+                'entity_name',
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->get();
+    }
 }

@@ -48,6 +48,7 @@ class BanquetMarriageHallController extends Controller
     protected $_workflowIds;
     protected $_moduleIds;
     protected $_docCode;
+    protected $_docCodeRenew;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -57,6 +58,7 @@ class BanquetMarriageHallController extends Controller
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
+        $this->_docCodeRenew = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE_RENEW');
     }
 
     /**
@@ -310,16 +312,7 @@ class BanquetMarriageHallController extends Controller
             }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(
-                true,
-                "Applied Applications",
-                $data1,
-                "050106",
-                "1.0",
-                "$executionTime Sec",
-                "POST",
-                $req->deviceId ?? ""
-            );
+            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "" );
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -979,9 +972,14 @@ class BanquetMarriageHallController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc=$refDocList->count();
-        // self Advertiesement List Documents
+
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+
         $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveBanquteHall->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
         if($totalApproveDoc==$totalNoOfDoc){
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1077,11 +1075,16 @@ class BanquetMarriageHallController extends Controller
 
     public function checkFullUpload($applicationId)
     {
+        
+        $appDetails = MarActiveBanquteHall::find($applicationId);
         $docCode = $this->_docCode;
+        // $docCode = $this->_docCodeRenew;
+        // if($appDetails->renew_no==NULL){
+        //     $docCode = $this->_docCode;
+        // }
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
-        $appDetails = MarActiveBanquteHall::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';

@@ -38,6 +38,7 @@ class DharamshalaController extends Controller
     protected $_moduleIds;
     protected $_repository;
     protected $_docCode;
+    protected $_docCodeRenew;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -47,6 +48,7 @@ class DharamshalaController extends Controller
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.DHARAMSHALA_DOC_CODE');
+        $this->_docCodeRenew = config::get('workflow-constants.DHARAMSHALA_DOC_CODE_RENEW');
     }
     /**
      * | Apply for Dharamshala
@@ -949,16 +951,13 @@ class DharamshalaController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // // self Advertiesement List Documents
-        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        // if ($ifAdvDocUnverified == 1)
-        //     return 0;
-        // else
-        //     return 1;
         $totalApproveDoc=$refDocList->count();
-        // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveDharamshala->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
         if($totalApproveDoc==$totalNoOfDoc){
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1054,11 +1053,16 @@ class DharamshalaController extends Controller
 
     public function checkFullUpload($applicationId)
     {
+        
+        $appDetails = MarActiveDharamshala::find($applicationId);
         $docCode = $this->_docCode;
+        // $docCode = $this->_docCodeRenew;
+        // if($appDetails->renew_no==NULL){
+        //     $docCode = $this->_docCode;
+        // }
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
-        $appDetails = MarActiveDharamshala::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';

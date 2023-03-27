@@ -173,7 +173,7 @@ class SelfAdvetController extends Controller
     public function listInbox(Request $req)
     {
         try {
-
+            // return true;
             // Variable initialization
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;

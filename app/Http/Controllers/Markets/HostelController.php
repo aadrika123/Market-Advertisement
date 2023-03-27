@@ -39,6 +39,7 @@ class HostelController extends Controller
     protected $_workflowIds;
     protected $_repository;
     protected $_docCode;
+    protected $_docCodeRenew;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -48,6 +49,7 @@ class HostelController extends Controller
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = Config::get('workflow-constants.HOSTEL_DOC_CODE');
+        $this->_docCodeRenew = Config::get('workflow-constants.HOSTEL_DOC_CODE_RENEW');
     }
 
     /**
@@ -950,16 +952,14 @@ class HostelController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // self Advertiesement List Documents
-        // $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        // if ($ifAdvDocUnverified == 1)
-        //     return 0;
-        // else
-        //     return 1;
         $totalApproveDoc=$refDocList->count();
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveHostel->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
         if($totalApproveDoc>=$totalNoOfDoc){
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1055,11 +1055,15 @@ class HostelController extends Controller
 
     public function checkFullUpload($applicationId)
     {
+        $appDetails = MarActiveHostel::find($applicationId);
         $docCode = $this->_docCode;
+        // $docCode = $this->_docCodeRenew;
+        // if($appDetails->renew_no==NULL){
+        //     $docCode = $this->_docCode;
+        // }
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
-        $appDetails = MarActiveHostel::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalUploadedDocs >= $totalRequireDocs) {
             $appDetails->doc_upload_status = '1';
