@@ -23,8 +23,6 @@ class AdvAgency extends Model
         if (!empty($details)) {
             $details['expiry_date']=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years"));
             $warning_date=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years -1 months"));
-            // $details['expiry_date'] = date('Y-m-d', strtotime($details['payment_date'] . "+ 1 months"));
-            // $warning_date = date('Y-m-d', strtotime($details['payment_date'] . "+ 15 days"));
             $details['warning_date'] = $warning_date;
             $current_date = date('Y-m-d');
             if ($current_date < $warning_date) {
@@ -147,70 +145,6 @@ class AdvAgency extends Model
         return $details;
     }
 
-    /**
-     * | Make Agency Dashboard
-     */
-    // public function agencyDashboard($citizenId)
-    // {
-    //     //Approved Application
-    //     $data['approvedAppl'] = AdvAgency::select('*')
-    //         ->where(['payment_status' => 1, 'citizen_id' => $citizenId])
-    //         ->get()
-    //         ->groupBy(function ($date) {
-    //             return Carbon::parse($date->created_at)->format('MY'); // grouping by months
-    //         });
-    //     $allApproved = collect();
-    //     $data['countApprovedAppl'] = $data['approvedAppl']->map(function ($item, $key) use ($allApproved) {
-    //         $allApproved->push($item->count());
-    //         return $data[$key] = $item->count();
-    //     });
-    //     $data['countApprovedAppl']['totalApproved'] = $allApproved->sum();
-
-    //     // Unpaid Application
-    //     $data['unpaideAppl'] = AdvAgency::select('*')
-    //         ->where(['payment_status' => 0, 'citizen_id' => $citizenId])
-    //         ->get()
-    //         ->groupBy(function ($date) {
-    //             return Carbon::parse($date->created_at)->format('MY'); // grouping by months
-    //         });
-    //     $allUnpaid = collect();
-    //     $data['countUnpaideAppl'] = $data['unpaideAppl']->map(function ($item, $key) use ($allUnpaid) {
-    //         $allUnpaid->push($item->count());
-    //         return $data[$key] = $item->count();
-    //     });
-    //     $data['countUnpaideAppl']['totalUnpaid'] = $allUnpaid->sum();
-
-
-    //     //pending Application
-    //     $data['pendindAppl'] = AdvActiveAgency::select('*')
-    //         ->where(['citizen_id' => $citizenId])
-    //         ->get()
-    //         ->groupBy(function ($date) {
-    //             return Carbon::parse($date->created_at)->format('MY'); // grouping by months
-    //         });
-    //     $allPending = collect();
-    //     $data['countPendindAppl'] = $data['pendindAppl']->map(function ($item, $key) use ($allPending) {
-    //         $allPending->push($item->count());
-    //         return $data[$key] = $item->count();
-    //     });
-    //     $data['countPendindAppl']['totalPending'] = $allPending->sum();
-
-
-    //     // Rejected Application
-    //     $data['rejectAppl'] = AdvRejectedAgency::select('*')
-    //         ->where(['citizen_id' => $citizenId])
-    //         ->get()
-    //         ->groupBy(function ($date) {
-    //             return Carbon::parse($date->created_at)->format('MY'); // grouping by months
-    //         });
-    //     $allRejected = collect();
-    //     $data['countRejectAppl'] = $data['rejectAppl']->map(function ($item, $key) use ($allRejected) {
-    //         $allRejected->push($item->count());
-    //         return $data[$key] = $item->count();
-    //     });
-    //     $data['countRejectAppl']['totalRejected'] = $allPending->sum();
-    //     return $data;
-    // }
 
     public function getPaymentDetails($paymentId)
     {

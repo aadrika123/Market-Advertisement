@@ -42,18 +42,24 @@ class HoardingController extends Controller
     protected $_workflowIds;
     protected $_moduleId;
     protected $_docCode;
+    protected $_tempParamId;
+    protected $_paramId;
+    protected $_baseUrl;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActivehoarding();
         $this->_workflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_HOR_ID');
+        $this->_paramId = Config::get('workflow-constants.HOR_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $agency_repo;
     }
 
 
 
-      /**
+    /**
      * | Get Typology List
      */
     public function listTypology(Request $req)
@@ -107,6 +113,18 @@ class HoardingController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
+
             DB::beginTransaction();
             $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
             DB::commit();
@@ -117,7 +135,8 @@ class HoardingController extends Controller
         }
     }
 
-    public function getHordingDetailsForRenew(Request $req){
+    public function getHordingDetailsForRenew(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
@@ -136,11 +155,11 @@ class HoardingController extends Controller
         }
     }
 
-     /**
+    /**
      * | Save Application For Licence
      */
     public function renewalHording(RenewalHordingRequest $req)
-    { 
+    {
         try {
             $mAdvActiveHoarding = new AdvActiveHoarding();
             if (authUser()->user_type == 'JSK') {
@@ -218,11 +237,11 @@ class HoardingController extends Controller
             if ($req->applicationId) {
                 $data = $mAdvActiveHoarding->getDetailsById($req->applicationId, $type);
             } else {
-                throw new Exception("Not Pass Application Id");
+                throw new Exception("Application Id Not Passed");
             }
 
             if (!$data) {
-                throw new Exception("Not Application Details Found");
+                throw new Exception("Application Details Not Found");
             }
             // Basic Details
             $basicDetails = $this->generatehordingDetails($data); // Trait function to get Basic Details
@@ -452,16 +471,7 @@ class HoardingController extends Controller
     {
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        if ($req->applicationId && $req->type) {
-            // if ($req->type == 'Active') {
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Reject') {
-            //     // $appId = AdvRejectedAgencyLicense::find($req->applicationId)->temp_id;
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Approve') {
-            //     // $appId = AdvActiveAgencyLicense::find($req->applicationId)->temp_id;
-            //     $appId = $req->applicationId;
-            // }
+        if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
@@ -537,22 +547,33 @@ class HoardingController extends Controller
                 $amount = $this->getHordingPrice($mAdvActiveHoarding->typology, $mAdvActiveHoarding->zone_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+                     
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mAdvActiveHoarding->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+                $idGenerateData = json_decode($refResponse);
 
                 if ($mAdvActiveHoarding->renew_no == NULL) {
                     // approved Hording Application replication
-                    $approvedAgencyLicense = $mAdvActiveHoarding->replicate();
-                    $approvedAgencyLicense->setTable('adv_hoardings');
-                    $temp_id = $approvedAgencyLicense->id = $mAdvActiveHoarding->id;
-                    $approvedAgencyLicense->payment_amount = $req->payment_amount;
-                    $approvedAgencyLicense->approve_date = Carbon::now();
-                    $approvedAgencyLicense->save();
+                    $approvedHoarding = $mAdvActiveHoarding->replicate();
+                    $approvedHoarding->setTable('adv_hoardings');
+                    $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
+                    $approvedHoarding->license_no = $idGenerateData->data;
+                    $approvedHoarding->payment_amount = $req->payment_amount;
+                    $approvedHoarding->approve_date = Carbon::now();
+                    $approvedHoarding->save();
 
                     // Save in Hording Renewal
-                    $approvedAgencyLicense = $mAdvActiveHoarding->replicate();
-                    $approvedAgencyLicense->approve_date = Carbon::now();
-                    $approvedAgencyLicense->setTable('adv_hoarding_renewals');
-                    $approvedAgencyLicense->id = $temp_id;
-                    $approvedAgencyLicense->save();
+                    $approvedHoarding = $mAdvActiveHoarding->replicate();
+                    $approvedHoarding->approve_date = Carbon::now();
+                    $approvedHoarding->license_no = $idGenerateData->data;
+                    $approvedHoarding->setTable('adv_hoarding_renewals');
+                    $approvedHoarding->id = $temp_id;
+                    $approvedHoarding->save();
 
                     $mAdvActiveHoarding->delete();
 
@@ -560,38 +581,38 @@ class HoardingController extends Controller
 
                     DB::table('adv_hoardings')
                         ->where('id', $temp_id)
-                        ->update(['last_renewal_id' => $approvedAgencyLicense->id]);
+                        ->update(['last_renewal_id' => $approvedHoarding->id]);
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                     //  Renewal Application Case
+                    //  Renewal Application Case
 
-                     // Hording Application replication
-                     $license_no=$mAdvActiveHoarding->license_no;
-                     AdvHoarding::where('license_no', $license_no)->delete();
- 
-                      $approvedHoarding = $mAdvActiveHoarding->replicate();
-                      $approvedHoarding->setTable('adv_hoardings');
-                      $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
-                      $approvedHoarding->payment_amount = $req->payment_amount;
-                      $approvedHoarding->payment_status = $req->payment_status;
-                      $approvedHoarding->approve_date = Carbon::now();
-                      $approvedHoarding->save();
-  
-                      // Save in Hording Advertisement Renewal
-                      $approvedHoarding = $approvedHoarding->replicate();
-                      $approvedHoarding->approve_date = Carbon::now();
-                      $approvedHoarding->setTable('adv_hoarding_renewals');
-                      $approvedHoarding->id = $temp_id;
-                      $approvedHoarding->save();
-  
-                      $approvedHoarding->delete();
-  
-                      // Update in adv_hoardings (last_renewal_id)
-                      DB::table('adv_hoardings')
-                          ->where('id', $temp_id)
-                          ->update(['last_renewal_id' => $approvedHoarding->id]);
-                      $msg = "Application Successfully Renewal !!";
+                    // Hording Application replication
+                    $license_no = $mAdvActiveHoarding->license_no;
+                    AdvHoarding::where('license_no', $license_no)->delete();
+
+                    $approvedHoarding = $mAdvActiveHoarding->replicate();
+                    $approvedHoarding->setTable('adv_hoardings');
+                    $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
+                    $approvedHoarding->payment_amount = $req->payment_amount;
+                    $approvedHoarding->payment_status = $req->payment_status;
+                    $approvedHoarding->approve_date = Carbon::now();
+                    $approvedHoarding->save();
+
+                    // Save in Hording Advertisement Renewal
+                    $approvedHoarding = $approvedHoarding->replicate();
+                    $approvedHoarding->approve_date = Carbon::now();
+                    $approvedHoarding->setTable('adv_hoarding_renewals');
+                    $approvedHoarding->id = $temp_id;
+                    $approvedHoarding->save();
+
+                    $approvedHoarding->delete();
+
+                    // Update in adv_hoardings (last_renewal_id)
+                    DB::table('adv_hoardings')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedHoarding->id]);
+                    $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection
@@ -1239,7 +1260,8 @@ class HoardingController extends Controller
         }
     }
 
-    public function listExpiredHording(Request $req){
+    public function listExpiredHording(Request $req)
+    {
         try {
             $citizenId = authUser()->id;
             $userId = authUser()->user_type;
@@ -1260,16 +1282,17 @@ class HoardingController extends Controller
     /**
      * | Archived Application By Id 
      */
-    public function archivedHording(Request $req){
+    public function archivedHording(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-         try {
+        try {
             $mAdvHoarding = AdvHoarding::find($req->applicationId);
-            $mAdvHoarding->is_archived=1;
+            $mAdvHoarding->is_archived = 1;
             $mAdvHoarding->save();
             return responseMsgs(true, "Archived Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -1277,7 +1300,7 @@ class HoardingController extends Controller
         }
     }
 
-       /**
+    /**
      * | Hording Archived List for Citizen
      * | @param Request $req
      */
@@ -1301,20 +1324,21 @@ class HoardingController extends Controller
         }
     }
 
-    
+
     /**
      * | Blacklist Application By Id 
      */
-    public function blacklistHording(Request $req){
+    public function blacklistHording(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-         try {
+        try {
             $mmAdvHoarding = AdvHoarding::find($req->applicationId);
-            $mmAdvHoarding->is_blacklist=1;
+            $mmAdvHoarding->is_blacklist = 1;
             $mmAdvHoarding->save();
             return responseMsgs(true, "Blacklist Application Successfully", "", "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -1322,7 +1346,7 @@ class HoardingController extends Controller
         }
     }
 
-       /**
+    /**
      * | Hording Archived List for Citizen
      * | @param Request $req
      */
@@ -1345,5 +1369,4 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 }

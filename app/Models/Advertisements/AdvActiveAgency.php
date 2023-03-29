@@ -33,6 +33,7 @@ class AdvActiveAgency extends Model
     {
         $metaReqs = [
             'application_date' => $this->_applicationDate,
+            'application_no' => $req->application_no,
             'entity_type' => $req->entityType,
             'entity_name' => $req->entityName,
             'address' => $req->address,
@@ -95,7 +96,7 @@ class AdvActiveAgency extends Model
         $workflowId = Config::get('workflow-constants.AGENCY');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
-        $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
+        // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -113,7 +114,7 @@ class AdvActiveAgency extends Model
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
-            $mApplicationNo,
+            // $mApplicationNo,
             $ulbWorkflowReqs
         ); 
 
@@ -133,7 +134,7 @@ class AdvActiveAgency extends Model
             $agencyDirector->store($director, $agencyId);       // Model function to store
         });
 
-        return $mApplicationNo['application_no'];
+        return $req->application_no;
     }
 
 
@@ -393,7 +394,7 @@ class AdvActiveAgency extends Model
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'AGENCY/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details=AdvAgency::find($req->applicationId);                              // Find Previous Application No
-        $mApplicationNo=['application_no'=>$details->application_no];
+        $licenseNo=['license_no'=>$details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -413,7 +414,7 @@ class AdvActiveAgency extends Model
             ],
             $this->renewalReqs($req),
             $mRenewNo,
-            $mApplicationNo,
+            $licenseNo,
             $ulbWorkflowReqs
         ); 
 

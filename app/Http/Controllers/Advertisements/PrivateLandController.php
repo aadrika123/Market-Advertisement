@@ -51,12 +51,18 @@ class PrivateLandController extends Controller
 
     protected $Repository;
     protected $_docCode;
+    protected $_tempParamId;
+    protected $_paramId;
+    protected $_baseUrl;
     public function __construct(iSelfAdvetRepo $privateland_repo)
     {
         $this->_modelObj = new AdvActivePrivateland();
         $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.PRIVATE_LANDS_DOC_CODE');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_LAND_ID');
+        $this->_paramId = Config::get('workflow-constants.LAND_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $privateland_repo;
     }
 
@@ -74,7 +80,17 @@ class PrivateLandController extends Controller
             } else {
                 $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
                 $req->request->add($citizenId);
-            }
+            }   
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
 
@@ -525,6 +541,15 @@ class PrivateLandController extends Controller
 
                 // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
+                  
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mAdvActivePrivateland->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+                $idGenerateData = json_decode($refResponse);
 
                 if ($mAdvActivePrivateland->renew_no == NULL) {
                     // approved Private Land Application replication
@@ -532,6 +557,7 @@ class PrivateLandController extends Controller
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
                     $approvedPrivateland->payment_amount = $req->payment_amount;
+                    $approvedPrivateland->license_no =  $idGenerateData->data;
                     $approvedPrivateland->approve_date = Carbon::now();
                     $approvedPrivateland->zone = $zone;
                     $approvedPrivateland->save();
@@ -539,6 +565,7 @@ class PrivateLandController extends Controller
                     // Save in Priate Land Application Advertisement Renewal
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->approve_date = Carbon::now();
+                    $approvedPrivateland->license_no =  $idGenerateData->data;
                     $approvedPrivateland->setTable('adv_privateland_renewals');
                     $approvedPrivateland->id = $temp_id;
                     $approvedPrivateland->zone = $zone;

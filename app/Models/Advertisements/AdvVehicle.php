@@ -129,7 +129,7 @@ class AdvVehicle extends Model
                 $mAdvVehicle->valid_from = Carbon::now();
                 $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
-                $previousApplication=$this->findPreviousApplication($mAdvVehicle->application_no);
+                $previousApplication=$this->findPreviousApplication($mAdvVehicle->license_no);
                 $mAdvVehicle->valid_from = $previousApplication->valid_upto;
                 $mAdvVehicle->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }  
@@ -149,9 +149,9 @@ class AdvVehicle extends Model
     }
 
     // Find Previous Payment Date
-    public function findPreviousApplication($application_no){
+    public function findPreviousApplication($license_no){
         return $details=AdvVehicleRenewal::select('valid_upto')
-                                    ->where('application_no',$application_no)
+                                    ->where('license_no',$license_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();
     }

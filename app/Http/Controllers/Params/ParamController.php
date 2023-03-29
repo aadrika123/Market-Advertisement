@@ -207,7 +207,7 @@ class ParamController extends Controller
                     $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
                     $details=AdvSelfadvetRenewal::select('valid_upto')
-                                                ->where('application_no',$mAdvSelfadvertisement->application_no)
+                                                ->where('license_no',$mAdvSelfadvertisement->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mAdvSelfadvertisement->valid_from = $details->valid_upto;
@@ -235,7 +235,7 @@ class ParamController extends Controller
                     $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
                     $details=AdvVehicleRenewal::select('valid_upto')
-                                                ->where('application_no',$mAdvVehicle->application_no)
+                                                ->where('license_no',$mAdvVehicle->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mAdvVehicle->valid_from = $details->valid_upto;
@@ -268,7 +268,7 @@ class ParamController extends Controller
                     $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
                 }else{
                     $details=AdvAgencyRenewal::select('valid_upto')
-                                                ->where('application_no',$mAdvAgency->application_no)
+                                                ->where('license_no',$mAdvAgency->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mAdvAgency->valid_from = $details->valid_upto;
@@ -300,7 +300,7 @@ class ParamController extends Controller
                     $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
                     $details=AdvPrivatelandRenewal::select('valid_upto')
-                                                ->where('application_no',$mAdvPrivateland->application_no)
+                                                ->where('license_no',$mAdvPrivateland->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
                     $mAdvPrivateland->valid_from = $details->valid_upto;

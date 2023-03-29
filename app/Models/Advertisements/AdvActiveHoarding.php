@@ -33,7 +33,8 @@ class AdvActiveHoarding extends Model
         $metaReqs = [   
             
             'zone_id' => $req->zoneId,
-            'license_year' => $req->licenseYear,  
+            'license_year' => $req->licenseYear, 
+            'application_no' => $req->application_no,  
             'typology' => $req->HordingType,               // Hording Type is Convert Into typology
             'display_location' => $req->displayLocation, 
             'width' => $req->width,
@@ -96,7 +97,7 @@ class AdvActiveHoarding extends Model
         $workflowId = $this->_workflowId;
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
-        $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
+        // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -115,7 +116,6 @@ class AdvActiveHoarding extends Model
                 'ip_address' => $ipAddress
             ],
             $this->licenceMetaReqs($req),
-            $mLecenseNo,
             $ulbWorkflowReqs
         );
 
@@ -125,7 +125,7 @@ class AdvActiveHoarding extends Model
         $mDocuments = $req->documents;
         $this->uploadDocument($licenceId, $mDocuments);
 
-        return $mLecenseNo['license_no'];
+        return $req->application_no;
     }
 
 

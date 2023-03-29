@@ -47,12 +47,18 @@ class VehicleAdvetController extends Controller
     protected $_workflowIds;
     protected $_moduleIds;
     protected $_docCode;
+    protected $_tempParamId;
+    protected $_paramId;
+    protected $_baseUrl;
     public function __construct(iSelfAdvetRepo $self_repo)
     {
         $this->_modelObj = new AdvActiveVehicle();
         $this->_workflowIds = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.MOVABLE_VEHICLE_DOC_CODE');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_VCL_ID');
+        $this->_paramId = Config::get('workflow-constants.VCL_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $self_repo;
     }
     public function addNew(StoreRequest $req)
@@ -66,8 +72,20 @@ class VehicleAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+            
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
+            
             DB::beginTransaction();
-            $applicationNo = $advVehicle->addNew($req);               // Store Vehicle 
+            $applicationNo = $advVehicle->addNew($req);               // Apply Vehicle Application 
             DB::commit();
 
             return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "040301", "1.0", "", "POST", $req->deviceId ?? "");
@@ -115,8 +133,20 @@ class VehicleAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+               // Generate Application No
+               $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
+            
             DB::beginTransaction();
-            $applicationNo = $advVehicle->renewalApplication($req);               // Store Vehicle 
+            $applicationNo = $advVehicle->renewalApplication($req);               // Renewal Vehicle Application
             DB::commit();
 
             return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "040301", "1.0", "", "POST", $req->deviceId ?? "");
@@ -138,7 +168,7 @@ class VehicleAdvetController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mvehicleAdvets->listInbox($roleIds);
+            $inboxList = $mvehicleAdvets->listInbox($roleIds);                          // <----- get Inbox list
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -173,11 +203,10 @@ class VehicleAdvetController extends Controller
         try {
             $mvehicleAdvets = new AdvActiveVehicle();
             // $data = array();
+                $type = NULL;
             $fullDetailsData = array();
             if (isset($req->type)) {
                 $type = $req->type;
-            } else {
-                $type = NULL;
             }
             if ($req->applicationId) {
                 $data = $mvehicleAdvets->getDetailsById($req->applicationId, $type);
@@ -487,13 +516,24 @@ class VehicleAdvetController extends Controller
                 $amount = $this->getMovableVehiclePayment($typology, $zone);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+                // $data['license_no']="SELF-1234567890";
+                
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mAdvActiveVehicle->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
 
+                $idGenerateData = json_decode($refResponse);
                 // approved Vehicle Application replication
                 if ($mAdvActiveVehicle->renew_no == NULL) {
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->setTable('adv_vehicles');
                     $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
                     $approvedVehicle->payment_amount = $req->payment_amount;
+                    $approvedVehicle->license_no =  $idGenerateData->data;
                     $approvedVehicle->approve_date = Carbon::now();
                     $approvedVehicle->zone = $zone;
                     $approvedVehicle->save();
@@ -502,6 +542,7 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->approve_date = Carbon::now();
                     $approvedVehicle->setTable('adv_vehicle_renewals');
+                    $approvedVehicle->license_no = $idGenerateData->data;
                     $approvedVehicle->id = $temp_id;
                     $approvedVehicle->zone = $zone;
                     $approvedVehicle->save();

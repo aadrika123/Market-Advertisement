@@ -129,16 +129,15 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id=$mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId/".time();
             $mAdvSelfadvertisement->payment_date = Carbon::now();
-            // $mAdvSelfadvertisement->payment_details = "By Cash";
             
             $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvSelfadvertisement->payment_amount,'workflowId'=>$mAdvSelfadvertisement->workflow_id,'userId'=>$mAdvSelfadvertisement->citizen_id,'ulbId'=>$mAdvSelfadvertisement->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
 
             $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
-            if($mAdvSelfadvertisement->renew_no==NULL){
+            if($mAdvSelfadvertisement->renew_no==NULL){                             // Fresh Application Time 
                 $mAdvSelfadvertisement->valid_from = Carbon::now();
                 $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-            }else{
-                $previousApplication=$this->findPreviousApplication($mAdvSelfadvertisement->application_no);
+            }else{                                                              // Renewal Application Time 
+                $previousApplication=$this->findPreviousApplication($mAdvSelfadvertisement->license_no);
                 $mAdvSelfadvertisement->valid_from = $previousApplication->valid_upto;
                 $mAdvSelfadvertisement->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }   
@@ -157,9 +156,9 @@ class AdvSelfadvertisement extends Model
         }
     }
 
-    public function findPreviousApplication($application_no){
+    public function findPreviousApplication($license_no){
         return $details=AdvSelfadvetRenewal::select('valid_upto')
-                                    ->where('application_no',$application_no)
+                                    ->where('license_no',$license_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();
     }

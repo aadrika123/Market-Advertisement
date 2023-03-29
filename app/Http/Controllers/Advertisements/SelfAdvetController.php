@@ -55,6 +55,9 @@ class SelfAdvetController extends Controller
     protected $_workflowIds;
     protected $_moduleIds;
     protected $_docCode;
+    protected $_paramId;
+    protected $_tempParamId;
+    protected $_baseUrl;
 
     //Constructor
     public function __construct(iSelfAdvetRepo $self_repo)
@@ -64,6 +67,9 @@ class SelfAdvetController extends Controller
         $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_repository = $self_repo;
         $this->_docCode = Config::get('workflow-constants.SELF_ADVERTISMENT_DOC_CODE');
+        $this->_paramId = Config::get('workflow-constants.SELF_ID');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_SELF_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
     }
 
     /**
@@ -98,6 +104,17 @@ class SelfAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);       //<--------------- Model function to store 
@@ -152,6 +169,17 @@ class SelfAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+             // Generate Application No
+             $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->renewalSelfAdvt($req);       //<--------------- Model function to store 
@@ -460,7 +488,7 @@ class SelfAdvetController extends Controller
             $licenseList = $tradeLicence->getLicenceByUserId($req->user_id);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Licenses",remove_null($licenseList->toArray()),"050111","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
+            return responseMsgs(true, "Licenses", remove_null($licenseList->toArray()), "050111", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -483,7 +511,7 @@ class SelfAdvetController extends Controller
             $licenseList = $tradeLicense->getLicenceByHoldingNo($req->holding_no);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Licenses",remove_null($licenseList->toArray()),"050111","1.0","$executionTime Sec","POST",$req->deviceId ?? "" );
+            return responseMsgs(true, "Licenses", remove_null($licenseList->toArray()), "050111", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050111", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -628,8 +656,17 @@ class SelfAdvetController extends Controller
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
-                $data['license_no']="SELF-1234567890";
-                // $req->request->add($data['license_no']);
+
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mAdvActiveSelfadvertisement->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+
+                $idGenerateData = json_decode($refResponse);
+                //  return $data['license_no']=$idGenerateData->data;
 
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
                     // Selfadvertisement Application replication
@@ -638,7 +675,7 @@ class SelfAdvetController extends Controller
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
-                    $approvedSelfadvertisement->license_no = $data['license_no'];
+                    $approvedSelfadvertisement->license_no = $idGenerateData->data;
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->save();
 
@@ -646,7 +683,7 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
-                    $approvedSelfadvertisement->license_no = $data['license_no'];
+                    $approvedSelfadvertisement->license_no = $idGenerateData->data;
                     $approvedSelfadvertisement->id = $temp_id;
                     $approvedSelfadvertisement->save();
 
@@ -657,34 +694,34 @@ class SelfAdvetController extends Controller
                         ->where('id', $temp_id)
                         ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
                     $msg = "Application Successfully Approved !!";
-                }else{
+                } else {
                     //  Renewal Case
-                     // Selfadvertisement Application replication
-                    $application_no=$mAdvActiveSelfadvertisement->application_no;
-                    AdvSelfadvertisement::where('application_no', $application_no)->delete();
+                    // Selfadvertisement Application replication
+                    $license_no = $mAdvActiveSelfadvertisement->license_no;
+                    AdvSelfadvertisement::where('license_no', $license_no)->delete();
 
-                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
-                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
-                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
-                     $approvedSelfadvertisement->payment_status = $req->payment_status;
-                     $approvedSelfadvertisement->approve_date = Carbon::now();
-                     $approvedSelfadvertisement->save();
- 
-                     // Save in self Advertisement Renewal
-                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
-                     $approvedSelfadvertisement->approve_date = Carbon::now();
-                     $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
-                     $approvedSelfadvertisement->id = $temp_id;
-                     $approvedSelfadvertisement->save();
- 
-                     $mAdvActiveSelfadvertisement->delete();
- 
-                     // Update in adv_selfadvertisements (last_renewal_id)
-                     DB::table('adv_selfadvertisements')
-                         ->where('id', $temp_id)
-                         ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
-                     $msg = "Application Successfully Renewal !!";
+                    $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                    $approvedSelfadvertisement->setTable('adv_selfadvertisements');
+                    $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
+                    $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                    $approvedSelfadvertisement->payment_status = $req->payment_status;
+                    $approvedSelfadvertisement->approve_date = Carbon::now();
+                    $approvedSelfadvertisement->save();
+
+                    // Save in self Advertisement Renewal
+                    $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
+                    $approvedSelfadvertisement->approve_date = Carbon::now();
+                    $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                    $approvedSelfadvertisement->id = $temp_id;
+                    $approvedSelfadvertisement->save();
+
+                    $mAdvActiveSelfadvertisement->delete();
+
+                    // Update in adv_selfadvertisements (last_renewal_id)
+                    DB::table('adv_selfadvertisements')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedSelfadvertisement->id]);
+                    $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection
@@ -1081,12 +1118,22 @@ class SelfAdvetController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // self Advertiesement List Documents
+        $totalApproveDoc=$refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveBanquteHall->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
 
     /**

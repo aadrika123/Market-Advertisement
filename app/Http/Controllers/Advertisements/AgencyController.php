@@ -57,22 +57,24 @@ class AgencyController extends Controller
     protected $Repository;
 
     protected $_workflowIds;
-    protected $_hordingWorkflowIds;
     protected $_agencyRegPrice;
     protected $_agencyRenewPrice;
     protected $_moduleId;
     protected $_docCode;
-    protected $_hordingDocCode;
+    protected $_tempParamId;
+    protected $_paramId;
+    protected $_baseUrl;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
         $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-        // $this->_hordingWorkflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_agencyRegPrice = Config::get('workflow-constants.AGENCY_REG_PRICE');
         $this->_agencyRenewPrice = Config::get('workflow-constants.AGENCY_RENEW_PRICE');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
-        // $this->_hordingDocCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_AGY_ID');
+        $this->_paramId = Config::get('workflow-constants.AGY_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $agency_repo;
     }
 
@@ -121,6 +123,18 @@ class AgencyController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+             // Generate Application No
+             $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
+            
             DB::beginTransaction();
             $applicationNo = $agency->addNew($req);       //<--------------- Model function to store 
             DB::commit();
@@ -515,6 +529,15 @@ class AgencyController extends Controller
                     $payment_amount = ['payment_amount' => $this->_agencyRenewPrice];                        // Agency Renew Price
                 }
                 $req->request->add($payment_amount);
+                    
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mAdvActiveAgency->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+                $idGenerateData = json_decode($refResponse);
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 // $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
@@ -522,6 +545,7 @@ class AgencyController extends Controller
                     $approvedAgency = $mAdvActiveAgency->replicate();
                     $approvedAgency->setTable('adv_agencies');
                     $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
+                    $approvedAgency->license_no =  $idGenerateData->data;
                     $approvedAgency->payment_amount = $req->payment_amount;
                     $approvedAgency->approve_date = Carbon::now();
                     $approvedAgency->save();
@@ -529,6 +553,7 @@ class AgencyController extends Controller
                     // Save in Agency Advertisement Renewal
                     $approvedAgency = $mAdvActiveAgency->replicate();
                     $approvedAgency->approve_date = Carbon::now();
+                    $approvedAgency->license_no =  $idGenerateData->data;
                     $approvedAgency->setTable('adv_agency_renewals');
                     $approvedAgency->agencyadvet_id = $temp_id;
                     $approvedAgency->save();
@@ -821,6 +846,19 @@ class AgencyController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
+
+              // Generate Application No
+              $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
+
+            
             DB::beginTransaction();
             $applicationNo = $agency->renewalAgency($req);       //<--------------- Model function to store 
             DB::commit();

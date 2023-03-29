@@ -32,6 +32,7 @@ class AdvActiveVehicle extends Model
     {
         $metaReqs = [
             'applicant' => $req->applicant,
+            'application_no' => $req->application_no,
             'father' => $req->father,
             'email' => $req->email,
             'residence_address' => $req->residenceAddress,
@@ -67,7 +68,7 @@ class AdvActiveVehicle extends Model
     {
         $metaReqs = [
             'applicant' => $req->applicant,
-            'application_no' => $req->applicationNo,
+            'application_no' => $req->application_no,
             'father' => $req->father,
             'email' => $req->email,
             'residence_address' => $req->residenceAddress,
@@ -109,7 +110,7 @@ class AdvActiveVehicle extends Model
         $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
-        $mApplicationNo = ['application_no' => 'VEHICLE-' . random_int(100000, 999999)];                  // Generate Application No
+        // $mApplicationNo = ['application_no' => 'VEHICLE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role' => $ulbWorkflows['initiator_role_id'],
@@ -126,7 +127,7 @@ class AdvActiveVehicle extends Model
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
-            $mApplicationNo,
+            // $mApplicationNo,
             $ulbWorkflowReqs
         );
         // return $metaReqs;
@@ -134,7 +135,7 @@ class AdvActiveVehicle extends Model
         $mDocuments = $req->documents;
         $this->uploadDocument($tempId, $mDocuments);
 
-        return $mApplicationNo['application_no'];
+        return $req->application_no;
     }
 
     
@@ -151,7 +152,7 @@ class AdvActiveVehicle extends Model
         $ipAddress = getClientIpAddress();
         $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details=AdvVehicle::find($req->applicationId);                              // Find Previous Application No
-        $mApplicationNo=['application_no'=>$details->application_no];
+        $licenseNo=['license_no'=>$details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role' => $ulbWorkflows['initiator_role_id'],
@@ -169,7 +170,7 @@ class AdvActiveVehicle extends Model
             ],
             $this->metaRenewReqs($req),
             $mRenew,
-            $mApplicationNo,
+            $licenseNo,
             $ulbWorkflowReqs
         );
         // return $metaReqs;
@@ -200,42 +201,6 @@ class AdvActiveVehicle extends Model
             ->get();
         return $outbox;
     }
-
-
-
-
-    /**
-     * | Document Upload (1.1)
-     * | @param tempId Temprory Id
-     * | @param documents Uploading Documents
-     * */
-    // public function uploadDocument($tempId, $documents)
-    // {
-    //     $mAdvDocument = new AdvActiveSelfadvetdocument();
-    //     $mDocService = new DocumentUpload;
-    //     $mRelativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
-    //     $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
-
-    //     collect($documents)->map(function ($document) use ($mAdvDocument, $tempId, $mDocService, $mRelativePath, $workflowId) {
-    //         $mDocumentId = $document['id'];
-    //         $mDocRelativeName = $document['relativeName'];
-    //         $mImage = $document['image'];
-    //         $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
-
-    //         $docUploadReqs = [
-    //             'tempId' => $tempId,
-    //             'docTypeCode' => 'Test-Code',
-    //             'documentId' => $mDocumentId,
-    //             'relativePath' => $mRelativePath,
-    //             'docName' => $mDocName,
-    //             'workflowId' => $workflowId
-    //         ];
-    //         $docUploadReqs = new Request($docUploadReqs);
-
-    //         $mAdvDocument->store($docUploadReqs);
-    //     });
-    // }
-
 
     public function uploadDocument($tempId, $documents)
     {

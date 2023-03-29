@@ -50,13 +50,18 @@ return [
     "LAND_ID" => "12",
     "HOR_ID" => "13",
     "AGY_ID" => "14",
+    "TEMP_SELF_ID" => "17",
+    "TEMP_VCL_ID" => "18",
+    "TEMP_LAND_ID" => "19",
+    "TEMP_HOR_ID" => "20",
+    "TEMP_AGY_ID" => "21",
 
     /**
      * | =========== Market Section ==========
      * | -------- Bnaqute Marriage Hall -------
      */
     "BANQUTE_MARRIGE_HALL" => "350",
-    "MARKET_MODULE_ID" => 6,
+    "MARKET_MODULE_ID" => 5,
     "BANQUTE_MARRIGE_HALL_WORKFLOWS" => "317",
     "BANQUTE_MARRIGE_HALL_DOC_CODE" => "BANQUTE_MARRIGE_HALL",
     "BANQUTE_MARRIGE_HALL_DOC_CODE_RENEW" => "BANQUTE_MARRIGE_HALL_RENEW",
