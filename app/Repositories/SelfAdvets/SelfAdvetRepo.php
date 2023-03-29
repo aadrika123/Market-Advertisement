@@ -26,10 +26,12 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 'entity_name',
                 'entity_address',
                 'application_type',
-                'payment_status'
+                'payment_status',
+                'workflow_id',
+                'ward_id'
             )
-            ->orderByDesc('id');
-            // ->whereIn('workflow_id', $workflowIds);
+            ->orderByDesc('id')
+            ->where('workflow_id', $workflowIds);
         return $specialInbox;
     }
 

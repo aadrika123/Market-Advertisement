@@ -241,8 +241,8 @@ class AdvHoarding extends Model
                 $mAdvHoarding->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
                 $previousApplication=$this->findPreviousApplication($mAdvHoarding->application_no);
-                $mAdvHoarding->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
-                $mAdvHoarding->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+                $mAdvHoarding->valid_from =  $previousApplication->valid_upto;
+                $mAdvHoarding->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }
             $mAdvHoarding->save();
             $renewal_id = $mAdvHoarding->last_renewal_id;
@@ -252,6 +252,8 @@ class AdvHoarding extends Model
             $mAdvHoardingRenewal->payment_status = 1;
             $mAdvHoardingRenewal->payment_id =  $pay_id;
             $mAdvHoardingRenewal->payment_date = Carbon::now();
+            $mAdvHoardingRenewal->valid_from = $mAdvHoarding->valid_from;
+            $mAdvHoardingRenewal->valid_upto =  $mAdvHoarding->valid_upto;
             $mAdvHoardingRenewal->payment_details = json_encode($payDetails);;
             return $mAdvHoardingRenewal->save();
         }
@@ -260,7 +262,7 @@ class AdvHoarding extends Model
     
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvHoarding::select('payment_date')
+        return $details=AdvHoarding::select('valid_upto')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();

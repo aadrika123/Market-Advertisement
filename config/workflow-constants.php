@@ -41,6 +41,16 @@ return [
     "AGENCY_HORDING_DOC_CODE" => "AGENCY_HORDING_LICENSE",
     "AGENCY_HORDING_DOC_CODE_RENEW" => "AGENCY_HORDING_RENEW",
 
+
+    /**
+     * | Id Generation Constant
+     */
+    "SELF_ID" => "10",
+    "VCL_ID" => "11",
+    "LAND_ID" => "12",
+    "HOR_ID" => "13",
+    "AGY_ID" => "14",
+
     /**
      * | =========== Market Section ==========
      * | -------- Bnaqute Marriage Hall -------

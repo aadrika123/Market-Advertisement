@@ -82,7 +82,7 @@ class SelfAdvetController extends Controller
     }
 
     /**
-     * | Apply for Self Advertisements 
+     * | Apply Application for Self Advertisements 
      * | @param StoreRequest 
      */
     public function addNew(StoreRequest $req)
@@ -173,7 +173,6 @@ class SelfAdvetController extends Controller
     public function listInbox(Request $req)
     {
         try {
-            // return true;
             // Variable initialization
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
@@ -183,7 +182,7 @@ class SelfAdvetController extends Controller
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds);
+            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds);             // <------ Get List From Model
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -228,13 +227,12 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $fullDetailsData = array();
+            $type = NULL;
             if (isset($req->type)) {
                 $type = $req->type;
-            } else {
-                $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);   // Find Details From Model
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -243,7 +241,7 @@ class SelfAdvetController extends Controller
                 throw new Exception("Application Not Found");
 
             // Basic Details
-            $basicDetails = $this->generateBasicDetails($data); // Trait function to get Basic Details
+            $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
@@ -280,6 +278,9 @@ class SelfAdvetController extends Controller
         }
     }
 
+    /**
+     * | Get Role Details
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -379,6 +380,7 @@ class SelfAdvetController extends Controller
             'senderRoleId' => 'nullable|integer'
         ]);
         try {
+            // Variable Initialazition
             $startTime = microtime(true);
             $userId = authUser()->id;
             $userType = authUser()->user_type;
@@ -424,10 +426,11 @@ class SelfAdvetController extends Controller
     public function listAppliedApplications(Request $req)
     {
         try {
+            // Variable Initialization
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $applications = $selfAdvets->listAppliedApplications($citizenId);
+            $applications = $selfAdvets->listAppliedApplications($citizenId);   // Get Applied Applications
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -491,13 +494,15 @@ class SelfAdvetController extends Controller
      */
     public function viewAdvertDocument(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+        }
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-        } else {
-            throw new Exception("Required Application Id And Application Type ");
-        }
+        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         $data1['data'] = $data;
         return $data1;
     }
@@ -525,12 +530,16 @@ class SelfAdvetController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-        }
+        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
@@ -539,6 +548,7 @@ class SelfAdvetController extends Controller
     public function listEscalated(Request $req)
     {
         try {
+            // Variable Initialization
             $startTime = microtime(true);
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
@@ -552,7 +562,7 @@ class SelfAdvetController extends Controller
             $advData = $this->_repository->specialInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
+                ->whereIn('ward_id', $wardId)
                 ->get();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -562,26 +572,26 @@ class SelfAdvetController extends Controller
         }
     }
 
-    public function getDetailsByLicenseNo(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'license_no' => 'required'
-        ]);
-        if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-        $mtradeLicense = new TradeLicence();
-        $data = array();
-        if ($req->license_no) {
-            $data = $mtradeLicense->getDetailsByLicenceNo($req->license_no);
-        }
-        if (!empty($data)) {
-            $licenseElement = ['status' => true, 'headerTitle' => "License Details", 'data' => $data];
-        } else {
-            $licenseElement = ['status' => false, 'headerTitle' => "License Details", 'data' => "Invalid License No"];
-        }
-        return $licenseElement;
-    }
+    // public function getDetailsByLicenseNo(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'license_no' => 'required'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    //     $mtradeLicense = new TradeLicence();
+    //     $data = array();
+    //     if ($req->license_no) {
+    //         $data = $mtradeLicense->getDetailsByLicenceNo($req->license_no);
+    //     }
+    //     if (!empty($data)) {
+    //         $licenseElement = ['status' => true, 'headerTitle' => "License Details", 'data' => $data];
+    //     } else {
+    //         $licenseElement = ['status' => false, 'headerTitle' => "License Details", 'data' => "Invalid License No"];
+    //     }
+    //     return $licenseElement;
+    // }
 
     /**
      * | Final Approval and Rejection of the Application
@@ -618,6 +628,8 @@ class SelfAdvetController extends Controller
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
+                $data['license_no']="SELF-1234567890";
+                // $req->request->add($data['license_no']);
 
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
                     // Selfadvertisement Application replication
@@ -626,6 +638,7 @@ class SelfAdvetController extends Controller
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
+                    $approvedSelfadvertisement->license_no = $data['license_no'];
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->save();
 
@@ -633,6 +646,7 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
+                    $approvedSelfadvertisement->license_no = $data['license_no'];
                     $approvedSelfadvertisement->id = $temp_id;
                     $approvedSelfadvertisement->save();
 
@@ -1096,7 +1110,7 @@ class SelfAdvetController extends Controller
                 $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
             }
 
-            $mAdvActiveSelfadvertisement->current_role = $backId->wf_role_id;
+            $mAdvActiveSelfadvertisement->current_role_id = $backId->wf_role_id;
             $mAdvActiveSelfadvertisement->parked = 1;
             $mAdvActiveSelfadvertisement->save();
 
@@ -1192,6 +1206,30 @@ class SelfAdvetController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Search application by name or mobile
+     */
+    public function searchByNameorMobile(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'filterBy' => 'required|in:mobileNo,entityName',
+            'parameter' => $req->filterBy == 'mobileNo' ? 'required|digits:10' : 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvSelfadvertisement = new AdvSelfadvertisement();
+            $listApplications = $mAdvSelfadvertisement->searchByNameorMobile($req);
+            if (!$listApplications)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched Successfully", $listApplications, 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), 010717, 1.0, "271ms", "POST", "", "");
         }
     }
 }

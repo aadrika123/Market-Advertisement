@@ -26,6 +26,7 @@ class AdvSelfadvertisement extends Model
             'ulb_id',
             'workflow_id',
             'citizen_id',
+            'license_no',
             'valid_upto',
             'user_id',
         )
@@ -80,6 +81,7 @@ class AdvSelfadvertisement extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'license_no',
                 'ulb_id',
                 'workflow_id',
             )
@@ -103,6 +105,7 @@ class AdvSelfadvertisement extends Model
                 'entity_address',
                 'payment_status',
                 'payment_amount',
+                'license_no',
                 'approve_date',
                 'ulb_id',
                 'workflow_id',
@@ -136,8 +139,8 @@ class AdvSelfadvertisement extends Model
                 $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
                 $previousApplication=$this->findPreviousApplication($mAdvSelfadvertisement->application_no);
-                $mAdvSelfadvertisement->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
-                $mAdvSelfadvertisement->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+                $mAdvSelfadvertisement->valid_from = $previousApplication->valid_upto;
+                $mAdvSelfadvertisement->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }   
             $mAdvSelfadvertisement->save();
             $renewal_id = $mAdvSelfadvertisement->last_renewal_id;
@@ -147,13 +150,15 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_status = 1;
             $mAdvSelfAdvertRenewal->payment_id =  $pay_id;
             $mAdvSelfAdvertRenewal->payment_date = Carbon::now();
+            $mAdvSelfAdvertRenewal->valid_from = $mAdvSelfadvertisement->valid_from;
+            $mAdvSelfAdvertRenewal->valid_upto = $mAdvSelfadvertisement->valid_upto;
             $mAdvSelfAdvertRenewal->payment_details = json_encode($payDetails);
             return $mAdvSelfAdvertRenewal->save();
         }
     }
 
     public function findPreviousApplication($application_no){
-        return $details=AdvSelfadvetRenewal::select('payment_date')
+        return $details=AdvSelfadvetRenewal::select('valid_upto')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();
@@ -195,4 +200,16 @@ class AdvSelfadvertisement extends Model
     // public function getApprovedApplication(){
     //     return 
     // }
+
+    public function searchByNameorMobile($req){
+        $list=AdvSelfadvertisement::select('adv_agencies.*','et.string_parameter as entityType','adv_agencies.entity_type as entity_type_id')
+              ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type');
+         if($req->filterBy=='mobileNo'){
+             $filterList=$list->where('adv_agencies.mobile_no',$req->parameter);
+         }
+         if($req->filterBy=='entityName'){
+             $filterList=$list->where('adv_agencies.entity_name',$req->parameter);
+         }
+         return $filterList->get();
+     }
 }

@@ -125,9 +125,9 @@ class AdvPrivateland extends Model
                 $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
                 $previousApplication=$this->findPreviousApplication($mAdvPrivateland->application_no);
-                $mAdvPrivateland->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
-                $mAdvPrivateland->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
-            }  
+                $mAdvPrivateland->valid_from = $previousApplication->valid_upto;
+                $mAdvPrivateland->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
+            }
             $mAdvPrivateland->save();
             $renewal_id = $mAdvPrivateland->last_renewal_id;
 
@@ -137,6 +137,8 @@ class AdvPrivateland extends Model
             $mAdvPrivatelandRenewal->payment_status = 1;
             $mAdvPrivatelandRenewal->payment_id =  $pay_id;
             $mAdvPrivatelandRenewal->payment_date = Carbon::now();
+            $mAdvPrivatelandRenewal->valid_from =  $mAdvPrivateland->valid_from;
+            $mAdvPrivatelandRenewal->valid_upto = $mAdvPrivateland->valid_upto;
             $mAdvPrivatelandRenewal->payment_details = json_encode($payDetails);
             return $mAdvPrivatelandRenewal->save();
         }
@@ -144,7 +146,7 @@ class AdvPrivateland extends Model
 
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvPrivatelandRenewal::select('payment_date')
+        return $details=AdvPrivatelandRenewal::select('valid_upto')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();

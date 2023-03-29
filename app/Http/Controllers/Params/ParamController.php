@@ -93,29 +93,12 @@ class ParamController extends Controller
         $redis = Redis::connection();
         try {
             $mUlbId = $req->ulbId;
-            // $data = json_decode(Redis::get('adv_param_strings' . $mUlbId));      // Get Value from Redis Cache Memory
             $data = json_decode(Redis::get('adv_param_strings'));      // Get Value from Redis Cache Memory
-            // $bearer = $req->bearerToken();
             if (!$data) {                                                        // If Cache Memory is not available
                 $data = array();
-                // $baseUrl = Config::get('constants.BASE_URL');
                 $mParamString = new RefAdvParamstring();
-                // $strings = $mParamString->masters($mUlbId);
                 $strings = $mParamString->masters();
                 $data['paramCategories'] = remove_null($strings->groupBy('param_category')->toArray());
-                // Get Wards By Ulb Id
-                // $mWards = Http::withHeaders([
-                //     "Authorization" => "Bearer $bearer",
-                //     "contentType" => "application/json"
-
-                // ])->post($baseUrl . 'api/workflow/getWardByUlb', [
-                //     "ulbId" => $mUlbId
-                // ]);
-
-                // if (!$mWards)
-                //     throw new Exception("Wards not found");
-
-                // $data['wards'] = $mWards['data'];
 
                 $mAdvTypologyMstr = new AdvTypologyMstr();
                 $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List
@@ -157,6 +140,7 @@ class ParamController extends Controller
               $documentList[$val['code']][$kinn]['docType']=$arr[0];
               $documentList[$val['code']][$kinn]['docCode']=$arr[1];
               $documentList[$val['code']][$kinn]['docVal']=ucwords(strtolower(str_replace('_',' ',$arr[1])));
+              $documentList[$val['code']][$kinn]['document_name']=ucwords(strtolower(str_replace('_',' ',$arr[1])));
               $documentList[$val['code']][$kinn]['code']=$val['code'];
           }
       }
@@ -196,7 +180,6 @@ class ParamController extends Controller
      */
     public function paymentSuccessFailure(Request $req)
     {
-        $workflowid=$req->workflowId;
         try {
             $startTime = microtime(true);
             DB::beginTransaction();
@@ -223,16 +206,18 @@ class ParamController extends Controller
                     $mAdvSelfadvertisement->valid_from = Carbon::now();
                     $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvSelfadvetRenewal::select('payment_date')
+                    $details=AdvSelfadvetRenewal::select('valid_upto')
                                                 ->where('application_no',$mAdvSelfadvertisement->application_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvSelfadvertisement->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
-                    $mAdvSelfadvertisement->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                    $mAdvSelfadvertisement->valid_from = $details->valid_upto;
+                    $mAdvSelfadvertisement->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mAdvSelfadvertisement->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mAdvSelfadvertisement->valid_from;
+                $updateData['valid_upto'] = $mAdvSelfadvertisement->valid_upto;
                 // update in Renewals Table
                 DB::table('adv_selfadvet_renewals')
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
@@ -249,16 +234,18 @@ class ParamController extends Controller
                     $mAdvVehicle->valid_from = Carbon::now();
                     $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvVehicleRenewal::select('payment_date')
+                    $details=AdvVehicleRenewal::select('valid_upto')
                                                 ->where('application_no',$mAdvVehicle->application_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvVehicle->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
-                    $mAdvVehicle->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                    $mAdvVehicle->valid_from = $details->valid_upto;
+                    $mAdvVehicle->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mAdvVehicle->save();
                
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mAdvVehicle->valid_from;
+                $updateData['valid_upto'] = $mAdvVehicle->valid_upto;
                 // update in Renewals Table
                 DB::table('adv_vehicle_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
@@ -280,16 +267,18 @@ class ParamController extends Controller
                     $mAdvAgency->valid_from = Carbon::now();
                     $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
                 }else{
-                    $details=AdvAgencyRenewal::select('payment_date')
-                                                ->where('license_no',$mAdvAgency->license_no)
+                    $details=AdvAgencyRenewal::select('valid_upto')
+                                                ->where('application_no',$mAdvAgency->application_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvAgency->valid_from = date("Y-m-d ",strtotime("+5 Years -1 days", $details->Payment_date));
-                    $mAdvAgency->valid_upto = date("Y-m-d ",strtotime("+10 Years -1 days", $details->Payment_date));
+                    $mAdvAgency->valid_from = $details->valid_upto;
+                    $mAdvAgency->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(5)->subDay(1);
                 }
                 $mAdvAgency->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mAdvAgency->valid_from;
+                $updateData['valid_upto'] = $mAdvAgency->valid_upto;
                 // update in Renewals Table
                 DB::table('adv_agency_renewals')
                     ->where('id', $mAdvAgency->last_renewal_id)
@@ -310,16 +299,18 @@ class ParamController extends Controller
                     $mAdvPrivateland->valid_from = Carbon::now();
                     $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvPrivatelandRenewal::select('payment_date')
-                                                ->where('license_no',$mAdvPrivateland->license_no)
+                    $details=AdvPrivatelandRenewal::select('valid_upto')
+                                                ->where('application_no',$mAdvPrivateland->application_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvPrivateland->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
-                    $mAdvPrivateland->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                    $mAdvPrivateland->valid_from = $details->valid_upto;
+                    $mAdvPrivateland->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mAdvPrivateland->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mAdvPrivateland->valid_from;
+                $updateData['valid_upto'] = $mAdvPrivateland->valid_upto;
                 // update in Renewals Table
                 DB::table('adv_privateland_renewals')
                     ->where('id', $mAdvPrivateland->last_renewal_id)
@@ -340,16 +331,18 @@ class ParamController extends Controller
                     $mAdvHoarding->valid_from = Carbon::now();
                     $mAdvHoarding->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 }else{
-                    $details=AdvHoardingRenewal::select('payment_date')
+                    $details=AdvHoardingRenewal::select('valid_upto')
                                                 ->where('license_no',$mAdvHoarding->license_no)
                                                 ->orderByDesc('id')
                                                 ->skip(1)->first();
-                    $mAdvHoarding->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $details->Payment_date));
-                    $mAdvHoarding->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $details->Payment_date));
+                    $mAdvHoarding->valid_from = $details->valid_upto;
+                    $mAdvHoarding->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mAdvHoarding->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['valid_from'] = $mAdvHoarding->valid_from;
+                $updateData['valid_upto'] = $mAdvHoarding->valid_upto;
                 // update in Renewals Table
                 DB::table('adv_hoarding_renewals')
                     ->where('id', $mAdvHoarding->last_renewal_id)

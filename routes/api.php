@@ -77,6 +77,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/list-btc-inbox', 'listBtcInbox');          // 30 ( list Back to citizen )
         // Route::post('advert/self/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/self/reupload-document', 'reuploadDocument');          // 31 ( Reupload Rejected Document )
+        Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');          //32 ( Search application by name and mobile no )
     });
     
 
@@ -211,7 +212,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 29 ( Application Details For Payments )
         // Route::post('advert/agency/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/agency/reupload-document', 'reuploadDocument');          // 30 ( Application Details For Payments )
-        Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          //31 ( Application Details For Payments )
+        Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          //31 ( Search application by name and mobile no )
         Route::post('advert/agency/is-agency', 'isAgency'); // 32 (Get Agency Approve or not By Login Token)
         Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); //33 (Get Agency Dashboard)
         /*------------ Apply For Hording License -------------------*/

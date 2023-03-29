@@ -59,21 +59,6 @@ class AdvVehicle extends Model
         }else{
             return collect($allApproveList)->values(); 
         }
-        // return AdvVehicle::where('citizen_id', $citizenId)
-        //     ->select(
-        //         'id',
-        //         'application_no',
-        //         'application_date',
-        //         'applicant',
-        //         'entity_name',
-        //         // 'entity_address',
-        //         // 'old_application_no',
-        //         'payment_status',
-        //         'payment_amount',
-        //         'approve_date',
-        //     )
-        //     ->orderByDesc('temp_id')
-        //     ->get();
     }
 
     /**
@@ -88,8 +73,6 @@ class AdvVehicle extends Model
                 'application_date',
                 'applicant',
                 'entity_name',
-                // 'entity_address',
-                // 'old_application_no',
                 'payment_status',
                 'payment_amount',
                 'approve_date',
@@ -147,8 +130,8 @@ class AdvVehicle extends Model
                 $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
                 $previousApplication=$this->findPreviousApplication($mAdvVehicle->application_no);
-                $mAdvVehicle->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
-                $mAdvVehicle->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+                $mAdvVehicle->valid_from = $previousApplication->valid_upto;
+                $mAdvVehicle->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }  
             $mAdvVehicle->save();
             $renewal_id = $mAdvVehicle->last_renewal_id;
@@ -158,6 +141,8 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_status = 1;
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
+            $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
+            $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;
             return $mAdvVehicleRenewal->save();
         }
@@ -165,7 +150,7 @@ class AdvVehicle extends Model
 
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvVehicleRenewal::select('payment_date')
+        return $details=AdvVehicleRenewal::select('valid_upto')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();

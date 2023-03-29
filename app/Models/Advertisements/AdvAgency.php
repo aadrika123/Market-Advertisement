@@ -222,7 +222,8 @@ class AdvAgency extends Model
 
 
     public function searchByNameorMobile($req){
-       $list=AdvAgency::select('adv_agencies.*','et.string_parameter as entityType','adv_agencies.entity_type as entity_type_id')
+       $list=AdvAgency::select('adv_agencies.*','et.string_parameter as entityType','adv_agencies.entity_type as entity_type_id',
+                DB::raw("'Agency' as workflow_name" ))
              ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type');
         if($req->filterBy=='mobileNo'){
             $filterList=$list->where('adv_agencies.mobile_no',$req->parameter);
@@ -252,8 +253,8 @@ class AdvAgency extends Model
                 $mAdvAgency->valid_upto = Carbon::now()->addYears(1)->subDay(1);
             }else{
                 $previousApplication=$this->findPreviousApplication($mAdvAgency->application_no);
-                $mAdvAgency->valid_from = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->Payment_date));
-                $mAdvAgency->valid_upto = date("Y-m-d ",strtotime("+2 Years -1 days", $previousApplication->Payment_date));
+                $mAdvAgency->valid_from = $previousApplication->valid_upto;
+                $mAdvAgency->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(5)->subDay(1);
             }
             $mAdvAgency->save();
             $renewal_id = $mAdvAgency->last_renewal_id;
@@ -263,6 +264,8 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->payment_status = 1;
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
+            $mAdvAgencyRenewal->valid_from = $mAdvAgency->valid_from;
+            $mAdvAgencyRenewal->valid_upto = $mAdvAgency->valid_upto;
             $mAdvAgencyRenewal->payment_details = json_encode($payDetails);
             $ret['status']=$mAdvAgencyRenewal->save();
             $ret['paymentId']=$pay_id;
@@ -273,7 +276,7 @@ class AdvAgency extends Model
     
     // Find Previous Payment Date
     public function findPreviousApplication($application_no){
-        return $details=AdvAgencyRenewal::select('payment_date')
+        return $details=AdvAgencyRenewal::select('valid_upto')
                                     ->where('application_no',$application_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();
