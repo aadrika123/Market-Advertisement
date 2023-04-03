@@ -201,12 +201,13 @@ public function getPaymentDetails($paymentId)
      * | Get Reciept Details 
      */
     public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvVehicle::select('adv_vehicles.payment_id as reciept_no',
+        $recieptDetails = AdvVehicle::select(
                                             'adv_vehicles.approve_date',
                                             'adv_vehicles.applicant as applicant_name',
                                             'adv_vehicles.application_no',
                                             'adv_vehicles.license_no',
                                             'adv_vehicles.payment_date as license_start_date',
+                                            DB::raw('CONCAT(application_date,id) AS reciept_no')
                                             )
                                     ->where('adv_vehicles.id',$applicationId)
                                     ->first();

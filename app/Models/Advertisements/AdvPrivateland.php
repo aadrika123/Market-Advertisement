@@ -198,12 +198,12 @@ public function getPaymentDetails($paymentId)
      * | Get Reciept Details 
      */
     public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvPrivateland::select('adv_privatelands.payment_id as reciept_no',
-                                                        'adv_privatelands.approve_date',
+        $recieptDetails = AdvPrivateland::select('adv_privatelands.approve_date',
                                                         'adv_privatelands.applicant as applicant_name',
                                                         'adv_privatelands.application_no',
                                                         'adv_privatelands.license_no',
-                                                        'adv_privatelands.payment_date as license_start_date'
+                                                        'adv_privatelands.payment_date as license_start_date',
+                                                        DB::raw('CONCAT(application_date,id) AS reciept_no')
                                                         )
                                                 ->where('adv_privatelands.id',$applicationId)
                                                 ->first();

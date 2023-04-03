@@ -722,20 +722,20 @@ class ParamController extends Controller
                 $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
-                $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->paymentId);
+                $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
-                $recieptDetails = $mAdvVehicle->getApprovalLetter($req->paymentId);
+                $recieptDetails = $mAdvVehicle->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
-                $recieptDetails = $mAdvAgency->getApprovalLetter($req->paymentId);
+                $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
-                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->paymentId);
+                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }
-            return responseMsgs(true, "Reciept Details Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "271ms", "POST", "", "");
         }catch(Exception $e){
-            return responseMsgs(false, "Reciept Details Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
         }
 
     }

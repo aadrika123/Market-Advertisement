@@ -226,13 +226,13 @@ class AdvAgency extends Model
      * | Get Reciept Details 
      */
     public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvAgency::select('adv_agencies.payment_id as reciept_no',
-                                                        'adv_agencies.approve_date',
-                                                        'adv_agencies.applicant as applicant_name',
-                                                        'adv_agencies.application_no',
-                                                        'adv_agencies.license_no',
-                                                        'adv_agencies.payment_date as license_start_date'
-                                                        )
+        $recieptDetails = AdvAgency::select('adv_agencies.approve_date',
+                                                'adv_agencies.entity_name as applicant_name',
+                                                'adv_agencies.application_no',
+                                                'adv_agencies.license_no',
+                                                'adv_agencies.payment_date as license_start_date',
+                                                DB::raw('CONCAT(application_date,id) AS reciept_no')
+                                                )
                                                 ->where('adv_agencies.id',$applicationId)
                                                 ->first();
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);

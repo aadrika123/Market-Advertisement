@@ -227,12 +227,13 @@ class AdvSelfadvertisement extends Model
      * | Get Reciept Details 
      */
     public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvSelfadvertisement::select('adv_selfadvertisements.payment_id as reciept_no',
+        $recieptDetails = AdvSelfadvertisement::select(
                                                         'adv_selfadvertisements.approve_date',
                                                         'adv_selfadvertisements.applicant as applicant_name',
                                                         'adv_selfadvertisements.application_no',
                                                         'adv_selfadvertisements.license_no',
-                                                        'adv_selfadvertisements.payment_date as license_start_date'
+                                                        'adv_selfadvertisements.payment_date as license_start_date',
+                                                        DB::raw('CONCAT(application_date,id) AS reciept_no')
                                                         )
                                                 ->where('adv_selfadvertisements.id',$applicationId)
                                                 ->first();

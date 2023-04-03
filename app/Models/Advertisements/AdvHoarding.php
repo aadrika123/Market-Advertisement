@@ -379,13 +379,13 @@ class AdvHoarding extends Model
      * | Get Reciept Details 
      */
     public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvHoarding::select('adv_hoardings.payment_id as reciept_no',
-                                                        'adv_hoardings.approve_date',
-                                                        'adv_hoardings.applicant as applicant_name',
-                                                        'adv_hoardings.application_no',
-                                                        'adv_hoardings.license_no',
-                                                        'adv_hoardings.payment_date as license_start_date'
-                                                        )
+        $recieptDetails = AdvHoarding::select('adv_hoardings.approve_date',
+                                                'adv_hoardings.applicant as applicant_name',
+                                                'adv_hoardings.application_no',
+                                                'adv_hoardings.license_no',
+                                                'adv_hoardings.payment_date as license_start_date',
+                                                DB::raw('CONCAT(application_date,id) AS reciept_no')
+                                                )
                                                 ->where('adv_hoardings.id',$applicationId)
                                                 ->first();
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);

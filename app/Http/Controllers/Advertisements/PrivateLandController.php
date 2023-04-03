@@ -115,9 +115,9 @@ class PrivateLandController extends Controller
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050402", "1.0", "200 ms", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050402", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -150,9 +150,9 @@ class PrivateLandController extends Controller
 
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
 
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050403", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050403", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -173,9 +173,9 @@ class PrivateLandController extends Controller
 
             $inboxList = $mAdvActivePrivateland->listInbox($roleIds);                   // <----- Get Inbox List From Model
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050404", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050404", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -195,9 +195,9 @@ class PrivateLandController extends Controller
 
             $outboxList = $selfAdvets->listOutbox($roleIds);                            // <----- Get Outbox List From Model
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "040104", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050405", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040104", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050405", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -262,9 +262,9 @@ class PrivateLandController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050406", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050406", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -316,9 +316,9 @@ class PrivateLandController extends Controller
                 $data1['data'] = NULL;
             }
 
-            return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050407", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050407", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -340,9 +340,9 @@ class PrivateLandController extends Controller
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();                                                               // Save After escalate or De-Escalate
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "010106", "1.0", "353ms", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "050408", "1.0", "353ms", "POST", $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), $request->all());
+            return responseMsgs(false, $e->getMessage(), "", "050408", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -364,9 +364,9 @@ class PrivateLandController extends Controller
                 ->where('adv_active_privatelands.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "010107", "1.0", "251ms", "POST", "");
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "050409", "1.0", "251ms", "POST", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050409", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -399,10 +399,10 @@ class PrivateLandController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "010109", "1.0", "286ms", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050410", "1.0", "286ms", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), $request->all());
+            return responseMsgs(false, $e->getMessage(), "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -448,10 +448,10 @@ class PrivateLandController extends Controller
             $workflowTrack->saveTrack($request);
 
             DB::commit();
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "010108", "1.0", "", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050411", "1.0", "", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050411", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -504,7 +504,7 @@ class PrivateLandController extends Controller
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050414", "1.0", "$executionTime Sec", "POST", "");
     }
 
 
@@ -627,10 +627,10 @@ class PrivateLandController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-            return responseMsgs(true, $msg, "", '011111', 01, '391ms', 'Post', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050415', 01, '391ms', 'Post', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050415", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -665,9 +665,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050416", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050416", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -690,9 +690,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050417", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050417", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -715,9 +715,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Applied Applications", $data1, "040106", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050418", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040106", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050418", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -740,9 +740,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050419", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050419", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -765,9 +765,9 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050420", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050420", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -812,9 +812,9 @@ class PrivateLandController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050421", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -843,9 +843,9 @@ class PrivateLandController extends Controller
             $data['type'] = "Private Lands";
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050422", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050422", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -863,13 +863,13 @@ class PrivateLandController extends Controller
             $data = $mAdvPrivateland->paymentByCash($req);
             DB::commit();
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050423", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
-                return responseMsgs(true, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Rejected !!", '', "050423", "1.0", "", 'POST', $req->deviceId ?? "");
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(true, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $e->getMessage(), "", "050423", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -890,9 +890,9 @@ class PrivateLandController extends Controller
             $workflowId = ['workflowId' => $this->_workflowIds];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050424", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050424", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -913,13 +913,13 @@ class PrivateLandController extends Controller
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050425", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(false, "Payment Rejected !!", '', "050425", "1.0", "", 'POST', $req->deviceId ?? "");
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050425", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -939,12 +939,12 @@ class PrivateLandController extends Controller
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $status = $mAdvActivePrivateland->entryZone($req);
             if ($status == '1') {
-                return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050426", "1.0", "2 Sec", "POST", $req->deviceId);
             } else {
                 throw new Exception("Zone Not Added !!!");
             }
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050426", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -1026,10 +1026,10 @@ class PrivateLandController extends Controller
             }
 
             DB::commit();
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050427", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050427", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -1107,9 +1107,9 @@ class PrivateLandController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050428', '01', '358ms', 'Post', '');
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050428", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -1143,9 +1143,9 @@ class PrivateLandController extends Controller
                 ->orderByDesc('adv_active_privatelands.id')
                 ->get();
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050429", 1.0, "271ms", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", "050429", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1169,6 +1169,9 @@ class PrivateLandController extends Controller
         }
     }
 
+    /**
+     * | Re Upload Rejected DOcuments
+     */
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1184,10 +1187,10 @@ class PrivateLandController extends Controller
             $appId = $mAdvActivePrivateland->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "","050430", 1.0, "271ms", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Document Not Uploaded", "", "050430", 1.0, "271ms", "POST", "", "");
         }
     }
 }
