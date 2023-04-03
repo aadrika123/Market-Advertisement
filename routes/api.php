@@ -64,20 +64,20 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/list-approved', 'listApproved');          // 20 ( Approved list for Citizen)
         Route::post('advert/self/list-rejected', 'listRejected');          // 21 ( Rejected list for Citizen)
         Route::post('advert/self/get-jsk-applications', 'getJSKApplications');          // 22 ( Get Applied Applications List By JSK )
-        Route::post('advert/self/list-jsk-approved-application', 'listJskApprovedApplication');          // 22 ( Approved list for JSK)
-        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');          // 23 ( Rejected list for JSK)    
-        Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');          // 24 ( Generate Payment Order ID)
-        Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');          // 24 ( Application Details For Payments )
+        Route::post('advert/self/list-jsk-approved-application', 'listJskApprovedApplication');          // 23 ( Approved list for JSK)
+        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');          // 24 ( Rejected list for JSK)    
+        Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');          // 25 ( Generate Payment Order ID)
+        Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');          // 26 ( Application Details For Payments )
         // Route::post('advert/self/get-payment-details', 'getPaymentDetails');          // 19 ( Payments Details )
-        Route::post('advert/self/payment-by-cash', 'paymentByCash');          // 25 ( Payment via Cash )
-        Route::post('advert/self/entry-cheque-dd', 'entryChequeDd');          // 26 ( Entry Cheque or DD For Payments )
-        Route::post('advert/self/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 27 ( Clear Cheque or DD )
-        Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');          // 28 ( Verify or Reject Document )
-        Route::post('advert/self/back-to-citizen', 'backToCitizen');          // 29 ( Application Back to Citizen )
-        Route::post('advert/self/list-btc-inbox', 'listBtcInbox');          // 30 ( list Back to citizen )
+        Route::post('advert/self/payment-by-cash', 'paymentByCash');          // 27 ( Payment via Cash )
+        Route::post('advert/self/entry-cheque-dd', 'entryChequeDd');          // 28 ( Entry Cheque or DD For Payments )
+        Route::post('advert/self/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 29 ( Clear Cheque or DD )
+        Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');          // 30 ( Verify or Reject Document )
+        Route::post('advert/self/back-to-citizen', 'backToCitizen');          // 31 ( Application Back to Citizen )
+        Route::post('advert/self/list-btc-inbox', 'listBtcInbox');          // 32 ( list Back to citizen )
         // Route::post('advert/self/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
-        Route::post('advert/self/reupload-document', 'reuploadDocument');          // 31 ( Reupload Rejected Document )
-        Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');          //32 ( Search application by name and mobile no )
+        Route::post('advert/self/reupload-document', 'reuploadDocument');          // 33 ( Reupload Rejected Document )
+        Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');          //34 ( Search application by name and mobile no )
     });
     
 
@@ -87,13 +87,14 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      */
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');          // 01
-        Route::post('advertisements/crud/v1/document-mstrs', 'documentMstrs');      // 02
-        Route::post('advertisements/crud/v1/list-document', 'listDocument');      // 02
-        Route::post('crud/district-mstrs', 'districtMstrs');      // 03
-        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 04
-        Route::post('advertisements/dashboard', 'advertDashboard'); // 04
-        Route::post('markets/dashboard', 'marketDashboard'); // 04
-        Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 05 ( Application Details For Payments )
+        Route::post('advertisements/get-approval-letter', 'getApprovalLetter');      // 02
+        Route::post('advertisements/crud/v1/list-document', 'listDocument');      // 03
+        Route::post('crud/district-mstrs', 'districtMstrs');      // 04
+        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 05
+        Route::post('advertisements/dashboard', 'advertDashboard'); // 06
+        Route::post('advertisements/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07
+        Route::post('markets/dashboard', 'marketDashboard'); // 08
+        Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
      });
 
     /**
@@ -140,7 +141,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-04 
      */
     Route::controller(PrivateLandController::class)->group(function () {
-        Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  Route::post('advert/vehicle/get-application-details-for-renew', 'applicationDetailsForRenew');       // 01 ( Renew Application )
+        Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  
         Route::post('advert/pvt-land/get-application-details-for-renew', 'applicationDetailsForRenew');       // 02 ( Renew Application )
         Route::post('advert/pvt-land/renewal-application', 'renewalApplication');       // 03 ( Renew Application ) 
         Route::post('advert/pvt-land/list-inbox', 'listInbox');    // 04 ( Application Inbox Lists )
@@ -162,7 +163,6 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/pvt-land/list-jsk-rejected-application', 'listJskRejectedApplication');          // 20 ( Rejected list for JSK)  
         Route::post('advert/pvt-land/generate-payment-order-id', 'generatePaymentOrderId');          // 21 ( Generate Payment Order ID)
         Route::post('advert/pvt-land/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 22 ( Application Details For Payments )
-        // Route::post('advert/pvt-land/get-payment-details', 'getPaymentDetails');          // 19 ( Payments Details )
         Route::post('advert/pvt-land/payment-by-cash', 'paymentByCash');          // 23 ( Payment Via Cash )
         Route::post('advert/pvt-land/entry-cheque-dd', 'entryChequeDd');          // 24 ( Entry Check or DD for Payment )
         Route::post('advert/pvt-land/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 25 ( Clear or Bouns Check )
@@ -170,8 +170,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/pvt-land/verify-or-reject-doc', 'verifyOrRejectDoc');          // 27 ( Verify or Reject Document )
         Route::post('advert/pvt-land/back-to-citizen', 'backToCitizen');          // 28 ( Application Back to Citizen )
         Route::post('advert/pvt-land/list-btc-inbox', 'listBtcInbox');          // 29 ( list BTC Inbox )
-        // Route::post('advert/pvt-land/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
-        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Documents )
+       Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Documents )
     });
 
     /**
@@ -206,59 +205,14 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/payment-by-cash', 'agencyPaymentByCash');          // 23 ( Application Details For Payments )
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');          // 24 ( Application Details For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 25 ( Application Details For Payments )
-        Route::post('advert/agency/list-approved-agency', 'listApprovedAgency');          // 26 ( Application Details For Payments )
-        Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');          // 27 ( Application Details For Payments )
-        Route::post('advert/agency/back-to-citizen', 'backToCitizen');          // 28 ( Application Details For Payments )
-        Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 29 ( Application Details For Payments )
+         Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');          // 26 ( Application Details For Payments )
+        Route::post('advert/agency/back-to-citizen', 'backToCitizen');          // 27 ( Application Details For Payments )
+        Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 28 ( Application Details For Payments )
         // Route::post('advert/agency/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
-        Route::post('advert/agency/reupload-document', 'reuploadDocument');          // 30 ( Application Details For Payments )
-        Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          //31 ( Search application by name and mobile no )
-        Route::post('advert/agency/is-agency', 'isAgency'); // 32 (Get Agency Approve or not By Login Token)
-        Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); //33 (Get Agency Dashboard)
-        /*------------ Apply For Hording License -------------------*/
-        // Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 20 ( Get Typology List )
-        // Route::post('advert/hording/list-typology', 'listTypology');  // 20 ( Get Typology List )
-        // Route::post('advert/hording/add-new-license', 'addNewLicense');  // 21 ( Save Application For Licence )
-        // Route::post('advert/hording/list-license-inbox', 'listLicenseInbox');             // 22 ( Application Inbox Lists )
-        // Route::post('advert/hording/list-license-outbox', 'listLicenseOutbox');    // 23 ( Application Outbox Lists )
-        // Route::post('advert/hording/get-license-details-by-id', 'getLicenseDetailsById');  // 24 ( Get Application Details By Application ID )
-        // Route::post('advert/hording/list-license-applied-applications', 'listLicenseAppliedApplications');     // 25 ( Get Applied Applications List )
-        // Route::post('advert/hording/escalate-license-application', 'escalateLicenseApplication');  // 26 ( Escalate or De-escalate Application )
-        // Route::post('advert/hording/list-license-escalated', 'listLicenseEscalated');  // 27 ( Special Inbox Applications )
-        // Route::post('advert/hording/forward-license-next-level', 'forwardLicenseNextLevel');  // 28 ( Forward or Backward Application )
-        // Route::post('advert/hording/comment-license-application', 'commentLicenseApplication');  // 29 ( Independent Comment )
-        // Route::post('advert/hording/view-license-documents', 'viewLicenseDocuments');  // 30 ( Get Uploaded Document By Application ID )
-        // Route::post('advert/hording/view-active-document', 'viewActiveLicenseDocument');  // 13 ( Get Uploaded Document By Advertisement ID )
-        // Route::post('advert/hording/view-license-documents-on-workflow', 'viewLicenseDocumentsOnWorkflow');  // 30 ( Get Uploaded Document By Application ID )
-        // Route::post('advert/hording/approval-or-rejection-license', 'approvalOrRejectionLicense');          // 31 ( Approve or Reject )
-        // Route::post('advert/hording/list-approved-license', 'listApprovedLicense');          // 32 ( License Approved list for Citizen)
-        // Route::post('advert/hording/list-rejected-license', 'listRejectedLicense');          // 33 ( License Rejected list for Citizen)
-        // Route::post('advert/hording/list-unpaid-licenses', 'listUnpaidLicenses');          // 33 ( License Rejected list for Citizen)
-        // Route::post('advert/hording/get-jsk-license-applications', 'getJskLicenseApplications');          // 34 ( Get Applied Applications List By JSK )
-        // Route::post('advert/hording/list-jsk-approved-license-application', 'listJskApprovedLicenseApplication');          // 35 ( Approved list for JSK)
-        // Route::post('advert/hording/list-jsk-rejected-license-application', 'listJskRejectedLicenseApplication');          // 36 ( Rejected list for JSK)  
-        // Route::post('advert/hording/generate-license-payment-order-id', 'generateLicensePaymentOrderId');          // 37 ( Generate Payment Order ID)
-        // Route::post('advert/hording/get-license-application-details-for-payment', 'getLicenseApplicationDetailsForPayment');          // 38 ( Application Details For Payments )
-        // Route::post('advert/hording/get-hording-details-for-renew', 'getHordingDetailsForRenew');          // 38 ( Application Details For Payments )
-        // Route::post('advert/hording/renewal-hording', 'renewalHording');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/payment-by-cash', 'paymentByCash');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/entry-cheque-dd-license', 'entryChequeDdLicense');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/clear-or-bounce-cheque-license', 'clearOrBounceChequeLicense');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/verify-or-reject-doc', 'verifyOrRejectLicenseDoc');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/back-to-citizen', 'backToCitizenLicense');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/list-btc-inbox', 'listLicenseBtcInbox');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/reupload-document', 'reuploadLicenseDocument');          // 19 ( Application Details For Payments )
-        // Route::post('advert/hording/get-renew-active-applications', 'getRenewActiveApplications'); // (Get Agency Dashboard)
-
-        // Route::post('advert/hording/list-expired-hording', 'listExpiredHording'); // (Get Expired Hording)
-        // Route::post('advert/hording/archived-hording', 'archivedHording'); // (Archieves Hording)
-        // Route::post('advert/hording/list-hording-archived', 'listHordingArchived'); // (list Expired Hording)
-        // Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // (Blacklist Hording)
-        // Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // (list Blacklist Hording)
-
-
-        //================================= Other Apis ===========================
-        // Route::post('advert/hording/get-renew-application', 'getRenewApplication'); // (Get Agency Dashboard)
+        Route::post('advert/agency/reupload-document', 'reuploadDocument');          // 29 ( Application Details For Payments )
+        Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          //30 ( Search application by name and mobile no )
+        Route::post('advert/agency/is-agency', 'isAgency'); // 31 (Get Agency Approve or not By Login Token)
+        Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); //32 (Get Agency Dashboard)
     });
 
 
@@ -269,36 +223,36 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     Route::controller(HoardingController::class)->group(function () {
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 01 ( Get Typology List )
         Route::post('advert/hording/list-typology', 'listTypology');  // 02 ( Get Typology List )
-        Route::post('advert/hording/add-new', 'addNewLicense');  // 03 ( Save Application For Licence )
-        Route::post('advert/hording/list-inbox', 'listLicenseInbox');             // 04 ( Application Inbox Lists )
-        Route::post('advert/hording/list-outbox', 'listLicenseOutbox');    // 05 ( Application Outbox Lists )
-        Route::post('advert/hording/get-details-by-id', 'getLicenseDetailsById');  // 06 ( Get Application Details By Application ID )
-        Route::post('advert/hording/list-applied-applications', 'listLicenseAppliedApplications');     // 07 ( Get Applied Applications List )
-        Route::post('advert/hording/escalate-application', 'escalateLicenseApplication');  // 08 ( Escalate or De-escalate Application )
-        Route::post('advert/hording/list-escalated', 'listLicenseEscalated');  // 09 ( Special Inbox Applications )
-        Route::post('advert/hording/forward-next-level', 'forwardLicenseNextLevel');  // 10 ( Forward or Backward Application )
-        Route::post('advert/hording/comment-application', 'commentLicenseApplication');  //11 ( Independent Comment )
-        Route::post('advert/hording/view-hoarding-documents', 'viewLicenseDocuments');  // 12 ( Get Uploaded Document By Application ID )
-        Route::post('advert/hording/view-active-document', 'viewActiveLicenseDocument');  // 13 ( Get Uploaded Document By Advertisement ID )
-        Route::post('advert/hording/view-documents-on-workflow', 'viewLicenseDocumentsOnWorkflow');  // 14 ( Get Uploaded Document By Application ID )
-        Route::post('advert/hording/approval-or-rejection', 'approvalOrRejectionLicense');          // 15 ( Approve or Reject )
-        Route::post('advert/hording/list-approved', 'listApprovedLicense');          // 16 ( License Approved list for Citizen)
-        Route::post('advert/hording/list-rejected', 'listRejectedLicense');          // 17 ( License Rejected list for Citizen)
-        Route::post('advert/hording/list-unpaid', 'listUnpaidLicenses');          // 18 ( License Rejected list for Citizen)
-        Route::post('advert/hording/get-jsk-applications', 'getJskLicenseApplications');          // 19 ( Get Applied Applications List By JSK )
-        Route::post('advert/hording/list-jsk-approved-application', 'listJskApprovedLicenseApplication');          // 20 ( Approved list for JSK)
-        Route::post('advert/hording/list-jsk-rejected-application', 'listJskRejectedLicenseApplication');          // 21 ( Rejected list for JSK)  
-        Route::post('advert/hording/generate-payment-order-id', 'generateLicensePaymentOrderId');          // 22 ( Generate Payment Order ID)
-        Route::post('advert/hording/get-application-details-for-payment', 'getLicenseApplicationDetailsForPayment');          // 23 ( Application Details For Payments )
+        Route::post('advert/hording/add-new', 'addNew');  // 03 ( Save Application For Licence )
+        Route::post('advert/hording/list-inbox', 'listInbox');             // 04 ( Application Inbox Lists )
+        Route::post('advert/hording/list-outbox', 'listOutbox');    // 05 ( Application Outbox Lists )
+        Route::post('advert/hording/get-details-by-id', 'getDetailsById');  // 06 ( Get Application Details By Application ID )
+        Route::post('advert/hording/list-applied-applications', 'listAppliedApplications');     // 07 ( Get Applied Applications List )
+        Route::post('advert/hording/escalate-application', 'escalateApplication');  // 08 ( Escalate or De-escalate Application )
+        Route::post('advert/hording/list-escalated', 'listEscalated');  // 09 ( Special Inbox Applications )
+        Route::post('advert/hording/forward-next-level', 'forwardNextLevel');  // 10 ( Forward or Backward Application )
+        Route::post('advert/hording/comment-application', 'commentApplication');  //11 ( Independent Comment )
+        Route::post('advert/hording/view-hoarding-documents', 'viewHoardingDocuments');  // 12 ( Get Uploaded Document By Application ID )
+        Route::post('advert/hording/view-active-document', 'viewActiveDocument');  // 13 ( Get Uploaded Document By Advertisement ID )
+        Route::post('advert/hording/view-documents-on-workflow', 'viewDocumentsOnWorkflow');  // 14 ( Get Uploaded Document By Application ID )
+        Route::post('advert/hording/approval-or-rejection', 'approvalOrRejection');          // 15 ( Approve or Reject )
+        Route::post('advert/hording/list-approved', 'listApproved');          // 16 ( License Approved list for Citizen)
+        Route::post('advert/hording/list-rejected', 'listRejected');          // 17 ( License Rejected list for Citizen)
+        Route::post('advert/hording/list-unpaid', 'listUnpaid');          // 18 ( License Rejected list for Citizen)
+        Route::post('advert/hording/get-jsk-applications', 'getJskApplications');          // 19 ( Get Applied Applications List By JSK )
+        Route::post('advert/hording/list-jsk-approved-application', 'listJskApprovedApplication');          // 20 ( Approved list for JSK)
+        Route::post('advert/hording/list-jsk-rejected-application', 'listJskRejectedApplication');          // 21 ( Rejected list for JSK)  
+        Route::post('advert/hording/generate-payment-order-id', 'generatePaymentOrderId');          // 22 ( Generate Payment Order ID)
+        Route::post('advert/hording/get-application-details-for-payment', 'getApplicationDetailsForPayment');          // 23 ( Application Details For Payments )
         Route::post('advert/hording/get-hording-details-for-renew', 'getHordingDetailsForRenew');          // 24 ( Application Details For Payments )
         Route::post('advert/hording/renewal-hording', 'renewalHording');          // 25 ( Application Details For Payments )
         Route::post('advert/hording/payment-by-cash', 'paymentByCash');          // 26 ( Application Details For Payments )
-        Route::post('advert/hording/entry-cheque-dd', 'entryChequeDdLicense');          // 27 ( Application Details For Payments )
-        Route::post('advert/hording/clear-or-bounce-cheque', 'clearOrBounceChequeLicense');          // 28 ( Application Details For Payments )
-        Route::post('advert/hording/verify-or-reject-doc', 'verifyOrRejectLicenseDoc');          // 29 ( Application Details For Payments )
-        Route::post('advert/hording/back-to-citizen', 'backToCitizenLicense');          // 30 ( Application Details For Payments )
-        Route::post('advert/hording/list-btc-inbox', 'listLicenseBtcInbox');          // 31 ( Application Details For Payments )
-        Route::post('advert/hording/reupload-document', 'reuploadLicenseDocument');          // 32 ( Application Details For Payments )
+        Route::post('advert/hording/entry-cheque-dd', 'entryChequeDd');          // 27 ( Application Details For Payments )
+        Route::post('advert/hording/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 28 ( Application Details For Payments )
+        Route::post('advert/hording/verify-or-reject-doc', 'verifyOrRejectDoc');          // 29 ( Application Details For Payments )
+        Route::post('advert/hording/back-to-citizen', 'backToCitizen');          // 30 ( Application Details For Payments )
+        Route::post('advert/hording/list-btc-inbox', 'listBtcInbox');          // 31 ( Application Details For Payments )
+        Route::post('advert/hording/reupload-document', 'reuploadDocument');          // 32 ( Application Details For Payments )
         Route::post('advert/hording/get-renew-active-applications', 'getRenewActiveApplications'); // 33 (Get Agency Dashboard)
 
         Route::post('advert/hording/list-expired-hording', 'listExpiredHording'); // 34 (Get Expired Hording)
@@ -306,8 +260,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-hording-archived', 'listHordingArchived'); // 36 (list Expired Hording)
         Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // 37 (Blacklist Hording)
         Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // 38 (list Blacklist Hording)
-        Route::post('advert/hording/get-renew-application', 'getRenewApplication'); // 39 (Get Agency Dashboard)
     });
+
+
     /**
      * | Lodge Controller
      * | Controller-07

@@ -126,7 +126,10 @@ class AdvChequeDtl extends Model
                         'valid_upto' => $valid_upto,
                     ],
                 );
-                return AdvAgencyRenewal::where('agencyadvet_id', $applicationId)->update($metaReqs);
+                $status=AdvAgencyRenewal::where('agencyadvet_id', $applicationId)->update($metaReqs);
+                $returnData['status']=$status;
+                $returnData['payment_id']=$payment_id;
+                return $returnData;
             }
             elseif ($workflowId == $this->_selfAdvt) {
                 // update on SelfAdvertiesment Table
@@ -170,7 +173,10 @@ class AdvChequeDtl extends Model
                         'valid_upto' => $valid_upto,
                     ],
                 );
-                return AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
+                $status=AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
+                $returnData['status']=$status;
+                $returnData['payment_id']=$payment_id;
+                return $returnData;
             }
             elseif ($workflowId == $this->_pvtLand) {
                 $mAdvPrivateland=AdvPrivateland::find($applicationId);
@@ -213,7 +219,10 @@ class AdvChequeDtl extends Model
                         'valid_upto' => $valid_upto,
                     ],
                 );
-                return AdvPrivatelandRenewal::where('id', $applicationId)->update($metaReqs);
+                $status=AdvPrivatelandRenewal::where('id', $applicationId)->update($metaReqs);
+                $returnData['status']=$status;
+                $returnData['payment_id']=$payment_id;
+                return $returnData;
             }
             elseif ($workflowId == $this->_movableVehicle) {
                 $mAdvVehicle=AdvVehicle::find($applicationId);
@@ -256,7 +265,10 @@ class AdvChequeDtl extends Model
                         'valid_upto' => $valid_upto,
                     ],
                 );
-                return AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
+                $status=AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
+                $returnData['status']=$status;
+                $returnData['payment_id']=$payment_id;
+                return $returnData;
             }
             elseif ($workflowId == $this->_hording) {
                 $mAdvHoarding=AdvHoarding::find($applicationId);
@@ -300,7 +312,10 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                     ],
                 );
-                return AdvHoardingRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
+                $status=AdvHoardingRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);
+                $returnData['status']=$status;
+                $returnData['payment_id']=$payment_id;
+                return $returnData;
             }
             elseif ($workflowId == $this->_lodge) {
                 // update on Lodge Table

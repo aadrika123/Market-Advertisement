@@ -27,7 +27,6 @@ class RenewalRequest extends FormRequest
     {
         return [
             'ulbId' => 'required|numeric',
-            'applicationNo' => 'required|string',
             'applicationId' => 'required|integer',
             'entityType' => 'required|integer',
             'entityName' => 'required|string',
@@ -40,12 +39,6 @@ class RenewalRequest extends FormRequest
             'gstNo' => 'required|string',
             'blacklisted' => 'required|bool',
             'pendingCourtCase' => 'required|bool',
-            'pendingAmount' => 'required|numeric',
-            // 'directors' => 'required|array',
-            // 'directors.*.name' => 'required|string',
-            // 'directors.*.mobile' => 'required|numeric|digits:10',
-            // 'directors.*.email' => 'required|email',
-            // 'directors.*.aadhar' => 'required|mimes:png,jpeg,pdf,jpg',
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
             'documents.*.docCode' => 'required|string',

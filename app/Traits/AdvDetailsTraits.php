@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 trait AdvDetailsTraits
 {
     /**
-     * | Get Basic Details
+     * | Get Basic Details for Self Advertisement
      */
     public function generateBasicDetails($data)
     {
@@ -43,7 +43,7 @@ trait AdvDetailsTraits
 
 
     /**
-     * | Get Card Details
+     * | Get Card Details for Self Advertisement
      */
     public function generateCardDetails($data)
     {
@@ -129,6 +129,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Rear Area', 'key' => 'rearArea', 'value' => $data['rear_area']],
             ['displayString' => 'Side Area', 'key' => 'sideArea', 'value' => $data['side_area']],
             ['displayString' => 'Top Area', 'key' => 'topArea', 'value' => $data['top_area']],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
         ]);
     }
 
@@ -143,6 +144,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
         ]);
     }
 
@@ -232,7 +234,8 @@ trait AdvDetailsTraits
             ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
-            ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']]
+            ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':"N/A"))],
         ]);
     }
 
@@ -252,6 +255,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
         ]);
     }
 
@@ -276,17 +280,9 @@ trait AdvDetailsTraits
     public function generatehordingDetails($data)
     {
         return new Collection([
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
-            // ['displayString' => 'Permit No', 'key' => 'permitNo', 'value' => $data['permit_no']],
-            // ['displayString' => 'Road Street/Address', 'key' => 'roadStreetAddress', 'value' => $data['road_street_address']],
-            // ['displayString' => 'Date Granted', 'key' => 'dateGranted', 'value' => $data['date_granted']],
-            // ['displayString' => 'Permit Date Issue', 'key' => 'permitDateIssue', 'value' => $data['permit_date_issue']],
-            // ['displayString' => 'Permit Expired Issue', 'key' => 'permitExpiredIssue', 'value' => $data['permit_expired_issue']],
-            // ['displayString' => 'Account No', 'key' => 'accountNo', 'value' => $data['account_no']],
-            // ['displayString' => 'Bank Name', 'key' => 'bankName', 'value' => $data['bank_name']],
-            // ['displayString' => 'IFSC Code', 'key' => 'ifscCode', 'value' => $data['ifsc_code']],
-            // ['displayString' => 'Total Charge', 'key' => 'totalCharge', 'value' => $data['total_charge']],
             ['displayString' => 'Property Type', 'key' => 'propertyType', 'value' => $data['property_type']],
             ['displayString' => 'Property Owner Name', 'key' => 'propertyOwnerName', 'value' => $data['property_owner_name']],
             ['displayString' => 'Property Owner Address', 'key' => 'propertyOwnerAddress', 'value' => $data['property_owner_address']],
@@ -294,17 +290,13 @@ trait AdvDetailsTraits
             ['displayString' => 'Property Owner Mobile No', 'key' => 'propertyOwnerMobileNo', 'value' => $data['property_owner_mobile_no']],
             ['displayString' => 'Property Owner Whatsapp No', 'key' => 'propertyOwnerwhatsappNo', 'value' => $data['property_owner_whatsapp_no']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
-            // ['displayString' => 'Display Location', 'key' => 'displayLocation', 'value' => $data['display_location']],
-            // ['displayString' => 'Display Street', 'key' => 'displayStreet', 'value' => $data['display_street']],
             ['displayString' => 'Display Land Mark', 'key' => 'displayLandMark', 'value' => $data['display_land_mark']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
             ['displayString' => 'Width', 'key' => 'width', 'value' => $data['width']],
             ['displayString' => 'Length', 'key' => 'length', 'value' => $data['length']],
-            // ['displayString' => 'Size', 'key' => 'size', 'value' => $data['size']],
             ['displayString' => 'Material', 'key' => 'material', 'value' => $data['material']],
             ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination']?"Yes":"No"],
             ['displayString' => 'Indicate Facing', 'key' => 'indicateFacing', 'value' => $data['indicate_facing']]
-            // ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']]
         ]);
     }
 
@@ -316,17 +308,9 @@ trait AdvDetailsTraits
     public function generateHoardingCardDetails($data)
     {
         return new Collection([
-            ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['license_no']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'License No', 'key' => 'applicantionNo', 'value' => $data['license_no']==NULL ? 'N/A' : $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
-            // ['displayString' => 'Permit No', 'key' => 'permitNo', 'value' => $data['permit_no']],
-            // ['displayString' => 'Road Street/Address', 'key' => 'roadStreetAddress', 'value' => $data['road_street_address']],
-            // ['displayString' => 'Date Granted', 'key' => 'dateGranted', 'value' => $data['date_granted']],
-            // ['displayString' => 'Permit Date Issue', 'key' => 'permitDateIssue', 'value' => $data['permit_date_issue']],
-            // ['displayString' => 'Permit Expired Issue', 'key' => 'permitExpiredIssue', 'value' => $data['permit_expired_issue']],
-            // ['displayString' => 'Account No', 'key' => 'accountNo', 'value' => $data['account_no']],
-            // ['displayString' => 'Bank Name', 'key' => 'bankName', 'value' => $data['bank_name']],
-            // ['displayString' => 'IFSC Code', 'key' => 'ifscCode', 'value' => $data['ifsc_code']],
-            // ['displayString' => 'Total Charge', 'key' => 'totalCharge', 'value' => $data['total_charge']],
         ]);
     }
 }

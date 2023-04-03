@@ -80,7 +80,7 @@ class PrivateLandController extends Controller
             } else {
                 $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
                 $req->request->add($citizenId);
-            }   
+            }
             // Generate Application No
             $reqData = [
                 "paramId" => $this->_tempParamId,
@@ -94,14 +94,15 @@ class PrivateLandController extends Controller
 
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
 
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "040401", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050401", "1.0", "", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040401", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050401", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
 
-    public function applicationDetailsForRenew(Request $req){
+    public function applicationDetailsForRenew(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
@@ -135,6 +136,17 @@ class PrivateLandController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
                 $req->request->add($citizenId);
             }
+
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
 
@@ -246,6 +258,9 @@ class PrivateLandController extends Controller
             $fullDetailsData['apply_date'] = $data['application_date'];
             $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
+            if (isset($data['payment_amount'])) {
+                $fullDetailsData['payment_amount'] = $data['payment_amount'];
+            }
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -450,13 +465,6 @@ class PrivateLandController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            // if ($req->type == 'Active') {
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Reject') {
-            //     $appId = AdvRejectedPrivateland::find($req->applicationId)->temp_id;
-            // } elseif ($req->type == 'Approve') {
-            //     $appId = AdvPrivateland::find($req->applicationId)->temp_id;
-            // }
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type ");
@@ -501,8 +509,6 @@ class PrivateLandController extends Controller
 
 
 
-
-
     /**
      * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
      * | Rating-
@@ -541,7 +547,7 @@ class PrivateLandController extends Controller
 
                 // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
-                  
+
                 // License NO Generate
                 $reqData = [
                     "paramId" => $this->_paramId,
@@ -579,32 +585,32 @@ class PrivateLandController extends Controller
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                     //  Renewal Case
-                     // Privateland Advert Application replication
-                     $application_no=$mAdvActivePrivateland->application_no;
-                     AdvPrivateland::where('application_no', $application_no)->delete();
- 
-                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                      $approvedPrivateland->setTable('adv_privatelands');
-                      $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                      $approvedPrivateland->payment_amount = $req->payment_amount;
-                      $approvedPrivateland->payment_status = $req->payment_status;
-                      $approvedPrivateland->approve_date = Carbon::now();
-                      $approvedPrivateland->save();
-  
-                      // Save in Privateland Advertisement Renewal
-                      $approvedPrivateland = $mAdvActivePrivateland->replicate();
-                      $approvedPrivateland->approve_date = Carbon::now();
-                      $approvedPrivateland->setTable('adv_privateland_renewals');
-                      $approvedPrivateland->id = $temp_id;
-                      $approvedPrivateland->save();
-  
-                      $mAdvActivePrivateland->delete();
-                      // Update in adv_privatelands (last_renewal_id)
-                      DB::table('adv_privatelands')
-                          ->where('id', $temp_id)
-                          ->update(['last_renewal_id' => $approvedPrivateland->id]);
-                      $msg = "Application Successfully Renewal !!";
+                    //  Renewal Case
+                    // Privateland Advert Application replication
+                    $license_no = $mAdvActivePrivateland->license_no;
+                    AdvPrivateland::where('license_no', $license_no)->delete();
+
+                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                    $approvedPrivateland->setTable('adv_privatelands');
+                    $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
+                    $approvedPrivateland->payment_amount = $req->payment_amount;
+                    $approvedPrivateland->payment_status = $req->payment_status;
+                    $approvedPrivateland->approve_date = Carbon::now();
+                    $approvedPrivateland->save();
+
+                    // Save in Privateland Advertisement Renewal
+                    $approvedPrivateland = $mAdvActivePrivateland->replicate();
+                    $approvedPrivateland->approve_date = Carbon::now();
+                    $approvedPrivateland->setTable('adv_privateland_renewals');
+                    $approvedPrivateland->id = $temp_id;
+                    $approvedPrivateland->save();
+
+                    $mAdvActivePrivateland->delete();
+                    // Update in adv_privatelands (last_renewal_id)
+                    DB::table('adv_privatelands')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedPrivateland->id]);
+                    $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection
@@ -766,9 +772,6 @@ class PrivateLandController extends Controller
     }
 
 
-
-
-
     /**
      * | Generate Payment Order ID
      * | @param Request $req
@@ -846,31 +849,6 @@ class PrivateLandController extends Controller
         }
     }
 
-    /**
-     * Get Payment Details
-     */
-    // public function getPaymentDetails(Request $req)
-    // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
-    //     try {
-    //         $mAdvPrivateland = new AdvPrivateland();
-    //         $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-    //         } else {
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-    //         }
-    //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
-    //     }
-    // }
-
-
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -882,10 +860,10 @@ class PrivateLandController extends Controller
         try {
             $mAdvPrivateland = new AdvPrivateland();
             DB::beginTransaction();
-            $status = $mAdvPrivateland->paymentByCash($req);
+            $data = $mAdvPrivateland->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(true, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -932,10 +910,10 @@ class PrivateLandController extends Controller
         try {
             $mAdvCheckDtl = new AdvChequeDtl();
             DB::beginTransaction();
-            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $data = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -947,7 +925,6 @@ class PrivateLandController extends Controller
 
     /**
      * | Entry Zone of the Application 
-     * | Status- Open
      */
     public function entryZone(Request $req)
     {
@@ -962,7 +939,7 @@ class PrivateLandController extends Controller
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $status = $mAdvActivePrivateland->entryZone($req);
             if ($status == '1') {
-                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050124", "1.0", "2 Sec", "POST", $req->deviceId);
             } else {
                 throw new Exception("Zone Not Added !!!");
             }
@@ -970,8 +947,6 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
 
 
     /**
@@ -1073,12 +1048,22 @@ class PrivateLandController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // self Advertiesement List Documents
+        $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
+
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveBanquteHall->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
+        if ($totalApproveDoc == $totalNoOfDoc) {
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        } else {
             return 0;
-        else
-            return 1;
+        }
     }
 
 
@@ -1174,7 +1159,7 @@ class PrivateLandController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
-            // $appDetails->doc_verify_status = '1';
+            $appDetails->doc_verify_status = '0';
             $appDetails->parked = NULL;
             $appDetails->save();
         } else {

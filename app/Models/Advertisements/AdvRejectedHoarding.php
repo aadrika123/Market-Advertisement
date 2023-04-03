@@ -30,7 +30,7 @@ class AdvRejectedHoarding extends Model
     /**
     * | Get Application Reject List by Login JSK
     */
-   public function listJskRejectedLicenseApplication($userId)
+   public function listJskRejectedApplication($userId)
    {
        return AdvRejectedHoarding::where('user_id', $userId)
            ->select(

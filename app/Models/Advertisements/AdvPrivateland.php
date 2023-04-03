@@ -20,14 +20,20 @@ class AdvPrivateland extends Model
             'id',
             'application_no',
             'applicant',
+            'applicant as owner_name',
             'application_date',
             'entity_name',
+            'mobile_no',
             'entity_address',
             'payment_amount',
             'payment_status',
+            'valid_upto',
+            'valid_from',
             'approve_date',
             'citizen_id',
             'user_id',
+            'workflow_id',
+            DB::raw("'privateLand' as type")
         )
         ->orderByDesc('id')
         ->get();
@@ -98,12 +104,15 @@ class AdvPrivateland extends Model
             ->first();
     }
 
-    public function getPaymentDetails($paymentId){
-        $details=AdvPrivateland::select('payment_details')
-        ->where('payment_id', $paymentId)
-        ->first();
-       return json_decode($details->payment_details);
-    }
+   /**
+ * | Get Payment Details
+ */
+public function getPaymentDetails($paymentId)
+{
+    return $details = AdvPrivateland::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
+    ->where('payment_id', $paymentId)
+    ->first();
+}
 
     
     public function paymentByCash($req){
@@ -112,7 +121,7 @@ class AdvPrivateland extends Model
             // Self Privateland Table Update
             $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
             $mAdvPrivateland->payment_status = $req->status;
-            $pay_id=$mAdvPrivateland->payment_id = "Cash-$req->applicationId/".time();
+            $pay_id=$mAdvPrivateland->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
@@ -140,7 +149,10 @@ class AdvPrivateland extends Model
             $mAdvPrivatelandRenewal->valid_from =  $mAdvPrivateland->valid_from;
             $mAdvPrivatelandRenewal->valid_upto = $mAdvPrivateland->valid_upto;
             $mAdvPrivatelandRenewal->payment_details = json_encode($payDetails);
-            return $mAdvPrivatelandRenewal->save();
+            $status=$mAdvPrivatelandRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 
@@ -155,6 +167,7 @@ class AdvPrivateland extends Model
     public function applicationDetailsForRenew($appId){
         $details=AdvPrivateland::select('adv_privatelands.*',
                                         'adv_privatelands.typology as typology_id',
+                                        'adv_privatelands.zone as zone_id',
                                         'adv_privatelands.display_type as display_type_id',
                                         'adv_privatelands.installation_location as installation_location_id',
                                         'il.string_parameter as installation_location',
@@ -179,6 +192,23 @@ class AdvPrivateland extends Model
             $details['documents']=$documents;
         }
         return $details;
+    }
+
+        /**
+     * | Get Reciept Details 
+     */
+    public function getApprovalLetter($applicationId){
+        $recieptDetails = AdvPrivateland::select('adv_privatelands.payment_id as reciept_no',
+                                                        'adv_privatelands.approve_date',
+                                                        'adv_privatelands.applicant as applicant_name',
+                                                        'adv_privatelands.application_no',
+                                                        'adv_privatelands.license_no',
+                                                        'adv_privatelands.payment_date as license_start_date'
+                                                        )
+                                                ->where('adv_privatelands.id',$applicationId)
+                                                ->first();
+        // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
+        return $recieptDetails;
     }
 
 }

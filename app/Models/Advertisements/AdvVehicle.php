@@ -19,12 +19,18 @@ class AdvVehicle extends Model
             'application_no',
             'application_date',
             'applicant',
+            'applicant as owner_name',
             'entity_name',
+            'mobile_no',
             'payment_status',
             'payment_amount',
             'approve_date',
             'citizen_id',
+            'valid_upto',
+            'valid_from',
             'user_id',
+            'workflow_id',
+            DB::raw("'movableVehicle' as type")
         )
             ->orderByDesc('id')
             ->get();
@@ -103,12 +109,16 @@ class AdvVehicle extends Model
     }
 
     
-    public function getPaymentDetails($paymentId){
-        $details=AdvVehicle::select('payment_details')
-        ->where('payment_id', $paymentId)
-        ->first();
-       return json_decode($details->payment_details);
-    }
+   
+   /**
+ * | Get Payment Details
+ */
+public function getPaymentDetails($paymentId)
+{
+    return $details = AdvVehicle::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
+    ->where('payment_id', $paymentId)
+    ->first();
+}
 
     
     public function paymentByCash($req){
@@ -117,7 +127,7 @@ class AdvVehicle extends Model
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
             $mAdvVehicle->payment_status = $req->status;
-            $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId/".time();
+            $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
 
@@ -144,7 +154,10 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
             $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;
-            return $mAdvVehicleRenewal->save();
+            $status=$mAdvVehicleRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 
@@ -182,6 +195,22 @@ class AdvVehicle extends Model
             $details['documents']=$documents;
         }
         return $details;
+    }
+
+     /**
+     * | Get Reciept Details 
+     */
+    public function getApprovalLetter($applicationId){
+        $recieptDetails = AdvVehicle::select('adv_vehicles.payment_id as reciept_no',
+                                            'adv_vehicles.approve_date',
+                                            'adv_vehicles.applicant as applicant_name',
+                                            'adv_vehicles.application_no',
+                                            'adv_vehicles.license_no',
+                                            'adv_vehicles.payment_date as license_start_date',
+                                            )
+                                    ->where('adv_vehicles.id',$applicationId)
+                                    ->first();
+        return $recieptDetails;
     }
 
 

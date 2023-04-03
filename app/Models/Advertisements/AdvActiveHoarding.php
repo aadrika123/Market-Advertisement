@@ -28,10 +28,9 @@ class AdvActiveHoarding extends Model
     }
 
 
-    public function licenceMetaReqs($req)
+    public function MetaReqs($req)
     {
         $metaReqs = [   
-            
             'zone_id' => $req->zoneId,
             'license_year' => $req->licenseYear, 
             'application_no' => $req->application_no,  
@@ -50,18 +49,19 @@ class AdvActiveHoarding extends Model
             'property_owner_name' => $req->propertyOwnerName,
             'property_owner_address' => $req->propertyOwnerAddress,
             'property_owner_city' => $req->propertyOwnerCity,
-            'property_owner_whatsapp_no' => $req->propertyOwnerPincode,
+            'property_owner_whatsapp_no' => $req->propertyOwnerWhatsappNo,
             'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
             'user_id' => $req->userId,
             
 
         ];
         return $metaReqs;
-    } public function hordingRenewMetaReqs($req)
+    } 
+    
+    public function RenewMetaReqs($req)
     {
         $metaReqs = [      
             'zone_id' => $req->zoneId,
-            // 'license_no' => $req->licenseNo,
             'license_year' => $req->licenseYear,  
             'typology' => $req->HordingType,               // Hording Type is Convert Into typology
             'display_location' => $req->displayLocation, 
@@ -78,9 +78,10 @@ class AdvActiveHoarding extends Model
             'property_owner_name' => $req->propertyOwnerName,
             'property_owner_address' => $req->propertyOwnerAddress,
             'property_owner_city' => $req->propertyOwnerCity,
-            'property_owner_whatsapp_no' => $req->propertyOwnerPincode,
+            'property_owner_whatsapp_no' => $req->propertyOwnerWhatsappNo,
             'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
             'user_id' => $req->userId,
+            'application_no' => $req->application_no,
         ];
         return $metaReqs;
     }
@@ -93,7 +94,7 @@ class AdvActiveHoarding extends Model
     {
         // Variable Initializing
         $bearerToken = $req->bearerToken();
-        $LicencesMetaReqs = $this->licenceMetaReqs($req);
+        $LicencesMetaReqs = $this->MetaReqs($req);
         $workflowId = $this->_workflowId;
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
@@ -108,14 +109,15 @@ class AdvActiveHoarding extends Model
 
         // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
 
-        $LicencesMetaReqs = array_merge(
+       $LicencesMetaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
             ],
-            $this->licenceMetaReqs($req),
+            $this->MetaReqs($req),
             $ulbWorkflowReqs
         );
 
@@ -138,12 +140,12 @@ class AdvActiveHoarding extends Model
     {
         // Variable Initializing
         $bearerToken = $req->bearerToken();
-        $LicencesMetaReqs = $this->hordingRenewMetaReqs($req);
+        $LicencesMetaReqs = $this->RenewMetaReqs($req);
         $workflowId = $this->_workflowId;
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
-        $req->applicationId; $details=AdvHoarding::find($req->applicationId);                              // Find Previous Application No
+        $details=AdvHoarding::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo=['license_no'=>$details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -153,18 +155,20 @@ class AdvActiveHoarding extends Model
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
 
-        $LicencesMetaReqs = array_merge(
+       $LicencesMetaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
             ],
-            $this->hordingRenewMetaReqs($req),
+            $this->RenewMetaReqs($req),
             $mRenewNo,
             $mLicenseNo,
             $ulbWorkflowReqs
         );
+
        $licenceId=AdvActiveHoarding::create($LicencesMetaReqs)->id;
         $mDocuments = $req->documents;
         $this->uploadDocument($licenceId, $mDocuments);
@@ -269,10 +273,11 @@ class AdvActiveHoarding extends Model
                 'license_no',
                 'application_date',
                 'license_no',
-                'bank_name',
-                'account_no',
-                'ifsc_code',
-                'total_charge'
+                'application_type',
+                // 'bank_name',
+                // 'account_no',
+                // 'ifsc_code',
+                // 'total_charge'
             )
             ->orderByDesc('id')
             ->whereIn('current_role_id', $roleIds)
@@ -294,10 +299,11 @@ class AdvActiveHoarding extends Model
                 'license_no',
                 'application_date',
                 'license_no',
-                'bank_name',
-                'account_no',
-                'ifsc_code',
-                'total_charge',
+                'application_type',
+                // 'bank_name',
+                // 'account_no',
+                // 'ifsc_code',
+                // 'total_charge',
                 'doc_upload_status',
             )
             ->orderByDesc('id')
@@ -317,10 +323,11 @@ class AdvActiveHoarding extends Model
                 'license_no',
                 'application_date',
                 'license_no',
-                'bank_name',
-                'account_no',
-                'ifsc_code',
-                'total_charge'
+                'application_type',
+                // 'bank_name',
+                // 'account_no',
+                // 'ifsc_code',
+                // 'total_charge'
             )
             ->orderByDesc('id')
             ->whereNotIn('current_role_id', $roleIds)
@@ -328,30 +335,19 @@ class AdvActiveHoarding extends Model
         return $outbox;
     }
 
-    public function viewUploadedDocuments($id,$workflowId){
-        // $documents = DB::table('adv_active_selfadvetdocuments')
-        //     ->select(
-        //         'adv_active_selfadvetdocuments.*',
-        //         'd.document_name',
-        //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as document_path")
-        //     )
-        //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-        //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-        //     ->get();
-        // $details['documents'] = remove_null($documents->toArray());
-        // return $details;
-        $documents = DB::table('adv_active_selfadvetdocuments')
-        ->select(
-            'adv_active_selfadvetdocuments.*',
-            'd.document_name as doc_type',
-            DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
-        )
-        ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-        ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-        ->get();
-    $details['documents'] = remove_null($documents->toArray());
-    return $details;
-    }
+    // public function viewUploadedDocuments($id,$workflowId){
+    //     $documents = DB::table('adv_active_selfadvetdocuments')
+    //     ->select(
+    //         'adv_active_selfadvetdocuments.*',
+    //         'd.document_name as doc_type',
+    //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
+    //     )
+    //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
+    //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
+    //     ->get();
+    // $details['documents'] = remove_null($documents->toArray());
+    // return $details;
+    // }
 
     
     
@@ -359,7 +355,7 @@ class AdvActiveHoarding extends Model
      * | Get Jsk Applied License  applications
      * | @param userId
      */
-    public function getJskLicenseApplications($userId)
+    public function getJskApplications($userId)
     {
         return AdvActiveHoarding::where('user_id', $userId)
             ->select(

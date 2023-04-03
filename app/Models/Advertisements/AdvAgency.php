@@ -21,8 +21,8 @@ class AdvAgency extends Model
                     ->first();
         $details = json_decode(json_encode($details1), true);
         if (!empty($details)) {
-            $details['expiry_date']=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years"));
-            $warning_date=date('Y-m-d', strtotime($details['payment_date']."+ 5 Years -1 months"));
+            $details['expiry_date']=$details['valid_upto'];
+            $warning_date=carbon::parse($details['valid_upto'])->subDay(30)->format('Y-m-d');;
             $details['warning_date'] = $warning_date;
             $current_date = date('Y-m-d');
             if ($current_date < $warning_date) {
@@ -45,8 +45,6 @@ class AdvAgency extends Model
         return $details;
     }
 
-
-
     /**
      * Summary of allApproveList
      * @return void
@@ -59,10 +57,16 @@ class AdvAgency extends Model
             'application_date',
             'entity_name',
             'payment_status',
+            'mobile_no',
             'payment_amount',
             'approve_date',
+            'valid_upto',
+            'valid_from',
             'citizen_id',
             'user_id',
+            'workflow_id',
+            DB::raw("'agency' as type"),
+            DB::raw("'' as owner_name")
         )
             ->orderByDesc('id')
             ->get();
@@ -73,7 +77,7 @@ class AdvAgency extends Model
      */
     public function listApproved($citizenId, $userType)
     {
-         $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
         } else {
@@ -184,9 +188,9 @@ class AdvAgency extends Model
             $mAdvAgency->payment_details = json_encode($payDetails);
             if($mAdvAgency->renew_no==NULL){
                 $mAdvAgency->valid_from = Carbon::now();
-                $mAdvAgency->valid_upto = Carbon::now()->addYears(1)->subDay(1);
+                $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
             }else{
-                $previousApplication=$this->findPreviousApplication($mAdvAgency->application_no);
+                $previousApplication=$this->findPreviousApplication($mAdvAgency->license_no);
                 $mAdvAgency->valid_from = $previousApplication->valid_upto;
                 $mAdvAgency->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(5)->subDay(1);
             }
@@ -196,6 +200,7 @@ class AdvAgency extends Model
             // Renewal Table Updation
             $mAdvAgencyRenewal = AdvAgencyRenewal::find($renewal_id);
             $mAdvAgencyRenewal->payment_status = 1;
+            $mAdvAgencyRenewal->payment_amount =  $mAdvAgency->amount;
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
             $mAdvAgencyRenewal->valid_from = $mAdvAgency->valid_from;
@@ -208,11 +213,29 @@ class AdvAgency extends Model
     }
 
     
-    // Find Previous Payment Date
-    public function findPreviousApplication($application_no){
+    // Find Previous Application Valid Date
+    public function findPreviousApplication($license_no){
         return $details=AdvAgencyRenewal::select('valid_upto')
-                                    ->where('application_no',$application_no)
+                                    ->where('license_no',$license_no)
                                     ->orderByDesc('id')
                                     ->skip(1)->first();
+    }
+
+     
+        /**
+     * | Get Reciept Details 
+     */
+    public function getApprovalLetter($applicationId){
+        $recieptDetails = AdvAgency::select('adv_agencies.payment_id as reciept_no',
+                                                        'adv_agencies.approve_date',
+                                                        'adv_agencies.applicant as applicant_name',
+                                                        'adv_agencies.application_no',
+                                                        'adv_agencies.license_no',
+                                                        'adv_agencies.payment_date as license_start_date'
+                                                        )
+                                                ->where('adv_agencies.id',$applicationId)
+                                                ->first();
+        // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
+        return $recieptDetails;
     }
 }

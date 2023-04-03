@@ -78,7 +78,7 @@ class AdvActiveAgency extends Model
             'citizen_id' => $req->citizenId,
             'user_id' => $req->userId,
             'ulb_id' => $req->ulbId,
-            'application_no' => $req->applicationNo,
+            'application_no' => $req->application_no,
         ];
         return $metaReqs;
     }

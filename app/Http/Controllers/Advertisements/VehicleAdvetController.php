@@ -94,8 +94,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
-
     /**
      * | Get Application Details For Renew
      */
@@ -133,7 +131,6 @@ class VehicleAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-
                // Generate Application No
                $reqData = [
                 "paramId" => $this->_tempParamId,
@@ -246,6 +243,9 @@ class VehicleAdvetController extends Controller
             $fullDetailsData['apply_date'] = $data['created_at'];
             $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
+            if (isset($data['payment_amount'])) {
+                $fullDetailsData['payment_amount'] = $data['payment_amount'];
+            }
             $fullDetailsData['timelineData'] = collect($req);
 
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "010104", "1.0", "303ms", "POST", $req->deviceId);
@@ -560,8 +560,8 @@ class VehicleAdvetController extends Controller
                 } else {
                      //  Renewal Case
                      // Vehicle Advert Application replication
-                     $application_no=$mAdvActiveVehicle->application_no;
-                     AdvVehicle::where('application_no', $application_no)->delete();
+                     $license_no=$mAdvActiveVehicle->license_no;
+                     AdvVehicle::where('license_no', $license_no)->delete();
  
                       $approvedVehicle = $mAdvActiveVehicle->replicate();
                       $approvedVehicle->setTable('adv_vehicles');
@@ -805,30 +805,6 @@ class VehicleAdvetController extends Controller
     }
 
 
-    /**
-     * Get Payment Details
-     */
-    // public function getPaymentDetails(Request $req)
-    // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
-    //     try {
-    //         $mAdvVehicle = new AdvVehicle();
-    //         $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-    //         } else {
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-    //         }
-    //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
-    //     }
-    // }
-
 
     public function paymentByCash(Request $req)
     {
@@ -842,10 +818,10 @@ class VehicleAdvetController extends Controller
         try {
             $mAdvVehicle = new AdvVehicle();
             DB::beginTransaction();
-            $status = $mAdvVehicle->paymentByCash($req);
+            $data = $mAdvVehicle->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(true, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -892,10 +868,10 @@ class VehicleAdvetController extends Controller
         try {
             $mAdvCheckDtl = new AdvChequeDtl();
             DB::beginTransaction();
-            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $data = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1032,15 +1008,23 @@ class VehicleAdvetController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        // Vehicle Advertiesement List Documents
+        $totalApproveDoc=$refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifAdvDocUnverified == 1)
-            return 0;
-        else
-            return 1;
+
+        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveBanquteHall->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
+        if($totalApproveDoc==$totalNoOfDoc){
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        }else{
+           return 0; 
+        }
     }
-
-
 
 
     /**

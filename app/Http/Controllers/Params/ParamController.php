@@ -63,7 +63,7 @@ class ParamController extends Controller
     protected $_dharamshala;
     protected $_advtModuleId;
     protected $_marketModuleId;
-    
+
     //Constructor
     public function __construct()
     {
@@ -77,7 +77,7 @@ class ParamController extends Controller
         $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
 
-        
+
         $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
     }
@@ -129,22 +129,23 @@ class ParamController extends Controller
     /**
      * | All Document List
      */
-    public function listDocument(){
-      $mRefRequiredDocument=new RefRequiredDocument();
-      $listDocs=$mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
-      $documentList=array();
-      foreach($listDocs as $key => $val){
-         $alldocs=explode("#",$val['requirements']);
-          foreach($alldocs as $kinn => $valinn){
-              $arr=explode(',',$valinn);
-              $documentList[$val['code']][$kinn]['docType']=$arr[0];
-              $documentList[$val['code']][$kinn]['docCode']=$arr[1];
-              $documentList[$val['code']][$kinn]['docVal']=ucwords(strtolower(str_replace('_',' ',$arr[1])));
-              $documentList[$val['code']][$kinn]['document_name']=ucwords(strtolower(str_replace('_',' ',$arr[1])));
-              $documentList[$val['code']][$kinn]['code']=$val['code'];
-          }
-      }
-      return $documentList;
+    public function listDocument()
+    {
+        $mRefRequiredDocument = new RefRequiredDocument();
+        $listDocs = $mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
+        $documentList = array();
+        foreach ($listDocs as $key => $val) {
+            $alldocs = explode("#", $val['requirements']);
+            foreach ($alldocs as $kinn => $valinn) {
+                $arr = explode(',', $valinn);
+                $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+                $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
+                $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                $documentList[$val['code']][$kinn]['code'] = $val['code'];
+            }
+        }
+        return $documentList;
     }
 
 
@@ -197,19 +198,19 @@ class ParamController extends Controller
 
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
 
-                $mAdvSelfadvertisement->payment_date= Carbon::now();
-                $mAdvSelfadvertisement->payment_status= 1;
-                $mAdvSelfadvertisement->payment_id= $req->paymentId;
-                $mAdvSelfadvertisement->payment_details= $req->all();
+                $mAdvSelfadvertisement->payment_date = Carbon::now();
+                $mAdvSelfadvertisement->payment_status = 1;
+                $mAdvSelfadvertisement->payment_id = $req->paymentId;
+                $mAdvSelfadvertisement->payment_details = $req->all();
 
-                if($mAdvSelfadvertisement->renew_no==NULL){
+                if ($mAdvSelfadvertisement->renew_no == NULL) {
                     $mAdvSelfadvertisement->valid_from = Carbon::now();
                     $mAdvSelfadvertisement->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=AdvSelfadvetRenewal::select('valid_upto')
-                                                ->where('license_no',$mAdvSelfadvertisement->license_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = AdvSelfadvetRenewal::select('valid_upto')
+                        ->where('license_no', $mAdvSelfadvertisement->license_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mAdvSelfadvertisement->valid_from = $details->valid_upto;
                     $mAdvSelfadvertisement->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
@@ -225,24 +226,24 @@ class ParamController extends Controller
             } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
-                $mAdvVehicle->payment_date= Carbon::now();
-                $mAdvVehicle->payment_status= 1;
-                $mAdvVehicle->payment_id= $req->paymentId;
-                $mAdvVehicle->payment_details= $req->all();
+                $mAdvVehicle->payment_date = Carbon::now();
+                $mAdvVehicle->payment_status = 1;
+                $mAdvVehicle->payment_id = $req->paymentId;
+                $mAdvVehicle->payment_details = $req->all();
 
-                if($mAdvVehicle->renew_no==NULL){
+                if ($mAdvVehicle->renew_no == NULL) {
                     $mAdvVehicle->valid_from = Carbon::now();
                     $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=AdvVehicleRenewal::select('valid_upto')
-                                                ->where('license_no',$mAdvVehicle->license_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = AdvVehicleRenewal::select('valid_upto')
+                        ->where('license_no', $mAdvVehicle->license_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mAdvVehicle->valid_from = $details->valid_upto;
                     $mAdvVehicle->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mAdvVehicle->save();
-               
+
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvVehicle->valid_from;
                 $updateData['valid_upto'] = $mAdvVehicle->valid_upto;
@@ -258,19 +259,19 @@ class ParamController extends Controller
 
                 $mAdvAgency = AdvAgency::find($req->id);
 
-                $mAdvAgency->payment_date= Carbon::now();
-                $mAdvAgency->payment_status= 1;
-                $mAdvAgency->payment_id= $req->paymentId;
-                $mAdvAgency->payment_details= $req->all();
+                $mAdvAgency->payment_date = Carbon::now();
+                $mAdvAgency->payment_status = 1;
+                $mAdvAgency->payment_id = $req->paymentId;
+                $mAdvAgency->payment_details = $req->all();
 
-                if($mAdvAgency->renew_no==NULL){
+                if ($mAdvAgency->renew_no == NULL) {
                     $mAdvAgency->valid_from = Carbon::now();
                     $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
-                }else{
-                    $details=AdvAgencyRenewal::select('valid_upto')
-                                                ->where('license_no',$mAdvAgency->license_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = AdvAgencyRenewal::select('valid_upto')
+                        ->where('license_no', $mAdvAgency->license_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mAdvAgency->valid_from = $details->valid_upto;
                     $mAdvAgency->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(5)->subDay(1);
                 }
@@ -290,19 +291,19 @@ class ParamController extends Controller
                 //     ->update($updateData);
 
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
-                $mAdvPrivateland->payment_date= Carbon::now();
-                $mAdvPrivateland->payment_status= 1;
-                $mAdvPrivateland->payment_id= $req->paymentId;
-                $mAdvPrivateland->payment_details= $req->all();
+                $mAdvPrivateland->payment_date = Carbon::now();
+                $mAdvPrivateland->payment_status = 1;
+                $mAdvPrivateland->payment_id = $req->paymentId;
+                $mAdvPrivateland->payment_details = $req->all();
 
-                if($mAdvPrivateland->renew_no==NULL){
+                if ($mAdvPrivateland->renew_no == NULL) {
                     $mAdvPrivateland->valid_from = Carbon::now();
                     $mAdvPrivateland->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=AdvPrivatelandRenewal::select('valid_upto')
-                                                ->where('license_no',$mAdvPrivateland->license_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = AdvPrivatelandRenewal::select('valid_upto')
+                        ->where('license_no', $mAdvPrivateland->license_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mAdvPrivateland->valid_from = $details->valid_upto;
                     $mAdvPrivateland->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
@@ -322,19 +323,19 @@ class ParamController extends Controller
                 //     ->update($updateData);
 
                 $mAdvHoarding = AdvHoarding::find($req->id);
-                $mAdvHoarding->payment_date= Carbon::now();
-                $mAdvHoarding->payment_status= 1;
-                $mAdvHoarding->payment_id= $req->paymentId;
-                $mAdvHoarding->payment_details= $req->all();
+                $mAdvHoarding->payment_date = Carbon::now();
+                $mAdvHoarding->payment_status = 1;
+                $mAdvHoarding->payment_id = $req->paymentId;
+                $mAdvHoarding->payment_details = $req->all();
 
-                if($mAdvHoarding->renew_no==NULL){
+                if ($mAdvHoarding->renew_no == NULL) {
                     $mAdvHoarding->valid_from = Carbon::now();
                     $mAdvHoarding->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=AdvHoardingRenewal::select('valid_upto')
-                                                ->where('license_no',$mAdvHoarding->license_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = AdvHoardingRenewal::select('valid_upto')
+                        ->where('license_no', $mAdvHoarding->license_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mAdvHoarding->valid_from = $details->valid_upto;
                     $mAdvHoarding->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
@@ -354,19 +355,19 @@ class ParamController extends Controller
                 //     ->update($updateData);
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
-                $mMarBanquteHall->payment_date= Carbon::now();
-                $mMarBanquteHall->payment_status= 1;
-                $mMarBanquteHall->payment_id= $req->paymentId;
-                $mMarBanquteHall->payment_details= $req->all();
+                $mMarBanquteHall->payment_date = Carbon::now();
+                $mMarBanquteHall->payment_status = 1;
+                $mMarBanquteHall->payment_id = $req->paymentId;
+                $mMarBanquteHall->payment_details = $req->all();
 
-                if($mMarBanquteHall->renew_no==NULL){
+                if ($mMarBanquteHall->renew_no == NULL) {
                     $mMarBanquteHall->valid_from = Carbon::now();
                     $mMarBanquteHall->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=MarBanquteHallRenewal::select('valid_upto')
-                                                ->where('application_no',$mMarBanquteHall->application_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = MarBanquteHallRenewal::select('valid_upto')
+                        ->where('application_no', $mMarBanquteHall->application_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mMarBanquteHall->valid_from = $details->valid_upto;
                     // $mMarBanquteHall->valid_upto = date("Y-m-d",strtotime("+1 Years -1 days", $details->valid_upto));
                     $mMarBanquteHall->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
@@ -393,19 +394,19 @@ class ParamController extends Controller
                 //     ->update($updateData);
 
                 $mMarHostel = MarHostel::find($req->id);
-                $mMarHostel->payment_date= Carbon::now();
-                $mMarHostel->payment_status= 1;
-                $mMarHostel->payment_id= $req->paymentId;
-                $mMarHostel->payment_details= $req->all();
+                $mMarHostel->payment_date = Carbon::now();
+                $mMarHostel->payment_status = 1;
+                $mMarHostel->payment_id = $req->paymentId;
+                $mMarHostel->payment_details = $req->all();
 
-                if($mMarHostel->renew_no==NULL){
+                if ($mMarHostel->renew_no == NULL) {
                     $mMarHostel->valid_from = Carbon::now();
                     $mMarHostel->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=MarHostelRenewal::select('valid_upto')
-                                                ->where('application_no',$mMarHostel->application_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = MarHostelRenewal::select('valid_upto')
+                        ->where('application_no', $mMarHostel->application_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mMarHostel->valid_from = $details->valid_upto;
                     $mMarHostel->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
@@ -421,22 +422,22 @@ class ParamController extends Controller
             } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
 
                 $mMarLodge = MarLodge::find($req->id);
-                $mMarLodge->payment_date= Carbon::now();
-                $mMarLodge->payment_status= 1;
-                $mMarLodge->payment_id= $req->paymentId;
-                $mMarLodge->payment_details= $req->all();
+                $mMarLodge->payment_date = Carbon::now();
+                $mMarLodge->payment_status = 1;
+                $mMarLodge->payment_id = $req->paymentId;
+                $mMarLodge->payment_details = $req->all();
 
-                if($mMarLodge->renew_no==NULL){
+                if ($mMarLodge->renew_no == NULL) {
                     $mMarLodge->valid_from = Carbon::now();
                     $mMarLodge->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=MarLodgeRenewal::select('valid_upto')
-                                                ->where('application_no',$mMarLodge->application_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = MarLodgeRenewal::select('valid_upto')
+                        ->where('application_no', $mMarLodge->application_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mMarLodge->valid_from = $details->valid_upto;
                     $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
-                    $sad=$mMarLodge->valid_upto;
+                    $sad = $mMarLodge->valid_upto;
                 }
                 $mMarLodge->save();
 
@@ -449,24 +450,24 @@ class ParamController extends Controller
                     ->update($updateData);
             } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
                 $mMarDharamshala = MarDharamshala::find($req->id);
-                $mMarDharamshala->payment_date= Carbon::now();
-                $mMarDharamshala->payment_status= 1;
-                $mMarDharamshala->payment_id= $req->paymentId;
-                $mMarDharamshala->payment_details= $req->all();
+                $mMarDharamshala->payment_date = Carbon::now();
+                $mMarDharamshala->payment_status = 1;
+                $mMarDharamshala->payment_id = $req->paymentId;
+                $mMarDharamshala->payment_details = $req->all();
 
-                if($mMarDharamshala->renew_no==NULL){
+                if ($mMarDharamshala->renew_no == NULL) {
                     $mMarDharamshala->valid_from = Carbon::now();
                     $mMarDharamshala->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-                }else{
-                    $details=MarDharamshalaRenewal::select('valid_upto')
-                                                ->where('application_no',$mMarDharamshala->application_no)
-                                                ->orderByDesc('id')
-                                                ->skip(1)->first();
+                } else {
+                    $details = MarDharamshalaRenewal::select('valid_upto')
+                        ->where('application_no', $mMarDharamshala->application_no)
+                        ->orderByDesc('id')
+                        ->skip(1)->first();
                     $mMarDharamshala->valid_from = $details->valid_upto;
                     $mMarDharamshala->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarDharamshala->save();
-                $a=$mMarDharamshala->valid_upto;
+                $a = $mMarDharamshala->valid_upto;
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarDharamshala->valid_from;
                 $updateData['valid_upto'] = $mMarDharamshala->valid_upto;
@@ -498,23 +499,27 @@ class ParamController extends Controller
         }
         try {
             // Get Advertesement Payment Details
-            if ($req->workflowId == $this->_selfAdvt) {
+            if ($req->workflowId == $this->_selfAdvt) { 
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
                 // $paymentDetails->inWords='Twenty Thousand Rupees Only';
-                $paymentDetails->inWords=getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             }
 
             // Get Market Payment Details
@@ -542,101 +547,196 @@ class ParamController extends Controller
         }
     }
 
-    public function advertDashboard(){
-        try{
-            $madvSelfAdvertisement=new AdvSelfadvertisement(); 
-            $approveList=$madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
-            $advert['selfApprovedApplications']=$approveList;
 
-            $mAdvRejectedSelfadvertisement=new AdvRejectedSelfadvertisement();
-            $rejectList=$mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
-            $advert['selfRejectedApplications']=$rejectList;
+    /**
+     * | Advertisement Dashboard
+     */
+    public function advertDashboard()
+    {
+        try {
+            $madvSelfAdvertisement = new AdvSelfadvertisement();
+            $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
+            $advert['selfApprovedApplications'] = $approveList;
 
-            
-            $mAdvPrivateland=new AdvPrivateland(); 
-            $pvtapproveList=$mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
-            $advert['pvtLandApprovedApplications']=$pvtapproveList;
-
-            $mAdvRejectedPrivateland=new AdvRejectedPrivateland();
-            $pvtRejectList=$mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
-            $advert['pvtLandRejectedApplications']=$pvtRejectList;
-
-            
-            $mAdvVehicle=new AdvVehicle(); 
-            $vehicleApproveList=$mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
-            $advert['vehicleApprovedApplications']=$vehicleApproveList;
-
-            $mAdvRejectedVehicle=new AdvRejectedVehicle();
-            $vehicleRejectList=$mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
-            $advert['vehicleRejectedApplications']=$vehicleRejectList;
-            
-
-            $mAdvAgency=new AdvAgency(); 
-            $agencyApproveList=$mAdvAgency->allApproveList();                  // Find Agency Approve Applications
-            $advert['agencyApprovedApplications']=$agencyApproveList;
-
-            $mAdvRejectedAgency=new AdvRejectedAgency();
-            $agencyRejectList=$mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
-            $advert['agencyRejectedApplications']=$agencyRejectList;
+            $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
+            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
+            $advert['selfRejectedApplications'] = $rejectList;
 
 
-            $mAdvHoarding=new AdvHoarding(); 
-            $hoardingApproveList=$mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
-            $advert['hoardingApprovedApplications']=$hoardingApproveList;
+            $mAdvPrivateland = new AdvPrivateland();
+            $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
+            $advert['pvtLandApprovedApplications'] = $pvtapproveList;
 
-            $mAdvRejectedHoarding=new AdvRejectedHoarding();
-            $hoardingRejectList=$mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
-            $advert['hoardingRejectedApplications']=$hoardingRejectList;
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
+            $advert['pvtLandRejectedApplications'] = $pvtRejectList;
+
+
+            $mAdvVehicle = new AdvVehicle();
+            $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
+            $advert['vehicleApprovedApplications'] = $vehicleApproveList;
+
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
+            $advert['vehicleRejectedApplications'] = $vehicleRejectList;
+
+
+            $mAdvAgency = new AdvAgency();
+            $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
+            $advert['agencyApprovedApplications'] = $agencyApproveList;
+
+            $mAdvRejectedAgency = new AdvRejectedAgency();
+            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
+            $advert['agencyRejectedApplications'] = $agencyRejectList;
+
+
+            $mAdvHoarding = new AdvHoarding();
+            $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
+            $advert['hoardingApprovedApplications'] = $hoardingApproveList;
+
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
+            $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
             return responseMsgs(true, 'Data Fetched',  $advert, "050124", "1.0", "2 Sec", "POST");
-        }catch(Exception $e){
+        } catch (Exception $e) {
             responseMsgs(false, $e->getMessage(), "");
         }
     }
 
+    /**
+     * | Market Dashboard
+     */
+    public function marketDashboard()
+    {
+        try {
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
+            $market['banquetApprovedApplications'] = $approveList;
 
-    public function marketDashboard(){
-        try{
-            $mMarBanquteHall=new MarBanquteHall(); 
-            $approveList=$mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
-            $market['banquetApprovedApplications']=$approveList;
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();  // Find Banquet Hall Rejected Applications
+            $market['banquetRejectedApplications'] = $rejectList;
 
-            $mMarRejectedBanquteHall=new MarRejectedBanquteHall();
-            $rejectList=$mMarRejectedBanquteHall->rejectedApplication();  // Find Banquet Hall Rejected Applications
-            $market['banquetRejectedApplications']=$rejectList;
 
-            
-            $mMarHostel=new MarHostel(); 
-            $hostelapproveList=$mMarHostel->allApproveList();                 // Find Hostel Approve Applications
-            $market['hostelApprovedApplications']=$hostelapproveList;
+            $mMarHostel = new MarHostel();
+            $hostelapproveList = $mMarHostel->allApproveList();                 // Find Hostel Approve Applications
+            $market['hostelApprovedApplications'] = $hostelapproveList;
 
-            $mMarRejectedHostel=new MarRejectedHostel();
-            $hostelRejectList=$mMarRejectedHostel->rejectedApplication();     // Find Hostel Rejected Applications
-            $market['hostelRejectedApplications']=$hostelRejectList;
+            $mMarRejectedHostel = new MarRejectedHostel();
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();     // Find Hostel Rejected Applications
+            $market['hostelRejectedApplications'] = $hostelRejectList;
 
-            
-            $mMarLodge=new MarLodge(); 
-            $lodgeApproveList=$mMarLodge->allApproveList();                // Find Lodge Approve Applications
-            $market['lodgeApprovedApplications']=$lodgeApproveList;
 
-            $mMarRejectedLodge=new MarRejectedLodge();
-            $lodgeRejectList=$mMarRejectedLodge->rejectedApplication();    // Find Lodge Rejected Applications
-            $market['lodgeRejectedApplications']=$lodgeRejectList;
-            
+            $mMarLodge = new MarLodge();
+            $lodgeApproveList = $mMarLodge->allApproveList();                // Find Lodge Approve Applications
+            $market['lodgeApprovedApplications'] = $lodgeApproveList;
 
-            $mMarDharamshala=new MarDharamshala(); 
-            $dharamshalaApproveList=$mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
-            $market['dharamshalaApprovedApplications']=$dharamshalaApproveList;
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();    // Find Lodge Rejected Applications
+            $market['lodgeRejectedApplications'] = $lodgeRejectList;
 
-            $mMarRejectedDharamshala=new MarRejectedDharamshala();
-            $dharamshalaRejectList=$mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
-            $market['dharamshalaRejectedApplications']=$dharamshalaRejectList;
+
+            $mMarDharamshala = new MarDharamshala();
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
+            $market['dharamshalaApprovedApplications'] = $dharamshalaApproveList;
+
+            $mMarRejectedDharamshala = new MarRejectedDharamshala();
+            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
+            $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
 
             return responseMsgs(true, 'Data Fetched',  $market, "050124", "1.0", "2 Sec", "POST");
-        }catch(Exception $e){
+        } catch (Exception $e) {
             responseMsgs(false, $e->getMessage(), "");
         }
     }
 
+    /**
+     * | All Application Search application by name or mobile
+     */
+    public function searchByNameorMobile(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'filterBy' => 'required|in:mobileNo,entityName,ownerName',
+            'parameter' => $req->filterBy == 'mobileNo' ? 'required|digits:10' : 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $madvSelfAdvertisement = new AdvSelfadvertisement();
+            $approveList = collect($madvSelfAdvertisement->allApproveList());              // Find Self Advertisement Approve Applications
+
+
+            $mAdvPrivateland = new AdvPrivateland();
+            $pvtapproveList = collect($mAdvPrivateland->allApproveList());                 // Find Pvt Land Approve Applications
+            $merged = $approveList->merge($pvtapproveList);
+
+            $mAdvVehicle = new AdvVehicle();
+            $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
+            $merged = $merged->merge($vehicleApproveList);
+
+
+            $mAdvAgency = new AdvAgency();
+            $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
+            $merged = $merged->merge($agencyApproveList);
+
+            $mAdvHoarding = new AdvHoarding();
+            $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
+            $merged = $merged->merge($hoardingApproveList);
+
+            if ($req->filterBy == 'mobileNo') {
+                $merged = $merged->where('mobile_no', $req->parameter);
+            }
+            if ($req->filterBy == 'entityName') {
+                $merged = $merged->where('entity_name', $req->parameter);
+            }
+            if ($req->filterBy == 'ownerName') {
+                $merged = $merged->where('owner_name', $req->parameter);
+            }
+
+            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), 010717, 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+
+    /**
+     * | Get Payment Details For Application
+     */
+    public function getApprovalLetter(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer',
+            'workflowId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+              // Get Advertesement Reciept Details
+              if ($req->workflowId == $this->_selfAdvt) {
+                $mAdvSelfadvertisement = new AdvSelfadvertisement();
+                $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
+            } elseif ($req->workflowId == $this->_pvtLand) {
+                $mAdvPrivateland = new AdvPrivateland();
+                $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->paymentId);
+            } elseif ($req->workflowId ==  $this->_movableVehicle) {
+                $mAdvVehicle = new AdvVehicle();
+                $recieptDetails = $mAdvVehicle->getApprovalLetter($req->paymentId);
+            } elseif ($req->workflowId == $this->_agency) {
+                $mAdvAgency = new AdvAgency();
+                $recieptDetails = $mAdvAgency->getApprovalLetter($req->paymentId);
+            } elseif ($req->workflowId == $this->_hording) {
+                $mAdvHoarding = new AdvHoarding();
+                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->paymentId);
+            }
+            return responseMsgs(true, "Reciept Details Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "271ms", "POST", "", "");
+        }catch(Exception $e){
+            return responseMsgs(false, "Reciept Details Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
+        }
+
+    }
 }
