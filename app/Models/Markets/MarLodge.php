@@ -23,11 +23,18 @@ class MarLodge extends Model
             'application_no',
             'application_date',
             'entity_address',
+            'entity_name',
+            'applicant',
+            'applicant as owner_name',
+            'mobile as mobile_no',
             'payment_amount',
             'payment_status',
             'approve_date',
             'citizen_id',
             'valid_upto',
+            'workflow_id',
+            'license_no',
+            'application_type'
         )
             ->orderByDesc('id')
             ->get();
@@ -116,7 +123,10 @@ class MarLodge extends Model
             $mMarLodgeRenewal->valid_from = $mMarLodge->valid_from;
             $mMarLodgeRenewal->valid_upto = $mMarLodge->valid_upto;
             $mMarLodgeRenewal->payment_details = json_encode($payDetails);
-            return $mMarLodgeRenewal->save();
+            $status=$mMarLodgeRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 

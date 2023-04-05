@@ -50,11 +50,28 @@ return [
     "LAND_ID" => "12",
     "HOR_ID" => "13",
     "AGY_ID" => "14",
+
     "TEMP_SELF_ID" => "17",
     "TEMP_VCL_ID" => "18",
     "TEMP_LAND_ID" => "19",
     "TEMP_HOR_ID" => "20",
     "TEMP_AGY_ID" => "21",
+
+
+    
+    "LOD_ID" => "25",
+    "BQT_ID" => "26",
+    "HOS_ID" => "27",
+    "DRSL_ID" => "28",
+
+    
+    "T_LOD_ID" => "29",
+    "T_BQT_ID" => "30",
+    "T_HOS_ID" => "31",
+    "T_DRSL_ID" => "32",
+    
+    
+
 
     /**
      * | =========== Market Section ==========

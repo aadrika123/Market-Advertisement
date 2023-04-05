@@ -64,6 +64,7 @@ class MarActiveBanquteHall extends Model
             'four_wheelers_parking'=>$req->fourWheelersParking,
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
+            'application_no'=>$req->application_no,
         ];
     }
 
@@ -112,7 +113,7 @@ class MarActiveBanquteHall extends Model
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'BMHALL/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details=MarBanquteHall::find($req->applicationId);                              // Find Previous Application No
-        $mApplicationNo=['application_no'=>$details->application_no];
+        $mLicenseNo=['license_no'=>$details->license_no];
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -131,14 +132,14 @@ class MarActiveBanquteHall extends Model
                 'application_type' => "Renew"
             ],
             $this->metaReqs($req),
-            $mApplicationNo,
+            $mLicenseNo,
             $mRenewNo,
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveBanquteHall::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 
-        return $mApplicationNo['application_no'];
+        return $mRenewNo['renew_no'];
     }
 
     /**

@@ -33,6 +33,7 @@ class AdvPrivateland extends Model
             'citizen_id',
             'user_id',
             'workflow_id',
+            'license_no',
             DB::raw("'privateLand' as type")
         )
         ->orderByDesc('id')

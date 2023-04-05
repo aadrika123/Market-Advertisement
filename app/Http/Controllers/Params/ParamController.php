@@ -76,8 +76,6 @@ class ParamController extends Controller
         $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
-
-
         $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
     }
@@ -562,7 +560,6 @@ class ParamController extends Controller
             $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
             $advert['selfRejectedApplications'] = $rejectList;
 
-
             $mAdvPrivateland = new AdvPrivateland();
             $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
             $advert['pvtLandApprovedApplications'] = $pvtapproveList;
@@ -570,7 +567,6 @@ class ParamController extends Controller
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = $pvtRejectList;
-
 
             $mAdvVehicle = new AdvVehicle();
             $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
@@ -580,7 +576,6 @@ class ParamController extends Controller
             $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = $vehicleRejectList;
 
-
             $mAdvAgency = new AdvAgency();
             $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
             $advert['agencyApprovedApplications'] = $agencyApproveList;
@@ -588,7 +583,6 @@ class ParamController extends Controller
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = $agencyRejectList;
-
 
             $mAdvHoarding = new AdvHoarding();
             $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
@@ -611,31 +605,28 @@ class ParamController extends Controller
     {
         try {
             $mMarBanquteHall = new MarBanquteHall();
-            $approveList = $mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
+            $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
             $market['banquetApprovedApplications'] = $approveList;
 
             $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();  // Find Banquet Hall Rejected Applications
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();                  // Find Banquet Hall Rejected Applications
             $market['banquetRejectedApplications'] = $rejectList;
 
-
             $mMarHostel = new MarHostel();
-            $hostelapproveList = $mMarHostel->allApproveList();                 // Find Hostel Approve Applications
+            $hostelapproveList = $mMarHostel->allApproveList();                             // Find Hostel Approve Applications
             $market['hostelApprovedApplications'] = $hostelapproveList;
 
             $mMarRejectedHostel = new MarRejectedHostel();
-            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();     // Find Hostel Rejected Applications
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();                 // Find Hostel Rejected Applications
             $market['hostelRejectedApplications'] = $hostelRejectList;
 
-
             $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList();                // Find Lodge Approve Applications
+            $lodgeApproveList = $mMarLodge->allApproveList();                               // Find Lodge Approve Applications
             $market['lodgeApprovedApplications'] = $lodgeApproveList;
 
             $mMarRejectedLodge = new MarRejectedLodge();
-            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();    // Find Lodge Rejected Applications
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();                   // Find Lodge Rejected Applications
             $market['lodgeRejectedApplications'] = $lodgeRejectList;
-
 
             $mMarDharamshala = new MarDharamshala();
             $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
@@ -644,7 +635,6 @@ class ParamController extends Controller
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
             $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
-
 
             return responseMsgs(true, 'Data Fetched',  $market, "050124", "1.0", "2 Sec", "POST");
         } catch (Exception $e) {
@@ -685,6 +675,24 @@ class ParamController extends Controller
             $mAdvHoarding = new AdvHoarding();
             $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
             $merged = $merged->merge($hoardingApproveList);
+
+            $mMarBanquteHall = new MarBanquteHall();
+            $banquetApproveList = $mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
+            $merged = $merged->merge($banquetApproveList);
+
+            $mMarLodge = new MarLodge();
+            $lodgeApproveList = $mMarLodge->allApproveList();              // Find Lodge Approve Applications
+            $merged = $merged->merge($lodgeApproveList);
+
+            $mMarHostel = new MarHostel();
+            $hostelApproveList = $mMarHostel->allApproveList();              // Find Hostel Approve Applications
+            $merged = $merged->merge($hostelApproveList);
+
+            $mMarDharamshala = new MarDharamshala();
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList();              // Find Dharamshala Approve Applications
+            $merged = $merged->merge($dharamshalaApproveList);
+
+
 
             if ($req->filterBy == 'mobileNo') {
                 $merged = $merged->where('mobile_no', $req->parameter);

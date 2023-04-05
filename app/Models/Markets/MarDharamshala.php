@@ -24,10 +24,17 @@ class MarDharamshala extends Model
             'application_date',
             'entity_address',
             'payment_amount',
+            'entity_name',
+            'applicant',
+            'applicant as owner_name',
+            'mobile as mobile_no',
             'approve_date',
             'payment_status',
             'citizen_id',
             'valid_upto',
+            'workflow_id',
+            'license_no',
+            'application_type'
         )
             ->orderByDesc('id')
             ->get();
@@ -116,7 +123,10 @@ class MarDharamshala extends Model
             $mMarDharamshalaRenewal->valid_from = $mMarDharamshala->valid_from;
             $mMarDharamshalaRenewal->valid_upto = $mMarDharamshala->valid_upto;
             $mMarDharamshalaRenewal->payment_details = json_encode($payDetails);
-            return $mMarDharamshalaRenewal->save();
+            $status=$mMarDharamshalaRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 

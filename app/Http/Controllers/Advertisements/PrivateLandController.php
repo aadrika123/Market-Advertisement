@@ -386,6 +386,8 @@ class PrivateLandController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActivePrivateland::find($request->applicationId);
+            if($adv->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
@@ -941,7 +943,7 @@ class PrivateLandController extends Controller
             if ($status == '1') {
                 return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050426", "1.0", "2 Sec", "POST", $req->deviceId);
             } else {
-                throw new Exception("Zone Not Added !!!");
+                throw new Exception("Zone Already Added !!!");
             }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050426", "1.0", "", "POST", $req->deviceId ?? "");

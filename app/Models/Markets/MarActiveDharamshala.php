@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 class MarActiveDharamshala extends Model
 {
     use HasFactory;
-    
+
     use WorkflowTrait;
 
     protected $guarded = [];
@@ -45,100 +45,101 @@ class MarActiveDharamshala extends Model
             'longitude' => $req->longitude,
             'latitude' => $req->latitude,
             'organization_type' => $req->organizationType,
-            'land_deed_type'=>$req->landDeedType,
-            'no_of_beds'=>$req->noOfBeds,
-            'no_of_rooms'=>$req->noOfRooms,
+            'land_deed_type' => $req->landDeedType,
+            'no_of_beds' => $req->noOfBeds,
+            'no_of_rooms' => $req->noOfRooms,
+            'application_no' => $req->application_no,
 
 
-            
-            'water_supply_type'=>$req->waterSupplyType,
-            'electricity_type'=>$req->electricityType,
-            'security_type'=>$req->securityType,
-            'cctv_camera'=>$req->cctvCamera,
-            'fire_extinguisher'=>$req->fireExtinguisher,
-            'entry_gate'=>$req->entryGate,
-            'exit_gate'=>$req->exitGate,
-            'two_wheelers_parking'=>$req->twoWheelersParking,
-            'four_wheelers_parking'=>$req->fourWheelersParking,
-            'aadhar_card'=>$req->aadharCard,
-            'pan_card'=>$req->panCard,
-            'floor_area'=>$req->floorArea,
-            'rule'=>$req->rule,
+
+            'water_supply_type' => $req->waterSupplyType,
+            'electricity_type' => $req->electricityType,
+            'security_type' => $req->securityType,
+            'cctv_camera' => $req->cctvCamera,
+            'fire_extinguisher' => $req->fireExtinguisher,
+            'entry_gate' => $req->entryGate,
+            'exit_gate' => $req->exitGate,
+            'two_wheelers_parking' => $req->twoWheelersParking,
+            'four_wheelers_parking' => $req->fourWheelersParking,
+            'aadhar_card' => $req->aadharCard,
+            'pan_card' => $req->panCard,
+            'floor_area' => $req->floorArea,
+            'rule' => $req->rule,
         ];
     }
-     // Store Application For Dharamshala(1)
-     public function addNew($req)
-     {
-         $bearerToken = $req->bearerToken();
-         $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
-         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
-         $ipAddress = getClientIpAddress();
-         $mApplicationNo = ['application_no' => 'DHARAMSHALA-' . random_int(100000, 999999)];                  // Generate Application No
-         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
-             'workflow_id' => $ulbWorkflows['id'],
-             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-             'current_role_id' => $ulbWorkflows['initiator_role_id'],
-             'last_role_id' => $ulbWorkflows['initiator_role_id'],
-             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-         ];
-         $mDocuments = $req->documents;
- 
-         $metaReqs = array_merge(
-             [
-                 'ulb_id' => $req->ulbId,
-                 'citizen_id' => $req->citizenId,
-                 'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress,
-                 'application_type' => "New Apply"
-             ],
-             $this->metaReqs($req),
-             $mApplicationNo,
-             $ulbWorkflowReqs
-         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+    // Store Application For Dharamshala(1)
+    public function addNew($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        //  $mApplicationNo = ['application_no' => 'DHARAMSHALA-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
+            ],
+            $this->metaReqs($req),
+            //  $mApplicationNo,
+            $ulbWorkflowReqs
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveDharamshala::create($metaReqs)->id;
-         $this->uploadDocument($tempId, $mDocuments);
- 
-         return $mApplicationNo['application_no'];
-     }
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $req->application_no;
+    }
 
 
-          // Store Application For Dharamshala(1)
-          public function renewApplication($req)
-          {
-              $bearerToken = $req->bearerToken();
-              $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
-              $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
-              $ipAddress = getClientIpAddress();
-              $details=MarDharamshala::find($req->applicationId);                              // Find Previous Application No
-              $mApplicationNo=['application_no'=>$details->application_no];
-              $mRenewNo = ['renew_no' => 'DHARAMSHALA/REN-' . random_int(100000, 999999)];                  // Generate Application No
-              $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
-                  'workflow_id' => $ulbWorkflows['id'],
-                  'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-                  'current_role_id' => $ulbWorkflows['initiator_role_id'],
-                  'last_role_id' => $ulbWorkflows['initiator_role_id'],
-                  'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-              ];
-              $mDocuments = $req->documents;
-      
-              $metaReqs = array_merge(
-                  [
-                      'ulb_id' => $req->ulbId,
-                      'citizen_id' => $req->citizenId,
-                      'application_date' => $this->_applicationDate,
-                      'ip_address' => $ipAddress,
-                      'application_type' => "Renew"
-                  ],
-                  $this->metaReqs($req),
-                  $mApplicationNo,
-                  $mRenewNo,
-                  $ulbWorkflowReqs
-              );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
-             $tempId = MarActiveDharamshala::create($metaReqs)->id;
-              $this->uploadDocument($tempId, $mDocuments);
-      
-              return $mApplicationNo['application_no'];
-          }
+    // Store Application For Dharamshala(1)
+    public function renewApplication($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $details = MarDharamshala::find($req->applicationId);                              // Find Previous Application No
+        $mLicenseNo = ['license_no' => $details->license_no];
+        $mRenewNo = ['renew_no' => 'DHARAMSHALA/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
+            ],
+            $this->metaReqs($req),
+            $mLicenseNo,
+            $mRenewNo,
+            $ulbWorkflowReqs
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        $tempId = MarActiveDharamshala::create($metaReqs)->id;
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $mRenewNo['renew_no'];
+    }
 
     /**
      * upload Document By Citizen At the time of Registration
@@ -152,7 +153,7 @@ class MarActiveDharamshala extends Model
         $mMarActiveDharamshala = new MarActiveDharamshala();
         $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId,$docUpload, $mWfActiveDocument,$mMarActiveDharamshala,$relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveDharamshala, $relativePath) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveDharamshala->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -172,9 +173,10 @@ class MarActiveDharamshala extends Model
         });
     }
 
-    
-    public function getApplicationDtls($appId){
-        
+
+    public function getApplicationDtls($appId)
+    {
+
         return MarActiveDharamshala::select('*')
             ->where('id', $appId)
             ->first();
@@ -223,13 +225,13 @@ class MarActiveDharamshala extends Model
         return $outbox;
     }
 
-    
+
 
     /**
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function getDetailsById($id,$type=NULL)
+    public function getDetailsById($id, $type = NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -270,7 +272,7 @@ class MarActiveDharamshala extends Model
                 ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_dharamshalas.organization_type')
                 ->where('mar_rejected_dharamshalas.id', $id)
                 ->first();
-        }elseif ($type == 'Approve'){
+        } elseif ($type == 'Approve') {
             $details = DB::table('mar_dharamshalas')
                 ->select(
                     'mar_dharamshalas.*',
@@ -333,14 +335,15 @@ class MarActiveDharamshala extends Model
             ->where('mar_active_dharamshalas.ulb_id', $ulbId);
     }
 
-        
+
 
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -357,11 +360,10 @@ class MarActiveDharamshala extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
     }
-
 }

@@ -23,9 +23,11 @@ class MarBanquteHall extends Model
             'id',
             'application_no',
             'application_date',
-            'applicant as applicant_name',
+            'applicant',
+            'applicant as owner_name',
             'entity_address',
             'entity_name',
+            'mobile as mobile_no',
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -33,6 +35,8 @@ class MarBanquteHall extends Model
             'user_id',
             'application_type',
             'valid_upto',
+            'workflow_id',
+            'license_no',
         )
             ->orderByDesc('id')
             ->get();
@@ -44,7 +48,6 @@ class MarBanquteHall extends Model
     public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
-
         foreach($allApproveList as $key => $list){
             $activeBanquetHall=MarActiveBanquteHall::where('application_no',$list['application_no'])->count();
             $current_date=carbon::now()->format('Y-m-d');
@@ -69,7 +72,6 @@ class MarBanquteHall extends Model
             return collect($allApproveList)->values();
         }
     }
-
 
     
     /**
@@ -124,7 +126,10 @@ class MarBanquteHall extends Model
             $mMarBanquteHallRenewal->valid_from = $mMarBanquteHall->valid_from;
             $mMarBanquteHallRenewal->valid_upto = $mMarBanquteHall->valid_upto;
             $mMarBanquteHallRenewal->payment_details = json_encode($payDetails);
-            return $mMarBanquteHallRenewal->save();
+            $status=$mMarBanquteHallRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 

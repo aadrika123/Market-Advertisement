@@ -27,11 +27,16 @@ class MarHostel extends Model
             'entity_address',
             'entity_name',
             'applicant',
+            'applicant as owner_name',
+            'mobile as mobile_no',
             'payment_status',
             'payment_amount',
             'approve_date',
             'citizen_id',
             'valid_upto',
+            'workflow_id',
+            'license_no',
+            'application_type'
         )
             ->orderByDesc('id')
             ->get();
@@ -121,7 +126,10 @@ class MarHostel extends Model
             $mMarHostelRenewal->valid_from = $mMarHostel->valid_from;
             $mMarHostelRenewal->valid_upto = $mMarHostel->valid_upto;
             $mMarHostelRenewal->payment_details = json_encode($payDetails);
-            return $mMarHostelRenewal->save();
+            $status= $mMarHostelRenewal->save();
+            $returnData['status']=$status;
+            $returnData['payment_id']=$pay_id;
+            return $returnData;
         }
     }
 

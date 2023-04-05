@@ -49,6 +49,9 @@ class BanquetMarriageHallController extends Controller
     protected $_moduleIds;
     protected $_docCode;
     protected $_docCodeRenew;
+    protected $_paramId;
+    protected $_tempParamId;
+    protected $_baseUrl;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -59,6 +62,10 @@ class BanquetMarriageHallController extends Controller
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
         $this->_docCodeRenew = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE_RENEW');
+        
+        $this->_paramId = Config::get('workflow-constants.BQT_ID');
+        $this->_tempParamId = Config::get('workflow-constants.T_BQT_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
     }
 
     /**
@@ -71,13 +78,19 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
-                $req->request->add($userId);
-            } else {
-                $citizenId = ['citizenId' => authUser()->id];
-                $req->request->add($citizenId);
-            }
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+             // Generate Application No
+             $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
@@ -128,6 +141,17 @@ class BanquetMarriageHallController extends Controller
             $mMarActiveBanquteHall = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+              // Generate Application No
+              $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
@@ -400,6 +424,8 @@ class BanquetMarriageHallController extends Controller
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $adv = MarActiveBanquteHall::find($request->applicationId);
+            if($adv->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
@@ -566,12 +592,22 @@ class BanquetMarriageHallController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
+                // License NO Generate
+                $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mMarActiveBanquteHall->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+                $idGenerateData = json_decode($refResponse);
+
                 if ($mMarActiveBanquteHall->renew_no == NULL) {
                     // Banqute Hall Application replication
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                     $approvedbanqutehall->setTable('mar_banqute_halls');
                     $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
                     $approvedbanqutehall->payment_amount = $req->payment_amount;
+                    $approvedbanqutehall->license_no = $idGenerateData->data;
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->save();
 
@@ -579,6 +615,7 @@ class BanquetMarriageHallController extends Controller
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
+                    $approvedbanqutehall->license_no = $idGenerateData->data;
                     $approvedbanqutehall->app_id = $temp_id;
                     $approvedbanqutehall->save();
 
@@ -807,10 +844,10 @@ class BanquetMarriageHallController extends Controller
         try {
             $mMarBanquteHall = new MarBanquteHall();
             DB::beginTransaction();
-            $status = $mMarBanquteHall->paymentByCash($req);
+            $data = $mMarBanquteHall->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }

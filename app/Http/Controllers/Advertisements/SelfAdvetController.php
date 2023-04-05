@@ -432,6 +432,8 @@ class SelfAdvetController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
+            if($adv->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();

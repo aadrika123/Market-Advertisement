@@ -65,6 +65,7 @@ class AdvAgency extends Model
             'citizen_id',
             'user_id',
             'workflow_id',
+            'license_no',
             DB::raw("'agency' as type"),
             DB::raw("'' as owner_name")
         )

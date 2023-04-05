@@ -39,6 +39,9 @@ class DharamshalaController extends Controller
     protected $_repository;
     protected $_docCode;
     protected $_docCodeRenew;
+    protected $_paramId;
+    protected $_tempParamId;
+    protected $_baseUrl;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -49,6 +52,11 @@ class DharamshalaController extends Controller
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.DHARAMSHALA_DOC_CODE');
         $this->_docCodeRenew = config::get('workflow-constants.DHARAMSHALA_DOC_CODE_RENEW');
+        
+        $this->_paramId = Config::get('workflow-constants.DRSL_ID');
+        $this->_tempParamId = Config::get('workflow-constants.T_DRSL_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
+    
     }
     /**
      * | Apply for Dharamshala
@@ -62,6 +70,17 @@ class DharamshalaController extends Controller
             $mMarActiveDharamshala = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+             // Generate Application No
+             $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveDharamshala->addNew($req);       //<--------------- Model function to store 
@@ -114,6 +133,17 @@ class DharamshalaController extends Controller
             $mActiveDharamshala = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+              // Generate Application No
+              $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
@@ -370,6 +400,8 @@ class DharamshalaController extends Controller
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);
+            if($mMarActiveDharamshala->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $mMarActiveDharamshala->last_role_id = $mMarActiveDharamshala->current_role_id;
             $mMarActiveDharamshala->current_role_id = $request->receiverRoleId;
             $mMarActiveDharamshala->save();
@@ -453,13 +485,6 @@ class DharamshalaController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            // if ($req->type == 'Active') {
-            //     $appId = $req->applicationId;
-            // } elseif ($req->type == 'Reject') {
-            //     $appId = MarRejectedDharamshala::find($req->applicationId)->id;
-            // } elseif ($req->type == 'Approve') {
-            //     $appId = MarDharamshala::find($req->applicationId)->id;
-            // }
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
         } else {
             throw new Exception("Required Application Id And Application Type");
@@ -543,15 +568,22 @@ class DharamshalaController extends Controller
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveDharamshala->workflow_id, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
+                  // License NO Generate
+                  $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mMarActiveDharamshala->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+                $idGenerateData = json_decode($refResponse);
 
-                // $payment_amount = ['payment_amount' => 1000];
-                // $req->request->add($payment_amount);
                 if ($mMarActiveDharamshala->renew_no == NULL) {
                     // dharamshala Application replication
                     $approveddharamshala = $mMarActiveDharamshala->replicate();
                     $approveddharamshala->setTable('mar_dharamshalas');
                     $temp_id = $approveddharamshala->id = $mMarActiveDharamshala->id;
                     $approveddharamshala->payment_amount = $req->payment_amount;
+                    $approveddharamshala->license_no = $idGenerateData->data;
                     $approveddharamshala->approve_date = Carbon::now();
                     $approveddharamshala->save();
 
@@ -561,6 +593,7 @@ class DharamshalaController extends Controller
                     $approveddharamshala = $mMarActiveDharamshala->replicate();
                     $approveddharamshala->approve_date = Carbon::now();
                     $approveddharamshala->setTable('mar_dharamshala_renewals');
+                    $approveddharamshala->license_no = $idGenerateData->data;
                     $approveddharamshala->app_id = $mMarActiveDharamshala->id;
                     $approveddharamshala->save();
 
@@ -787,10 +820,10 @@ class DharamshalaController extends Controller
         try {
             $mMarDharamshala = new MarDharamshala();
             DB::beginTransaction();
-            $status = $mMarDharamshala->paymentByCash($req);
+            $data = $mMarDharamshala->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }

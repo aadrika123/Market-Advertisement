@@ -341,6 +341,8 @@ class HoardingController extends Controller
             // Hording  Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveHoarding::find($request->applicationId);
+            if($adv->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $request->senderRoleId;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();

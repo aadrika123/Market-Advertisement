@@ -22,6 +22,7 @@ class AdvVehicle extends Model
             'applicant as owner_name',
             'entity_name',
             'mobile_no',
+            'license_no',
             'payment_status',
             'payment_amount',
             'approve_date',

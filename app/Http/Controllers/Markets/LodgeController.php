@@ -41,6 +41,9 @@ class LodgeController extends Controller
     protected $_repository;
     protected $_docCode;
     protected $_docCodeRenew;
+    protected $_baseUrl;
+    protected $_tempParamId;
+    protected $_paramId;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -51,6 +54,10 @@ class LodgeController extends Controller
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.LODGE_DOC_CODE');
         $this->_docCodeRenew = config::get('workflow-constants.LODGE_DOC_CODE_RENEW');
+
+        $this->_paramId = Config::get('workflow-constants.LOD_ID');
+        $this->_tempParamId = Config::get('workflow-constants.T_LOD_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
     }
     /**
      * | Apply for Lodge
@@ -64,6 +71,18 @@ class LodgeController extends Controller
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+            
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->addNew($req);       //<--------------- Model function to store 
@@ -114,6 +133,18 @@ class LodgeController extends Controller
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+            
+             // Generate Application No
+             $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
@@ -370,6 +401,9 @@ class LodgeController extends Controller
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
+            if($mMarActiveLodge->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
+
             $mMarActiveLodge->last_role_id = $mMarActiveLodge->current_role_id;
             $mMarActiveLodge->current_role_id = $request->receiverRoleId;
             $mMarActiveLodge->save();
@@ -499,8 +533,6 @@ class LodgeController extends Controller
     }
 
 
-
-
     /**
      * Final Approval and Rejection of the Application
      * @param Request $req
@@ -534,8 +566,15 @@ class LodgeController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // $payment_amount = ['payment_amount' => 1000];
-                // $req->request->add($payment_amount);
+                   // License NO Generate
+                   $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mMarActiveLodge->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+
+                $idGenerateData = json_decode($refResponse);
 
                 if ($mMarActiveLodge->renew_no == NULL) {
                     // Lodge Application replication
@@ -543,6 +582,7 @@ class LodgeController extends Controller
                     $approvedlodge->setTable('mar_lodges');
                     $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
                     $approvedlodge->payment_amount = $req->payment_amount;
+                    $approvedlodge->license_no = $idGenerateData->data;
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->save();
 
@@ -550,6 +590,7 @@ class LodgeController extends Controller
                     $approvedlodge = $mMarActiveLodge->replicate();
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->setTable('mar_lodge_renewals');
+                    $approvedlodge->license_no = $idGenerateData->data;
                     $approvedlodge->app_id = $temp_id;
                     $approvedlodge->save();
 
@@ -778,10 +819,10 @@ class LodgeController extends Controller
         try {
             $mMarLodge = new MarLodge();
             DB::beginTransaction();
-            $status = $mMarLodge->paymentByCash($req);
+            $data = $mMarLodge->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!",['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }

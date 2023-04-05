@@ -73,10 +73,10 @@ class MarActiveHostel extends Model
      public function addNew($req)
      {
          $bearerToken = $req->bearerToken();
-            $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
+         $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
          $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
          $ipAddress = getClientIpAddress();
-         $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
+        //  $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
          $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
              'workflow_id' => $ulbWorkflows['id'],
              'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -95,13 +95,12 @@ class MarActiveHostel extends Model
                  'application_type' => "New Apply"
              ],
              $this->metaReqs($req),
-             $mApplicationNo,
              $ulbWorkflowReqs
          );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
          $this->uploadDocument($tempId, $mDocuments);
  
-         return $mApplicationNo['application_no'];
+         return $req->application_no;
      }
 
 
@@ -114,7 +113,7 @@ class MarActiveHostel extends Model
           $ipAddress = getClientIpAddress();
           $mRenewNo = ['renew_no' => 'HOSTEL/REN-' . random_int(100000, 999999)];                  // Generate Application No
           $details=MarHostel::find($req->applicationId);                              // Find Previous Application No
-          $mApplicationNo=['application_no'=>$details->application_no];
+          $mLicenseNo=['license_no'=>$details->license_no];
           $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
               'workflow_id' => $ulbWorkflows['id'],
               'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -133,14 +132,14 @@ class MarActiveHostel extends Model
                   'application_type'=>"Renew"
               ],
               $this->metaReqs($req),
-              $mApplicationNo,
+              $mLicenseNo,
               $mRenewNo,
               $ulbWorkflowReqs
           );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
          $tempId = MarActiveHostel::create($metaReqs)->id;
           $this->uploadDocument($tempId, $mDocuments);
   
-          return $mApplicationNo['application_no'];
+          return $mRenewNo['renew_no'];;
       }
       /**
      * upload Document By Citizen At the time of Registration

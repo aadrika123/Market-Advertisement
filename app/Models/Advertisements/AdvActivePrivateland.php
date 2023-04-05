@@ -341,8 +341,12 @@ class AdvActivePrivateland extends Model
     
     public function entryZone($req){
         $AdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);        // Application ID
-        $AdvActivePrivateland->zone = $req->zone;
-        return $AdvActivePrivateland->save();
+        if($AdvActivePrivateland->zone==NULL){
+            $AdvActivePrivateland->zone = $req->zone;
+            return $AdvActivePrivateland->save();
+        }else{
+            return 0;
+        }
     }
 
     public function getPrivateLandNo($appId)

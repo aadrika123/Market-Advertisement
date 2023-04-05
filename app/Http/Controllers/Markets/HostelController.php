@@ -40,6 +40,9 @@ class HostelController extends Controller
     protected $_repository;
     protected $_docCode;
     protected $_docCodeRenew;
+    protected $_baseUrl;
+    protected $_tempParamId;
+    protected $_paramId;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -50,6 +53,9 @@ class HostelController extends Controller
         $this->_repository = $mar_repo;
         $this->_docCode = Config::get('workflow-constants.HOSTEL_DOC_CODE');
         $this->_docCodeRenew = Config::get('workflow-constants.HOSTEL_DOC_CODE_RENEW');
+        $this->_paramId = Config::get('workflow-constants.HOS_ID');
+        $this->_tempParamId = Config::get('workflow-constants.T_HOS_ID');
+        $this->_baseUrl = Config::get('constants.BASE_URL');
     }
 
     /**
@@ -64,6 +70,17 @@ class HostelController extends Controller
             $mMarActiveHostel = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+             
+            // Generate Application No
+            $reqData = [
+                "paramId" => $this->_tempParamId,
+                'ulbId' => $req->ulbId
+            ];
+            $refResponse = Http::withToken($req->bearerToken())
+                ->post($this->_baseUrl . 'api/id-generator', $reqData);
+            $idGenerateData = json_decode($refResponse);
+            $applicationNo = ['application_no' => $idGenerateData->data];
+            $req->request->add($applicationNo);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
@@ -372,6 +389,8 @@ class HostelController extends Controller
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);
+            if($mMarActiveHostel->doc_verify_status=='0')
+                throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $mMarActiveHostel->last_role_id = $mMarActiveHostel->current_role_id;
             $mMarActiveHostel->current_role_id = $request->receiverRoleId;
             $mMarActiveHostel->save();
@@ -542,8 +561,15 @@ class HostelController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // $payment_amount = ['payment_amount' => 1000];
-                // $req->request->add($payment_amount);
+                  // License NO Generate
+                  $reqData = [
+                    "paramId" => $this->_paramId,
+                    'ulbId' => $mMarActiveHostel->ulb_id
+                ];
+                $refResponse = Http::withToken($req->bearerToken())
+                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
+
+                $idGenerateData = json_decode($refResponse);
 
                 if ($mMarActiveHostel->renew_no == NULL) {
                     // Hostel Application replication
@@ -551,6 +577,7 @@ class HostelController extends Controller
                     $approvedhostel->setTable('mar_hostels');
                     $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
                     $approvedhostel->payment_amount = $req->payment_amount;
+                    $approvedhostel->license_no = $idGenerateData->data;
                     $approvedhostel->approve_date = Carbon::now();
                     $approvedhostel->save();
 
@@ -559,6 +586,7 @@ class HostelController extends Controller
                     $approvedhostel->approve_date = Carbon::now();
                     $approvedhostel->setTable('mar_hostel_renewals');
                     $approvedhostel->app_id = $mMarActiveHostel->id;
+                    $approvedhostel->license_no = $idGenerateData->data;
                     $approvedhostel->save();
 
                     $mMarActiveHostel->delete();
@@ -787,10 +815,10 @@ class HostelController extends Controller
         try {
             $mMarHostel = new MarHostel();
             DB::beginTransaction();
-            $status = $mMarHostel->paymentByCash($req);
+            $data = $mMarHostel->paymentByCash($req);
             DB::commit();
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }

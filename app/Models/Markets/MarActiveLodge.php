@@ -63,6 +63,7 @@ class MarActiveLodge extends Model
             'aadhar_card'=>$req->aadharCard,
             'pan_card'=>$req->panCard,
             'rule'=>$req->rule,
+            'application_no'=>$req->application_no,
         ];
     }
      // Store Application For Lodge(1)
@@ -72,7 +73,7 @@ class MarActiveLodge extends Model
          $workflowId = Config::get('workflow-constants.LODGE');                            // 350
          $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
          $ipAddress = getClientIpAddress();
-         $mApplicationNo = ['application_no' => 'LODGE-' . random_int(100000, 999999)];                  // Generate Application No
+        //  $mApplicationNo = ['application_no' => 'LODGE-' . random_int(100000, 999999)];                  // Generate Application No
          $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
              'workflow_id' => $ulbWorkflows['id'],
              'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -91,13 +92,13 @@ class MarActiveLodge extends Model
                  'application_type'=>"New Apply"
              ],
              $this->metaReqs($req),
-             $mApplicationNo,
+            //  $mApplicationNo,
              $ulbWorkflowReqs
          );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveLodge::create($metaReqs)->id;
          $this->uploadDocument($tempId, $mDocuments);
  
-         return $mApplicationNo['application_no'];
+         return $req->application_no;
      }
      
 
@@ -110,7 +111,7 @@ class MarActiveLodge extends Model
            $ipAddress = getClientIpAddress();
            $mRenewNo = ['renew_no' => 'LODGE/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
            $details=MarLodge::find($req->applicationId);                              // Find Previous Application No
-           $mApplicationNo=['application_no'=>$details->application_no];
+           $mLicenseNo=['license_no'=>$details->license_no];
            $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
                'workflow_id' => $ulbWorkflows['id'],
                'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -129,7 +130,7 @@ class MarActiveLodge extends Model
                    'application_type'=>"Renew"
                ],
                $this->metaReqs($req),
-               $mApplicationNo,
+               $mLicenseNo,
                $mRenewNo,
                $ulbWorkflowReqs
            );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
