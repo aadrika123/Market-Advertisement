@@ -110,9 +110,11 @@ class AdvPrivateland extends Model
  */
 public function getPaymentDetails($paymentId)
 {
-    return $details = AdvPrivateland::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
+    $details = AdvPrivateland::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
     ->where('payment_id', $paymentId)
     ->first();
+    $details->payment_details=json_decode($details->payment_details);
+    return $details;
 }
 
     

@@ -153,10 +153,11 @@ class AdvAgency extends Model
 
     public function getPaymentDetails($paymentId)
     {
-       return $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name')
-            ->where('payment_id', $paymentId)
-            ->first();
-        // return json_decode($details->payment_details);
+        $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name')
+        ->where('payment_id', $paymentId)
+        ->first();
+        $details->payment_details=json_decode($details->payment_details);
+        return $details;
     }
 
 

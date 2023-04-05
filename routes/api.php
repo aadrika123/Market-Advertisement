@@ -338,6 +338,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     
         Route::post('market/bm-hall/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Get Application Details For Renew )
         Route::post('market/bm-hall/renew-application', 'renewApplication');          // 26 ( Renew Applications )
+        Route::post('market/bm-hall/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
+        Route::post('market/bm-hall/edit-application', 'editApplication');          // 28 ( Edit Applications )
     });
 
 

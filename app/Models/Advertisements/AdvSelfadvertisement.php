@@ -122,9 +122,11 @@ class AdvSelfadvertisement extends Model
  */
     public function getPaymentDetails($paymentId)
     {
-        return $details = AdvSelfadvertisement::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
+        $details = AdvSelfadvertisement::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
         ->where('payment_id', $paymentId)
         ->first();
+        $details->payment_details=json_decode($details->payment_details);
+        return $details;
     }
 
     public function paymentByCash($req)

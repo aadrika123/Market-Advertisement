@@ -189,8 +189,10 @@ class MarLodge extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        return $details = MarLodge::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+        $details = MarLodge::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
             ->where('payment_id', $paymentId)
             ->first();
+            $details->payment_details=json_decode($details->payment_details);
+            return $details;
     }
 }

@@ -435,7 +435,7 @@ class ParamController extends Controller
                         ->skip(1)->first();
                     $mMarLodge->valid_from = $details->valid_upto;
                     $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
-                    $sad = $mMarLodge->valid_upto;
+                    $mMarLodge = $mMarLodge->valid_upto;
                 }
                 $mMarLodge->save();
 

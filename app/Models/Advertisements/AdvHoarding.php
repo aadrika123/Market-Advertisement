@@ -230,9 +230,11 @@ class AdvHoarding extends Model
      */
     public function getPaymentDetails($paymentId)
     {
-        return $details = AdvSelfadvertisement::select('payment_amount', 'payment_id', 'payment_date', 'property_owner_address as address', 'property_owner_name as entity_name')
+           $details = AdvSelfadvertisement::select('payment_amount', 'payment_id', 'payment_date', 'property_owner_address as address', 'property_owner_name as entity_name')
             ->where('payment_id', $paymentId)
             ->first();
+            $details->payment_details=json_decode($details->payment_details);
+            return $details;
     }
 
     public function paymentByCash($req)

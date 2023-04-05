@@ -7,6 +7,7 @@ use App\Http\Requests\BanquetMarriageHall\RenewalRequest;
 use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
+use App\Http\Requests\BanquetMarriageHall\UpdateRequest;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveBanquteHall;
@@ -806,30 +807,6 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-    /**
-     * Get Payment Details
-     */
-    // public function getPaymentDetails(Request $req)
-    // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
-    //     try {
-    //         $mMarBanquteHall = new MarBanquteHall();
-    //         $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-    //         }else{
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-    //         }
-    //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
-    //     }
-    // }
-
 
 
     public function paymentByCash(Request $req)
@@ -1154,6 +1131,43 @@ class BanquetMarriageHallController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+    /**
+     * | Get APplication Details For Edit
+     */
+    public function getApplicationDetailsForEdit(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $details = $mMarActiveBanquteHall->getApplicationDetailsForEdit($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details , "050827", 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+
+    /**
+     * | Update Application 
+     */
+    public function editApplication(UpdateRequest $req){
+        try{
+            $mMarActiveBanquteHall = $this->_modelObj;
+            DB::beginTransaction();
+            $res = $mMarActiveBanquteHall->updateApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+            return responseMsgs(true, "Application Update Successfully !!!", "" , "050828", 1.0, "271ms", "POST", "", "");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "271ms", "POST", "", "");
         }
     }
 }

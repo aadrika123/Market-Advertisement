@@ -88,64 +88,12 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
-
-    /**
-     * | Get Application Details For Renew
-     */
-    public function getApplicationDetailsForRenew(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|digits_between:1,9223372036854775807'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mMarHostel = new MarHostel();
-            $details = $mMarHostel->applicationDetailsForRenew($req->applicationId);
-            if (!$details)
-                throw new Exception("Application Not Found !!!");
-
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Apply for Lodge
-     * | @param StoreRequest 
-     */
-    public function renewApplication(RenewalRequest $req)
-    {
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-            $mMarActiveLodge = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
-
-            DB::beginTransaction();
-            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
-        }
-    }
-
 
     /**
      * | Inbox List
@@ -164,9 +112,9 @@ class HostelController extends Controller
             $inboxList = $mMarActiveHostel->listInbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050902", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050902", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -187,9 +135,9 @@ class HostelController extends Controller
             $outboxList = $mMarActiveHostel->listOutbox($roleIds);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050104", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050903", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050104", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050903", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -776,33 +724,10 @@ class HostelController extends Controller
         }
     }
 
-    /**
-     * Get Payment Details
-     */
-    // public function getPaymentDetails(Request $req)
-    // {
-    //     $validator = Validator::make($req->all(), [
-    //         'paymentId' => 'required|string'
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return ['status' => false, 'message' => $validator->errors()];
-    //     }
-    //     try {
-    //         $mMarHostel = new MarHostel();
-    //         $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-    //         if (empty($paymentDetails)) {
-    //             throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-    //         } else {
-    //             return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
-    //         }
-    //     } catch (Exception $e) {
-    //         responseMsgs(false, $e->getMessage(), "");
-    //     }
-    // }
 
-
-
-
+/**
+ * | Payment Application Via Cash
+ */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1124,6 +1049,57 @@ class HostelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    
+
+    /**
+     * | Get Application Details For Renew
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarHostel = new MarHostel();
+            $details = $mMarHostel->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Apply for Lodge
+     * | @param StoreRequest 
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveLodge = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 }
