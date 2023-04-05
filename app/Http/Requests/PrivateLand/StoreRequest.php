@@ -54,16 +54,6 @@ class StoreRequest extends FormRequest
             'installationLocation' => 'required',
             'ulbId' => 'required|integer',
             'typology' => 'required|integer',
-            // 'aadharDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'tradeDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'gpsDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'holdingDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'gstDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'brandDisplayDoc' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'documents' => 'required|array',
-            // 'documents.*.id' => 'required|integer',
-            // 'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-            // 'documents.*.relativeName' => 'required|string'
 
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',

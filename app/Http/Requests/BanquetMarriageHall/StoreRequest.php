@@ -44,8 +44,6 @@ class StoreRequest extends FormRequest
             'entityWardId' => 'required|integer',
             'holdingNo' => 'required|string',
             'tradeLicenseNo' => 'required|string',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
             'organizationType' => 'required|string',
             'floorArea' => 'required|numeric',
             'landDeedType' => 'required|string',

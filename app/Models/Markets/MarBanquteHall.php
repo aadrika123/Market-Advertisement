@@ -37,6 +37,7 @@ class MarBanquteHall extends Model
             'valid_upto',
             'workflow_id',
             'license_no',
+            DB::raw("'banquetMarriageHall' as type"),
         )
             ->orderByDesc('id')
             ->get();
@@ -189,9 +190,8 @@ class MarBanquteHall extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        $details=MarBanquteHall::select('payment_details')
-        ->where('payment_id', $paymentId)
-        ->first();
-       return json_decode($details->payment_details);
+        return $details = MarBanquteHall::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+            ->where('payment_id', $paymentId)
+            ->first();
     }
 }

@@ -286,13 +286,13 @@ class MarActiveLodge extends Model
                     'w.string_parameter as ward_no',
                     'pw.string_parameter as permanent_ward_no',
                     'ew.string_parameter as entity_ward_no',
-                    'lt.string_parameter as lodgetype',
+                    'ht.string_parameter as hosteltype',
                     'mt.string_parameter as messtype',
                     'ot.string_parameter as organizationtype'
                 )
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_lodges.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_lodges.license_year')
-                ->leftJoin('ref_adv_paramstrings as ht', 'lt.id', '=', 'mar_lodges.lodge_type')
+                ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_lodges.lodge_type')
                 ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_lodges.mess_type')
                 ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_lodges.residential_ward_id')
                 ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_lodges.permanent_ward_id')

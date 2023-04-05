@@ -34,7 +34,8 @@ class MarLodge extends Model
             'valid_upto',
             'workflow_id',
             'license_no',
-            'application_type'
+            'application_type',
+            DB::raw("'lodge' as type"),
         )
             ->orderByDesc('id')
             ->get();
@@ -188,9 +189,8 @@ class MarLodge extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        $details=MarLodge::select('payment_details')
-        ->where('payment_id', $paymentId)
-        ->first();
-       return json_decode($details->payment_details);
+        return $details = MarLodge::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+            ->where('payment_id', $paymentId)
+            ->first();
     }
 }

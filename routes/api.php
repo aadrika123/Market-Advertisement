@@ -89,7 +89,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('crud/param-strings', 'paramStrings');                              // 01 ( Get Param String List)
         Route::post('advertisements/get-approval-letter', 'getApprovalLetter');         // 02 ( Get All Approval Letter )
         Route::post('advertisements/crud/v1/list-document', 'listDocument');            // 03 ( Applied Document List )
-        Route::post('crud/district-mstrs', 'districtMstrs');                            // 04
+        // Route::post('crud/district-mstrs', 'districtMstrs');                            // 04
         Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 05 ( Update Payment Success or Failure )
         Route::post('advertisements/dashboard', 'advertDashboard');                     // 06 ( Advertisement Dashboard )
         Route::post('advertisements/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07 ( Search Application By Mobile or Name )

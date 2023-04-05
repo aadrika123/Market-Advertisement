@@ -524,15 +524,19 @@ class ParamController extends Controller
             elseif ($req->workflowId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             }
 
             if (empty($paymentDetails)) {
@@ -738,6 +742,9 @@ class ParamController extends Controller
                 $mAdvAgency = new AdvAgency();
                 $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId == $this->_hording) {
+                $mAdvHoarding = new AdvHoarding();
+                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
+            } elseif ($req->workflowId == $this->_banquetHall) {
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }

@@ -75,7 +75,7 @@ class MarActiveBanquteHall extends Model
         $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
-        $mApplicationNo = ['application_no' => 'BMHALL-' . random_int(100000, 999999)];                  // Generate Application No
+        // $mApplicationNo = ['application_no' => 'BMHALL-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -84,7 +84,6 @@ class MarActiveBanquteHall extends Model
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
         $mDocuments = $req->documents;
-
         $metaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
@@ -94,13 +93,13 @@ class MarActiveBanquteHall extends Model
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
-            $mApplicationNo,
+            // $mApplicationNo,
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveBanquteHall::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 
-        return $mApplicationNo['application_no'];
+        return $req->application_no;
     }
 
 

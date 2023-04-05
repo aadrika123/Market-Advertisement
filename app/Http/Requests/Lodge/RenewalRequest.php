@@ -43,8 +43,6 @@ class RenewalRequest extends FormRequest
             'entityWardId' => 'required|integer',
             'holdingNo' => 'required|string',
             'tradeLicenseNo' => 'required|string',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
             'organizationType' => 'required|integer',
             'landDeedType' => 'required|integer',
             'waterSupplyType' => 'required|integer',
