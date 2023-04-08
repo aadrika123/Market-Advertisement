@@ -236,7 +236,7 @@ class PrivateLandController extends Controller
 
             $cardDetails = $this->generatePrivateLandCardDetails($data);                // Trait function to get Card Details
             $cardElement = [
-                'headerTitle' => "About Advertisement",
+                'headerTitle' => "Private Land Advertisement",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);

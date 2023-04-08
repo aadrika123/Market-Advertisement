@@ -22,24 +22,167 @@ trait MarDetailsTraits
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
             ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['license_year']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
-            // ['displayString' => 'Ward ID', 'key' => 'wardId', 'value' => $data['ward_id']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
-            // ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
             ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
-            // ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst']],
             ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
-            // ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
-            // ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
-            // ['displayString' => 'M Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
-            // ['displayString' => 'M Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']]
-            // ['displayString' => 'M Current Role', 'key' => 'mCurrentRole', 'value' => $data['m_current_role']]
+            ['displayString' => 'Floor Area', 'key' => 'floorArea', 'value' => $data['floor_area']],
+            ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
+            ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'Ward NO', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Permanent Ward NO', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
+            ['displayString' => 'Entity Ward NO', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
+            ['displayString' => 'Hall Type', 'key' => 'hallType', 'value' => $data['halltype']],
+            ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
+            ['displayString' => 'Remarks', 'key' => 'remarks', 'value' => $data['remarks']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'No Of CCTV', 'key' => 'noOfCctv', 'value' => $data['cctv_camera']],
+            ['displayString' => 'No of Fire Extinguisher', 'key' => 'fireExtinguisher', 'value' => $data['fire_extinguisher']],
+            ['displayString' => 'No of Entry Gate', 'key' => 'entryGate', 'value' => $data['entry_gate']],
+            ['displayString' => 'No of two Wheelers Parking', 'key' => 'twoWheelersParking', 'value' => $data['two_wheelers_parking']],
+            ['displayString' => 'No of four Wheelers Parking', 'key' => 'fourWheelersParking', 'value' => $data['four_wheelers_parking']],
+            ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securitytype']],
+            ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricitytype']],
+            ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['watersupplytype']],
+            ['displayString' => 'Land Deed Type', 'key' => 'landDeedType', 'value' => $data['landDeedType']],
         ]);
     }
 
+    
+
+       /**
+     * | Get Basic Details
+     */
+    public function generateBasicDetailsForHostel($data)
+    {
+        return new Collection([
+            ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
+            ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
+            ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['license_year']],
+            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
+            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
+            ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+            ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
+            ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
+            ['displayString' => 'No of Rooms', 'key' => 'noOfRooms', 'value' => $data['no_of_rooms']],
+            ['displayString' => 'No of Beds', 'key' => 'noOfBeds', 'value' => $data['no_of_beds']],
+            ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
+            ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'Ward No', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Permanent Ward NO', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
+            ['displayString' => 'Entity Ward NO', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
+            ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
+            ['displayString' => 'Land Deed Type', 'key' => 'landDeedType', 'value' => $data['landDeedTypeName']],
+            ['displayString' => 'Mess Type', 'key' => 'messType', 'value' => $data['messtype']],
+            ['displayString' => 'Hostel Type', 'key' => 'hosteltype', 'value' => $data['hosteltype']],
+            // ['displayString' => 'Hostel Type', 'key' => 'hosteltype', 'value' => $data['hosteltype']],
+            ['displayString' => 'License Year', 'key' => 'licenseYear', 'value' => $data['m_license_year']],
+            ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+            ['displayString' => 'Remarks', 'key' => 'remarks', 'value' => $data['remarks']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['waterSupplyType']],
+            ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricityType']],
+            ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securityType']],
+            ['displayString' => 'License Type', 'key' => 'licenseNo', 'value' => $data['license_no']],
+            ['displayString' => 'Approved By Govt', 'key' => 'isApproveByGovt', 'value' => $data['is_approve_by_govt']==true?'Yes':'No'],
+            ['displayString' => 'No of CCTV', 'key' => 'noOfCCTV', 'value' => $data['cctv_camera']],
+            ['displayString' => 'No of Fire Extinguisher', 'key' => 'NoOfFireExtinguisher', 'value' => $data['fire_extinguisher']],
+            ['displayString' => 'No of Entry Gate', 'key' => 'entryGate', 'value' => $data['entry_gate']],
+            ['displayString' => 'No of Exit Gate', 'key' => 'exitGate', 'value' => $data['exit_gate']],
+        ]);
+    }
+
+
+    
+       /**
+     * | Get Basic Details
+     */
+    public function generateBasicDetailsForLodge($data)
+    {
+        return new Collection([
+            ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
+            ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
+            ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['m_license_year']],
+            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
+            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
+            ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+            ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
+            ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
+            ['displayString' => 'No of Rooms', 'key' => 'noOfRooms', 'value' => $data['no_of_rooms']],
+            ['displayString' => 'No of Beds', 'key' => 'noOfBeds', 'value' => $data['no_of_beds']],
+            ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
+            ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'Ward NO', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Permanent Ward NO', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
+            ['displayString' => 'Entity Ward NO', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
+            ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
+            ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['watersupplytype']],
+            ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricitytype']],
+            ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securitytype']],
+            ['displayString' => 'Mess Type', 'key' => 'messType', 'value' => $data['messtype']],
+            ['displayString' => 'Lodge Type', 'key' => 'lodgeType', 'value' => $data['lodgetype']],
+            ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+        ]);
+    }
+
+        /**
+     * | Get Basic Details
+     */
+    public function generateBasicDetailsforDharamshala($data)
+    {
+        return new Collection([
+            ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
+            ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
+            ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
+            ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
+            ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['license_year']],
+            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
+            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
+            ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
+            ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
+            ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
+            ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
+            ['displayString' => 'Floor Area', 'key' => 'floorArea', 'value' => $data['floor_area']],
+            ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
+            ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'Ward NO', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Permanent Ward NO', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
+            ['displayString' => 'Entity Ward NO', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
+            ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
+            ['displayString' => 'Land Deed Type', 'key' => 'landDeedType', 'value' => $data['landDeedType']],
+            ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['watersupplytype']],
+            ['displayString' => 'Security Type', 'key' => 'Security Type', 'value' => $data['securitytype']],
+            ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+            ['displayString' => 'Remarks', 'key' => 'remarks', 'value' => $data['remarks']],
+            ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
+            ['displayString' => 'No Of CCTV', 'key' => 'noOfCctv', 'value' => $data['cctv_camera']],
+            ['displayString' => 'No of Fire Extinguisher', 'key' => 'fireExtinguisher', 'value' => $data['fire_extinguisher']],
+            ['displayString' => 'No of Entry Gate', 'key' => 'entryGate', 'value' => $data['entry_gate']],
+            ['displayString' => 'No of two Wheelers Parking', 'key' => 'twoWheelersParking', 'value' => $data['two_wheelers_parking']],
+            ['displayString' => 'No of four Wheelers Parking', 'key' => 'fourWheelersParking', 'value' => $data['four_wheelers_parking']],
+        ]);
+    }
 
 
     /**

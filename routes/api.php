@@ -95,6 +95,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advertisements/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07 ( Search Application By Mobile or Name )
         Route::post('markets/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
         Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
+        Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
+        Route::post('advertisements/analytical-dashboard', 'advertAnalyticalDashboard');      // 11 ( Application Details For Payments )
+        Route::post('markets/analytical-dashboard', 'marketAnalyticalDashboard');      // 12 ( Application Details For Payments )
      });
 
     /**
@@ -299,6 +302,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         
         Route::post('market/lodge/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Payments )
         Route::post('market/lodge/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
+        Route::post('market/lodge/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
+        Route::post('market/lodge/edit-application', 'editApplication');          // 28 ( Edit Applications )
     });
 
     /**
@@ -379,6 +384,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         
         Route::post('market/hostel/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Payments )
         Route::post('market/hostel/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
+        Route::post('market/hostel/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
+        Route::post('market/hostel/edit-application', 'editApplication');          // 28 ( Edit Applications )
     });
 
     /**
@@ -417,6 +424,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
          
         Route::post('market/dharamshala/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Renew )
         Route::post('market/dharamshala/renew-application', 'renewApplication');          // 26 ( Renew Application )
+        Route::post('market/dharamshala/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
+        Route::post('market/dharamshala/edit-application', 'editApplication');          // 28 ( Edit Applications )
     });
 
 });

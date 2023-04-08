@@ -15,6 +15,8 @@ trait AdvDetailsTraits
     public function generateBasicDetails($data)
     {
         return new Collection([
+            ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
@@ -110,6 +112,8 @@ trait AdvDetailsTraits
     public function generateVehicleBasicDetails($data)
     {
         return new Collection([
+            ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Applicantion No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
@@ -166,6 +170,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entityName']],
             ['displayString' => 'Entity Type', 'key' => 'entityType', 'value' => $data['entityType']],
             ['displayString' => 'Address', 'key' => 'address', 'value' => $data['address']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
@@ -286,7 +291,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Property Type', 'key' => 'propertyType', 'value' => $data['property_type']],
             ['displayString' => 'Property Owner Name', 'key' => 'propertyOwnerName', 'value' => $data['property_owner_name']],
             ['displayString' => 'Property Owner Address', 'key' => 'propertyOwnerAddress', 'value' => $data['property_owner_address']],
-            ['displayString' => 'Property Owner Pincode', 'key' => 'propertyOwnerPincode', 'value' => $data['property_owner_pincode']],
+            // ['displayString' => 'Property Owner Pincode', 'key' => 'propertyOwnerPincode', 'value' => $data['property_owner_pincode']],
             ['displayString' => 'Property Owner Mobile No', 'key' => 'propertyOwnerMobileNo', 'value' => $data['property_owner_mobile_no']],
             ['displayString' => 'Property Owner Whatsapp No', 'key' => 'propertyOwnerwhatsappNo', 'value' => $data['property_owner_whatsapp_no']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],

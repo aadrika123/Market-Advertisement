@@ -127,12 +127,16 @@ class SelfAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+             // Variable initialization
+             $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
-            $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId);
+            $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId);  // Get Renew Application Details
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050102", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050102", "1.0", " $executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050102", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -236,7 +240,7 @@ class SelfAdvetController extends Controller
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds);
+            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds);           // <------ Get List From Model
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -278,7 +282,7 @@ class SelfAdvetController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Advertisement",
+                'headerTitle' => "Self Advertisement Details",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
@@ -350,12 +354,15 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $citizenId = authUser()->id;
             $selfAdvets = new AdvActiveSelfadvertisement();
-            $applications = $selfAdvets->listAppliedApplications($citizenId);   // Get Applied Applications
+
+            $applications = $selfAdvets->listAppliedApplications($citizenId);             //<-------  Get Applied Applications
+            
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
             $endTime = microtime(true);
+
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Applied Applications", $data1, "050108", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -373,15 +380,18 @@ class SelfAdvetController extends Controller
             "applicationId" => "required|int",
         ]);
         try {
+            // Variable Initialization
             $startTime = microtime(true);
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
+
             $data = AdvActiveSelfadvertisement::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+            
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Self Advertisment is Escalated' : "Self Advertisment is removed from Escalated", '', "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050109", "1.0", "", "POST", $request->deviceId ?? "");

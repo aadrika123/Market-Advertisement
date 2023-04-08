@@ -222,7 +222,7 @@ class VehicleAdvetController extends Controller
 
             $cardDetails = $this->generateVehicleCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Vehicle Advertisment",
+                'headerTitle' => "Movables Vehicle Advertisment",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);

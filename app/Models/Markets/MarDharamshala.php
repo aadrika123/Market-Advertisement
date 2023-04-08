@@ -98,7 +98,7 @@ class MarDharamshala extends Model
             // Dharamshala Table Update
             $mMarDharamshala = MarDharamshala::find($req->applicationId);
             $mMarDharamshala->payment_status = $req->status;
-            $pay_id=$mMarDharamshala->payment_id = "Cash-$req->applicationId/".time();
+            $pay_id=$mMarDharamshala->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mMarDharamshala->payment_date = Carbon::now();
             
@@ -111,7 +111,7 @@ class MarDharamshala extends Model
             }else{
                 $previousApplication=$this->findPreviousApplication($mMarDharamshala->application_no);
                 $mMarDharamshala->valid_from = $previousApplication->valid_upto;
-                $mMarDharamshala->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->valid_upto));
+                $mMarDharamshala->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }
             $mMarDharamshala->save();
             $renewal_id = $mMarDharamshala->last_renewal_id;
@@ -185,10 +185,12 @@ class MarDharamshala extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        $details = MarDharamshala::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+        $details = MarDharamshala::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name','payment_details')
             ->where('payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
+            $details->towards="Dharamshala Payments";
+            $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
             return $details;
     }
 }

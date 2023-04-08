@@ -114,7 +114,7 @@ class MarHostel extends Model
             }else{
                 $previousApplication=$this->findPreviousApplication($mMarHostel->application_no);
                 $mMarHostel->valid_from = $previousApplication->valid_upto;
-                $mMarHostel->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->valid_upto));
+                $mMarHostel->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }
             $mMarHostel->save();
             $renewal_id = $mMarHostel->last_renewal_id;
@@ -196,10 +196,12 @@ class MarHostel extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        $details = MarHostel::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+        $details = MarHostel::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name','payment_details')
             ->where('payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
+            $details->towards="Hostel Payments";
+            $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
             return $details;
     }
 }

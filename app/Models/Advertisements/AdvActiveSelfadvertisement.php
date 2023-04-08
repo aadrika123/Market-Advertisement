@@ -406,4 +406,6 @@ class AdvActiveSelfadvertisement extends Model
         $docDetails->save();
         return $docDetails['active_id'];
     } 
+
+    // public function 
 }

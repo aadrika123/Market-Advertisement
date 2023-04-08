@@ -153,10 +153,12 @@ class AdvAgency extends Model
 
     public function getPaymentDetails($paymentId)
     {
-        $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name')
+        $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name','payment_details')
         ->where('payment_id', $paymentId)
         ->first();
         $details->payment_details=json_decode($details->payment_details);
+        $details->towards="Agency Payments";
+        $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
 

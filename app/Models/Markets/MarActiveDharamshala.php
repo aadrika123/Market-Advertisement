@@ -240,55 +240,80 @@ class MarActiveDharamshala extends Model
                     'mar_active_dharamshalas.*',
                     'u.ulb_name',
                     'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
-                    'ot.string_parameter as organizationtype'
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'ot.string_parameter as organizationtype',
+                    'st.string_parameter as securitytype',
+                    'et.string_parameter as electricitytype',
+                    'wst.string_parameter as watersupplytype',
+                    'ldt.string_parameter as landDeedType',
                 )
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_active_dharamshalas.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_active_dharamshalas.license_year')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_active_dharamshalas.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_active_dharamshalas.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_active_dharamshalas.entity_ward_id')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_active_dharamshalas.residential_ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_dharamshalas.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_dharamshalas.entity_ward_id')
                 ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_active_dharamshalas.organization_type')
+                ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_active_dharamshalas.security_type')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_active_dharamshalas.electricity_type')
+                ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_active_dharamshalas.water_supply_type')
+                ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_active_dharamshalas.land_deed_type')
+                // ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_active_dharamshalas.organization_type')
                 ->where('mar_active_dharamshalas.id', $id)
                 ->first();
         } elseif ($type == 'Reject') {
             $details = DB::table('mar_rejected_dharamshalas')
-                ->select(
-                    'mar_rejected_dharamshalas.*',
-                    'u.ulb_name',
-                    'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
-                    'ot.string_parameter as organizationtype'
-                )
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_dharamshalas.ulb_id')
-                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_rejected_dharamshalas.license_year')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_rejected_dharamshalas.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_rejected_dharamshalas.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_rejected_dharamshalas.entity_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_dharamshalas.organization_type')
-                ->where('mar_rejected_dharamshalas.id', $id)
-                ->first();
+                        ->select(
+                            'mar_rejected_dharamshalas.*',
+                            'u.ulb_name',
+                            'p.string_parameter as m_license_year',
+                            'w.ward_name as ward_no',
+                            'pw.ward_name as permanent_ward_no',
+                            'ew.ward_name as entity_ward_no',
+                            'ot.string_parameter as organizationtype',
+                            'st.string_parameter as securitytype',
+                            'et.string_parameter as electricitytype',
+                            'wst.string_parameter as watersupplytype',
+                            'ldt.string_parameter as landDeedType',
+                        )
+                        ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_dharamshalas.ulb_id')
+                        ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_rejected_dharamshalas.license_year')
+                        ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_dharamshalas.residential_ward_id')
+                        ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_dharamshalas.permanent_ward_id')
+                        ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_dharamshalas.entity_ward_id')
+                        ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_dharamshalas.organization_type')
+                        ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_rejected_dharamshalas.security_type')
+                        ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_rejected_dharamshalas.electricity_type')
+                        ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_rejected_dharamshalas.water_supply_type')
+                        ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_rejected_dharamshalas.land_deed_type')
+                        ->where('mar_rejected_dharamshalas.id', $id)
+                        ->first();
         } elseif ($type == 'Approve') {
             $details = DB::table('mar_dharamshalas')
                 ->select(
                     'mar_dharamshalas.*',
                     'u.ulb_name',
                     'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
-                    'ot.string_parameter as organizationtype'
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'ot.string_parameter as organizationtype',
+                    'st.string_parameter as securitytype',
+                    'et.string_parameter as electricitytype',
+                    'wst.string_parameter as watersupplytype',
+                    'ldt.string_parameter as landDeedType',
                 )
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_dharamshalas.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_dharamshalas.license_year')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_dharamshalas.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_dharamshalas.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_dharamshalas.entity_ward_id')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_dharamshalas.residential_ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_dharamshalas.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_dharamshalas.entity_ward_id')
                 ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_dharamshalas.organization_type')
+                ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_dharamshalas.security_type')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_dharamshalas.electricity_type')
+                ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_dharamshalas.water_supply_type')
+                ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_dharamshalas.land_deed_type')
                 ->where('mar_dharamshalas.id', $id)
                 ->first();
         }
@@ -365,5 +390,65 @@ class MarActiveDharamshala extends Model
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
+    }
+
+        
+    /**
+     * | Get Application Details For Update 
+     */
+    public function getApplicationDetailsForEdit($appId){
+        return MarActiveDharamshala::select('mar_active_dharamshalas.*',
+                        'mar_active_dharamshalas.organization_type as organization_type_id',
+                        'mar_active_dharamshalas.land_deed_type as land_deed_type_id',
+                        'mar_active_dharamshalas.water_supply_type as water_supply_type_id',
+                        'mar_active_dharamshalas.electricity_type as electricity_type_id',
+                        'mar_active_dharamshalas.security_type as security_type_id',
+                        'mar_active_dharamshalas.no_of_rooms as noOfRooms',
+                        'mar_active_dharamshalas.no_of_beds as noOfBeds',
+                        'ly.string_parameter as license_year_name',
+                        'ot.string_parameter as organization_type_name',
+                        'ldt.string_parameter as land_deed_type_name',
+                        'wt.string_parameter as water_supply_type_name',
+                        'et.string_parameter as electricity_type_name',
+                        'st.string_parameter as security_type_name',
+                        'pw.ward_name as permanent_ward_name',
+                        'ew.ward_name as entity_ward_name',
+                        'rw.ward_name as residential_ward_name',
+                        'ulb.ulb_name',
+                        DB::raw("'Dharamshala' as headerTitle")
+                        )
+                        ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_active_dharamshalas.license_year::int'))
+                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_active_dharamshalas.residential_ward_id::int'))
+                        ->leftJoin('ref_adv_paramstrings as ot','ot.id','=',DB::raw('mar_active_dharamshalas.organization_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as ldt','ldt.id','=',DB::raw('mar_active_dharamshalas.land_deed_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as wt','wt.id','=',DB::raw('mar_active_dharamshalas.water_supply_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as et','et.id','=',DB::raw('mar_active_dharamshalas.electricity_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as st','st.id','=',DB::raw('mar_active_dharamshalas.security_type::int'))
+                        ->leftJoin('ulb_ward_masters as ew','ew.id','=','mar_active_dharamshalas.entity_ward_id')
+                        ->leftJoin('ulb_ward_masters as pw','pw.id','=','mar_active_dharamshalas.permanent_ward_id')
+                        ->leftJoin('ulb_masters as ulb','ulb.id','=','mar_active_dharamshalas.ulb_id')
+                        ->where('mar_active_dharamshalas.id',$appId)->first();
+    }
+
+    public function updateApplication($req){
+        $mMarActiveDharamshala=MarActiveDharamshala::findorfail($req->applicationId);
+        $mMarActiveDharamshala->remarks=$req->remarks;
+        $mMarActiveDharamshala->organization_type=$req->organizationType;
+        $mMarActiveDharamshala->land_deed_type=$req->landDeedType;
+        $mMarActiveDharamshala->water_supply_type=$req->waterSupplyType;
+        $mMarActiveDharamshala->electricity_type=$req->electricityType;
+        $mMarActiveDharamshala->security_type=$req->securityType;
+        $mMarActiveDharamshala->cctv_camera=$req->cctvCamera;
+        $mMarActiveDharamshala->fire_extinguisher=$req->fireExtinguisher;
+        $mMarActiveDharamshala->entry_gate=$req->entryGate;
+        $mMarActiveDharamshala->exit_gate=$req->exitGate;
+        $mMarActiveDharamshala->two_wheelers_parking=$req->twoWheelersParking;
+        $mMarActiveDharamshala->four_wheelers_parking=$req->fourWheelersParking;
+        $mMarActiveDharamshala->no_of_beds=$req->noOfBeds;
+        $mMarActiveDharamshala->no_of_rooms=$req->noOfRooms;
+        $mMarActiveDharamshala->floor_area=$req->floorArea;
+        $mMarActiveDharamshala->save();
+        // dd($mMarActiveBanquteHall);
+        return $mMarActiveDharamshala;
     }
 }

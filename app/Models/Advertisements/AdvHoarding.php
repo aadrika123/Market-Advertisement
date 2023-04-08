@@ -230,10 +230,12 @@ class AdvHoarding extends Model
      */
     public function getPaymentDetails($paymentId)
     {
-           $details = AdvSelfadvertisement::select('payment_amount', 'payment_id', 'payment_date', 'property_owner_address as address', 'property_owner_name as entity_name')
+           $details = AdvSelfadvertisement::select('payment_amount', 'payment_id', 'payment_date', 'property_owner_address as address', 'property_owner_name as entity_name','payment_details')
             ->where('payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
+            $details->towards="Hoarding Payments";
+            $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
             return $details;
     }
 

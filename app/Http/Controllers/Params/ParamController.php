@@ -49,6 +49,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
+use App\Service\WhatsappServiceInterface;
+
 class ParamController extends Controller
 {
 
@@ -753,5 +755,65 @@ class ParamController extends Controller
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
         }
 
+    }
+
+
+    public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service){
+        
+            $notification_service->sendWhatsappNotification();
+    }
+
+
+    
+    public function advertAnalyticalDashboard(Request $req){
+        try {
+            $madvSelfAdvertisement = new AdvSelfadvertisement();
+            $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
+            $advert['selfApprovedApplications'] = count($approveList);
+
+            // $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            // $pendingList = $mAdvActiveSelfadvertisement->allApproveList();              // Find Self Advertisement Approve Applications
+            // $advert['selfPendingApplications'] = count($pendingList);
+
+            $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
+            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
+            $advert['selfRejectedApplications'] = count($rejectList);
+
+            $mAdvPrivateland = new AdvPrivateland();
+            $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
+            $advert['pvtLandApprovedApplications'] = count($pvtapproveList);
+
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
+            $advert['pvtLandRejectedApplications'] = count($pvtRejectList);
+
+            $mAdvVehicle = new AdvVehicle();
+            $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
+            $advert['vehicleApprovedApplications'] = count($vehicleApproveList);
+
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
+            $advert['vehicleRejectedApplications'] = count($vehicleRejectList);
+
+            $mAdvAgency = new AdvAgency();
+            $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
+            $advert['agencyApprovedApplications'] = count($agencyApproveList);
+
+            $mAdvRejectedAgency = new AdvRejectedAgency();
+            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
+            $advert['agencyRejectedApplications'] = count($agencyRejectList);
+
+            $mAdvHoarding = new AdvHoarding();
+            $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
+            $advert['hoardingApprovedApplications'] = count($hoardingApproveList);
+
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
+            $advert['hoardingRejectedApplications'] = count($hoardingRejectList);
+
+            return responseMsgs(true, 'Data Fetched',  $advert, "050124", "1.0", "2 Sec", "POST");
+        } catch (Exception $e) {
+            responseMsgs(false, $e->getMessage(), "");
+        }
     }
 }

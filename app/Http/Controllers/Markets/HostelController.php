@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Markets;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hostel\RenewalRequest;
 use App\Http\Requests\Hostel\StoreRequest;
+use App\Http\Requests\Hostel\UpdateRequest;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveHostel;
@@ -166,7 +167,7 @@ class HostelController extends Controller
             if (!$data)
                 throw new Exception("Application Not Found");
             // Basic Details
-            $basicDetails = $this->generateBasicDetails($data); // Trait function to get Basic Details
+            $basicDetails = $this->generateBasicDetailsForHostel($data); // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
@@ -1100,6 +1101,43 @@ class HostelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Get Application Details For Update Application
+     */
+    public function getApplicationDetailsForEdit(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarActiveHostel = new MarActiveHostel();
+            $details = $mMarActiveHostel->getApplicationDetailsForEdit($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    public function editApplication(UpdateRequest $req){
+        try {
+            $mMarActiveHostel = $this->_modelObj;
+            DB::beginTransaction();
+            $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application
+            DB::commit();
+            if ($res)
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "271ms", "POST", "", "");
+            else
+                return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "271ms", "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Application Not Updated !!!",$e->getMessage(), "050828", 1.0, "271ms", "POST", "", "");
         }
     }
 }

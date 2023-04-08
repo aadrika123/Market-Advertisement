@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\BanquetMarriageHall;
+namespace App\Http\Requests\Hostel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,26 +26,23 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'hallType' => 'required|integer',
             'organizationType' => 'required|integer',
-            'floorArea' => 'required|numeric',
             'landDeedType' => 'required|integer',
             'waterSupplyType' => 'required|integer',
             'electricityType' => 'required|integer',
             'securityType' => 'required|integer',
             'cctvCamera' => 'required|integer',
+            'noOfBeds' => 'required|integer',
+            'noOfRooms' => 'required|integer',
             'fireExtinguisher' => 'required|integer',
             'entryGate' => 'required|integer',
             'exitGate' => 'required|integer',
             'twoWheelersParking' => 'required|integer',
             'fourWheelersParking' => 'required|integer',
-            'applicationId' => 'required|integer',
-            'remarks' => 'required|string'
         ];
     }
 
-     
-    /**
+     /**
      * | Error Message
      */
     public function failedValidation(Validator $validator)

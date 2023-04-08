@@ -237,69 +237,95 @@ class MarActiveLodge extends Model
                     'mar_active_lodges.*',
                     'u.ulb_name',
                     'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
                     'lt.string_parameter as lodgetype',
                     'mt.string_parameter as messtype',
-                    'ot.string_parameter as organizationtype'
+                    'ot.string_parameter as organizationtype',
+                    'st.string_parameter as securitytype',
+                    'et.string_parameter as electricitytype',
+                    'wst.string_parameter as watersupplytype',
+                    'ldt.string_parameter as landDeedType',
                 )
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_active_lodges.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_active_lodges.license_year')
                 ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', 'mar_active_lodges.lodge_type')
                 ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_active_lodges.mess_type')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_active_lodges.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_active_lodges.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_active_lodges.entity_ward_id')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_active_lodges.residential_ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_lodges.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_lodges.entity_ward_id')
                 ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_active_lodges.organization_type')
+                ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_active_lodges.security_type')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_active_lodges.electricity_type')
+                ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_active_lodges.water_supply_type')
+                ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_active_lodges.land_deed_type')
                 ->where('mar_active_lodges.id', $id)
                 ->first();
         } elseif ($type == 'Reject') {
+            // $details = DB::table('mar_rejected_lodges')
             $details = DB::table('mar_rejected_lodges')
-                ->select(
-                    'mar_rejected_lodges.*',
-                    'u.ulb_name',
-                    'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
-                    'lt.string_parameter as lodgetype',
-                    'mt.string_parameter as messtype',
-                    'ot.string_parameter as organizationtype'
-                )
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_lodges.ulb_id')
-                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_rejected_lodges.license_year')
-                ->leftJoin('ref_adv_paramstrings as lt', 'ht.id', '=', 'mar_rejected_lodges.lodge_type')
-                ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_rejected_lodges.mess_type')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_rejected_lodges.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_rejected_lodges.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_rejected_lodges.entity_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_lodges.organization_type')
-                ->where('mar_rejected_lodges.id', $id)
-                ->first();
+                    ->select(
+                        'mar_rejected_lodges.*',
+                        'u.ulb_name',
+                        'p.string_parameter as m_license_year',
+                        'w.ward_name as ward_no',
+                        'pw.ward_name as permanent_ward_no',
+                        'ew.ward_name as entity_ward_no',
+                        'lt.string_parameter as lodgetype',
+                        'mt.string_parameter as messtype',
+                        'ot.string_parameter as organizationtype',
+                        'st.string_parameter as securitytype',
+                        'et.string_parameter as electricitytype',
+                        'wst.string_parameter as watersupplytype',
+                        'ldt.string_parameter as landDeedType',
+                    )
+                    ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_lodges.ulb_id')
+                    ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_rejected_lodges.license_year')
+                    ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', 'mar_rejected_lodges.lodge_type')
+                    ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_rejected_lodges.mess_type')
+                    ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_lodges.residential_ward_id')
+                    ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_lodges.permanent_ward_id')
+                    ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_lodges.entity_ward_id')
+                    ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_lodges.organization_type')
+                    ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_rejected_lodges.security_type')
+                    ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_rejected_lodges.electricity_type')
+                    ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_rejected_lodges.water_supply_type')
+                    ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_rejected_lodges.land_deed_type')
+                    ->where('mar_rejected_lodges.id', $id)
+                    ->first();
         }elseif ($type == 'Approve'){
+            // $details = DB::table('mar_lodges')
             $details = DB::table('mar_lodges')
-                ->select(
-                    'mar_lodges.*',
-                    'u.ulb_name',
-                    'p.string_parameter as m_license_year',
-                    'w.string_parameter as ward_no',
-                    'pw.string_parameter as permanent_ward_no',
-                    'ew.string_parameter as entity_ward_no',
-                    'ht.string_parameter as hosteltype',
-                    'mt.string_parameter as messtype',
-                    'ot.string_parameter as organizationtype'
-                )
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_lodges.ulb_id')
-                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_lodges.license_year')
-                ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_lodges.lodge_type')
-                ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_lodges.mess_type')
-                ->leftJoin('ref_adv_paramstrings as w', 'w.id', '=', 'mar_lodges.residential_ward_id')
-                ->leftJoin('ref_adv_paramstrings as pw', 'pw.id', '=', 'mar_lodges.permanent_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ew', 'ew.id', '=', 'mar_lodges.entity_ward_id')
-                ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_lodges.organization_type')
-                ->where('mar_lodges.id', $id)
-                ->first();
+                        ->select(
+                            'mar_lodges.*',
+                            'u.ulb_name',
+                            'p.string_parameter as m_license_year',
+                            'w.ward_name as ward_no',
+                            'pw.ward_name as permanent_ward_no',
+                            'ew.ward_name as entity_ward_no',
+                            'lt.string_parameter as lodgetype',
+                            'mt.string_parameter as messtype',
+                            'ot.string_parameter as organizationtype',
+                            'st.string_parameter as securitytype',
+                            'et.string_parameter as electricitytype',
+                            'wst.string_parameter as watersupplytype',
+                            'ldt.string_parameter as landDeedType',
+                        )
+                        ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_lodges.ulb_id')
+                        ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'mar_lodges.license_year')
+                        ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', 'mar_lodges.lodge_type')
+                        ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', 'mar_lodges.mess_type')
+                        ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_lodges.residential_ward_id')
+                        ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_lodges.permanent_ward_id')
+                        ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_lodges.entity_ward_id')
+                        ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_lodges.organization_type')
+                        ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_lodges.security_type')
+                        ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_lodges.electricity_type')
+                        ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_lodges.water_supply_type')
+                        ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_lodges.land_deed_type')
+                        ->where('mar_lodges.id', $id)
+                        ->first();
         }
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
@@ -366,5 +392,71 @@ class MarActiveLodge extends Model
         $docDetails->current_status='0';
         $docDetails->save();
         return $docDetails['active_id'];
+    }
+
+    
+    
+    /**
+     * | Get Application Details For Update 
+     */
+    public function getApplicationDetailsForEdit($appId){
+        return MarActiveLodge::select('mar_active_lodges.*',
+                        'mar_active_lodges.lodge_type as lodge_type_id',
+                        'mar_active_lodges.organization_type as organization_type_id',
+                        'mar_active_lodges.land_deed_type as land_deed_type_id',
+                        'mar_active_lodges.mess_type as mess_type_id',
+                        'mar_active_lodges.water_supply_type as water_supply_type_id',
+                        'mar_active_lodges.electricity_type as electricity_type_id',
+                        'mar_active_lodges.security_type as security_type_id',
+                        'mar_active_lodges.no_of_rooms as noOfRooms',
+                        'mar_active_lodges.no_of_beds as noOfBeds',
+                        'ly.string_parameter as license_year_name',
+                        'lt.string_parameter as lodge_type_name',
+                        'ot.string_parameter as organization_type_name',
+                        'ldt.string_parameter as land_deed_type_name',
+                        'mt.string_parameter as mess_type_name',
+                        'wt.string_parameter as water_supply_type_name',
+                        'et.string_parameter as electricity_type_name',
+                        'st.string_parameter as security_type_name',
+                        'pw.ward_name as permanent_ward_name',
+                        'ew.ward_name as entity_ward_name',
+                        'rw.ward_name as residential_ward_name',
+                        'ulb.ulb_name',
+                        DB::raw("'Lodge' as headerTitle")
+                        )
+                        ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_active_lodges.license_year::int'))
+                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_active_lodges.residential_ward_id::int'))
+                        ->leftJoin('ref_adv_paramstrings as lt','lt.id','=',DB::raw('mar_active_lodges.lodge_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as ot','ot.id','=',DB::raw('mar_active_lodges.organization_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as ldt','ldt.id','=',DB::raw('mar_active_lodges.land_deed_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as mt','mt.id','=',DB::raw('mar_active_lodges.mess_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as wt','wt.id','=',DB::raw('mar_active_lodges.water_supply_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as et','et.id','=',DB::raw('mar_active_lodges.electricity_type::int'))
+                        ->leftJoin('ref_adv_paramstrings as st','st.id','=',DB::raw('mar_active_lodges.security_type::int'))
+                        ->leftJoin('ulb_ward_masters as ew','ew.id','=','mar_active_lodges.entity_ward_id')
+                        ->leftJoin('ulb_ward_masters as pw','pw.id','=','mar_active_lodges.permanent_ward_id')
+                        ->leftJoin('ulb_masters as ulb','ulb.id','=','mar_active_lodges.ulb_id')
+                        ->where('mar_active_lodges.id',$appId)->first();
+    }
+
+    public function updateApplication($req){
+        $mMarActiveLodge=MarActiveLodge::findorfail($req->applicationId);
+        $mMarActiveLodge->remarks=$req->remarks;
+        $mMarActiveLodge->organization_type=$req->organizationType;
+        $mMarActiveLodge->land_deed_type=$req->landDeedType;
+        $mMarActiveLodge->water_supply_type=$req->waterSupplyType;
+        $mMarActiveLodge->electricity_type=$req->electricityType;
+        $mMarActiveLodge->security_type=$req->securityType;
+        $mMarActiveLodge->cctv_camera=$req->cctvCamera;
+        $mMarActiveLodge->fire_extinguisher=$req->fireExtinguisher;
+        $mMarActiveLodge->entry_gate=$req->entryGate;
+        $mMarActiveLodge->exit_gate=$req->exitGate;
+        $mMarActiveLodge->two_wheelers_parking=$req->twoWheelersParking;
+        $mMarActiveLodge->four_wheelers_parking=$req->fourWheelersParking;
+        $mMarActiveLodge->no_of_beds=$req->noOfBeds;
+        $mMarActiveLodge->no_of_rooms=$req->noOfRooms;
+        $mMarActiveLodge->save();
+        // dd($mMarActiveBanquteHall);
+        return $mMarActiveLodge;
     }
 }

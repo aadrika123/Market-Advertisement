@@ -208,7 +208,7 @@ class AgencyController extends Controller
 
             $cardDetails = $this->generateAgencyCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Agency",
+                'headerTitle' => "Agency Application",
                 'data' => $cardDetails
             ];
 

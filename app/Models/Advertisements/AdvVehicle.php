@@ -116,10 +116,12 @@ class AdvVehicle extends Model
  */
 public function getPaymentDetails($paymentId)
 {
-    $details = AdvVehicle::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name')
+    $details = AdvVehicle::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name','payment_details')
     ->where('payment_id', $paymentId)
     ->first();
     $details->payment_details=json_decode($details->payment_details);
+    $details->towards="Movable Vehicle Advertisement Payments";
+    $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
     return $details;
 }
 

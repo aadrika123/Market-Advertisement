@@ -111,7 +111,7 @@ class MarLodge extends Model
             }else{
                 $previousApplication=$this->findPreviousApplication($mMarLodge->application_no);
                 $mMarLodge->valid_from = $previousApplication->valid_upto;
-                $mMarLodge->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->valid_upto));
+                $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }
             $mMarLodge->save();
             $renewal_id = $mMarLodge->last_renewal_id;
@@ -189,10 +189,13 @@ class MarLodge extends Model
      * | Get Payment Details After Payment
      */
     public function getPaymentDetails($paymentId){
-        $details = MarLodge::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name')
+        $details = MarLodge::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name','payment_details')
             ->where('payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
+            $details->towards="Lodge Payments";
+            $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
             return $details;
     }
+
 }

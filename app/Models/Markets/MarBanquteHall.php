@@ -114,7 +114,7 @@ class MarBanquteHall extends Model
             }else{
                 $previousApplication=$this->findPreviousApplication($mMarBanquteHall->application_no);
                 $mMarBanquteHall->valid_from = $previousApplication->valid_upto;
-                $mMarBanquteHall->valid_upto = date("Y-m-d ",strtotime("+1 Years -1 days", $previousApplication->valid_upto));
+                $mMarBanquteHall->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
             }
             $mMarBanquteHall->save();
             $renewal_id = $mMarBanquteHall->last_renewal_id;
@@ -194,6 +194,8 @@ class MarBanquteHall extends Model
             ->where('payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
+            $details->towards="Banquet/Marriage Hall Payments";
+            $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
             return $details;
     }
 }
