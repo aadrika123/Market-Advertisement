@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Params;
 
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
+use App\Models\Advertisements\AdvActiveAgency;
+use App\Models\Advertisements\AdvActiveHoarding;
+use App\Models\Advertisements\AdvActivePrivateland;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
 use App\Models\Markets\MarRejectedDharamshala;
 use App\Models\Param\RefAdvParamstring;
 use App\Models\Advertisements\AdvActiveSelfadvetdocument;
+use App\Models\Advertisements\AdvActiveVehicle;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvAgencyRenewal;
@@ -27,6 +31,10 @@ use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvVehicleRenewal;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Markets\MarActiveBanquteHall;
+use App\Models\Markets\MarActiveDharamshala;
+use App\Models\Markets\MarActiveHostel;
+use App\Models\Markets\MarActiveLodge;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarBanquteHallRenewal;
 use App\Models\Markets\MarDharamshala;
@@ -50,6 +58,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
 use App\Service\WhatsappServiceInterface;
+use Ramsey\Collection\Collection;
 
 class ParamController extends Controller
 {
@@ -765,55 +774,207 @@ class ParamController extends Controller
 
 
     
-    public function advertAnalyticalDashboard(Request $req){
+    public function analyticalDashboard(Request $req){
         try {
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
-            $advert['selfApprovedApplications'] = count($approveList);
+            $advert['ApprovedApplications'] = count($approveList);
 
-            // $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
-            // $pendingList = $mAdvActiveSelfadvertisement->allApproveList();              // Find Self Advertisement Approve Applications
-            // $advert['selfPendingApplications'] = count($pendingList);
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $pendingList = $mAdvActiveSelfadvertisement->allPendingList();              // Find Self Advertisement Pending Applications
+            $advert['PendingApplications'] = count($pendingList);
 
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
-            $advert['selfRejectedApplications'] = count($rejectList);
+            $advert['RejectedApplications'] = count($rejectList);
+
+            $self['title']="Self Advertisement";
+            $self['approveName']='Approve';
+            $self['ApprovalCount']= $advert['ApprovedApplications'];
+            $self['rejectName']='Reject';
+            $self['rejectedCount']=  $advert['RejectedApplications'];
+            $self['pendingName']='Pending';
+            $self['pendingCount']= $advert['PendingApplications'];
+            $finalData[]=$self;
 
             $mAdvPrivateland = new AdvPrivateland();
             $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
             $advert['pvtLandApprovedApplications'] = count($pvtapproveList);
 
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $pendingList = $mAdvActivePrivateland->allPendingList();              // Find Private Land Pending Applications
+            $advert['pvtLandPendingApplications'] = count($pendingList);
+
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = count($pvtRejectList);
+
+            
+            $pvtLand['title']="Private Land";
+            $pvtLand['approveName']='Approve';
+            $pvtLand['ApprovalCount']= $advert['pvtLandApprovedApplications'];
+            $pvtLand['rejectName']='Reject';
+            $pvtLand['rejectedCount']=  $advert['pvtLandRejectedApplications'];
+            $pvtLand['pendingName']='Pending';
+            $pvtLand['pendingCount']= $advert['pvtLandPendingApplications'];
+            $finalData[]=$pvtLand;
 
             $mAdvVehicle = new AdvVehicle();
             $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
             $advert['vehicleApprovedApplications'] = count($vehicleApproveList);
 
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $pendingList = $mAdvActiveVehicle->allPendingList();              // Find Vehicle Pending Applications
+            $advert['vehiclePendingApplications'] = count($pendingList);
+
+
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
             $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = count($vehicleRejectList);
+
+            
+            $vehicle['title']="Movable Vehicle";
+            $vehicle['approveName']='Approve';
+            $vehicle['ApprovalCount']= $advert['vehicleApprovedApplications'];
+            $vehicle['rejectName']='Reject';
+            $vehicle['rejectedCount']=  $advert['vehicleRejectedApplications'];
+            $vehicle['pendingName']='Pending';
+            $vehicle['pendingCount']= $advert['vehiclePendingApplications'];
+            $finalData[]=$vehicle;
+
 
             $mAdvAgency = new AdvAgency();
             $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
             $advert['agencyApprovedApplications'] = count($agencyApproveList);
 
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $pendingList = $mAdvActiveAgency->allPendingList();              // Find Agency Pending Applications
+            $advert['agencyPendingApplications'] = count($pendingList);
+
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = count($agencyRejectList);
+            
+            $agency['title']="Agency";
+            $agency['approveName']='Approve';
+            $agency['ApprovalCount']= $advert['agencyApprovedApplications'];
+            $agency['rejectName']='Reject';
+            $agency['rejectedCount']=  $advert['agencyRejectedApplications'];
+            $agency['pendingName']='Pending';
+            $agency['pendingCount']= $advert['agencyPendingApplications'];
+            $finalData[]=$agency;
 
             $mAdvHoarding = new AdvHoarding();
             $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
             $advert['hoardingApprovedApplications'] = count($hoardingApproveList);
 
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $pendingList = $mAdvActiveHoarding->allPendingList();              // Find Hoarding Pending Applications
+            $advert['hoardingPendingApplications'] = count($pendingList);
+
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
             $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = count($hoardingRejectList);
 
-            return responseMsgs(true, 'Data Fetched',  $advert, "050124", "1.0", "2 Sec", "POST");
+            $hoarding['title']="Hoarding";
+            $hoarding['approveName']='Approve';
+            $hoarding['ApprovalCount']= $advert['hoardingApprovedApplications'];
+            $hoarding['rejectName']='Reject';
+            $hoarding['rejectedCount']=  $advert['hoardingRejectedApplications'];
+            $hoarding['pendingName']='Pending';
+            $hoarding['pendingCount']= $advert['hoardingPendingApplications'];
+            $finalData[]=$hoarding;
+
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
+            $advert['banquetApprovedApplications'] = count($approveList);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->allPendingList();              // Find Banquet Marriage Pending Applications
+            $advert['banquetPendingApplications'] = count($pendingList);
+
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();                  // Find Banquet Hall Rejected Applications
+            $advert['banquetRejectedApplications'] = count($rejectList);
+
+            $banquet['title']="Banquet/Marriage Hall";
+            $banquet['approveName']='Approve';
+            $banquet['ApprovalCount']= $advert['banquetApprovedApplications'];
+            $banquet['rejectName']='Reject';
+            $banquet['rejectedCount']=  $advert['banquetRejectedApplications'];
+            $banquet['pendingName']='Pending';
+            $banquet['pendingCount']= $advert['banquetPendingApplications'];
+            $finalData[]=$banquet;
+
+            $mMarHostel = new MarHostel();
+            $hostelapproveList = $mMarHostel->allApproveList();                             // Find Hostel Approve Applications
+            $advert['hostelApprovedApplications'] = count($hostelapproveList);
+
+            $mMarActiveHostel = new MarActiveHostel();
+            $pendingList = $mMarActiveHostel->allPendingList();              // Find Hostel Pending Applications
+            $advert['hostelPendingApplications'] = count($pendingList);
+
+            $mMarRejectedHostel = new MarRejectedHostel();
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();                 // Find Hostel Rejected Applications
+            $advert['hostelRejectedApplications'] = count($hostelRejectList);
+
+            $hostel['title']="Hostel";
+            $hostel['approveName']='Approve';
+            $hostel['ApprovalCount']= $advert['hostelApprovedApplications'];
+            $hostel['rejectName']='Reject';
+            $hostel['rejectedCount']=  $advert['hostelRejectedApplications'];
+            $hostel['pendingName']='Pending';
+            $hostel['pendingCount']= $advert['hostelPendingApplications'];
+            $finalData[]=$hostel;
+
+            $mMarLodge = new MarLodge();
+            $lodgeApproveList = $mMarLodge->allApproveList();                               // Find Lodge Approve Applications
+            $advert['lodgeApprovedApplications'] = count($lodgeApproveList);
+            
+            $mMarActiveLodge = new MarActiveLodge();
+            $pendingList = $mMarActiveLodge->allPendingList();              // Find Lodge Pending Applications
+            $advert['lodgePendingApplications'] = count($pendingList);
+
+
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();                   // Find Lodge Rejected Applications
+            $advert['lodgeRejectedApplications'] = count($lodgeRejectList);
+
+            $lodge['title']="Lodge";
+            $lodge['approveName']='Approve';
+            $lodge['ApprovalCount']= $advert['lodgeApprovedApplications'];
+            $lodge['rejectName']='Reject';
+            $lodge['rejectedCount']=  $advert['lodgeRejectedApplications'];
+            $lodge['pendingName']='Pending';
+            $lodge['pendingCount']= $advert['lodgePendingApplications'];
+            $finalData[]=$lodge;
+
+            $mMarDharamshala = new MarDharamshala();
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
+            $advert['dharamshalaApprovedApplications'] = count($dharamshalaApproveList); 
+
+            $mMarActiveDharamshala = new MarActiveDharamshala();
+            $pendingList = $mMarActiveDharamshala->allPendingList();                 // Find Dharamshala Pending Applications
+            $advert['dharamshalaPendingApplications'] = count($pendingList);
+
+            $mMarRejectedDharamshala = new MarRejectedDharamshala();
+            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
+            $advert['dharamshalaRejectedApplications'] = count($dharamshalaRejectList);
+
+            $dharamshala['title']="Dharamshala";
+            $dharamshala['approveName']='Approve';
+            $dharamshala['ApprovalCount']= $advert['dharamshalaApprovedApplications'];
+            $dharamshala['rejectName']='Reject';
+            $dharamshala['rejectedCount']=  $advert['dharamshalaRejectedApplications'];
+            $dharamshala['pendingName']='Pending';
+            $dharamshala['pendingCount']= $advert['dharamshalaPendingApplications'];
+            $finalData[]=$dharamshala;
+
+            return responseMsgs(true, 'Data Fetched',  $finalData, "050124", "1.0", "2 Sec", "POST");
         } catch (Exception $e) {
             responseMsgs(false, $e->getMessage(), "");
         }
     }
+
+
 }

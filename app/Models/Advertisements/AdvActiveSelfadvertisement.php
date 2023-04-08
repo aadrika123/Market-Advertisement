@@ -407,5 +407,12 @@ class AdvActiveSelfadvertisement extends Model
         return $docDetails['active_id'];
     } 
 
-    // public function 
+       /**
+     * | Get Pending applications
+     * | @param citizenId
+     */
+    public function allPendingList()
+    {
+        return AdvActiveSelfadvertisement::all();
+    }
 }

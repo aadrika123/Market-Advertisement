@@ -459,4 +459,13 @@ class MarActiveLodge extends Model
         // dd($mMarActiveBanquteHall);
         return $mMarActiveLodge;
     }
+
+          /**
+     * | Get Pending applications
+     * | @param citizenId
+     */
+    public function allPendingList()
+    {
+        return MarActiveLodge::all();
+    }
 }

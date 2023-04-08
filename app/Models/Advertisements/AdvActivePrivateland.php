@@ -392,5 +392,15 @@ class AdvActivePrivateland extends Model
         return $docDetails['active_id'];
     }
 
+    
+         /**
+     * | Get Pending applications
+     * | @param citizenId
+     */
+    public function allPendingList()
+    {
+        return AdvActivePrivateland::all();
+    }
+
 
 }

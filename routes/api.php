@@ -96,8 +96,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('markets/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
         Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
-        Route::post('advertisements/analytical-dashboard', 'advertAnalyticalDashboard');      // 11 ( Application Details For Payments )
-        Route::post('markets/analytical-dashboard', 'marketAnalyticalDashboard');      // 12 ( Application Details For Payments )
+        Route::post('advertisements/analytical-dashboard', 'analyticalDashboard');      // 11 ( Application Details For Payments )
+        // Route::post('markets/analytical-dashboard', 'marketAnalyticalDashboard');      // 12 ( Application Details For Payments )
      });
 
     /**

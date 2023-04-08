@@ -482,5 +482,14 @@ class MarActiveBanquteHall extends Model
         return $mMarActiveBanquteHall;
     }
 
+     
+         /**
+     * | Get Pending applications
+     * | @param citizenId
+     */
+    public function allPendingList()
+    {
+        return MarActiveBanquteHall::all();
+    }
 
 }
