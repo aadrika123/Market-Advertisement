@@ -233,7 +233,7 @@ class AdvSelfadvertisement extends Model
     public function getApprovalLetter($applicationId){
         $recieptDetails = AdvSelfadvertisement::select(
                                                         'adv_selfadvertisements.approve_date',
-                                                        DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
+                                                        // DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
                                                         'adv_selfadvertisements.applicant as applicant_name',
                                                         'adv_selfadvertisements.application_no',
                                                         'adv_selfadvertisements.license_no',
