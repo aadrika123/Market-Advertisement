@@ -158,7 +158,7 @@ class AdvAgency extends Model
         ->first();
         $details->payment_details=json_decode($details->payment_details);
         $details->towards="Agency Payments";
-        $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->payment_date=Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d-m-Y');
         return $details;
     }
 

@@ -4,10 +4,10 @@
  * | Relative path and name of Document Uploads
  */
 return [
-    // "BASE_URL" => 'http://192.168.0.15:8000/',
-    // "PAYMENT_URL" => 'http://192.168.0.15:8000/',
-    "BASE_URL" => 'http://203.129.217.246:8000/',
-    "PAYMENT_URL" => 'http://203.129.217.246:8000/',
+    "BASE_URL" => 'http://192.168.0.15:8000/',
+    "PAYMENT_URL" => 'http://192.168.0.15:8000/',
+    // "BASE_URL" => 'http://203.129.217.246:8000/',
+    // "PAYMENT_URL" => 'http://203.129.217.246:8000/',
     "AADHAR_RELATIVE_NAME" => "AADHAR",
     "TRADE_RELATIVE_NAME" => "TRADE",
     "HOLDING_RELATIVE_NAME" => "HOLDING",

@@ -45,7 +45,7 @@ class AdvHoarding extends Model
      * | Get Application Approve List by Role Ids
      */
     public function listApproved($citizenId, $usertype)
-    {
+    { 
         $allApproveList = $this->allApproveList();
         foreach ($allApproveList as $key => $list) {
             $current_date = Carbon::now()->format('Y-m-d');
@@ -163,7 +163,7 @@ class AdvHoarding extends Model
     {
         //Approved Application
         $data['approvedAppl'] = AdvHoarding::select('*')
-            ->where(['payment_status' => 1, 'citizen_id' => $citizenId])
+            ->where(['payment_status' => 1, 'citizen_id' => $citizenId,'is_archived'=> false,'is_blacklist'=> false])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months

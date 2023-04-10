@@ -115,8 +115,8 @@ class AdvVehicle extends Model
  * | Get Payment Details
  */
 public function getPaymentDetails($paymentId)
-{
-    $details = AdvVehicle::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name','payment_details')
+{ 
+    $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
     ->where('payment_id', $paymentId)
     ->first();
     $details->payment_details=json_decode($details->payment_details);

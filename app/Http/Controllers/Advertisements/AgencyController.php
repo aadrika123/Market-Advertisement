@@ -194,7 +194,7 @@ class AgencyController extends Controller
                 $type = NULL;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveAgency->getDetailsById($req->applicationId, $type);
+               $data = $mAdvActiveAgency->getDetailsById($req->applicationId, $type);
             } else {
                 throw new Exception("Not Pass Application Id");
             }

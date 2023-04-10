@@ -519,6 +519,7 @@ class ParamController extends Controller
             } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+                // print_r($paymentDetails); die;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();

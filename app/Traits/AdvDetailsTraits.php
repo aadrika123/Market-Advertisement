@@ -170,7 +170,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
-            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entityName']],
+            ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Type', 'key' => 'entityType', 'value' => $data['entityType']],
             ['displayString' => 'Address', 'key' => 'address', 'value' => $data['address']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
