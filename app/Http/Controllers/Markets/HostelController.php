@@ -68,10 +68,11 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
+
             $mMarActiveHostel = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
-             
+
             // Generate Application No
             $reqData = [
                 "paramId" => $this->_tempParamId,
@@ -89,6 +90,7 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -103,16 +105,20 @@ class HostelController extends Controller
     public function listInbox(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveHostel->listInbox($roleIds);
+            $inboxList = $mMarActiveHostel->listInbox($roleIds);                       // <----- Get Inbox List
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050902", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050902", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -126,16 +132,20 @@ class HostelController extends Controller
     public function listOutbox(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveHostel->listOutbox($roleIds);
+            $outboxList = $mMarActiveHostel->listOutbox($roleIds);                      // <----- Get Outbox List
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050903", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050903", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -150,13 +160,14 @@ class HostelController extends Controller
     public function getDetailsById(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mMarActiveHostel = $this->_modelObj;
             $fullDetailsData = array();
+            $type = NULL;
             if (isset($req->type)) {
                 $type = $req->type;
-            } else {
-                $type = NULL;
             }
             if ($req->applicationId) {
                 $data = $mMarActiveHostel->getDetailsById($req->applicationId, $type);
@@ -198,8 +209,10 @@ class HostelController extends Controller
             $fullDetailsData['apply_date'] = $data['application_date'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
@@ -242,7 +255,9 @@ class HostelController extends Controller
     public function listAppliedApplications(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $citizenId = authUser()->id;
             $mMarActiveHostel = $this->_modelObj;
             $applications = $mMarActiveHostel->listAppliedApplications($citizenId);
@@ -250,9 +265,11 @@ class HostelController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true,"Applied Applications",$data1,"050106","1.0","$executionTime Sec","POST",$req->deviceId ?? "");
+
+            return responseMsgs(true, "Applied Applications", $data1, "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -270,15 +287,19 @@ class HostelController extends Controller
             "applicationId" => "required|int",
         ]);
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
             $data = MarActiveHostel::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Hostel is Escalated' : "Hostel is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $request->all());
@@ -293,7 +314,9 @@ class HostelController extends Controller
     public function listEscalated(Request $req)
     {
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
             $ulbId = authUser()->ulb_id;
@@ -308,8 +331,10 @@ class HostelController extends Controller
                 ->where('mar_active_hostels.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "");
@@ -334,11 +359,13 @@ class HostelController extends Controller
         ]);
 
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);
-            if($mMarActiveHostel->doc_verify_status=='0')
+            if ($mMarActiveHostel->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $mMarActiveHostel->last_role_id = $mMarActiveHostel->current_role_id;
             $mMarActiveHostel->current_role_id = $request->receiverRoleId;
@@ -356,6 +383,7 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -379,7 +407,9 @@ class HostelController extends Controller
         ]);
 
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $workflowTrack = new WorkflowTrack();
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
@@ -456,7 +486,9 @@ class HostelController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
+        // Variable initialization
         $startTime = microtime(true);
+
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
@@ -482,13 +514,14 @@ class HostelController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            // 'payment_amount' => 'required',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             // Check if the Current User is Finisher or Not         
             $mMarActiveHostel = MarActiveHostel::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mMarActiveHostel->workflow_id);                                 // Get Finisher using Trait
@@ -510,8 +543,8 @@ class HostelController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                  // License NO Generate
-                  $reqData = [
+                // License NO Generate
+                $reqData = [
                     "paramId" => $this->_paramId,
                     'ulbId' => $mMarActiveHostel->ulb_id
                 ];
@@ -547,33 +580,33 @@ class HostelController extends Controller
 
                     $msg = "Application Successfully Approved !!";
                 } else {
-                     //  Renewal Case
-                     // Hostel Application replication
-                     $application_no=$mMarActiveHostel->application_no;
-                     MarHostel::where('application_no', $application_no)->delete();
- 
-                      $approvedHostel = $mMarActiveHostel->replicate();
-                      $approvedHostel->setTable('mar_hostels');
-                      $temp_id = $approvedHostel->id = $mMarActiveHostel->id;
-                      $approvedHostel->payment_amount = $req->payment_amount;
-                      $approvedHostel->payment_status = $req->payment_status;
-                      $approvedHostel->approve_date = Carbon::now();
-                      $approvedHostel->save();
-  
-                      // Save in Hostel Renewal
-                      $approvedHostel = $mMarActiveHostel->replicate();
-                      $approvedHostel->approve_date = Carbon::now();
-                      $approvedHostel->setTable('mar_hostel_renewals');
-                      $approvedHostel->app_id = $temp_id;
-                      $approvedHostel->save();
-  
-                      $mMarActiveHostel->delete();
-  
-                      // Update in mar_hostels (last_renewal_id)
-                      DB::table('mar_hostels')
-                          ->where('id', $temp_id)
-                          ->update(['last_renewal_id' => $approvedHostel->id]);
-                      $msg = "Application Successfully Renewal !!";
+                    //  Renewal Case
+                    // Hostel Application replication
+                    $application_no = $mMarActiveHostel->application_no;
+                    MarHostel::where('application_no', $application_no)->delete();
+
+                    $approvedHostel = $mMarActiveHostel->replicate();
+                    $approvedHostel->setTable('mar_hostels');
+                    $temp_id = $approvedHostel->id = $mMarActiveHostel->id;
+                    $approvedHostel->payment_amount = $req->payment_amount;
+                    $approvedHostel->payment_status = $req->payment_status;
+                    $approvedHostel->approve_date = Carbon::now();
+                    $approvedHostel->save();
+
+                    // Save in Hostel Renewal
+                    $approvedHostel = $mMarActiveHostel->replicate();
+                    $approvedHostel->approve_date = Carbon::now();
+                    $approvedHostel->setTable('mar_hostel_renewals');
+                    $approvedHostel->app_id = $temp_id;
+                    $approvedHostel->save();
+
+                    $mMarActiveHostel->delete();
+
+                    // Update in mar_hostels (last_renewal_id)
+                    DB::table('mar_hostels')
+                        ->where('id', $temp_id)
+                        ->update(['last_renewal_id' => $approvedHostel->id]);
+                    $msg = "Application Successfully Renewal !!";
                 }
             }
             // Rejection
@@ -588,8 +621,10 @@ class HostelController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, $msg, "", '050117', 01, "$executionTime Sec", 'Post', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -605,6 +640,9 @@ class HostelController extends Controller
     public function listApproved(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
             $mMarHostel = new MarHostel();
@@ -617,7 +655,11 @@ class HostelController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -633,6 +675,9 @@ class HostelController extends Controller
     public function listRejected(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $citizenId = authUser()->id;
             $mMarRejectedHostel = new MarRejectedHostel();
             $applications = $mMarRejectedHostel->listRejected($citizenId);
@@ -643,7 +688,11 @@ class HostelController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "", "POST", $req->deviceId ?? "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "$executionTime ", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -661,7 +710,10 @@ class HostelController extends Controller
             'id' => 'required|integer',
         ]);
         try {
+
+            // Variable initialization
             $startTime = microtime(true);
+
             $mMarHostel = MarHostel::find($req->id);
             $reqData = [
                 "id" => $mMarHostel->id,
@@ -686,7 +738,7 @@ class HostelController extends Controller
             $data->email = $mMarHostel->email;
             $data->contact = $mMarHostel->mobile_no;
             $data->type = "Hostel";
-            // return $data;
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -707,7 +759,9 @@ class HostelController extends Controller
             'applicationId' => 'required|integer',
         ]);
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mMarHostel = new MarHostel();
             if ($req->applicationId) {
                 $data = $mMarHostel->getApplicationDetailsForPayment($req->applicationId);
@@ -717,18 +771,20 @@ class HostelController extends Controller
                 throw new Exception("Application Not Found");
 
             $data['type'] = "Hostel";
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
 
-/**
- * | Payment Application Via Cash
- */
+    /**
+     * | Payment Application Via Cash
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -739,12 +795,19 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mMarHostel = new MarHostel();
             DB::beginTransaction();
             $data = $mMarHostel->paymentByCash($req);
             DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -767,11 +830,18 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $this->_workflowIds];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -789,12 +859,19 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvCheckDtl = new AdvChequeDtl();
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
             if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -823,6 +900,9 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mWfDocument = new WfActiveDocument();
             $mMarActiveHostel = new MarActiveHostel();
             $mWfRoleusermap = new WfRoleusermap();
@@ -867,9 +947,6 @@ class HostelController extends Controller
                 $appDetails->doc_verify_status = 0;
                 $appDetails->save();
             }
-
-
-
             $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
@@ -882,9 +959,11 @@ class HostelController extends Controller
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
-
             DB::commit();
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
@@ -906,21 +985,21 @@ class HostelController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $totalApproveDoc=$refDocList->count();
+        $totalApproveDoc = $refDocList->count();
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveHostel->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
         // }
-        if($totalApproveDoc>=$totalNoOfDoc){
+        if ($totalApproveDoc >= $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
             else
                 return 1;
-        }else{
-           return 0; 
+        } else {
+            return 0;
         }
     }
 
@@ -936,6 +1015,9 @@ class HostelController extends Controller
             'applicationId' => "required"
         ]);
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $redis = Redis::connection();
             $mMarActiveHostel = MarActiveHostel::find($req->applicationId);
 
@@ -965,9 +1047,12 @@ class HostelController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', '358ms', 'Post', '');
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', "$executionTime Sec", 'POST', '');
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -978,6 +1063,9 @@ class HostelController extends Controller
     public function listBtcInbox()
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $auth = auth()->user();
             $userId = $auth->id;
             $ulbId = $auth->ulb_id;
@@ -1001,7 +1089,10 @@ class HostelController extends Controller
                 ->orderByDesc('mar_active_hostels.id')
                 ->get();
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "271ms", "POST", "", "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
         }
@@ -1041,19 +1132,26 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mMarActiveHostel = new MarActiveHostel();
             DB::beginTransaction();
             $appId = $mMarActiveHostel->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, "271ms", "POST", "", "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, " $executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
 
-    
+
 
     /**
      * | Get Application Details For Renew
@@ -1067,12 +1165,17 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mMarHostel = new MarHostel();
             $details = $mMarHostel->applicationDetailsForRenew($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1087,6 +1190,7 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
+
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
@@ -1107,7 +1211,8 @@ class HostelController extends Controller
     /**
      * | Get Application Details For Update Application
      */
-    public function getApplicationDetailsForEdit(Request $req){
+    public function getApplicationDetailsForEdit(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|digits_between:1,9223372036854775807'
         ]);
@@ -1115,29 +1220,41 @@ class HostelController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
             $mMarActiveHostel = new MarActiveHostel();
             $details = $mMarActiveHostel->getApplicationDetailsForEdit($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "271ms", "POST", "", "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "271ms", "POST", "", "");
         }
     }
 
-    public function editApplication(UpdateRequest $req){
+    public function editApplication(UpdateRequest $req)
+    {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mMarActiveHostel = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application
             DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "271ms", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
             else
                 return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "271ms", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, "Application Not Updated !!!",$e->getMessage(), "050828", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Updated !!!", $e->getMessage(), "050828", 1.0, "271ms", "POST", "", "");
         }
     }
 }

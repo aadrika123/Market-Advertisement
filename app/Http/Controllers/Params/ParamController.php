@@ -101,6 +101,8 @@ class ParamController extends Controller
     {
         $redis = Redis::connection();
         try {
+            // Variable initialization
+            $startTime = microtime(true);
             $mUlbId = $req->ulbId;
             $data = json_decode(Redis::get('adv_param_strings'));      // Get Value from Redis Cache Memory
             if (!$data) {                                                        // If Cache Memory is not available
@@ -116,9 +118,11 @@ class ParamController extends Controller
 
                 $redis->set('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
             }
-            return responseMsgs(true, "Param Strings", $data, "040201", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Param Strings", $data, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040201", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -191,7 +195,8 @@ class ParamController extends Controller
     public function paymentSuccessFailure(Request $req)
     {
         try {
-            $startTime = microtime(true);
+             // Variable initialization
+             $startTime = microtime(true);
             DB::beginTransaction();
             $updateData = [
                 'payment_date' => Carbon::now(),
@@ -489,10 +494,10 @@ class ParamController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             $msg = "Payment Accepted Successfully !!!";
-            return responseMsgs(true, $msg, "", '050206', 01, "$executionTime Sec", 'Post', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050205', 01, "$executionTime Sec", 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'Post', $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), "", '050205', 01, "", 'POST', $req->deviceId);
         }
     }
 
@@ -507,8 +512,10 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+             // Variable initialization
+             $startTime = microtime(true);
             // Get Advertesement Payment Details
-            if ($req->workflowId == $this->_selfAdvt) { 
+            if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
@@ -550,14 +557,15 @@ class ParamController extends Controller
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
             }
-
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             if (empty($paymentDetails)) {
                 throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
             } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "2 Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050209", "1.0", "$executionTime Sec", "POST", $req->deviceId);
             }
         } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", '050209', 01, "", 'POST', $req->deviceId);
         }
     }
 
@@ -568,6 +576,9 @@ class ParamController extends Controller
     public function advertDashboard()
     {
         try {
+             // Variable initialization
+             $startTime = microtime(true);
+
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
             $advert['selfApprovedApplications'] = $approveList;
@@ -608,9 +619,12 @@ class ParamController extends Controller
             $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
-            return responseMsgs(true, 'Data Fetched',  $advert, "050124", "1.0", "2 Sec", "POST");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, 'Data Fetched',  $advert, "050206", "1.0", "$executionTime Sec", "POST");
         } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'POST', '');
         }
     }
 
@@ -620,6 +634,9 @@ class ParamController extends Controller
     public function marketDashboard()
     {
         try {
+             // Variable initialization
+             $startTime = microtime(true);
+
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
             $market['banquetApprovedApplications'] = $approveList;
@@ -652,9 +669,12 @@ class ParamController extends Controller
             $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
-            return responseMsgs(true, 'Data Fetched',  $market, "050124", "1.0", "2 Sec", "POST");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, 'Data Fetched',  $market, "050208", "1.0", "$executionTime Sec", "POST");
         } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", '050208', 01, "", 'POST', '');
         }
     }
 
@@ -671,6 +691,9 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = collect($madvSelfAdvertisement->allApproveList());              // Find Self Advertisement Approve Applications
 
@@ -720,9 +743,12 @@ class ParamController extends Controller
                 $merged = $merged->where('owner_name', $req->parameter);
             }
 
-            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), 010717, 1.0, "271ms", "POST", "", "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, "", "POST", "", "");
         }
     }
 
@@ -740,8 +766,11 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-              // Get Advertesement Reciept Details
-              if ($req->workflowId == $this->_selfAdvt) {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            // Get Advertesement Reciept Details
+            if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
             } elseif ($req->workflowId == $this->_pvtLand) {
@@ -760,23 +789,30 @@ class ParamController extends Controller
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }
-            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "271ms", "POST", "", "");
-        }catch(Exception $e){
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
         }
-
     }
 
 
-    public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service){
-        
-            $notification_service->sendWhatsappNotification();
+    public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service)
+    {
+        $notification_service->sendWhatsappNotification();
     }
 
 
-    
-    public function analyticalDashboard(Request $req){
+
+    public function analyticalDashboard(Request $req)
+    {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
             $advert['ApprovedApplications'] = count($approveList);
@@ -789,14 +825,14 @@ class ParamController extends Controller
             $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
             $advert['RejectedApplications'] = count($rejectList);
 
-            $self['title']="Self Advertisement";
-            $self['approveName']='Approve';
-            $self['ApprovalCount']= $advert['ApprovedApplications'];
-            $self['rejectName']='Reject';
-            $self['rejectedCount']=  $advert['RejectedApplications'];
-            $self['pendingName']='Pending';
-            $self['pendingCount']= $advert['PendingApplications'];
-            $finalData[]=$self;
+            $self['title'] = "Self Advertisement";
+            $self['approveName'] = 'Approve';
+            $self['ApprovalCount'] = $advert['ApprovedApplications'];
+            $self['rejectName'] = 'Reject';
+            $self['rejectedCount'] =  $advert['RejectedApplications'];
+            $self['pendingName'] = 'Pending';
+            $self['pendingCount'] = $advert['PendingApplications'];
+            $finalData[] = $self;
 
             $mAdvPrivateland = new AdvPrivateland();
             $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
@@ -810,15 +846,15 @@ class ParamController extends Controller
             $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = count($pvtRejectList);
 
-            
-            $pvtLand['title']="Private Land";
-            $pvtLand['approveName']='Approve';
-            $pvtLand['ApprovalCount']= $advert['pvtLandApprovedApplications'];
-            $pvtLand['rejectName']='Reject';
-            $pvtLand['rejectedCount']=  $advert['pvtLandRejectedApplications'];
-            $pvtLand['pendingName']='Pending';
-            $pvtLand['pendingCount']= $advert['pvtLandPendingApplications'];
-            $finalData[]=$pvtLand;
+
+            $pvtLand['title'] = "Private Land";
+            $pvtLand['approveName'] = 'Approve';
+            $pvtLand['ApprovalCount'] = $advert['pvtLandApprovedApplications'];
+            $pvtLand['rejectName'] = 'Reject';
+            $pvtLand['rejectedCount'] =  $advert['pvtLandRejectedApplications'];
+            $pvtLand['pendingName'] = 'Pending';
+            $pvtLand['pendingCount'] = $advert['pvtLandPendingApplications'];
+            $finalData[] = $pvtLand;
 
             $mAdvVehicle = new AdvVehicle();
             $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
@@ -833,15 +869,15 @@ class ParamController extends Controller
             $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = count($vehicleRejectList);
 
-            
-            $vehicle['title']="Movable Vehicle";
-            $vehicle['approveName']='Approve';
-            $vehicle['ApprovalCount']= $advert['vehicleApprovedApplications'];
-            $vehicle['rejectName']='Reject';
-            $vehicle['rejectedCount']=  $advert['vehicleRejectedApplications'];
-            $vehicle['pendingName']='Pending';
-            $vehicle['pendingCount']= $advert['vehiclePendingApplications'];
-            $finalData[]=$vehicle;
+
+            $vehicle['title'] = "Movable Vehicle";
+            $vehicle['approveName'] = 'Approve';
+            $vehicle['ApprovalCount'] = $advert['vehicleApprovedApplications'];
+            $vehicle['rejectName'] = 'Reject';
+            $vehicle['rejectedCount'] =  $advert['vehicleRejectedApplications'];
+            $vehicle['pendingName'] = 'Pending';
+            $vehicle['pendingCount'] = $advert['vehiclePendingApplications'];
+            $finalData[] = $vehicle;
 
 
             $mAdvAgency = new AdvAgency();
@@ -855,15 +891,15 @@ class ParamController extends Controller
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = count($agencyRejectList);
-            
-            $agency['title']="Agency";
-            $agency['approveName']='Approve';
-            $agency['ApprovalCount']= $advert['agencyApprovedApplications'];
-            $agency['rejectName']='Reject';
-            $agency['rejectedCount']=  $advert['agencyRejectedApplications'];
-            $agency['pendingName']='Pending';
-            $agency['pendingCount']= $advert['agencyPendingApplications'];
-            $finalData[]=$agency;
+
+            $agency['title'] = "Agency";
+            $agency['approveName'] = 'Approve';
+            $agency['ApprovalCount'] = $advert['agencyApprovedApplications'];
+            $agency['rejectName'] = 'Reject';
+            $agency['rejectedCount'] =  $advert['agencyRejectedApplications'];
+            $agency['pendingName'] = 'Pending';
+            $agency['pendingCount'] = $advert['agencyPendingApplications'];
+            $finalData[] = $agency;
 
             $mAdvHoarding = new AdvHoarding();
             $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
@@ -877,14 +913,14 @@ class ParamController extends Controller
             $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = count($hoardingRejectList);
 
-            $hoarding['title']="Hoarding";
-            $hoarding['approveName']='Approve';
-            $hoarding['ApprovalCount']= $advert['hoardingApprovedApplications'];
-            $hoarding['rejectName']='Reject';
-            $hoarding['rejectedCount']=  $advert['hoardingRejectedApplications'];
-            $hoarding['pendingName']='Pending';
-            $hoarding['pendingCount']= $advert['hoardingPendingApplications'];
-            $finalData[]=$hoarding;
+            $hoarding['title'] = "Hoarding";
+            $hoarding['approveName'] = 'Approve';
+            $hoarding['ApprovalCount'] = $advert['hoardingApprovedApplications'];
+            $hoarding['rejectName'] = 'Reject';
+            $hoarding['rejectedCount'] =  $advert['hoardingRejectedApplications'];
+            $hoarding['pendingName'] = 'Pending';
+            $hoarding['pendingCount'] = $advert['hoardingPendingApplications'];
+            $finalData[] = $hoarding;
 
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
@@ -898,14 +934,14 @@ class ParamController extends Controller
             $rejectList = $mMarRejectedBanquteHall->rejectedApplication();                  // Find Banquet Hall Rejected Applications
             $advert['banquetRejectedApplications'] = count($rejectList);
 
-            $banquet['title']="Banquet/Marriage Hall";
-            $banquet['approveName']='Approve';
-            $banquet['ApprovalCount']= $advert['banquetApprovedApplications'];
-            $banquet['rejectName']='Reject';
-            $banquet['rejectedCount']=  $advert['banquetRejectedApplications'];
-            $banquet['pendingName']='Pending';
-            $banquet['pendingCount']= $advert['banquetPendingApplications'];
-            $finalData[]=$banquet;
+            $banquet['title'] = "Banquet/Marriage Hall";
+            $banquet['approveName'] = 'Approve';
+            $banquet['ApprovalCount'] = $advert['banquetApprovedApplications'];
+            $banquet['rejectName'] = 'Reject';
+            $banquet['rejectedCount'] =  $advert['banquetRejectedApplications'];
+            $banquet['pendingName'] = 'Pending';
+            $banquet['pendingCount'] = $advert['banquetPendingApplications'];
+            $finalData[] = $banquet;
 
             $mMarHostel = new MarHostel();
             $hostelapproveList = $mMarHostel->allApproveList();                             // Find Hostel Approve Applications
@@ -919,19 +955,19 @@ class ParamController extends Controller
             $hostelRejectList = $mMarRejectedHostel->rejectedApplication();                 // Find Hostel Rejected Applications
             $advert['hostelRejectedApplications'] = count($hostelRejectList);
 
-            $hostel['title']="Hostel";
-            $hostel['approveName']='Approve';
-            $hostel['ApprovalCount']= $advert['hostelApprovedApplications'];
-            $hostel['rejectName']='Reject';
-            $hostel['rejectedCount']=  $advert['hostelRejectedApplications'];
-            $hostel['pendingName']='Pending';
-            $hostel['pendingCount']= $advert['hostelPendingApplications'];
-            $finalData[]=$hostel;
+            $hostel['title'] = "Hostel";
+            $hostel['approveName'] = 'Approve';
+            $hostel['ApprovalCount'] = $advert['hostelApprovedApplications'];
+            $hostel['rejectName'] = 'Reject';
+            $hostel['rejectedCount'] =  $advert['hostelRejectedApplications'];
+            $hostel['pendingName'] = 'Pending';
+            $hostel['pendingCount'] = $advert['hostelPendingApplications'];
+            $finalData[] = $hostel;
 
             $mMarLodge = new MarLodge();
             $lodgeApproveList = $mMarLodge->allApproveList();                               // Find Lodge Approve Applications
             $advert['lodgeApprovedApplications'] = count($lodgeApproveList);
-            
+
             $mMarActiveLodge = new MarActiveLodge();
             $pendingList = $mMarActiveLodge->allPendingList();              // Find Lodge Pending Applications
             $advert['lodgePendingApplications'] = count($pendingList);
@@ -941,18 +977,18 @@ class ParamController extends Controller
             $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();                   // Find Lodge Rejected Applications
             $advert['lodgeRejectedApplications'] = count($lodgeRejectList);
 
-            $lodge['title']="Lodge";
-            $lodge['approveName']='Approve';
-            $lodge['ApprovalCount']= $advert['lodgeApprovedApplications'];
-            $lodge['rejectName']='Reject';
-            $lodge['rejectedCount']=  $advert['lodgeRejectedApplications'];
-            $lodge['pendingName']='Pending';
-            $lodge['pendingCount']= $advert['lodgePendingApplications'];
-            $finalData[]=$lodge;
+            $lodge['title'] = "Lodge";
+            $lodge['approveName'] = 'Approve';
+            $lodge['ApprovalCount'] = $advert['lodgeApprovedApplications'];
+            $lodge['rejectName'] = 'Reject';
+            $lodge['rejectedCount'] =  $advert['lodgeRejectedApplications'];
+            $lodge['pendingName'] = 'Pending';
+            $lodge['pendingCount'] = $advert['lodgePendingApplications'];
+            $finalData[] = $lodge;
 
             $mMarDharamshala = new MarDharamshala();
             $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
-            $advert['dharamshalaApprovedApplications'] = count($dharamshalaApproveList); 
+            $advert['dharamshalaApprovedApplications'] = count($dharamshalaApproveList);
 
             $mMarActiveDharamshala = new MarActiveDharamshala();
             $pendingList = $mMarActiveDharamshala->allPendingList();                 // Find Dharamshala Pending Applications
@@ -962,20 +998,22 @@ class ParamController extends Controller
             $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
             $advert['dharamshalaRejectedApplications'] = count($dharamshalaRejectList);
 
-            $dharamshala['title']="Dharamshala";
-            $dharamshala['approveName']='Approve';
-            $dharamshala['ApprovalCount']= $advert['dharamshalaApprovedApplications'];
-            $dharamshala['rejectName']='Reject';
-            $dharamshala['rejectedCount']=  $advert['dharamshalaRejectedApplications'];
-            $dharamshala['pendingName']='Pending';
-            $dharamshala['pendingCount']= $advert['dharamshalaPendingApplications'];
-            $finalData[]=$dharamshala;
+            $dharamshala['title'] = "Dharamshala";
+            $dharamshala['approveName'] = 'Approve';
+            $dharamshala['ApprovalCount'] = $advert['dharamshalaApprovedApplications'];
+            $dharamshala['rejectName'] = 'Reject';
+            $dharamshala['rejectedCount'] =  $advert['dharamshalaRejectedApplications'];
+            $dharamshala['pendingName'] = 'Pending';
+            $dharamshala['pendingCount'] = $advert['dharamshalaPendingApplications'];
+            $finalData[] = $dharamshala;
 
-            return responseMsgs(true, 'Data Fetched',  $finalData, "050124", "1.0", "2 Sec", "POST");
+            
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, 'Data Fetched',  $finalData, "050211", "1.0", "$executionTime Sec", "POST");
         } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false,$e->getMessage(), "", "050211", 1.0, "271ms", "POST", "", "");
         }
     }
-
-
 }
