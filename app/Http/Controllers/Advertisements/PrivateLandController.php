@@ -73,6 +73,7 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
+            $startTime = microtime(true);
             $privateLand = new AdvActivePrivateland();
             if (authUser()->user_type == 'JSK') {
                 $userId = ['userId' => authUser()->id];                            // Find Jsk Id
@@ -93,8 +94,10 @@ class PrivateLandController extends Controller
             $req->request->add($applicationNo);
 
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050401", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050401", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050401", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -110,12 +113,18 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
             $mAdvPrivateland = new AdvPrivateland();
             $details = $mAdvPrivateland->applicationDetailsForRenew($req->applicationId);
+
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050402", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050402", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050402", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -128,6 +137,7 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
+            $startTime = microtime(true);
             $privateLand = new AdvActivePrivateland();
             if (authUser()->user_type == 'JSK') {
                 $userId = ['userId' => authUser()->id];                            // Find Jsk Id
@@ -150,7 +160,10 @@ class PrivateLandController extends Controller
 
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
 
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050403", "1.0", "", 'POST', $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050403", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050403", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -164,6 +177,7 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
+            $startTime = microtime(true);
             $mAdvActivePrivateland = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
@@ -173,7 +187,10 @@ class PrivateLandController extends Controller
 
             $inboxList = $mAdvActivePrivateland->listInbox($roleIds);                   // <----- Get Inbox List From Model
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050404", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050404", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050404", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -186,16 +203,20 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
-            $selfAdvets = $this->_modelObj;
+            $startTime = microtime(true);
+            $mPrivateLand = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $selfAdvets->listOutbox($roleIds);                            // <----- Get Outbox List From Model
+            $outboxList = $mPrivateLand->listOutbox($roleIds);                            // <----- Get Outbox List From Model
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050405", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050405", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050405", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -209,6 +230,7 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
+            $startTime = microtime(true);
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -262,7 +284,11 @@ class PrivateLandController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050406", "1.0", "303ms", "POST", $req->deviceId);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050406", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050406", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -302,7 +328,8 @@ class PrivateLandController extends Controller
     public function listAppliedApplications(Request $req)
     {
         try {
-            // Variable Initialization
+            // Variable initialization
+            $startTime = microtime(true);
             $citizenId = authUser()->id;
             $mAdvActivePrivateland = new AdvActivePrivateland();
 
@@ -316,7 +343,10 @@ class PrivateLandController extends Controller
                 $data1['data'] = NULL;
             }
 
-            return responseMsgs(true, "Applied Applications", $data1, "050407", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Applied Applications", $data1, "050407", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050407", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -333,14 +363,20 @@ class PrivateLandController extends Controller
             "applicationId" => "required|int",
         ]);
         try {
-            // Variable Initialization
+            // Variable initialization
+            $startTime = microtime(true);
+
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
             $data = AdvActivePrivateland::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();                                                               // Save After escalate or De-Escalate
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "050408", "1.0", "353ms", "POST", $request->deviceId);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Private Lands is Escalated' : "Private Lands is removed from Escalated", '', "050408", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050408", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -351,6 +387,8 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
+            $startTime = microtime(true);
+
             $mWfWardUser = new WfWardUser();
             $userId = authUser()->id;
             $ulbId = authUser()->ulb_id;
@@ -364,7 +402,10 @@ class PrivateLandController extends Controller
                 ->where('adv_active_privatelands.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
                 ->get();
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050409", "1.0", "251ms", "POST", "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "050409", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050409", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -383,10 +424,12 @@ class PrivateLandController extends Controller
         ]);
 
         try {
+            // Variable initialization
+            $startTime = microtime(true);
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActivePrivateland::find($request->applicationId);
-            if($adv->doc_verify_status=='0')
+            if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
@@ -401,7 +444,11 @@ class PrivateLandController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050410", "1.0", "286ms", "POST", $request->deviceId);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050410", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
@@ -419,6 +466,9 @@ class PrivateLandController extends Controller
         ]);
 
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $userId = authUser()->id;
             $userType = authUser()->user_type;
             $workflowTrack = new WorkflowTrack();
@@ -448,9 +498,12 @@ class PrivateLandController extends Controller
 
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
-
             DB::commit();
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050411", "1.0", "", "POST", "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050411", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050411", "1.0", "", "POST", $request->deviceId ?? "");
@@ -464,6 +517,7 @@ class PrivateLandController extends Controller
 
     public function viewPvtLandDocuments(Request $req)
     {
+        // Variable initialization
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
@@ -486,9 +540,11 @@ class PrivateLandController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        // Variable initialization
+        $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);  // Get uploaded Documents
         $data1['data'] = $data;
         return $data1;
     }
@@ -497,6 +553,7 @@ class PrivateLandController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
+        // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -513,8 +570,7 @@ class PrivateLandController extends Controller
 
     /**
      * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
-     * | Rating-
-     * | Status- Open
+     * | Rating
      */
     public function approvedOrReject(Request $req)
     {
@@ -527,7 +583,8 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-
+            // Variable initialization
+            $startTime = microtime(true);
             // Check if the Current User is Finisher or Not         
             $mAdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActivePrivateland->workflow_id);                                 // Get Finisher using Trait
@@ -628,8 +685,10 @@ class PrivateLandController extends Controller
                 $mAdvActivePrivateland->delete();
                 $msg = "Application Successfully Rejected !!";
             }
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
             DB::commit();
-            return responseMsgs(true, $msg, "", '050415', 01, '391ms', 'Post', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050415', 01, "$executionTime Sec", 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050415", "1.0", "", "POST", $req->deviceId ?? "");
@@ -655,6 +714,9 @@ class PrivateLandController extends Controller
     public function listApproved(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $citizenId = authUser()->id;
             $userType = authUser()->user_type;
             $mAdvPrivateland = new AdvPrivateland();
@@ -666,8 +728,9 @@ class PrivateLandController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-
-            return responseMsgs(true, "Approved Application List", $data1, "050416", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Approved Application List", $data1, "050416", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050416", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -681,6 +744,9 @@ class PrivateLandController extends Controller
     public function listRejected(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $citizenId = authUser()->id;
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $applications = $mAdvRejectedPrivateland->listRejected($citizenId);
@@ -692,7 +758,10 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050417", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Rejected Application List", $data1, "050417", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050417", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -706,6 +775,9 @@ class PrivateLandController extends Controller
     public function getJSKApplications(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $userId = authUser()->id;
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $applications = $mAdvActivePrivateland->getJSKApplications($userId);
@@ -717,7 +789,10 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Applied Applications", $data1, "050418", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Applied Applications", $data1, "050418", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050418", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -731,6 +806,9 @@ class PrivateLandController extends Controller
     public function listjskApprovedApplication(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $userId = authUser()->id;
             $mAdvPrivateland = new AdvPrivateland();
             $applications = $mAdvPrivateland->listjskApprovedApplication($userId);
@@ -742,7 +820,10 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Approved Application List", $data1, "050419", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Approved Application List", $data1, "050419", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050419", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -756,6 +837,9 @@ class PrivateLandController extends Controller
     public function listJskRejectedApplication(Request $req)
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $userId = authUser()->id;
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
@@ -767,7 +851,10 @@ class PrivateLandController extends Controller
                 $data1 = null;
             }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050420", "1.0", "", "POST", $req->deviceId ?? "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Rejected Application List", $data1, "050420", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050420", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -785,7 +872,9 @@ class PrivateLandController extends Controller
             'id' => 'required|integer',
         ]);
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mAdvPrivateland = AdvPrivateland::find($req->id);
             $reqData = [
                 "id" => $mAdvPrivateland->id,
@@ -832,7 +921,9 @@ class PrivateLandController extends Controller
             'applicationId' => 'required|integer',
         ]);
         try {
+            // Variable initialization
             $startTime = microtime(true);
+
             $mAdvPrivateland = new AdvPrivateland();
             $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
@@ -843,8 +934,10 @@ class PrivateLandController extends Controller
                 throw new Exception("Application Not Found");
 
             $data['type'] = "Private Lands";
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
+
             return responseMsgs(true, 'Data Fetched',  $data, "050422", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050422", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -860,12 +953,19 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvPrivateland = new AdvPrivateland();
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
             DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050423", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050423", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(true, "Payment Rejected !!", '', "050423", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -888,11 +988,18 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $this->_workflowIds];
             $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050424", "1.0", "", 'POST', $req->deviceId ?? "");
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);                        // Entry Cheque Or DD
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050424", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050424", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -910,12 +1017,19 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvCheckDtl = new AdvChequeDtl();
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
             DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050425", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050425", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050425", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -938,10 +1052,17 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvActivePrivateland = new AdvActivePrivateland();
-            $status = $mAdvActivePrivateland->entryZone($req);
+            $status = $mAdvActivePrivateland->entryZone($req);             // Entry Zone From Model
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
             if ($status == '1') {
-                return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050426", "1.0", "2 Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched', ['status' => true, 'message' => "Zone Added Successfully", 'zone' => $req->zone], "050426", "1.0", "$executionTime Sec", "POST", $req->deviceId);
             } else {
                 throw new Exception("Zone Already Added !!!");
             }
@@ -967,6 +1088,8 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
             $mWfDocument = new WfActiveDocument();
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $mWfRoleusermap = new WfRoleusermap();
@@ -1028,7 +1151,11 @@ class PrivateLandController extends Controller
             }
 
             DB::commit();
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "050427", "1.0", "", "POST", $req->deviceId ?? "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050427", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050427", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1080,6 +1207,9 @@ class PrivateLandController extends Controller
             'applicationId' => "required"
         ]);
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);
 
@@ -1109,7 +1239,10 @@ class PrivateLandController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            return responseMsgs(true, "Successfully Done", "", "", '050428', '01', '358ms', 'Post', '');
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Successfully Done", "", "", '050428', '01', "$executionTime Sec", 'POST', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050428", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1122,6 +1255,9 @@ class PrivateLandController extends Controller
     public function listBtcInbox()
     {
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $auth = auth()->user();
             $userId = $auth->id;
             $ulbId = $auth->ulb_id;
@@ -1145,9 +1281,12 @@ class PrivateLandController extends Controller
                 ->orderByDesc('adv_active_privatelands.id')
                 ->get();
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050429", 1.0, "271ms", "POST", "", "");
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050429", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050429", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", "050429", 1.0, "", "POST", "", "");
         }
     }
 
@@ -1184,12 +1323,19 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            // Variable initialization
+            $startTime = microtime(true);
+
             $mAdvActivePrivateland = new AdvActivePrivateland();
             DB::beginTransaction();
             $appId = $mAdvActivePrivateland->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "","050430", 1.0, "271ms", "POST", "", "");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050430", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050430", 1.0, "271ms", "POST", "", "");
