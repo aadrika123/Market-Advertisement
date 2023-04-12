@@ -33,6 +33,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Symfony\Component\Process\ExecutableFinder;
 
+use App\BLL\Advert\CalculateRate;
+
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
 
@@ -91,15 +93,9 @@ class SelfAdvetController extends Controller
                 $req->request->add($citizenId);
             }
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -127,7 +123,7 @@ class SelfAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable initialization
+            // Variable initialization
             $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
             $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId);  // Get Renew Application Details
@@ -160,15 +156,9 @@ class SelfAdvetController extends Controller
                 $req->request->add($citizenId);
             }
 
-             // Generate Application No
-             $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -343,7 +333,7 @@ class SelfAdvetController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-    
+
     /**
      * | Get Applied Applications by Logged In Citizen
      */
@@ -356,7 +346,7 @@ class SelfAdvetController extends Controller
             $selfAdvets = new AdvActiveSelfadvertisement();
 
             $applications = $selfAdvets->listAppliedApplications($citizenId);             //<-------  Get Applied Applications
-            
+
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -370,7 +360,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-     /**
+    /**
      * | Escalate
      */
     public function escalateApplication(Request $request)
@@ -391,14 +381,14 @@ class SelfAdvetController extends Controller
             $data->save();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            
+
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Self Advertisment is Escalated' : "Self Advertisment is removed from Escalated", '', "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050109", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
-    
+
     public function listEscalated(Request $req)
     {
         try {
@@ -442,7 +432,7 @@ class SelfAdvetController extends Controller
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
-            if($adv->doc_verify_status=='0')
+            if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
@@ -467,7 +457,7 @@ class SelfAdvetController extends Controller
         }
     }
 
-   
+
 
     // Post Independent Comment
     public function commentApplication(Request $request)
@@ -559,7 +549,7 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $tradeLicense = new TradeLicence();
             $licenseList = $tradeLicense->getLicenceByHoldingNo($req->holding_no);
-            
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Licenses", remove_null($licenseList->toArray()), "050114", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -673,26 +663,18 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
+                $mCalculateRate = new CalculateRate;
                 $data['payment_amount'] = ['payment_amount' => 0];
                 $data['payment_status'] = ['payment_status' => 1];
                 if ($mAdvActiveSelfadvertisement->advt_category > 10) {
-                    $payment_amount = $this->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area);   // Calculate Price
+                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area);   // Calculate Price
                     $data['payment_status'] = ['payment_status' => 0];
                     $data['payment_amount'] = ['payment_amount' => $payment_amount];
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mAdvActiveSelfadvertisement->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-
-                $idGenerateData = json_decode($refResponse);
-                //  return $data['license_no']=$idGenerateData->data;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
 
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
                     // Selfadvertisement Application replication
@@ -701,7 +683,7 @@ class SelfAdvetController extends Controller
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
-                    $approvedSelfadvertisement->license_no = $idGenerateData->data;
+                    $approvedSelfadvertisement->license_no = $generatedId;
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->save();
 
@@ -709,7 +691,7 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->setTable('adv_selfadvet_renewals');
-                    $approvedSelfadvertisement->license_no = $idGenerateData->data;
+                    $approvedSelfadvertisement->license_no = $generatedId;
                     $approvedSelfadvertisement->id = $temp_id;
                     $approvedSelfadvertisement->save();
 
@@ -773,10 +755,10 @@ class SelfAdvetController extends Controller
         }
     }
 
-    public function getAdvertisementPayment($displayArea)
-    {
-        return $displayArea * 10;   // Rs. 10  per Square ft.
-    }
+    // public function getAdvertisementPayment($displayArea)
+    // {
+    //     return $displayArea * 10;   // Rs. 10  per Square ft.
+    // }
 
     /**
      * | Approve Application List for Citzen
@@ -872,7 +854,7 @@ class SelfAdvetController extends Controller
             $userId = authUser()->id;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listJskApprovedApplication($userId);
-            
+
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -1187,21 +1169,21 @@ class SelfAdvetController extends Controller
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $totalApproveDoc=$refDocList->count();
+        $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
 
-        $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
         // }
-        if($totalApproveDoc==$totalNoOfDoc){
+        if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
             else
                 return 1;
-        }else{
-           return 0; 
+        } else {
+            return 0;
         }
     }
 
@@ -1214,8 +1196,8 @@ class SelfAdvetController extends Controller
             'applicationId' => "required"
         ]);
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
             $redis = Redis::connection();
             $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find($req->applicationId);
 
@@ -1283,7 +1265,7 @@ class SelfAdvetController extends Controller
                 ->where('parked', true)
                 ->orderByDesc('adv_active_selfadvertisements.id')
                 ->get();
-           
+
             $endTime = microtime(true);
 
             $executionTime = $endTime - $startTime;
@@ -1352,8 +1334,8 @@ class SelfAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
             $listApplications = $mAdvSelfadvertisement->searchByNameorMobile($req);
 
