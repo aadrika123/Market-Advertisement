@@ -22,7 +22,8 @@ class RefAdvParamstring extends Model
                 "ref_adv_paramstrings.param_category_id"
             )
             ->leftJoin('ref_adv_paramcategories as c', 'c.id', '=', 'ref_adv_paramstrings.param_category_id')
-            // ->where('ref_adv_paramstrings.ulb_id', $ulbId)
+            ->where('ref_adv_paramstrings.status','1')
+            ->orderBy('ref_adv_paramstrings.id','Asc')
             ->get();
     }
 }
