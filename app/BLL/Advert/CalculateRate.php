@@ -3,6 +3,7 @@
 namespace App\BLL\Advert;
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -29,13 +30,51 @@ class CalculateRate
         ];
         $refResponse = Http::withToken($token)
             ->post($this->_baseUrl . 'api/id-generator', $reqData);
-        $idGenerateData = json_decode($refResponse);
+       $idGenerateData = json_decode($refResponse);
         return $idGenerateData->data;
     }
 
     public function getAdvertisementPayment($displayArea)
     {
         return $displayArea * 10;   // Rs. 10  per Square ft.
+    }
+
+    public function getMovableVehiclePayment($typology, $zone)
+    {
+        return DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then rate_zone_a
+                              when $zone = 2 then rate_zone_b
+                              when $zone = 3 then rate_zone_c
+                        else 0 end as rate"))
+            ->where('id', $typology)
+            ->first()->rate;
+    }
+
+    
+    public function getPrivateLandPayment($typology, $zone)
+    {
+        return DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then rate_zone_a
+                              when $zone = 2 then rate_zone_b
+                              when $zone = 3 then rate_zone_c
+                        else 0 end as rate"))
+            ->where('id', $typology)
+            ->first()->rate;
+    }
+
+    
+    /**
+     * | Get Hording price
+     */
+    public function getHordingPrice($typology_id, $zone = 'A')
+    {
+        return DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then rate_zone_a
+                              when $zone = 2 then rate_zone_b
+                              when $zone = 3 then rate_zone_c
+                        else 0 end as rate"))
+            ->where('id', $typology_id)
+            ->first()->rate;
     }
 }
   

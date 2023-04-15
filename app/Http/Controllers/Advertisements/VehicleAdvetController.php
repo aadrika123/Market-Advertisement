@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Advertisements;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicles\RenewalRequest;
 use App\Http\Requests\Vehicles\StoreRequest;
@@ -34,8 +35,10 @@ class VehicleAdvetController extends Controller
 {
     /**
      * | Created On-31-12-2022 
-     * | Created By-Anshu Kumar
+     * | Created By- Anshu Kumar 
+     * | Changes By- Bikash Kumar 
      * | Created for the Movable Vehicles Operations
+     * | Status - Closed By Bikash on 15 Apr 2023,  Total no. of lines - 1370, Total Function - 33, Total API - 30
      */
 
 
@@ -61,6 +64,12 @@ class VehicleAdvetController extends Controller
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $self_repo;
     }
+
+    /**
+     * | Apply for new document
+     * | Function - 01
+     * | API - 01
+     */
     public function addNew(StoreRequest $req)
     {
         try {
@@ -100,6 +109,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 02
+     * | API - 02
      */
     public function applicationDetailsForRenew(Request $req)
     {
@@ -127,6 +138,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Vehicle Application Renewal
+     * | Function - 03
+     * | API - 03
      */
     public function renewalApplication(RenewalRequest $req)
     {
@@ -169,6 +182,8 @@ class VehicleAdvetController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 04
+     * | API - 04
      */
     public function listInbox(Request $req)
     {
@@ -193,6 +208,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 05
+     * | API - 05
      */
     public function listOutbox(Request $req)
     {
@@ -216,6 +233,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Application Details
+     * | Function - 06
+     * | API - 06
      */
     public function getDetailsById(Request $req)
     {
@@ -282,7 +301,10 @@ class VehicleAdvetController extends Controller
 
 
 
-
+    /**
+     * | Get Role Details
+     * | Function - 07
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -312,6 +334,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Get Applied Applications by Logged In Citizen
+     * | Function - 08
+     * | API - 07
      */
     public function listAppliedApplications(Request $req)
     {
@@ -336,9 +360,10 @@ class VehicleAdvetController extends Controller
     }
 
 
-
-    /**
-     * | Escalate
+    /** 
+     * | Escalate Application
+     * | Function - 09
+     * | API - 08
      */
     public function escalateApplication(Request $request)
     {
@@ -349,7 +374,7 @@ class VehicleAdvetController extends Controller
         try {
             // Variable Initialization
             $startTime = microtime(true);
-            
+
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
             $data = AdvActiveVehicle::find($applicationId);
@@ -367,11 +392,13 @@ class VehicleAdvetController extends Controller
     }
 
     /**
-     * | Escalated List
+     * | Escalated Application List
+     * | Function - 10
+     * | API - 09
      */
     public function listEscalated(Request $req)
     {
-        try { 
+        try {
             // Variable Initialization
             $startTime = microtime(true);
 
@@ -401,6 +428,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Forward or Backward Application
+     * | Function - 11
+     * | API - 10
      */
     public function forwardNextLevel(Request $request)
     {
@@ -414,8 +443,6 @@ class VehicleAdvetController extends Controller
         try {
             // Variable Initialization
             $startTime = microtime(true);
-            // Vehicle Application Update Current Role Updation
-            DB::beginTransaction();
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);
             if ($mAdvActiveVehicle->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -430,8 +457,10 @@ class VehicleAdvetController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            // Vehicle Application Update Current Role Updation
+            DB::beginTransaction();
             $track->saveTrack($request);
-            DB::commit(); 
+            DB::commit();
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -445,6 +474,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Post Independent Comment
+     * | Function - 12
+     * | API - 11
      */
     public function commentApplication(Request $request)
     {
@@ -465,8 +496,6 @@ class VehicleAdvetController extends Controller
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
-            // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mAdvActiveVehicle->workflow_id,
                 'moduleId' => $mModuleId,
@@ -485,6 +514,8 @@ class VehicleAdvetController extends Controller
                 $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
             $request->request->add($metaReqs);
+            DB::beginTransaction();
+            // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
             $endTime = microtime(true);
@@ -496,6 +527,12 @@ class VehicleAdvetController extends Controller
         }
     }
 
+    
+    /**
+     * | View Vehicle upload document
+     * | Function - 13
+     * | API - 12
+     */ 
     public function viewVehicleDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
@@ -511,6 +548,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 14
+     * | API - 13
      */
     public function viewActiveDocument(Request $req)
     {
@@ -529,6 +568,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 15
+     * | API - 14
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -547,9 +588,10 @@ class VehicleAdvetController extends Controller
     }
 
     /**
-     * |Final Approval and Rejection of the Application 
-     * | Rating-
-     * | Status- Open
+     * | Final Approval and Rejection of the Application 
+     * | Function - 16
+     * | Status- closed
+     * | API - 15
      */
     public function approvedOrReject(Request $req)
     {
@@ -579,7 +621,8 @@ class VehicleAdvetController extends Controller
                 if ($zone === NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
-                $amount = $this->getMovableVehiclePayment($typology, $zone);
+                $mCalculateRate = new CalculateRate();
+                $amount = $mCalculateRate->getMovableVehiclePayment($typology, $zone);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
                 // $data['license_no']="SELF-1234567890";
@@ -677,24 +720,16 @@ class VehicleAdvetController extends Controller
         }
     }
 
-    public function getMovableVehiclePayment($typology, $zone)
-    {
-        return DB::table('adv_typology_mstrs')
-            ->select(DB::raw("case when $zone = 1 then rate_zone_a
-                              when $zone = 2 then rate_zone_b
-                              when $zone = 3 then rate_zone_c
-                        else 0 end as rate"))
-            ->where('id', $typology)
-            ->first()->rate;
-    }
 
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
+     * | Function - 17
+     * | API - 16
      */
     public function listApproved(Request $req)
     {
-        try { 
+        try {
             // Variable Initialization
             $startTime = microtime(true);
 
@@ -719,10 +754,12 @@ class VehicleAdvetController extends Controller
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
+     * | Function - 18
+     * | API - 17
      */
     public function listRejected(Request $req)
     {
-        try { 
+        try {
             // Variable Initialization
             $startTime = microtime(true);
 
@@ -746,6 +783,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Get Applied Applications by Logged In JSK
+     * | Function - 19
+     * | API - 18
      */
     public function getJSKApplications(Request $req)
     {
@@ -759,7 +798,7 @@ class VehicleAdvetController extends Controller
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication; 
+            $data1['arrayCount'] =  $totalApplication;
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -774,10 +813,12 @@ class VehicleAdvetController extends Controller
     /**
      * | Approve Application List for JSK
      * | @param Request $req
+     * | Function - 20
+     * | API - 19
      */
     public function listjskApprovedApplication(Request $req)
     {
-        try { 
+        try {
             // Variable Initialization
             $startTime = microtime(true);
 
@@ -802,6 +843,8 @@ class VehicleAdvetController extends Controller
     /**
      * | Reject Application List for JSK
      * | @param Request $req
+     * | Function - 21
+     * | API - 20
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -831,6 +874,8 @@ class VehicleAdvetController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
+     * | Function - 22
+     * | API - 21
      */
 
     public function generatePaymentOrderId(Request $req)
@@ -839,7 +884,7 @@ class VehicleAdvetController extends Controller
             'id' => 'required|integer',
         ]);
         try {
-             // Variable Initialization
+            // Variable Initialization
             $startTime = microtime(true);
 
             $mAdvVehicle = AdvVehicle::find($req->id);
@@ -882,6 +927,8 @@ class VehicleAdvetController extends Controller
      * Summary of application Details For Payment
      * @param Request $req
      * @return void
+     * | Function - 23
+     * | API - 22
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -912,7 +959,11 @@ class VehicleAdvetController extends Controller
     }
 
 
-
+    /**
+     * | Payment Via Cash
+     * | Function - 24
+     * | API - 23
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -943,6 +994,11 @@ class VehicleAdvetController extends Controller
     }
 
 
+    /**
+     * | Entry Cheque or DD
+     * | Function - 25
+     * | API - 24
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -955,8 +1011,8 @@ class VehicleAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable Initialization
-             $startTime = microtime(true);
+            // Variable Initialization
+            $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $this->_workflowIds];
             $req->request->add($workflowId);
@@ -971,6 +1027,12 @@ class VehicleAdvetController extends Controller
         }
     }
 
+
+    /**
+     * | Clear or bounce Cheque or DD
+     * | Function - 26
+     * | API - 25
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -983,8 +1045,8 @@ class VehicleAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable Initialization
-             $startTime = microtime(true);
+            // Variable Initialization
+            $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
@@ -1003,8 +1065,9 @@ class VehicleAdvetController extends Controller
     }
 
     /**
-     * |Entry Zone of the Application 
-     * | Status- Open
+     * | Entry Zone of the Application 
+     * | Function - 27
+     * | API - 26
      */
     public function entryZone(Request $req)
     {
@@ -1015,7 +1078,7 @@ class VehicleAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        try { 
+        try {
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvActiveVehicle = new AdvActiveVehicle();
@@ -1037,7 +1100,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 28
+     * | API - 27
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1051,8 +1115,8 @@ class VehicleAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable Initialization
-             $startTime = microtime(true);
+            // Variable Initialization
+            $startTime = microtime(true);
             $mWfDocument = new WfActiveDocument();
             $mAdvActiveVehicle = new AdvActiveVehicle();
             $mWfRoleusermap = new WfRoleusermap();
@@ -1098,8 +1162,6 @@ class VehicleAdvetController extends Controller
                 $appDetails->save();
             }
 
-
-
             $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
@@ -1125,6 +1187,7 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 29
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1158,7 +1221,9 @@ class VehicleAdvetController extends Controller
 
 
     /**
-     *  send back to citizen
+     * | send back to citizen
+     * | Function - 30
+     * | API - 28
      */
     public function backToCitizen(Request $req)
     {
@@ -1166,8 +1231,8 @@ class VehicleAdvetController extends Controller
             'applicationId' => "required"
         ]);
         try {
-             // Variable Initialization
-             $startTime = microtime(true);
+            // Variable Initialization
+            $startTime = microtime(true);
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActiveVehicle::find($req->applicationId);
 
@@ -1183,7 +1248,6 @@ class VehicleAdvetController extends Controller
             $mAdvActivePrivateland->current_roles = $backId->wf_role_id;
             $mAdvActivePrivateland->parked = 1;
             $mAdvActivePrivateland->save();
-
 
             $metaReqs['moduleId'] = $this->_moduleIds;
             $metaReqs['workflowId'] = $mAdvActivePrivateland->workflow_id;
@@ -1209,6 +1273,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 31
+     * | API - 29
      */
     public function listBtcInbox()
     {
@@ -1238,7 +1304,7 @@ class VehicleAdvetController extends Controller
                 ->orderByDesc('adv_active_vehicles.id')
                 ->get();
 
-           $endTime = microtime(true);
+            $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
             return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050329", 1.0, "$executionTime Sec", "POST", "", "");
@@ -1247,7 +1313,10 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
+    /**
+     * | Check all documents of apllication uploaded or not
+     * | Function - 32
+     */
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1270,6 +1339,8 @@ class VehicleAdvetController extends Controller
 
     /**
      * | Reupload Rejected Documents
+     * | Function - 33
+     * | API - 30
      */
     public function reuploadDocument(Request $req)
     {
@@ -1281,8 +1352,8 @@ class VehicleAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable Initialization
-             $startTime = microtime(true);
+            // Variable Initialization
+            $startTime = microtime(true);
             $mAdvActiveVehicle = new AdvActiveVehicle();
             DB::beginTransaction();
             $appId = $mAdvActiveVehicle->reuploadDocument($req);

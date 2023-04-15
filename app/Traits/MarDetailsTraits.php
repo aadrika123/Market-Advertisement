@@ -66,7 +66,6 @@ trait MarDetailsTraits
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residetial Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
             ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['license_year']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],

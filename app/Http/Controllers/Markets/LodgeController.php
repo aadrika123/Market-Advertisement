@@ -29,6 +29,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
+
+/**
+ * | Created By- Bikash Kumar 
+ * | Created for the Lodge Operations
+ * | Status - Closed (14 Apr 2023)  Total no. of lines - 1308
+ */
+
 class LodgeController extends Controller
 {
 
@@ -63,6 +70,7 @@ class LodgeController extends Controller
     /**
      * | Apply for Lodge
      * | @param StoreRequest 
+     * | Function - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -99,10 +107,10 @@ class LodgeController extends Controller
     }
 
 
-
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 02
      */
     public function listInbox(Request $req)
     {
@@ -130,6 +138,7 @@ class LodgeController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 03
      */
     public function listOutbox(Request $req)
     {
@@ -157,6 +166,7 @@ class LodgeController extends Controller
 
     /**
      * | Application Details
+     * | Function - 04
      */
 
     public function getDetailsById(Request $req)
@@ -217,7 +227,10 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050704", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
+    /**
+     * | Get Application role details
+     * | Function - 05
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -250,6 +263,7 @@ class LodgeController extends Controller
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
+     * | Function - 06
      */
     public function listAppliedApplications(Request $req)
     {
@@ -278,6 +292,7 @@ class LodgeController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
+     * | Function - 07
      */
     public function escalateApplication(Request $request)
     {
@@ -309,6 +324,7 @@ class LodgeController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
+     * | Function - 08
      */
     public function listEscalated(Request $req)
     {
@@ -347,6 +363,7 @@ class LodgeController extends Controller
      * Forward or Backward Application
      * @param Request $request
      * @return void
+     * | Function - 09
      */
     public function forwardNextLevel(Request $request)
     {
@@ -362,7 +379,6 @@ class LodgeController extends Controller
             $startTime = microtime(true);
 
             // Marriage Banqute Hall Application Update Current Role Updation
-            DB::beginTransaction();
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
             if ($mMarActiveLodge->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -378,6 +394,7 @@ class LodgeController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -397,6 +414,7 @@ class LodgeController extends Controller
      * Post Independent Comment
      * @param Request $request
      * @return void
+     * | Function - 10
      */
     public function commentApplication(Request $request)
     {
@@ -414,7 +432,6 @@ class LodgeController extends Controller
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mMarActiveLodge->workflow_id,
@@ -429,6 +446,7 @@ class LodgeController extends Controller
             }
 
             $request->request->add($metaReqs);
+            DB::beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
 
@@ -447,6 +465,7 @@ class LodgeController extends Controller
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
+     * | Function - 11
      */
     public function viewLodgeDocuments(Request $req)
     {
@@ -464,6 +483,7 @@ class LodgeController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 12
      */
     public function viewActiveDocument(Request $req)
     {
@@ -483,6 +503,7 @@ class LodgeController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 13
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -503,6 +524,7 @@ class LodgeController extends Controller
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
+     * | Function - 14
      */
     public function approvedOrReject(Request $req)
     {
@@ -625,6 +647,7 @@ class LodgeController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
+     * | Function - 15
      */
     public function listApproved(Request $req)
     {
@@ -659,6 +682,7 @@ class LodgeController extends Controller
      * Rejected Application List
      * @param Request $req
      * @return void
+     * | Function - 16
      */
     public function listRejected(Request $req)
     {
@@ -690,6 +714,7 @@ class LodgeController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
+     * | Function - 18
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -738,6 +763,7 @@ class LodgeController extends Controller
     /**
      * Get application Details For Payment
      * @return void
+     * | Function - 19
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -770,7 +796,7 @@ class LodgeController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 20
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -833,7 +859,6 @@ class LodgeController extends Controller
             }
 
 
-
             $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
@@ -860,6 +885,7 @@ class LodgeController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 21
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -892,10 +918,9 @@ class LodgeController extends Controller
     }
 
 
-
-
     /**
-     *  send back to citizen
+     * | Send back to citizen
+     * | Function - 22
      */
     public function backToCitizen(Request $req)
     {
@@ -947,6 +972,7 @@ class LodgeController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 23
      */
     public function listBtcInbox()
     {
@@ -1014,6 +1040,7 @@ class LodgeController extends Controller
 
     /**
      * | Reupload Rejected Documents
+     * | Function - 24
      */
     public function reuploadDocument(Request $req)
     {
@@ -1045,7 +1072,10 @@ class LodgeController extends Controller
     }
 
 
-
+    /**
+     * | Application payment via cash
+     * | Function - 25
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1078,7 +1108,10 @@ class LodgeController extends Controller
         }
     }
 
-
+    /**
+     * | Entry Cheque or DD for payment
+     * | Function - 26
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1108,6 +1141,11 @@ class LodgeController extends Controller
         }
     }
 
+
+    /** 
+     * | Clear or bounce cheque or dd
+     * | Function - 27
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1145,6 +1183,7 @@ class LodgeController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 28
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -1175,6 +1214,7 @@ class LodgeController extends Controller
     /**
      * | Apply for Lodge
      * | @param StoreRequest 
+     * | Function - 29
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -1213,6 +1253,7 @@ class LodgeController extends Controller
     }
     /**
      * | Get Application Details For Update Application
+     * | Function - 30
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1239,7 +1280,10 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050827", 1.0, "", "POST", "", "");
         }
     }
-
+    /**
+     * | Update Application 
+     * | Function - 31
+     */
     public function editApplication(UpdateRequest $req)
     {
         try {

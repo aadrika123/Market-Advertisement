@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created on - 06-02-2023
  * | Created By - Bikash Kumar
- * | Banquet Marriage Hall
+ * | Banquet Marriage Hall operations
  * | Status - Open
  */
 class BanquetMarriageHallController extends Controller
@@ -72,6 +72,7 @@ class BanquetMarriageHallController extends Controller
     /**
      * | Store 
      * | @param StoreRequest Request
+     * | Function - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -109,6 +110,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 02
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -133,6 +135,7 @@ class BanquetMarriageHallController extends Controller
     /**
      * | Renew For Banquet Marriage Hall
      * | @param StoreRequest 
+     * | Function - 03
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -170,6 +173,7 @@ class BanquetMarriageHallController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 04
      */
     public function listInbox(Request $req)
     {
@@ -197,6 +201,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 05
      */
     public function listOutbox(Request $req)
     {
@@ -223,6 +228,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Application Details
+     * | Function - 06
      */
 
     public function getDetailsById(Request $req)
@@ -287,6 +293,10 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
+    /**
+     * | Get Application Role Details
+     * | Function - 07
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -320,6 +330,7 @@ class BanquetMarriageHallController extends Controller
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
+     * | Function - 08
      */
     public function listAppliedApplications(Request $req)
     {
@@ -352,6 +363,7 @@ class BanquetMarriageHallController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
+     * | Function - 09
      */
     public function escalateApplication(Request $request)
     {
@@ -384,6 +396,7 @@ class BanquetMarriageHallController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
+     * | Function - 10
      */
     public function listEscalated(Request $req)
     {
@@ -418,6 +431,7 @@ class BanquetMarriageHallController extends Controller
      * Forward or Backward Application
      * @param Request $request
      * @return void
+     * | Function - 11
      */
     public function forwardNextLevel(Request $request)
     {
@@ -433,7 +447,6 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
 
             // Marriage Banqute Hall Application Update Current Role Updation
-            DB::beginTransaction();
             $adv = MarActiveBanquteHall::find($request->applicationId);
             if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -448,6 +461,7 @@ class BanquetMarriageHallController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -466,6 +480,7 @@ class BanquetMarriageHallController extends Controller
      * Post Independent Comment
      * @param Request $request
      * @return void
+     * | Function - 12
      */
     public function commentApplication(Request $request)
     {
@@ -482,7 +497,6 @@ class BanquetMarriageHallController extends Controller
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mMarActiveBanquteHall->workflow_id,
@@ -497,6 +511,7 @@ class BanquetMarriageHallController extends Controller
             }
 
             $request->request->add($metaReqs);
+            DB::beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
 
@@ -514,6 +529,7 @@ class BanquetMarriageHallController extends Controller
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
+     * | Function - 13
      */
     public function viewBmHallDocuments(Request $req)
     {
@@ -532,6 +548,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 14
      */
     public function viewActiveDocument(Request $req)
     {
@@ -550,6 +567,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 15
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -573,6 +591,7 @@ class BanquetMarriageHallController extends Controller
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
+     * | Function - 16
      */
     public function approvedOrReject(Request $req)
     {
@@ -695,6 +714,7 @@ class BanquetMarriageHallController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
+     * | Function - 17
      */
     public function listApproved(Request $req)
     {
@@ -729,6 +749,7 @@ class BanquetMarriageHallController extends Controller
      * Rejected Application List
      * @param Request $req
      * @return void
+     * | Function - 18
      */
     public function listRejected(Request $req)
     {
@@ -759,6 +780,7 @@ class BanquetMarriageHallController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
+     * | Function - 19
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -806,6 +828,7 @@ class BanquetMarriageHallController extends Controller
     /**
      * Get application Details For Payment
      * @return void
+     * | Function - 20
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -836,7 +859,10 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-
+    /**
+     * | Payment via cash for application
+     * | Function - 21
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -868,7 +894,10 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
+    /**
+     * | Entry Cheque or DD for Payment
+     * | Function - 22
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -897,6 +926,10 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
+    /**
+     * | Clear or bounce cheque DD 
+     * | Function - 23
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -934,6 +967,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
+     * | Function - 24
      * |
      */
     public function verifyOrRejectDoc(Request $req)
@@ -1243,11 +1277,11 @@ class BanquetMarriageHallController extends Controller
             $mMarActiveBanquteHall = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveBanquteHall->updateApplication($req);       //<--------------- Update Banquet Hall Application
-            DB::commit(); 
+            DB::commit();
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            
+
             if ($res)
                 return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
             else

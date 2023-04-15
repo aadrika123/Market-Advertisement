@@ -732,7 +732,7 @@ class ParamController extends Controller
             $merged = $merged->merge($dharamshalaApproveList);
 
 
-            $merged = $merged->where('payment_staus', '0');
+            // $merged = $merged->where('payment_staus', '0');
             if ($req->filterBy == 'mobileNo') {
                 $merged = $merged->where('mobile_no', $req->parameter);
             }

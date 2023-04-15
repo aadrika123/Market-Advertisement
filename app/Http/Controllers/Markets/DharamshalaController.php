@@ -29,6 +29,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * | Created By- Bikash Kumar 
+ * | Created for the Dharamshala Operations
+ * | Status - Open (14 Apr 2023)  Total no. of lines - 
+ */
 class DharamshalaController extends Controller
 {
     use WorkflowTrait;
@@ -61,6 +66,7 @@ class DharamshalaController extends Controller
     /**
      * | Apply for Dharamshala
      * | @param StoreRequest 
+     * | Function - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -102,6 +108,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 02
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -132,6 +139,7 @@ class DharamshalaController extends Controller
     /**
      * | Apply for Dharamshala
      * | @param StoreRequest 
+     * | Function - 03
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -171,6 +179,7 @@ class DharamshalaController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 04
      */
     public function listInbox(Request $req)
     {
@@ -198,6 +207,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 05
      */
     public function listOutbox(Request $req)
     {
@@ -225,6 +235,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Application Details
+     * | Function - 06
      */
 
     public function getDetailsById(Request $req)
@@ -289,7 +300,10 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
+    /**
+     * | Get Application Role Details
+     * | Function - 07
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -322,6 +336,7 @@ class DharamshalaController extends Controller
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
+     * | Function - 08
      */
     public function listAppliedApplications(Request $req)
     {
@@ -350,6 +365,7 @@ class DharamshalaController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
+     * | Function - 09
      */
     public function escalateApplication(Request $request)
     {
@@ -381,6 +397,7 @@ class DharamshalaController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
+     * | Function - 10
      */
     public function listEscalated(Request $req)
     {
@@ -419,6 +436,7 @@ class DharamshalaController extends Controller
      * Forward or Backward Application
      * @param Request $request
      * @return void
+     * | Function - 11
      */
     public function forwardNextLevel(Request $request)
     {
@@ -468,6 +486,7 @@ class DharamshalaController extends Controller
      * Post Independent Comment
      * @param Request $request
      * @return void
+     * | Function - 12
      */
     public function commentApplication(Request $request)
     {
@@ -519,6 +538,7 @@ class DharamshalaController extends Controller
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
+     * | Function - 13
      */
     public function viewDharamshalaDocuments(Request $req)
     {
@@ -537,6 +557,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 14
      */
     public function viewActiveDocument(Request $req)
     {
@@ -555,6 +576,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 15
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -580,6 +602,7 @@ class DharamshalaController extends Controller
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
+     * | Function - 16
      */
     public function approvedOrReject(Request $req)
     {
@@ -705,6 +728,7 @@ class DharamshalaController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
+     * | Function - 17
      */
     public function listApproved(Request $req)
     {
@@ -739,6 +763,7 @@ class DharamshalaController extends Controller
      * Rejected Application List
      * @param Request $req
      * @return void
+     * | Function - 18
      */
     public function listRejected(Request $req)
     {
@@ -771,6 +796,7 @@ class DharamshalaController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
+     * | Function - 19
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -819,6 +845,7 @@ class DharamshalaController extends Controller
     /**
      * Get application Details For Payment
      * @return void
+     * | Function - 20
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -849,6 +876,7 @@ class DharamshalaController extends Controller
 
     /**
      * Get Payment Details
+     * | Function - 21
      */
     public function getPaymentDetails(Request $req)
     {
@@ -879,6 +907,10 @@ class DharamshalaController extends Controller
     }
 
 
+    /**
+     * | Payment via cash for application
+     * | Function - 22
+     */
 
     public function paymentByCash(Request $req)
     {
@@ -912,7 +944,10 @@ class DharamshalaController extends Controller
         }
     }
 
-
+    /**
+     * | Entry cheque or dd for payment
+     * | Function - 23
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -941,7 +976,10 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
+    /**
+     * | Clear or bounce cheque for payment
+     * | Function - 24
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -980,7 +1018,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 25
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1068,6 +1106,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 26
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1102,7 +1141,8 @@ class DharamshalaController extends Controller
 
 
     /**
-     *  send back to citizen
+     * | Send back to citizen
+     * | Function - 27
      */
     public function backToCitizen(Request $req)
     {
@@ -1154,6 +1194,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 28
      */
     public function listBtcInbox()
     {
@@ -1193,6 +1234,10 @@ class DharamshalaController extends Controller
         }
     }
 
+    /**
+     * | Check full document of application are uploaded or not
+     * | Function - 29
+     */
     public function checkFullUpload($applicationId)
     {
 
@@ -1218,6 +1263,11 @@ class DharamshalaController extends Controller
         }
     }
 
+
+    /**
+     * | Re-upload rejected document by citizen
+     * | Function - 30
+     */
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1248,6 +1298,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Get Application Details For Update Application
+     * | Function - 31
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1275,12 +1326,16 @@ class DharamshalaController extends Controller
         }
     }
 
+    /**
+     * | Application updatation
+     * | Function - 32
+     */
     public function editApplication(UpdateRequest $req)
     {
         try {
             // Variable initialization
             $startTime = microtime(true);
-            
+
             $mMarActiveHostel = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application

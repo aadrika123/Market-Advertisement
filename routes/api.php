@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Route;
 /**
  * | Routers for Advertisement Modules
  * | Created On-14-12-2022 
- * | Created By-Anshu Kumar
+ * | Created By- Anshu Kumar
+ * | Changes By- Bikash Kumar (17 Jan 2023)
  * | Module Id for Advetisements=05
  */
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
@@ -262,6 +263,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-hording-archived', 'listHordingArchived'); // 36 (list Expired Hording)
         Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // 37 (Blacklist Hording)
         Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // 38 (list Blacklist Hording)
+        Route::post('advert/hording/agency-dashboard-graph', 'agencyDashboardGraph'); // 38 (list Blacklist Hording)
     });
 
 

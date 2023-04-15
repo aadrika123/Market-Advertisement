@@ -43,8 +43,10 @@ use Illuminate\Support\Facades\Redis;
 
 /**
  * | Created On-02-01-20222 
- * | Created By-Anshu Kumar
+ * | Created By- Anshu Kumar
+ * | Changes By- Bikash Kumar
  * | Agency Operations
+ * | Status - Closed, By - Bikash kumar 14 Apr 2023, Total no. of Lines - 1446
  */
 class AgencyController extends Controller
 {
@@ -73,6 +75,7 @@ class AgencyController extends Controller
     /**
      * | Store 
      * | @param StoreRequest Request
+     * | Function - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -118,8 +121,13 @@ class AgencyController extends Controller
     /**
      * | Agency Details After Login
      * | @param Request $req
+     * | Function - 02
      */
 
+    /**
+     * | Get Agency Details
+     * | Function - 03
+     */
     public function getagencyDetails(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -152,6 +160,7 @@ class AgencyController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 04
      */
     public function listInbox(Request $req)
     {
@@ -177,9 +186,9 @@ class AgencyController extends Controller
     }
 
 
-
     /**
      * | Outbox List
+     * | Function - 05
      */
     public function listOutbox(Request $req)
     {
@@ -208,6 +217,7 @@ class AgencyController extends Controller
 
     /**
      * | Application Details
+     * | Function - 06
      */
 
     public function getDetailsById(Request $req)
@@ -277,9 +287,10 @@ class AgencyController extends Controller
         }
     }
 
-
-
-
+    /**
+     * | Get Application Role Details
+     * | Function - 07
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -310,6 +321,7 @@ class AgencyController extends Controller
 
     /**
      * | Get Applied Applications by Logged In Citizen
+     * | Function - 08
      */
     public function listAppliedApplications(Request $req)
     {
@@ -338,7 +350,8 @@ class AgencyController extends Controller
     }
 
     /**
-     * | Escalate
+     * | Escalate Application
+     * | Function - 09
      */
     public function escalateApplication(Request $request)
     {
@@ -368,6 +381,7 @@ class AgencyController extends Controller
 
     /**
      * | Special Inbox
+     * | Function - 10
      */
     public function listEscalated(Request $req)
     {
@@ -399,6 +413,7 @@ class AgencyController extends Controller
 
     /**
      * | Forward or Backward Application
+     * | Function - 11
      */
     public function forwardNextLevel(Request $request)
     {
@@ -413,7 +428,6 @@ class AgencyController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             // Advertisment Application Update Current Role Updation
-            DB::beginTransaction();
             $adv = AdvActiveAgency::find($request->applicationId);
             if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -428,6 +442,7 @@ class AgencyController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -442,7 +457,10 @@ class AgencyController extends Controller
     }
 
 
-    // Post Independent Comment
+    /**
+     * | Post Independent Comment
+     * | Function - 12
+     */
     public function commentApplication(Request $request)
     {
         $request->validate([
@@ -462,8 +480,6 @@ class AgencyController extends Controller
             $mAdvActiveAgency = AdvActiveAgency::find($request->applicationId);                // Agency Details
             $mModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs = array();
-            DB::beginTransaction();
-            // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mAdvActiveAgency->workflow_id,
                 'moduleId' => $mModuleId,
@@ -482,6 +498,8 @@ class AgencyController extends Controller
                 $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
             $request->request->add($metaReqs);
+            DB::beginTransaction();
+            // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
 
@@ -495,7 +513,10 @@ class AgencyController extends Controller
         }
     }
 
-
+    /**
+     * | View Ageny uploaded documents
+     * | Function - 13
+     */
     public function viewAgencyDocuments(Request $req)
     {
         $mWfActiveDocument = new WfActiveDocument();
@@ -512,6 +533,7 @@ class AgencyController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 14
      */
     public function viewActiveDocument(Request $req)
     {
@@ -531,6 +553,7 @@ class AgencyController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 15
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -547,9 +570,9 @@ class AgencyController extends Controller
     }
 
     /**
-     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
-     * | Rating-
-     * | Status- Open
+     * | Final Approval and Rejection of the Application
+     * | Function - 16
+     * | Status- Closed
      */
     public function approvedOrReject(Request $req)
     {
@@ -663,6 +686,10 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Get Agency price
+     * | Function - 17
+     */
     public function getAgencyPrice($ulb_id, $application_type)
     {
         $mAdvAgencyAmount = new AdvAgencyAmount();
@@ -673,6 +700,7 @@ class AgencyController extends Controller
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
+     * | Function - 18
      */
     public function listApproved(Request $req)
     {
@@ -703,6 +731,7 @@ class AgencyController extends Controller
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
+     * | Function - 19
      */
     public function listRejected(Request $req)
     {
@@ -732,6 +761,7 @@ class AgencyController extends Controller
 
     /**
      * | Get Applied Applications by Logged In JSK
+     * | Function - 20
      */
     public function getJSKApplications(Request $req)
     {
@@ -761,6 +791,7 @@ class AgencyController extends Controller
     /**
      * | Approve Application List for JSK
      * | @param Request $req
+     * | Function - 21
      */
     public function listjskApprovedApplication(Request $req)
     {
@@ -790,6 +821,7 @@ class AgencyController extends Controller
     /**
      * | Reject Application List for JSK
      * | @param Request $req
+     * | Function - 22
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -818,6 +850,7 @@ class AgencyController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
+     * | Function - 23
      */
 
     public function generatePaymentOrderId(Request $req)
@@ -866,6 +899,7 @@ class AgencyController extends Controller
      * Summary of application Details For Payment
      * @param Request $req
      * @return void
+     * | Function - 24
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -895,6 +929,7 @@ class AgencyController extends Controller
 
     /**
      * | Renewal Agency
+     * | Function - 25
      */
     public function renewalAgency(RenewalRequest $req)
     {
@@ -935,6 +970,10 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Agency Payment by cash
+     * | Function - 26
+     */
     public function agencyPaymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -967,6 +1006,10 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Entry Cheque or DD for payment
+     * | Function - 27
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -996,6 +1039,11 @@ class AgencyController extends Controller
         }
     }
 
+
+    /**
+     * | Clear or bounce cheque or dd
+     * | Function - 28
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1032,7 +1080,7 @@ class AgencyController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 29
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1121,6 +1169,7 @@ class AgencyController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 30
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1153,7 +1202,8 @@ class AgencyController extends Controller
     }
 
     /**
-     *  send back to citizen
+     * | send back to citizen
+     * | Function - 31
      */
     public function backToCitizen(Request $req)
     {
@@ -1203,6 +1253,7 @@ class AgencyController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 32
      */
     public function listBtcInbox()
     {
@@ -1242,6 +1293,10 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Check full document upload or not
+     * | Function - 33
+     */
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1262,6 +1317,10 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Re-upload rejetced documents
+     * | Function - 34
+     */
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1290,7 +1349,10 @@ class AgencyController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050529", 1.0, "", "POST", "", "");
         }
     }
-
+    /**
+     * | Search application by mobile no., entity name, and owner name
+     * | Function - 35
+     */
     public function searchByNameorMobile(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1321,6 +1383,7 @@ class AgencyController extends Controller
     /**
      * Check isAgency or Not
      * @return void
+     * | Function - 36
      */
     public function isAgency(Request $req)
     {
@@ -1329,7 +1392,7 @@ class AgencyController extends Controller
             if ($userType == "Citizen") {
                 // Variable initialization
                 $startTime = microtime(true);
-                
+
                 $citizenId = authUser()->id;
                 $mAdvAgency = new AdvAgency();
                 $isAgency = $mAdvAgency->checkAgency($citizenId);
@@ -1350,15 +1413,19 @@ class AgencyController extends Controller
         }
     }
 
+    /**
+     * | Get Agency Dashboard
+     * | Function - 37
+     */
     public function getAgencyDashboard(Request $req)
     {
         try {
             $userType = authUser()->user_type;
             if ($userType == "Citizen") {
 
-                 // Variable initialization
+                // Variable initialization
                 $startTime = microtime(true);
-                
+
                 $citizenId = authUser()->id;
                 $mAdvHoarding = new AdvHoarding();
                 $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId);

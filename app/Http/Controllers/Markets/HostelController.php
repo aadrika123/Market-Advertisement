@@ -29,6 +29,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * | Created By- Bikash Kumar 
+ * | Created for the Hostel Operations
+ * | Status - Open (14 Apr 2023)  Total no. of lines - 
+ */
 class HostelController extends Controller
 {
 
@@ -62,6 +67,7 @@ class HostelController extends Controller
     /**
      * | Apply for Hostel 
      * | @param StoreRequest 
+     * | Function - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -101,6 +107,7 @@ class HostelController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 02
      */
     public function listInbox(Request $req)
     {
@@ -128,6 +135,7 @@ class HostelController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 03
      */
     public function listOutbox(Request $req)
     {
@@ -155,6 +163,7 @@ class HostelController extends Controller
 
     /**
      * | Application Details
+     * | Function - 04
      */
 
     public function getDetailsById(Request $req)
@@ -218,7 +227,10 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "");
         }
     }
-
+    /**
+     * | Get Application role details
+     * | Function - 05
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -251,6 +263,7 @@ class HostelController extends Controller
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
+     * | Function - 06
      */
     public function listAppliedApplications(Request $req)
     {
@@ -279,6 +292,7 @@ class HostelController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
+     * | Function - 07
      */
     public function escalateApplication(Request $request)
     {
@@ -302,7 +316,7 @@ class HostelController extends Controller
 
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Hostel is Escalated' : "Hostel is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), $request->all());
+            return responseMsgs(false, $e->getMessage(), "", "050107", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -310,6 +324,7 @@ class HostelController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
+     * | Function - 08
      */
     public function listEscalated(Request $req)
     {
@@ -337,7 +352,7 @@ class HostelController extends Controller
 
             return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050108", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -348,6 +363,7 @@ class HostelController extends Controller
      * Forward or Backward Application
      * @param Request $request
      * @return void
+     * | Function - 09
      */
     public function forwardNextLevel(Request $request)
     {
@@ -363,7 +379,6 @@ class HostelController extends Controller
             $startTime = microtime(true);
 
             // Marriage Banqute Hall Application Update Current Role Updation
-            DB::beginTransaction();
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);
             if ($mMarActiveHostel->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -378,6 +393,7 @@ class HostelController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -387,7 +403,7 @@ class HostelController extends Controller
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), $request->all());
+            return responseMsgs(false, $e->getMessage(), "", "050109", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -397,6 +413,7 @@ class HostelController extends Controller
      * Post Independent Comment
      * @param Request $request
      * @return void
+     * | Function - 10
      */
     public function commentApplication(Request $request)
     {
@@ -414,7 +431,6 @@ class HostelController extends Controller
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mMarActiveHostel->workflow_id,
@@ -429,8 +445,9 @@ class HostelController extends Controller
             }
 
             $request->request->add($metaReqs);
-            $workflowTrack->saveTrack($request);
 
+            DB::beginTransaction();
+            $workflowTrack->saveTrack($request);
             DB::commit();
 
             $endTime = microtime(true);
@@ -438,7 +455,7 @@ class HostelController extends Controller
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050110", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -447,6 +464,7 @@ class HostelController extends Controller
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
+     * | Function - 11
      */
     public function viewHostelDocuments(Request $req)
     {
@@ -464,6 +482,7 @@ class HostelController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 12
      */
     public function viewActiveDocument(Request $req)
     {
@@ -483,6 +502,7 @@ class HostelController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 13
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -507,6 +527,7 @@ class HostelController extends Controller
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
+     * | Function - 14
      */
     public function approvedOrReject(Request $req)
     {
@@ -636,6 +657,7 @@ class HostelController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
+     * | Function - 15
      */
     public function listApproved(Request $req)
     {
@@ -671,6 +693,7 @@ class HostelController extends Controller
      * Rejected Application List
      * @param Request $req
      * @return void
+     * | Function - 16
      */
     public function listRejected(Request $req)
     {
@@ -703,6 +726,7 @@ class HostelController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
+     * | Function - 17
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -752,6 +776,7 @@ class HostelController extends Controller
     /**
      * Get application Details For Payment
      * @return void
+     * | Function - 18
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -784,6 +809,7 @@ class HostelController extends Controller
 
     /**
      * | Payment Application Via Cash
+     * | Function - 19
      */
     public function paymentByCash(Request $req)
     {
@@ -817,7 +843,10 @@ class HostelController extends Controller
         }
     }
 
-
+    /**
+     * | Entry Cheque or DD for payment
+     * | Function - 20
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -847,6 +876,10 @@ class HostelController extends Controller
         }
     }
 
+    /**
+     * | Clear or Bounce cheque for payment
+     * | Function - 21
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -886,7 +919,7 @@ class HostelController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 22
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -972,6 +1005,7 @@ class HostelController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 23
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1007,7 +1041,8 @@ class HostelController extends Controller
 
 
     /**
-     *  send back to citizen
+     * | Send back to citizen
+     * | Function - 24
      */
     public function backToCitizen(Request $req)
     {
@@ -1059,6 +1094,7 @@ class HostelController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 25
      */
     public function listBtcInbox()
     {
@@ -1097,7 +1133,10 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
-
+    /**
+     * | Check full document uploaded or not
+     * | Function - 26
+     */
     public function checkFullUpload($applicationId)
     {
         $appDetails = MarActiveHostel::find($applicationId);
@@ -1122,6 +1161,10 @@ class HostelController extends Controller
         }
     }
 
+    /**
+     * | Re-upload rejected document by citizen
+     * | Function - 27
+     */
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1155,6 +1198,7 @@ class HostelController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 28
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -1184,6 +1228,7 @@ class HostelController extends Controller
     /**
      * | Apply for Lodge
      * | @param StoreRequest 
+     * | Function - 29
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -1210,6 +1255,7 @@ class HostelController extends Controller
 
     /**
      * | Get Application Details For Update Application
+     * | Function - 30
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1233,7 +1279,10 @@ class HostelController extends Controller
             return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "271ms", "POST", "", "");
         }
     }
-
+    /**
+     * Application Updation
+     * | Function - 31
+     */
     public function editApplication(UpdateRequest $req)
     {
         try {
@@ -1247,7 +1296,7 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            
+
             if ($res)
                 return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
             else

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Advertisements;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PrivateLand\RenewalRequest;
 use App\Http\Requests\PrivateLand\StoreRequest;
@@ -35,8 +36,10 @@ use PhpParser\Node\Expr\Empty_;
 
 /**
  * | Created On-02-01-2022 
- * | Created By-Anshu Kumar
+ * | Created By- Anshu Kumar
+ * | Changes By- Bikash Kumar
  * | Private Land Operations
+ * | Status - Open, Closed By - Bikash - 15 Apr 2023 total no of lines - 1414, Total Function - 33, Tolal API - 30
  */
 
 class PrivateLandController extends Controller
@@ -68,6 +71,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Apply For Private Land Advertisement
+     * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -103,7 +108,11 @@ class PrivateLandController extends Controller
         }
     }
 
-
+    /**
+     * | Get Application Details for renew
+     * | Function - 02
+     * | API - 02
+     */
     public function applicationDetailsForRenew(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -132,6 +141,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Apply For Private Land Advertisement
+     * | Function - 03
+     * | API - 03
      */
     public function renewalApplication(RenewalRequest $req)
     {
@@ -172,6 +183,8 @@ class PrivateLandController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 04
+     * | API - 04
      */
     public function listInbox(Request $req)
     {
@@ -198,6 +211,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 05
+     * | API - 05
      */
     public function listOutbox(Request $req)
     {
@@ -224,6 +239,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Application Details
+     * | Function - 06
+     * | API - 06
      */
 
     public function getDetailsById(Request $req)
@@ -294,7 +311,10 @@ class PrivateLandController extends Controller
         }
     }
 
-
+    /**
+     * | Get Application Role Details
+     * | Function - 07
+     */
     public function getRoleDetails(Request $request)
     {
         $ulbId = auth()->user()->ulb_id;
@@ -324,6 +344,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Get Applied Applications by Logged In Citizen
+     * | Function - 08
+     * | API - 07
      */
     public function listAppliedApplications(Request $req)
     {
@@ -354,7 +376,9 @@ class PrivateLandController extends Controller
 
 
     /**
-     * | Escalate
+     * | Escalate Application
+     * | Function - 09
+     * | API - 08
      */
     public function escalateApplication(Request $request)
     {
@@ -382,7 +406,11 @@ class PrivateLandController extends Controller
         }
     }
 
-
+    /**
+     * | List of Escalated Application 
+     * | Function - 10
+     * | API - 09
+     */
     public function listEscalated(Request $req)
     {
         try {
@@ -413,6 +441,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Forward or Backward Application
+     * | Function - 11
+     * | API - 10
      */
     public function forwardNextLevel(Request $request)
     {
@@ -426,8 +456,6 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            // Advertisment Application Update Current Role Updation
-            DB::beginTransaction();
             $adv = AdvActivePrivateland::find($request->applicationId);
             if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -442,6 +470,8 @@ class PrivateLandController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            // Advertisment Application Update Current Role Updation
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -456,7 +486,11 @@ class PrivateLandController extends Controller
     }
 
 
-    // Post Independent Comment
+    /**
+     * | Comment on Application
+     * | Function - 12
+     * | API - 11
+     */
     public function commentApplication(Request $request)
     {
         $request->validate([
@@ -475,8 +509,6 @@ class PrivateLandController extends Controller
             $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActivePrivateland = AdvActivePrivateland::find($request->applicationId);                // Advertisment Details
             $metaReqs = array();
-            DB::beginTransaction();
-            // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mAdvActivePrivateland->workflow_id,
                 'moduleId' => $this->_moduleId,
@@ -497,6 +529,8 @@ class PrivateLandController extends Controller
             }
 
             $request->request->add($metaReqs);
+            DB::beginTransaction();
+            // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
 
@@ -513,8 +547,9 @@ class PrivateLandController extends Controller
 
     /**
      * | Get Uploaded Document by application ID
+     * | Function - 13
+     * | API - 12
      */
-
     public function viewPvtLandDocuments(Request $req)
     {
         // Variable initialization
@@ -531,6 +566,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * | Function - 14
+     * | API - 13
      */
     public function viewActiveDocument(Request $req)
     {
@@ -550,6 +587,8 @@ class PrivateLandController extends Controller
     }
     /**
      * | Workflow View Uploaded Document by application ID
+     * | Function - 15
+     * | API - 14
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -569,8 +608,9 @@ class PrivateLandController extends Controller
 
 
     /**
-     * |-------------------------------------Final Approval and Rejection of the Application ------------------------------------------------|
-     * | Rating
+     * | Approval and Rejection of the Application
+     * | Function - 16
+     * | API - 15
      */
     public function approvedOrReject(Request $req)
     {
@@ -601,7 +641,8 @@ class PrivateLandController extends Controller
                 if ($zone === NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
-                $amount = $this->getPrivateLandPayment($typology, $zone);
+                $mCalculateRate = new CalculateRate();
+                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone);
                 $payment_amount = ['payment_amount' => $amount];
 
                 // $payment_amount = ['payment_amount' =>1000];
@@ -696,20 +737,11 @@ class PrivateLandController extends Controller
     }
 
 
-    public function getPrivateLandPayment($typology, $zone)
-    {
-        return DB::table('adv_typology_mstrs')
-            ->select(DB::raw("case when $zone = 1 then rate_zone_a
-                              when $zone = 2 then rate_zone_b
-                              when $zone = 3 then rate_zone_c
-                        else 0 end as rate"))
-            ->where('id', $typology)
-            ->first()->rate;
-    }
-
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
+     * | Function - 17
+     * | API - 16
      */
     public function listApproved(Request $req)
     {
@@ -740,6 +772,8 @@ class PrivateLandController extends Controller
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
+     * | Function - 18
+     * | API - 17
      */
     public function listRejected(Request $req)
     {
@@ -771,6 +805,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Get Applied Applications by Logged In JSK
+     * | Function - 19
+     * | API - 18
      */
     public function getJSKApplications(Request $req)
     {
@@ -802,6 +838,8 @@ class PrivateLandController extends Controller
     /**
      * | Approve Application List for JSK
      * | @param Request $req
+     * | Function - 20
+     * | API - 19
      */
     public function listjskApprovedApplication(Request $req)
     {
@@ -833,6 +871,8 @@ class PrivateLandController extends Controller
     /**
      * | Reject Application List for JSK
      * | @param Request $req
+     * | Function - 21
+     * | API - 20
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -864,8 +904,9 @@ class PrivateLandController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
+     * | Function - 22
+     * | Api- 21
      */
-
     public function generatePaymentOrderId(Request $req)
     {
         $req->validate([
@@ -914,6 +955,8 @@ class PrivateLandController extends Controller
      * Summary of application Details For Payment
      * @param Request $req
      * @return void
+     * | Function - 23
+     * | API - 22
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -944,6 +987,11 @@ class PrivateLandController extends Controller
         }
     }
 
+    /**
+     * | Application payment via cash
+     * | Function - 24
+     * | API - 23
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -975,7 +1023,11 @@ class PrivateLandController extends Controller
         }
     }
 
-
+    /**
+     * | Entry Cheque or dd for payment
+     * | Function - 25
+     * | API - 24
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1004,6 +1056,12 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050424", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+    /**
+     * | Clear or Bounce cheque or dd
+     * | Function - 26
+     * | API - 25
+     */
 
     public function clearOrBounceCheque(Request $req)
     {
@@ -1041,6 +1099,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Entry Zone of the Application 
+     * | Function - 27
+     * | API - 26
      */
     public function entryZone(Request $req)
     {
@@ -1074,7 +1134,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * | Function - 28
+     * | API - 27
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1164,6 +1225,7 @@ class PrivateLandController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 29
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1196,10 +1258,10 @@ class PrivateLandController extends Controller
     }
 
 
-
-
     /**
-     *  send back to citizen
+     * | send back to citizen
+     * | Function - 30
+     * | API - 28
      */
     public function backToCitizen(Request $req)
     {
@@ -1251,6 +1313,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 31
+     * | API - 29
      */
     public function listBtcInbox()
     {
@@ -1290,6 +1354,10 @@ class PrivateLandController extends Controller
         }
     }
 
+    /**
+     * | cheque full document upload or not
+     * | Function - 32
+     */
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1312,6 +1380,8 @@ class PrivateLandController extends Controller
 
     /**
      * | Re Upload Rejected DOcuments
+     * | Function - 33
+     * | API - 30
      */
     public function reuploadDocument(Request $req)
     {

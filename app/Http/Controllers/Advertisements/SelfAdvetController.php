@@ -45,7 +45,7 @@ use App\BLL\Advert\CalculateRate;
  * | Workflow ID=129
  * | Ulb Workflow ID=245
  * | Changes By Bikash 
- * | Status - Open (17 Jan 2023)
+ * | Status - Closed By - Bikash 14 Apr 2023 (Total No of Lines - 1444), Total Function - 37 , Total API- 34
  */
 
 class SelfAdvetController extends Controller
@@ -78,6 +78,8 @@ class SelfAdvetController extends Controller
     /**
      * | Apply Application for Self Advertisements 
      * | @param StoreRequest 
+     * | Function - 01
+     * | API No. - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -92,7 +94,7 @@ class SelfAdvetController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-
+            
             $mCalculateRate = new CalculateRate;
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
@@ -113,6 +115,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Application Details For Renew
+     * | Function - 02
+     * | API - 02
      */
     public function applicationDetailsForRenew(Request $req)
     {
@@ -141,6 +145,8 @@ class SelfAdvetController extends Controller
     /**
      * | Renewal for Self Advertisements 
      * | @param StoreRequest 
+     * | Function - 03
+     * | API - 03
      */
     public function renewalSelfAdvt(RenewalRequest $req)
     {
@@ -176,6 +182,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Self Advertisement Category List
+     * | Function - 04
+     * | API - 04
      */
     public function listSelfAdvtCategory()
     {
@@ -192,6 +200,8 @@ class SelfAdvetController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
+     * | Function - 05
+     * | API - 05
      */
     public function listInbox(Request $req)
     {
@@ -217,6 +227,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Outbox List
+     * | Function - 06
+     * | API - 06
      */
     public function listOutbox(Request $req)
     {
@@ -242,6 +254,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Application Details
+     * | Function - 07
+     * | API - 07
      */
     public function getDetailsById(Request $req)
     {
@@ -306,6 +320,7 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Role Details
+     * | Function - 08
      */
     public function getRoleDetails(Request $request)
     {
@@ -336,6 +351,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Applied Applications by Logged In Citizen
+     * | Function - 09
+     * | API - 08
      */
     public function listAppliedApplications(Request $req)
     {
@@ -361,7 +378,9 @@ class SelfAdvetController extends Controller
     }
 
     /**
-     * | Escalate
+     * | Escalate Application
+     * | Function - 10
+     * | API - 09
      */
     public function escalateApplication(Request $request)
     {
@@ -388,7 +407,11 @@ class SelfAdvetController extends Controller
         }
     }
 
-
+    /**
+     * | Escalate Application List
+     * | Function - 11
+     * | API - 10
+     */
     public function listEscalated(Request $req)
     {
         try {
@@ -418,6 +441,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Forward or Backward Application
+     * | Function - 12
+     * | API - 11
      */
     public function forwordNextLevel(Request $request)
     {
@@ -429,8 +454,6 @@ class SelfAdvetController extends Controller
         ]);
         try {
             $startTime = microtime(true);
-            // Advertisment Application Update Current Role Updation
-            DB::beginTransaction();
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
             if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
@@ -445,6 +468,8 @@ class SelfAdvetController extends Controller
             $request->request->add($metaReqs);
 
             $track = new WorkflowTrack();
+            // Advertisment Application Update Current Role Updation
+            DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
 
@@ -459,7 +484,11 @@ class SelfAdvetController extends Controller
 
 
 
-    // Post Independent Comment
+    /**
+     * |  Post Independent Comment
+     * |  Function - 13
+     * | API - 12
+     */
     public function commentApplication(Request $request)
     {
         $request->validate([
@@ -477,8 +506,6 @@ class SelfAdvetController extends Controller
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
-            // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $adv->workflow_id,
                 'moduleId' => $mModuleId,
@@ -497,6 +524,8 @@ class SelfAdvetController extends Controller
                 $metaReqs = array_merge($metaReqs, ['user_id' => $userId]);
             }
             $request->request->add($metaReqs);
+            DB::beginTransaction();
+            // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
             $endTime = microtime(true);
@@ -511,6 +540,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get License By User ID
+     * |  Function - 14
+     * | API - 13
      */
     public function getLicenseById(Request $req)
     {
@@ -535,6 +566,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get License By Holding No
+     * |  Function - 15
+     * | API - 14
      */
     public function getLicenseByHoldingNo(Request $req)
     {
@@ -560,6 +593,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Uploaded Document by application ID
+     * |  Function - 16
+     * | API - 15
      */
     public function viewAdvertDocument(Request $req)
     {
@@ -567,7 +602,7 @@ class SelfAdvetController extends Controller
             'applicationId' => 'required|integer'
         ]);
         if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors(), "", "040105", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $validator->errors(), "", "050115", "1.0", "", "POST", $req->deviceId ?? "");
         }
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -578,6 +613,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
+     * |  Function - 17
+     * | API - 16
      */
     public function viewActiveDocument(Request $req)
     {
@@ -594,28 +631,12 @@ class SelfAdvetController extends Controller
         return $data1;
     }
 
+
     /**
-     * | Workflow View Uploaded Document by application ID
+     * | Get Details By License NO
+     * |  Function - 18
+     * |  Function - 17
      */
-    public function viewDocumentsOnWorkflow(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|digits_between:1,9223372036854775807'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        // Variable initialization
-        $startTime = microtime(true);
-        $mWfActiveDocument = new WfActiveDocument();
-        $data = array();
-        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", "$executionTime Sec", "POST", "");
-    }
-
-
     public function getDetailsByLicenseNo(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -638,9 +659,35 @@ class SelfAdvetController extends Controller
     }
 
     /**
+     * | Workflow View Uploaded Document by application ID
+     * |  Function - 19
+     * |  API - 18
+     */
+    public function viewDocumentsOnWorkflow(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        // Variable initialization
+        $startTime = microtime(true);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", "$executionTime Sec", "POST", "");
+    }
+
+
+
+    /**
      * | Final Approval and Rejection of the Application
-     * | Rating-
-     * | Status- Open
+     * |  Function - 20
+     * |  API - 19
+     * | Status- Closed
      */
     public function approvalOrRejection(Request $req)
     {
@@ -755,14 +802,12 @@ class SelfAdvetController extends Controller
         }
     }
 
-    // public function getAdvertisementPayment($displayArea)
-    // {
-    //     return $displayArea * 10;   // Rs. 10  per Square ft.
-    // }
 
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
+     * |  Function - 21
+     * |  API - 20
      */
     public function listApproved(Request $req)
     {
@@ -791,6 +836,8 @@ class SelfAdvetController extends Controller
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
+     * |  Function - 22
+     * |  API - 21
      */
     public function listRejected(Request $req)
     {
@@ -819,6 +866,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Get Applied Applications by Logged In JSK
+     * |  Function - 23
+     * |  API - 22
      */
     public function getJSKApplications(Request $req)
     {
@@ -845,6 +894,8 @@ class SelfAdvetController extends Controller
     /**
      * | Approve Application List for JSK
      * | @param Request $req
+     * |  Function - 24
+     * |  API - 23
      */
     public function listJskApprovedApplication(Request $req)
     {
@@ -871,6 +922,8 @@ class SelfAdvetController extends Controller
     /**
      * | Reject Application List for JSK
      * | @param Request $req
+     * |  Function - 25
+     * |  API - 24
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -899,6 +952,8 @@ class SelfAdvetController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
+     * |  Function - 26
+     * |  API - 25
      */
 
     public function generatePaymentOrderId(Request $req)
@@ -949,6 +1004,8 @@ class SelfAdvetController extends Controller
     /**
      * Summary of application Details For Payment
      * @param Request $req
+     * |  Function - 27
+     * |  API - 26
      * @return void
      */
     public function applicationDetailsForPayment(Request $req)
@@ -976,6 +1033,12 @@ class SelfAdvetController extends Controller
         }
     }
 
+
+    /**
+     * | Payment via cash 
+     * |  Function - 28
+     * |  API - 27
+     */
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1007,6 +1070,11 @@ class SelfAdvetController extends Controller
     }
 
 
+    /**
+     * | Entry Cheque or DD
+     * |  Function - 29
+     * |  API - 28
+     */
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1035,6 +1103,12 @@ class SelfAdvetController extends Controller
         }
     }
 
+
+    /**
+     * | Clear or Bounce Cheque or DD
+     * |  Function - 30
+     * |  API - 29
+     */
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1069,7 +1143,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * |
+     * |  Function - 31
+     * |  API - 30
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1154,6 +1229,7 @@ class SelfAdvetController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * |  Function - 32
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1188,7 +1264,9 @@ class SelfAdvetController extends Controller
     }
 
     /**
-     *  send back to citizen
+     * | send back to citizen
+     * |  Function - 33
+     * |  API - 31
      */
     public function backToCitizen(Request $req)
     {
@@ -1237,6 +1315,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 34
+     * | API - 32
      */
     public function listBtcInbox()
     {
@@ -1275,6 +1355,10 @@ class SelfAdvetController extends Controller
         }
     }
 
+    /**
+     * | Cheque full upload document or not
+     * |  Function - 35
+     */
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1294,6 +1378,12 @@ class SelfAdvetController extends Controller
         }
     }
 
+
+    /**
+     * | Reuploaded rejected document
+     * | Function - 36
+     * | API - 33
+     */
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1323,6 +1413,8 @@ class SelfAdvetController extends Controller
 
     /**
      * | Search application by name or mobile
+     * | Function - 37
+     * | API - 34
      */
     public function searchByNameorMobile(Request $req)
     {

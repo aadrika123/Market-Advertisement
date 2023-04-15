@@ -225,6 +225,86 @@ class AdvHoarding extends Model
     }
 
 
+
+    /**
+     * | Make Agency Dashboard for Graph
+     */
+    public function agencyDashboardGraph($citizenId,$licenseYear)
+    {
+        // Approved Application
+        $data['approvedAppl'] = AdvHoarding::select('*')
+        ->where(['citizen_id' => $citizenId,'license_year' => $licenseYear])
+            ->get()
+            ->groupBy(function ($date) {
+                return Carbon::parse($date->application_date)->format('M'); // grouping by months
+            });
+        $allApproved = collect();
+        $data1['countApprovedAppl'] = $data['approvedAppl']->map(function ($item, $key) use ($allApproved) {
+            $allApproved->push($item->count());
+            return $data[$key] = $item->count();
+        });
+        $data1['countApprovedAppl']['totalApproved'] = $allApproved->sum();
+
+        // // Unpaid Application
+        // $data['unpaideAppl'] = AdvHoarding::select('*')
+        //     ->where(['payment_status' => 0, 'citizen_id' => $citizenId])
+        //     ->get()
+        //     ->groupBy(function ($date) {
+        //         return Carbon::parse($date->application_date)->format('MY'); // grouping by months
+        //     });
+        // $allUnpaid = collect();
+        // $data['countUnpaideAppl'] = $data['unpaideAppl']->map(function ($item, $key) use ($allUnpaid) {
+        //     $allUnpaid->push($item->count());
+        //     return $data[$key] = $item->count();
+        // });
+        // $data['countUnpaideAppl']['totalUnpaid'] = $allUnpaid->sum();
+
+
+        //pending Application
+        $data['pendindAppl'] = AdvActiveHoarding::select('*')
+        ->where(['citizen_id' => $citizenId,'license_year' => $licenseYear])
+            ->get()
+            ->groupBy(function ($date) {
+                return Carbon::parse($date->application_date)->format('M'); // grouping by months
+            });
+        $allPending = collect();
+        $data1['countPendindAppl'] = $data['pendindAppl']->map(function ($item, $key) use ($allPending) {
+            $allPending->push($item->count());
+            return $data[$key] = $item->count();
+        });
+        $data1['countPendindAppl']['totalPending'] = $allPending->sum();
+
+
+        // Rejected Application
+        $data['rejectAppl'] = AdvRejectedHoarding::select('*')
+            ->where(['citizen_id' => $citizenId])
+            ->get()
+            ->groupBy(function ($date) {
+                return Carbon::parse($date->application_date)->format('MY'); // grouping by months
+            });
+        $allRejected = collect();
+        $data1['countRejectAppl'] = $data['rejectAppl']->map(function ($item, $key) use ($allRejected) {
+            $allRejected->push($item->count());
+            return $data[$key] = $item->count();
+        });
+        $data1['countRejectAppl']['totalRejected'] = $allRejected->sum();
+
+        $finalData=array();
+        for($i=0;$i<12;$i++){
+            $x = strtotime("$i month");
+            $finalData['month']=date('M', $x);
+            if(isset($data1['countPendindAppl'][date('M', $x)])){
+                $finalData['approvelist']=$data1['countPendindAppl'][date('M', $x)];
+            }else{
+                $finalData['approvelist']=0;
+            }
+
+        }
+        return $finalData;
+    }
+
+
+
     /**
      * | Get Payment Details
      */
