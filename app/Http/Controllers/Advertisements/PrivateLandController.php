@@ -39,7 +39,7 @@ use PhpParser\Node\Expr\Empty_;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Private Land Operations
- * | Status - Open, Closed By - Bikash - 15 Apr 2023 total no of lines - 1414, Total Function - 33, Tolal API - 30
+ * | Status -  Closed, By - Bikash - 15 Apr 2023 total no of lines - 1397, Total Function - 33, Tolal API - 30
  */
 
 class PrivateLandController extends Controller
@@ -87,15 +87,9 @@ class PrivateLandController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];                       // Find Jsk Id
                 $req->request->add($citizenId);
             }
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
@@ -158,15 +152,10 @@ class PrivateLandController extends Controller
                 $req->request->add($citizenId);
             }
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+
             $req->request->add($applicationNo);
 
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
@@ -648,14 +637,8 @@ class PrivateLandController extends Controller
                 // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mAdvActivePrivateland->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate License No
 
                 if ($mAdvActivePrivateland->renew_no == NULL) {
                     // approved Private Land Application replication
@@ -663,7 +646,7 @@ class PrivateLandController extends Controller
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
                     $approvedPrivateland->payment_amount = $req->payment_amount;
-                    $approvedPrivateland->license_no =  $idGenerateData->data;
+                    $approvedPrivateland->license_no =  $generatedId;
                     $approvedPrivateland->approve_date = Carbon::now();
                     $approvedPrivateland->zone = $zone;
                     $approvedPrivateland->save();
@@ -671,7 +654,7 @@ class PrivateLandController extends Controller
                     // Save in Priate Land Application Advertisement Renewal
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->approve_date = Carbon::now();
-                    $approvedPrivateland->license_no =  $idGenerateData->data;
+                    $approvedPrivateland->license_no =  $generatedId;
                     $approvedPrivateland->setTable('adv_privateland_renewals');
                     $approvedPrivateland->id = $temp_id;
                     $approvedPrivateland->zone = $zone;

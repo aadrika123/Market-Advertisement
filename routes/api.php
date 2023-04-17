@@ -183,7 +183,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     Route::controller(AgencyController::class)->group(function () {
 
         Route::post('advert/agency/add-new', 'addNew');             // 01   ( Save Application )
-        Route::post('advert/agency/get-agency-details', 'getagencyDetails');             // 02  ( Agency Details )
+        Route::post('advert/agency/get-agency-details', 'getAgencyDetails');             // 02  ( Agency Details )
         Route::post('advert/agency/list-inbox', 'listInbox');             // 03 ( Application Inbox Lists )
         Route::post('advert/agency/list-outbox', 'listOutbox');    // 04 ( Application Outbox Lists )
         Route::post('advert/agency/get-details-by-id', 'getDetailsById');  // 05 ( Get Application Details By Application ID )
@@ -263,7 +263,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/list-hording-archived', 'listHordingArchived'); // 36 (list Expired Hording)
         Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // 37 (Blacklist Hording)
         Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // 38 (list Blacklist Hording)
-        Route::post('advert/hording/agency-dashboard-graph', 'agencyDashboardGraph'); // 38 (list Blacklist Hording)
+        Route::post('advert/hording/agency-dashboard-graph', 'agencyDashboardGraph'); // 39 (list Blacklist Hording)
     });
 
 

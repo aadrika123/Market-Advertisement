@@ -518,44 +518,51 @@ class ParamController extends Controller
             if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Self Advertisement Tax";
             } elseif ($req->workflowId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Private Land Tax";
             } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
-                // print_r($paymentDetails); die;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
-                // $paymentDetails->inWords='Twenty Thousand Rupees Only';
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Agency Tax";
             } elseif ($req->workflowId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Hoarding Tax";
             }
 
             // Get Market Payment Details
             elseif ($req->workflowId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
             } elseif ($req->workflowId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Hostel Tax";
             } elseif ($req->workflowId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Lodge Tax";
             } elseif ($req->workflowId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount);
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->paymentAgainst = "Dharamshala Tax";
             }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

@@ -153,8 +153,17 @@ class AdvAgency extends Model
 
     public function getPaymentDetails($paymentId)
     {
-        $details = AdvAgency::select('payment_amount','payment_id','payment_date','address','entity_name','payment_details')
-        ->where('payment_id', $paymentId)
+         $details = AdvAgency::select(
+            'adv_agencies.payment_amount',
+            'adv_agencies.payment_id',
+            'adv_agencies.payment_date',
+            'adv_agencies.address',
+            'adv_agencies.entity_name',
+            'adv_agencies.payment_details',
+            'ulb_masters.ulb_name as ulbName'
+            )
+        ->leftjoin('ulb_masters','adv_agencies.ulb_id','=','ulb_masters.id')
+        ->where('adv_agencies.payment_id', $paymentId)
         ->first();
         $details->payment_details=json_decode($details->payment_details);
         $details->towards="Agency Payments";

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Markets;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dharamshala\RenewalRequest;
 use App\Http\Requests\Dharamshala\StoreRequest;
@@ -32,7 +33,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Dharamshala Operations
- * | Status - Open (14 Apr 2023)  Total no. of lines - 
+ * | Status - Closed, By Bikash - 17 Apr 2023, Total Function - 31, Total API - 28,  Total no. of lines - 1319
  */
 class DharamshalaController extends Controller
 {
@@ -67,6 +68,7 @@ class DharamshalaController extends Controller
      * | Apply for Dharamshala
      * | @param StoreRequest 
      * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -78,15 +80,9 @@ class DharamshalaController extends Controller
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -104,82 +100,11 @@ class DharamshalaController extends Controller
     }
 
 
-
-
-    /**
-     * | Get Application Details For Renew
-     * | Function - 02
-     */
-    public function getApplicationDetailsForRenew(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|digits_between:1,9223372036854775807'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mMarDharamshala = new MarDharamshala();
-            $details = $mMarDharamshala->applicationDetailsForRenew($req->applicationId);       // Get Details For Renew Application
-            if (!$details)
-                throw new Exception("Application Not Found !!!");
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Apply for Dharamshala
-     * | @param StoreRequest 
-     * | Function - 03
-     */
-    public function renewApplication(RenewalRequest $req)
-    {
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mActiveDharamshala = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
-
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
-            $req->request->add($applicationNo);
-
-            DB::beginTransaction();
-            $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
-        }
-    }
-
     /**
      * | Inbox List
      * | @param Request $req
-     * | Function - 04
+     * | Function - 02
+     * | API - 02
      */
     public function listInbox(Request $req)
     {
@@ -207,7 +132,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Outbox List
-     * | Function - 05
+     * | Function - 03
+     * | API - 03
      */
     public function listOutbox(Request $req)
     {
@@ -235,7 +161,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Application Details
-     * | Function - 06
+     * | Function - 04
+     * | API - 04
      */
 
     public function getDetailsById(Request $req)
@@ -302,7 +229,7 @@ class DharamshalaController extends Controller
     }
     /**
      * | Get Application Role Details
-     * | Function - 07
+     * | Function - 05
      */
     public function getRoleDetails(Request $request)
     {
@@ -331,12 +258,12 @@ class DharamshalaController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
     /**
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
-     * | Function - 08
+     * | Function - 06
+     * | API - 05
      */
     public function listAppliedApplications(Request $req)
     {
@@ -365,7 +292,8 @@ class DharamshalaController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
-     * | Function - 09
+     * | Function - 07
+     * | API - 06
      */
     public function escalateApplication(Request $request)
     {
@@ -397,7 +325,8 @@ class DharamshalaController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
-     * | Function - 10
+     * | Function - 08
+     * | API - 07
      */
     public function listEscalated(Request $req)
     {
@@ -429,14 +358,12 @@ class DharamshalaController extends Controller
         }
     }
 
-
-
-
     /**
      * Forward or Backward Application
      * @param Request $request
      * @return void
-     * | Function - 11
+     * | Function - 09
+     * | API - 08
      */
     public function forwardNextLevel(Request $request)
     {
@@ -446,7 +373,6 @@ class DharamshalaController extends Controller
             'receiverRoleId' => 'required|integer',
             'comment' => 'required',
         ]);
-
         try {
             // Variable initialization
             $startTime = microtime(true);
@@ -480,13 +406,12 @@ class DharamshalaController extends Controller
         }
     }
 
-
-
     /**
      * Post Independent Comment
      * @param Request $request
      * @return void
-     * | Function - 12
+     * | Function - 10
+     * | API - 09
      */
     public function commentApplication(Request $request)
     {
@@ -533,12 +458,12 @@ class DharamshalaController extends Controller
         }
     }
 
-
     /**
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
-     * | Function - 13
+     * | Function - 11
+     * | API - 10
      */
     public function viewDharamshalaDocuments(Request $req)
     {
@@ -553,11 +478,10 @@ class DharamshalaController extends Controller
         return $data1;
     }
 
-
-
     /**
      * | Get Uploaded Active Document by application ID
-     * | Function - 14
+     * | Function - 12
+     * | API - 11
      */
     public function viewActiveDocument(Request $req)
     {
@@ -576,7 +500,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
-     * | Function - 15
+     * | Function - 13
+     * | API - 12
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -595,14 +520,12 @@ class DharamshalaController extends Controller
         return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
     }
 
-
-
-
     /**
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
-     * | Function - 16
+     * | Function - 14
+     * | API - 13
      */
     public function approvedOrReject(Request $req)
     {
@@ -636,14 +559,9 @@ class DharamshalaController extends Controller
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveDharamshala->workflow_id, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mMarActiveDharamshala->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-                $idGenerateData = json_decode($refResponse);
+
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
 
                 if ($mMarActiveDharamshala->renew_no == NULL) {
                     // dharamshala Application replication
@@ -651,7 +569,7 @@ class DharamshalaController extends Controller
                     $approveddharamshala->setTable('mar_dharamshalas');
                     $temp_id = $approveddharamshala->id = $mMarActiveDharamshala->id;
                     $approveddharamshala->payment_amount = $req->payment_amount;
-                    $approveddharamshala->license_no = $idGenerateData->data;
+                    $approveddharamshala->license_no = $generatedId;
                     $approveddharamshala->approve_date = Carbon::now();
                     $approveddharamshala->save();
 
@@ -661,7 +579,7 @@ class DharamshalaController extends Controller
                     $approveddharamshala = $mMarActiveDharamshala->replicate();
                     $approveddharamshala->approve_date = Carbon::now();
                     $approveddharamshala->setTable('mar_dharamshala_renewals');
-                    $approveddharamshala->license_no = $idGenerateData->data;
+                    $approveddharamshala->license_no = $generatedId;;
                     $approveddharamshala->app_id = $mMarActiveDharamshala->id;
                     $approveddharamshala->save();
 
@@ -728,7 +646,8 @@ class DharamshalaController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
-     * | Function - 17
+     * | Function - 15
+     * | API - 14
      */
     public function listApproved(Request $req)
     {
@@ -758,12 +677,12 @@ class DharamshalaController extends Controller
     }
 
 
-
     /**
      * Rejected Application List
      * @param Request $req
      * @return void
-     * | Function - 18
+     * | Function - 16
+     * | API - 15
      */
     public function listRejected(Request $req)
     {
@@ -796,7 +715,8 @@ class DharamshalaController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
-     * | Function - 19
+     * | Function - 17
+     * | API - 16
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -845,7 +765,8 @@ class DharamshalaController extends Controller
     /**
      * Get application Details For Payment
      * @return void
-     * | Function - 20
+     * | Function - 18
+     * | API - 17
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -874,151 +795,11 @@ class DharamshalaController extends Controller
         }
     }
 
-    /**
-     * Get Payment Details
-     * | Function - 21
-     */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mMarDharamshala = new MarDharamshala();
-            $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            responseMsgs(false, $e->getMessage(), "");
-        }
-    }
-
-
-    /**
-     * | Payment via cash for application
-     * | Function - 22
-     */
-
-    public function paymentByCash(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mMarDharamshala = new MarDharamshala();
-            DB::beginTransaction();
-            $data = $mMarDharamshala->paymentByCash($req);
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Entry cheque or dd for payment
-     * | Function - 23
-     */
-    public function entryChequeDd(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
-            'bankName' => 'required|string',
-            'branchName' => 'required|string',
-            'chequeNo' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
-            $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-    /**
-     * | Clear or bounce cheque for payment
-     * | Function - 24
-     */
-    public function clearOrBounceCheque(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string',
-            'status' => 'required|string',
-            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
-            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            DB::beginTransaction();
-            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-
 
     /**
      * | Verify Single Application Approve or reject
-     * | Function - 25
+     * | Function - 19
+     * | API - 18
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1106,7 +887,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
-     * | Function - 26
+     * | Function - 20
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1142,7 +923,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Send back to citizen
-     * | Function - 27
+     * | Function - 21
+     * | API - 19
      */
     public function backToCitizen(Request $req)
     {
@@ -1194,7 +976,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Back To Citizen Inbox
-     * | Function - 28
+     * | Function - 22
+     * | API - 20
      */
     public function listBtcInbox()
     {
@@ -1236,7 +1019,7 @@ class DharamshalaController extends Controller
 
     /**
      * | Check full document of application are uploaded or not
-     * | Function - 29
+     * | Function - 23
      */
     public function checkFullUpload($applicationId)
     {
@@ -1266,7 +1049,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Re-upload rejected document by citizen
-     * | Function - 30
+     * | Function - 24
+     * | API - 21
      */
     public function reuploadDocument(Request $req)
     {
@@ -1296,9 +1080,187 @@ class DharamshalaController extends Controller
         }
     }
 
+
+    /**
+     * | Payment via cash for application
+     * | Function - 25
+     * | API - 22
+     */
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarDharamshala = new MarDharamshala();
+            DB::beginTransaction();
+            $data = $mMarDharamshala->paymentByCash($req);
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Entry cheque or dd for payment
+     * | Function - 26
+     * | API - 23
+     */
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+    /**
+     * | Clear or bounce cheque for payment
+     * | Function - 27
+     * | API - 24
+     */
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    /**
+     * | Get Application Details For Renew
+     * | Function - 28
+     * | API - 25
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarDharamshala = new MarDharamshala();
+            $details = $mMarDharamshala->applicationDetailsForRenew($req->applicationId);       // Get Details For Renew Application
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Apply for Dharamshala
+     * | @param StoreRequest 
+     * | Function - 29
+     * | API - 26
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mActiveDharamshala = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+            $req->request->add($applicationNo);
+
+            DB::beginTransaction();
+            $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
     /**
      * | Get Application Details For Update Application
-     * | Function - 31
+     * | Function - 30
+     * | API - 27
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1328,7 +1290,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Application updatation
-     * | Function - 32
+     * | Function - 31
+     * | API - 28
      */
     public function editApplication(UpdateRequest $req)
     {

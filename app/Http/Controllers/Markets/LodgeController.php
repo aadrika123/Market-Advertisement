@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Markets;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Lodge\RenewalRequest;
 use App\Http\Requests\Lodge\StoreRequest;
@@ -82,15 +83,10 @@ class LodgeController extends Controller
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -556,15 +552,8 @@ class LodgeController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mMarActiveLodge->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate License No
 
                 if ($mMarActiveLodge->renew_no == NULL) {
                     // Lodge Application replication
@@ -572,7 +561,7 @@ class LodgeController extends Controller
                     $approvedlodge->setTable('mar_lodges');
                     $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
                     $approvedlodge->payment_amount = $req->payment_amount;
-                    $approvedlodge->license_no = $idGenerateData->data;
+                    $approvedlodge->license_no = $generatedId;
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->save();
 
@@ -580,7 +569,7 @@ class LodgeController extends Controller
                     $approvedlodge = $mMarActiveLodge->replicate();
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->setTable('mar_lodge_renewals');
-                    $approvedlodge->license_no = $idGenerateData->data;
+                    $approvedlodge->license_no = $generatedId;
                     $approvedlodge->app_id = $temp_id;
                     $approvedlodge->save();
 
@@ -1226,16 +1215,9 @@ class LodgeController extends Controller
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
-
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();

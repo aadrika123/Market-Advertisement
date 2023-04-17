@@ -110,12 +110,21 @@ class AdvPrivateland extends Model
  */
 public function getPaymentDetails($paymentId)
 {
-    $details = AdvPrivateland::select('payment_amount','payment_id','payment_date','entity_address as address','entity_name','payment_details')
-    ->where('payment_id', $paymentId)
+   $details = AdvPrivateland::select(
+        'adv_privatelands.payment_amount',
+        'adv_privatelands.payment_id',
+        'adv_privatelands.payment_date',
+        'adv_privatelands.entity_address as address',
+        'adv_privatelands.entity_name',
+        'adv_privatelands.payment_details',
+        'ulb_masters.ulb_name as ulbName'
+        )
+    ->leftjoin('ulb_masters','adv_privatelands.ulb_id','=','ulb_masters.id')
+    ->where('adv_privatelands.payment_id', $paymentId)
     ->first();
     $details->payment_details=json_decode($details->payment_details);
     $details->towards="Private Land Payments";
-    $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+    $details->payment_date=Carbon::createFromFormat('Y-m-d H:i:s', $details->payment_date)->format('d/m/Y');
     return $details;
 }
 

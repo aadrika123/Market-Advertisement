@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Markets;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BanquetMarriageHall\RenewalRequest;
 use App\Models\Markets\MarketPriceMstrs;
@@ -36,7 +37,7 @@ use Illuminate\Support\Facades\Validator;
  * | Created on - 06-02-2023
  * | Created By - Bikash Kumar
  * | Banquet Marriage Hall operations
- * | Status - Open
+ * | Status - Closed, by Bikash - 17 Apr 2023, Total Api - 28, Total Function - 31, Total No of Lines - 1308
  */
 class BanquetMarriageHallController extends Controller
 {
@@ -73,6 +74,7 @@ class BanquetMarriageHallController extends Controller
      * | Store 
      * | @param StoreRequest Request
      * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -83,15 +85,9 @@ class BanquetMarriageHallController extends Controller
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -108,72 +104,12 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-    /**
-     * | Get Application Details For Renew
-     * | Function - 02
-     */
-    public function getApplicationDetailsForRenew(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|digits_between:1,9223372036854775807'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            $mMarBanquteHall = new MarBanquteHall();
-            $details = $mMarBanquteHall->applicationDetailsForRenew($req->applicationId);
-            if (!$details)
-                throw new Exception("Application Not Found !!!");
-
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Renew For Banquet Marriage Hall
-     * | @param StoreRequest 
-     * | Function - 03
-     */
-    public function renewApplication(RenewalRequest $req)
-    {
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-            $mMarActiveBanquteHall = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
-            $req->request->add($citizenId);
-
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
-            $req->request->add($applicationNo);
-
-            DB::beginTransaction();
-            $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
-        }
-    }
 
     /**
      * | Inbox List
      * | @param Request $req
-     * | Function - 04
+     * | Function - 02
+     * | API - 02
      */
     public function listInbox(Request $req)
     {
@@ -201,7 +137,8 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Outbox List
-     * | Function - 05
+     * | Function - 03
+     * | API - 03
      */
     public function listOutbox(Request $req)
     {
@@ -228,9 +165,9 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Application Details
-     * | Function - 06
+     * | Function - 04
+     * | API - 04
      */
-
     public function getDetailsById(Request $req)
     {
         try {
@@ -295,7 +232,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Get Application Role Details
-     * | Function - 07
+     * | Function - 05
      */
     public function getRoleDetails(Request $request)
     {
@@ -324,13 +261,12 @@ class BanquetMarriageHallController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
-
     /**
      * Summary of getCitizenApplications
      * @param Request $req
      * @return void
-     * | Function - 08
+     * | Function - 06
+     * | API - 05
      */
     public function listAppliedApplications(Request $req)
     {
@@ -363,7 +299,8 @@ class BanquetMarriageHallController extends Controller
      *  | Escalate
      * @param Request $request
      * @return void
-     * | Function - 09
+     * | Function - 07
+     * | API - 06
      */
     public function escalateApplication(Request $request)
     {
@@ -396,7 +333,8 @@ class BanquetMarriageHallController extends Controller
      *  Special Inbox List
      * @param Request $req
      * @return void
-     * | Function - 10
+     * | Function - 08
+     * | API - 07
      */
     public function listEscalated(Request $req)
     {
@@ -425,13 +363,12 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
-
     /**
      * Forward or Backward Application
      * @param Request $request
      * @return void
-     * | Function - 11
+     * | Function - 09
+     * | API - 08
      */
     public function forwardNextLevel(Request $request)
     {
@@ -475,12 +412,12 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-
     /**
      * Post Independent Comment
      * @param Request $request
      * @return void
-     * | Function - 12
+     * | Function - 10
+     * | API - 09
      */
     public function commentApplication(Request $request)
     {
@@ -529,7 +466,8 @@ class BanquetMarriageHallController extends Controller
      * Get Uploaded Document by application ID
      * @param Request $req
      * @return void
-     * | Function - 13
+     * | Function - 11
+     * | API - 10
      */
     public function viewBmHallDocuments(Request $req)
     {
@@ -544,11 +482,10 @@ class BanquetMarriageHallController extends Controller
         return $data1;
     }
 
-
-
     /**
      * | Get Uploaded Active Document by application ID
-     * | Function - 14
+     * | Function - 12
+     * | API - 11
      */
     public function viewActiveDocument(Request $req)
     {
@@ -567,7 +504,8 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
-     * | Function - 15
+     * | Function - 13
+     * | API - 12
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -584,14 +522,12 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-
-
-
     /**
      * Final Approval and Rejection of the Application
      * @param Request $req
      * @return void
-     * | Function - 16
+     * | Function - 14
+     * | API - 13
      */
     public function approvedOrReject(Request $req)
     {
@@ -624,14 +560,8 @@ class BanquetMarriageHallController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mMarActiveBanquteHall->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
 
                 if ($mMarActiveBanquteHall->renew_no == NULL) {
                     // Banqute Hall Application replication
@@ -639,7 +569,7 @@ class BanquetMarriageHallController extends Controller
                     $approvedbanqutehall->setTable('mar_banqute_halls');
                     $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
                     $approvedbanqutehall->payment_amount = $req->payment_amount;
-                    $approvedbanqutehall->license_no = $idGenerateData->data;
+                    $approvedbanqutehall->license_no = $generatedId;
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->save();
 
@@ -647,7 +577,7 @@ class BanquetMarriageHallController extends Controller
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
-                    $approvedbanqutehall->license_no = $idGenerateData->data;
+                    $approvedbanqutehall->license_no =$generatedId;
                     $approvedbanqutehall->app_id = $temp_id;
                     $approvedbanqutehall->save();
 
@@ -714,7 +644,8 @@ class BanquetMarriageHallController extends Controller
      * Approved Application List for Citizen
      * @param Request $req
      * @return void
-     * | Function - 17
+     * | Function - 15
+     * | API - 14
      */
     public function listApproved(Request $req)
     {
@@ -749,7 +680,8 @@ class BanquetMarriageHallController extends Controller
      * Rejected Application List
      * @param Request $req
      * @return void
-     * | Function - 18
+     * | Function - 16
+     * | API - 15
      */
     public function listRejected(Request $req)
     {
@@ -780,7 +712,8 @@ class BanquetMarriageHallController extends Controller
      * generate Payment OrderId for Payment
      * @param Request $req
      * @return void
-     * | Function - 19
+     * | Function - 17
+     * | API - 16
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -828,7 +761,8 @@ class BanquetMarriageHallController extends Controller
     /**
      * Get application Details For Payment
      * @return void
-     * | Function - 20
+     * | Function - 18
+     * | API - 17
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -859,116 +793,11 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-    /**
-     * | Payment via cash for application
-     * | Function - 21
-     */
-    public function paymentByCash(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-            $mMarBanquteHall = new MarBanquteHall();
-            DB::beginTransaction();
-            $data = $mMarBanquteHall->paymentByCash($req);
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Entry Cheque or DD for Payment
-     * | Function - 22
-     */
-    public function entryChequeDd(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
-            'bankName' => 'required|string',
-            'branchName' => 'required|string',
-            'chequeNo' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
-            $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Clear or bounce cheque DD 
-     * | Function - 23
-     */
-    public function clearOrBounceCheque(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string',
-            'status' => 'required|string',
-            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
-            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            DB::beginTransaction();
-            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-
 
     /**
      * | Verify Single Application Approve or reject
-     * | Function - 24
-     * |
+     * | Function - 19
+     * | API - 18
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1056,6 +885,7 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
+     * | Function - 20
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1092,7 +922,9 @@ class BanquetMarriageHallController extends Controller
 
 
     /**
-     *  send back to citizen
+     * | Send back to citizen
+     * | Function - 21
+     * | API - 19
      */
     public function backToCitizen(Request $req)
     {
@@ -1144,6 +976,8 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Back To Citizen Inbox
+     * | Function - 22
+     * | API - 20
      */
     public function listBtcInbox()
     {
@@ -1183,6 +1017,10 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
+    /**
+     * | Check full document uploaded or not
+     * | Function - 23
+     */
     public function checkFullUpload($applicationId)
     {
 
@@ -1211,6 +1049,8 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Reupload Rejected Documents
+     * | Function - 24
+     * | API - 21
      */
     public function reuploadDocument(Request $req)
     {
@@ -1238,8 +1078,180 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "", "POST", "", "");
         }
     }
+
+          /**
+     * | Payment via cash for application
+     * | Function - 25
+     * | API - 22
+     */
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarBanquteHall = new MarBanquteHall();
+            DB::beginTransaction();
+            $data = $mMarBanquteHall->paymentByCash($req);
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    
     /**
+     * | Entry Cheque or DD for Payment
+     * | Function - 26
+     * | API - 23
+     */
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Clear or bounce cheque DD 
+     * | Function - 27 
+     * | API - 24
+     */
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    
+    /**
+     * | Get Application Details For Renew
+     * | Function - 28
+     * | API - 25
+     */
+    public function getApplicationDetailsForRenew(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mMarBanquteHall = new MarBanquteHall();
+            $details = $mMarBanquteHall->applicationDetailsForRenew($req->applicationId);
+            if (!$details)
+                throw new Exception("Application Not Found !!!");
+
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "200 ms", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Renew For Banquet Marriage Hall
+     * | @param StoreRequest 
+     * | Function - 29
+     * | API - 26
+     */
+    public function renewApplication(RenewalRequest $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mMarActiveBanquteHall = $this->_modelObj;
+            $citizenId = ['citizenId' => authUser()->id];
+            $req->request->add($citizenId);
+
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+            $req->request->add($applicationNo);
+
+            DB::beginTransaction();
+            $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+  
+
+        /**
      * | Get APplication Details For Edit
+     * | Function - 30
+     * | API - 27
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1267,6 +1279,8 @@ class BanquetMarriageHallController extends Controller
 
     /**
      * | Update Application 
+     * | Function - 31
+     * | API - 28
      */
     public function editApplication(UpdateRequest $req)
     {

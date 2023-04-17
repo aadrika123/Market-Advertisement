@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar
  * | Hoarding Controller
- * | Status - Closed, By - Bikash - 14 Apr 2023 total no of lines - 1631
+ * | Status - Closed, By - Bikash - 17 Apr 2023, Total API - 39 , Total Function - 42 , total no of lines - 1664
  */
 class HoardingController extends Controller
 {
@@ -67,6 +67,7 @@ class HoardingController extends Controller
     /**
      * | Get Typology List
      * | Function - 01
+     * | API - 01
      */
     public function getHordingCategory(Request $req)
     {
@@ -89,6 +90,7 @@ class HoardingController extends Controller
     /**
      * | Get Typology List
      * | Function - 02
+     * | API - 02
      */
     public function listTypology(Request $req)
     {
@@ -120,6 +122,7 @@ class HoardingController extends Controller
     /**
      * | Save Application For Hoarding
      * | Function - 03
+     * | API - 03
      */
     public function addNew(StoreLicenceRequest $req)
     {
@@ -134,16 +137,9 @@ class HoardingController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -166,6 +162,7 @@ class HoardingController extends Controller
      * | Inbox List
      * | @param Request $req
      * | Function - 04
+     * | API - 04
      */
     public function listInbox(Request $req)
     {
@@ -193,6 +190,7 @@ class HoardingController extends Controller
     /**
      * | Outbox List
      * | Function - 05
+     * | API - 05
      */
     public function listOutbox(Request $req)
     {
@@ -221,6 +219,7 @@ class HoardingController extends Controller
     /**
      * | Application Details
      * | Function - 06
+     * | API - 06
      */
     public function getDetailsById(Request $req)
     {
@@ -294,6 +293,7 @@ class HoardingController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      * | Function - 07
+     * | API - 07
      */
     public function listAppliedApplications(Request $req)
     {
@@ -322,6 +322,7 @@ class HoardingController extends Controller
     /**
      * | Escalate Application
      * | Function - 08
+     * | API - 08
      */
     public function escalateApplication(Request $request)
     {
@@ -353,8 +354,9 @@ class HoardingController extends Controller
     }
 
     /**
-     * | Special Inbox
+     * | Special Inbox (Escalated Application)
      * | Function - 09
+     * | API - 09
      */
     public function listEscalated(Request $req)
     {
@@ -390,6 +392,7 @@ class HoardingController extends Controller
     /**
      * | Forward or Backward Application
      * | Function - 10
+     * | API - 10
      */
     public function forwardNextLevel(Request $request)
     {
@@ -435,7 +438,8 @@ class HoardingController extends Controller
 
     /**
      * | Application Post Independent Comment
-     * | Function - 10
+     * | Function - 11
+     * | API - 11
      */
     public function commentApplication(Request $request)
     {
@@ -491,7 +495,8 @@ class HoardingController extends Controller
 
     /**
      * | Get  Hoarding Documents
-     * | Function - 11
+     * | Function - 12
+     * | API - 12
      */
     public function viewHoardingDocuments(Request $req)
     {
@@ -509,7 +514,8 @@ class HoardingController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
-     * | Function - 12
+     * | Function - 13
+     * | API - 13
      */
     public function viewActiveDocument(Request $req)
     {
@@ -529,7 +535,8 @@ class HoardingController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
-     * | Function - 13
+     * | Function - 14
+     * | API - 14
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -547,7 +554,8 @@ class HoardingController extends Controller
     }
     /**
      * | Final Approval and Rejection of the Application
-     * | Function - 14
+     * | Function - 15
+     * | API - 15
      * | Status- closed
      */
     public function approvalOrRejection(Request $req)
@@ -580,21 +588,15 @@ class HoardingController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mAdvActiveHoarding->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
 
                 if ($mAdvActiveHoarding->renew_no == NULL) {
                     // approved Hording Application replication
                     $approvedHoarding = $mAdvActiveHoarding->replicate();
                     $approvedHoarding->setTable('adv_hoardings');
                     $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
-                    $approvedHoarding->license_no = $idGenerateData->data;
+                    $approvedHoarding->license_no = $generatedId;
                     $approvedHoarding->payment_amount = $req->payment_amount;
                     $approvedHoarding->approve_date = Carbon::now();
                     $approvedHoarding->save();
@@ -602,7 +604,7 @@ class HoardingController extends Controller
                     // Save in Hording Renewal
                     $approvedHoarding = $mAdvActiveHoarding->replicate();
                     $approvedHoarding->approve_date = Carbon::now();
-                    $approvedHoarding->license_no = $idGenerateData->data;
+                    $approvedHoarding->license_no = $generatedId;
                     $approvedHoarding->setTable('adv_hoarding_renewals');
                     $approvedHoarding->id = $temp_id;
                     $approvedHoarding->save();
@@ -678,7 +680,8 @@ class HoardingController extends Controller
     /**
      * | Approve License Application List for Citzen
      * | @param Request $req
-     * | Function - 15
+     * | Function - 16
+     * | API - 16
      */
     public function listApproved(Request $req)
     {
@@ -711,7 +714,8 @@ class HoardingController extends Controller
     /**
      * | Reject License Application List for Citizen
      * | @param Request $req
-     * | Function - 16
+     * | Function - 17
+     * | API - 17
      */
     public function listRejected(Request $req)
     {
@@ -742,7 +746,8 @@ class HoardingController extends Controller
     /**
      * | Unpaid License Application List for Citzen
      * | @param Request $req
-     * | Function - 17
+     * | Function - 18
+     * | API - 18
      */
     public function listUnpaid(Request $req)
     {
@@ -773,7 +778,8 @@ class HoardingController extends Controller
 
     /**
      * | Get Applied License Applications by Logged In JSK
-     * | Function - 18
+     * | Function - 19
+     * | API - 19
      */
     public function getJskApplications(Request $req)
     {
@@ -802,7 +808,8 @@ class HoardingController extends Controller
     /**
      * | Approve License Application List for JSK
      * | @param Request $req
-     * | Function - 19
+     * | Function - 20
+     * | API - 20
      */
     public function listJskApprovedApplication(Request $req)
     {
@@ -832,7 +839,8 @@ class HoardingController extends Controller
     /**
      * | Reject License Application List for JSK
      * | @param Request $req
-     * | Function - 20
+     * | Function - 21
+     * | API - 21
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -862,7 +870,8 @@ class HoardingController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
-     * | Function - 21
+     * | Function - 22
+     * | API - 22
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -914,7 +923,8 @@ class HoardingController extends Controller
      * License (Hording) application Details For Payment
      * @param Request $req
      * @return void
-     * | Function - 22
+     * | Function - 23
+     * | API - 2
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -948,7 +958,8 @@ class HoardingController extends Controller
 
     /**
      * | Get Hoarding details for renew
-     * | Function - 23
+     * | Function - 24
+     * | API - 24
      */
     public function getHordingDetailsForRenew(Request $req)
     {
@@ -978,7 +989,8 @@ class HoardingController extends Controller
 
     /**
      * | Save Application For Hoarding Renewal
-     * | Function - 24
+     * | Function - 25
+     * | API - 25
      */
     public function renewalHording(RenewalHordingRequest $req)
     {
@@ -994,15 +1006,10 @@ class HoardingController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -1021,7 +1028,8 @@ class HoardingController extends Controller
 
     /**
      * | Payment Via Cash For Hoarding
-     * | Function - 25
+     * | Function - 26
+     * | API - 26
      */
     public function paymentByCash(Request $req)
     {
@@ -1059,7 +1067,8 @@ class HoardingController extends Controller
 
     /**
      * | Entry Cheque or DD for Hoarding Payment
-     * | Function - 26
+     * | Function - 27
+     * | API - 27
      */
     public function entryChequeDd(Request $req)
     {
@@ -1092,7 +1101,8 @@ class HoardingController extends Controller
 
     /**
      * | Clear or Bouns Cheque for Hoarding 
-     * | Function - 27
+     * | Function - 28
+     * | API - 28
      */
     public function clearOrBounceCheque(Request $req)
     {
@@ -1132,7 +1142,8 @@ class HoardingController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * | Function - 28
+     * | Function - 29
+     * | API - 29
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1220,7 +1231,8 @@ class HoardingController extends Controller
 
     /**
      * | Send Application back to citizen
-     * | Function - 29
+     * | Function - 30
+     * | API - 30
      */
     public function backToCitizen(Request $req)
     {
@@ -1273,7 +1285,8 @@ class HoardingController extends Controller
 
     /**
      * | Back To Citizen Inbox
-     * | Function - 30
+     * | Function - 31
+     * | API - 31
      */
     public function listBtcInbox()
     {
@@ -1316,7 +1329,8 @@ class HoardingController extends Controller
 
     /**
      * | Reupload Rejected Documents
-     * | Function - 31
+     * | Function - 32
+     * | API - 32
      */
     public function reuploadDocument(Request $req)
     {
@@ -1351,7 +1365,8 @@ class HoardingController extends Controller
     /**
      * | Hoarding Application list For Renew
      * | @param Request $req
-     * | Function - 32
+     * | Function - 33
+     * | API - 33
      */
     public function getRenewActiveApplications(Request $req)
     {
@@ -1382,7 +1397,8 @@ class HoardingController extends Controller
 
     /**
      * | Expired Hoarding List
-     * | Function - 33
+     * | Function - 34
+     * | API - 34
      */
     public function listExpiredHording(Request $req)
     {
@@ -1412,7 +1428,8 @@ class HoardingController extends Controller
 
     /**
      * | Archived Application By Id 
-     * | Function - 34
+     * | Function - 35
+     * | API - 35
      */
     public function archivedHording(Request $req)
     {
@@ -1443,7 +1460,8 @@ class HoardingController extends Controller
     /**
      * | Hording Archived List for Citizen
      * | @param Request $req
-     * | Function - 35
+     * | Function - 36
+     * | API - 36
      */
     public function listHordingArchived(Request $req)
     {
@@ -1475,7 +1493,8 @@ class HoardingController extends Controller
 
     /**
      * | Blacklist Application By Id 
-     * | Function - 36
+     * | Function - 37
+     * | API - 37
      */
     public function blacklistHording(Request $req)
     {
@@ -1506,7 +1525,8 @@ class HoardingController extends Controller
     /**
      * | Hording Archived List for Citizen
      * | @param Request $req
-     * | Function - 37
+     * | Function - 38
+     * | API - 38
      */
     public function listHordingBlacklist(Request $req)
     {
@@ -1536,30 +1556,24 @@ class HoardingController extends Controller
     }
     /**
      * | Agency Dashboard Graph
+     * | Function - 39
+     * | API - 39
      */
     public function agencyDashboardGraph(Request $req)
     {
-        // $mAdvHoarding=new AdvHoarding();
-        // $totalApproveHoarding=$mAdvHoarding->allApproveList()->where('citizen_id',authUser()->id)->count();
-
-        // $mAdvRejectedHoarding=new AdvRejectedHoarding();
-        // $totalRejectedHoarding=$mAdvRejectedHoarding->rejectedApplication()->where('citizen_id',authUser()->id)->count();
-
-        // $mAdvActiveHoarding=new AdvActiveHoarding();
-        // $totalActiveHoarding=$mAdvActiveHoarding->listAppliedApplications(authUser()->id)->count();
-
-        // $totalHoarding=$totalApproveHoarding+$totalRejectedHoarding+$totalActiveHoarding;
-
+        $startTime = microtime(true);
         $mAdvHoarding = new AdvHoarding();
-       return $agencyDashboard = $mAdvHoarding->agencyDashboardGraph(authUser()->id,119);
-        
+        $agencyDashboard = $mAdvHoarding->agencyDashboardGraph(authUser()->id, 119);
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+        return responseMsgs(true, "Monthaly Hoarding Applied", $agencyDashboard, "050638", "1.0", " $executionTime Sec", "POST", $req->deviceId ?? "");
     }
 
     /* ============================================= */
 
     /**
      * | Get Application role details
-     * | Function - 38
+     * | Function - 40
      */
     public function getRoleDetails(Request $request)
     {
@@ -1591,7 +1605,7 @@ class HoardingController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
-     * | Function - 39
+     * | Function - 41
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1626,7 +1640,7 @@ class HoardingController extends Controller
 
     /**
      * | Check full document upload or not
-     * | Function - 40
+     * | Function - 42
      */
     public function checkFullUpload($applicationId)
     {

@@ -116,8 +116,18 @@ class AdvVehicle extends Model
  */
 public function getPaymentDetails($paymentId)
 { 
-    $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
-    ->where('payment_id', $paymentId)
+    // $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
+    $details = AdvVehicle::select(
+        'adv_vehicles.payment_amount',
+        'adv_vehicles.payment_id',
+        'adv_vehicles.payment_date',
+        'adv_vehicles.permanent_address as address',
+        'adv_vehicles.entity_name',
+        'adv_vehicles.payment_details',
+        'adv_vehicles.ulb_name as ulbName'
+        )
+    ->leftjoin('ulb_masters','adv_vehicles.ulb_id','=','ulb_masters.id')
+    ->where('adv_vehicles.payment_id', $paymentId)
     ->first();
     $details->payment_details=json_decode($details->payment_details);
     $details->towards="Movable Vehicle Advertisement Payments";

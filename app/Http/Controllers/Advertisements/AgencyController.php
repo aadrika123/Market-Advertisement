@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Advertisements;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Agency\RenewalHordingRequest;
 use App\Http\Requests\Agency\RenewalRequest;
@@ -46,7 +47,7 @@ use Illuminate\Support\Facades\Redis;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Agency Operations
- * | Status - Closed, By - Bikash kumar 14 Apr 2023, Total no. of Lines - 1446
+ * | Status - Closed, By - Bikash kumar 17 Apr 2023, Total API - 32, Total Function - 36, Total no. of Lines - 1462
  */
 class AgencyController extends Controller
 {
@@ -76,6 +77,7 @@ class AgencyController extends Controller
      * | Store 
      * | @param StoreRequest Request
      * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -92,15 +94,10 @@ class AgencyController extends Controller
                 $req->request->add($citizenId);
             }
 
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
+
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -119,16 +116,11 @@ class AgencyController extends Controller
 
 
     /**
-     * | Agency Details After Login
-     * | @param Request $req
-     * | Function - 02
-     */
-
-    /**
      * | Get Agency Details
-     * | Function - 03
+     * | Function - 02
+     * | API - 02
      */
-    public function getagencyDetails(Request $req)
+    public function getAgencyDetails(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|integer',
@@ -160,7 +152,8 @@ class AgencyController extends Controller
     /**
      * | Inbox List
      * | @param Request $req
-     * | Function - 04
+     * | Function - 03
+     * | API - 03
      */
     public function listInbox(Request $req)
     {
@@ -188,7 +181,8 @@ class AgencyController extends Controller
 
     /**
      * | Outbox List
-     * | Function - 05
+     * | Function - 04
+     * | API - 04
      */
     public function listOutbox(Request $req)
     {
@@ -217,7 +211,8 @@ class AgencyController extends Controller
 
     /**
      * | Application Details
-     * | Function - 06
+     * | Function - 05
+     * | API - 05
      */
 
     public function getDetailsById(Request $req)
@@ -289,7 +284,7 @@ class AgencyController extends Controller
 
     /**
      * | Get Application Role Details
-     * | Function - 07
+     * | Function - 06
      */
     public function getRoleDetails(Request $request)
     {
@@ -321,7 +316,8 @@ class AgencyController extends Controller
 
     /**
      * | Get Applied Applications by Logged In Citizen
-     * | Function - 08
+     * | Function - 07
+     * | API - 06
      */
     public function listAppliedApplications(Request $req)
     {
@@ -351,7 +347,8 @@ class AgencyController extends Controller
 
     /**
      * | Escalate Application
-     * | Function - 09
+     * | Function - 08
+     * | API - 07
      */
     public function escalateApplication(Request $request)
     {
@@ -381,7 +378,8 @@ class AgencyController extends Controller
 
     /**
      * | Special Inbox
-     * | Function - 10
+     * | Function - 09
+     * | API - 08
      */
     public function listEscalated(Request $req)
     {
@@ -413,7 +411,8 @@ class AgencyController extends Controller
 
     /**
      * | Forward or Backward Application
-     * | Function - 11
+     * | Function - 10
+     * | API - 09
      */
     public function forwardNextLevel(Request $request)
     {
@@ -459,7 +458,8 @@ class AgencyController extends Controller
 
     /**
      * | Post Independent Comment
-     * | Function - 12
+     * | Function - 11
+     * | API - 10
      */
     public function commentApplication(Request $request)
     {
@@ -515,7 +515,8 @@ class AgencyController extends Controller
 
     /**
      * | View Ageny uploaded documents
-     * | Function - 13
+     * | Function - 12
+     * | API - 11
      */
     public function viewAgencyDocuments(Request $req)
     {
@@ -533,7 +534,8 @@ class AgencyController extends Controller
 
     /**
      * | Get Uploaded Active Document by application ID
-     * | Function - 14
+     * | Function - 13
+     * | API - 12
      */
     public function viewActiveDocument(Request $req)
     {
@@ -553,7 +555,8 @@ class AgencyController extends Controller
 
     /**
      * | Workflow View Uploaded Document by application ID
-     * | Function - 15
+     * | Function - 14
+     * | API - 13
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -571,7 +574,8 @@ class AgencyController extends Controller
 
     /**
      * | Final Approval and Rejection of the Application
-     * | Function - 16
+     * | Function - 15
+     * | API - 14
      * | Status- Closed
      */
     public function approvedOrReject(Request $req)
@@ -604,16 +608,15 @@ class AgencyController extends Controller
                     "paramId" => $this->_paramId,
                     'ulbId' => $mAdvActiveAgency->ulb_id
                 ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
                     $approvedAgency = $mAdvActiveAgency->replicate();
                     $approvedAgency->setTable('adv_agencies');
                     $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
-                    $approvedAgency->license_no =  $idGenerateData->data;
+                    $approvedAgency->license_no =  $generatedId;
                     $approvedAgency->payment_amount = $req->payment_amount;
                     $approvedAgency->approve_date = Carbon::now();
                     $approvedAgency->save();
@@ -621,7 +624,7 @@ class AgencyController extends Controller
                     // Save in Agency Advertisement Renewal
                     $approvedAgency = $mAdvActiveAgency->replicate();
                     $approvedAgency->approve_date = Carbon::now();
-                    $approvedAgency->license_no =  $idGenerateData->data;
+                    $approvedAgency->license_no =  $generatedId;
                     $approvedAgency->setTable('adv_agency_renewals');
                     $approvedAgency->agencyadvet_id = $temp_id;
                     $approvedAgency->save();
@@ -688,7 +691,7 @@ class AgencyController extends Controller
 
     /**
      * | Get Agency price
-     * | Function - 17
+     * | Function - 16
      */
     public function getAgencyPrice($ulb_id, $application_type)
     {
@@ -700,7 +703,8 @@ class AgencyController extends Controller
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
-     * | Function - 18
+     * | Function - 17
+     * | API - 15
      */
     public function listApproved(Request $req)
     {
@@ -731,7 +735,8 @@ class AgencyController extends Controller
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
-     * | Function - 19
+     * | Function - 18
+     * | API - 16
      */
     public function listRejected(Request $req)
     {
@@ -761,7 +766,8 @@ class AgencyController extends Controller
 
     /**
      * | Get Applied Applications by Logged In JSK
-     * | Function - 20
+     * | Function - 19
+     * | API - 17
      */
     public function getJSKApplications(Request $req)
     {
@@ -791,7 +797,8 @@ class AgencyController extends Controller
     /**
      * | Approve Application List for JSK
      * | @param Request $req
-     * | Function - 21
+     * | Function - 20
+     * | API - 18
      */
     public function listjskApprovedApplication(Request $req)
     {
@@ -821,7 +828,8 @@ class AgencyController extends Controller
     /**
      * | Reject Application List for JSK
      * | @param Request $req
-     * | Function - 22
+     * | Function - 21
+     * | API - 19
      */
     public function listJskRejectedApplication(Request $req)
     {
@@ -850,7 +858,8 @@ class AgencyController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
-     * | Function - 23
+     * | Function - 22
+     * | API - 20
      */
 
     public function generatePaymentOrderId(Request $req)
@@ -899,7 +908,8 @@ class AgencyController extends Controller
      * Summary of application Details For Payment
      * @param Request $req
      * @return void
-     * | Function - 24
+     * | Function - 23
+     * | API - 21
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -929,7 +939,8 @@ class AgencyController extends Controller
 
     /**
      * | Renewal Agency
-     * | Function - 25
+     * | Function - 24
+     * | API - 22
      */
     public function renewalAgency(RenewalRequest $req)
     {
@@ -945,15 +956,10 @@ class AgencyController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-            // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -972,7 +978,8 @@ class AgencyController extends Controller
 
     /**
      * | Agency Payment by cash
-     * | Function - 26
+     * | Function - 25
+     * | API - 23
      */
     public function agencyPaymentByCash(Request $req)
     {
@@ -1008,7 +1015,8 @@ class AgencyController extends Controller
 
     /**
      * | Entry Cheque or DD for payment
-     * | Function - 27
+     * | Function - 26
+     * | API - 24
      */
     public function entryChequeDd(Request $req)
     {
@@ -1042,7 +1050,8 @@ class AgencyController extends Controller
 
     /**
      * | Clear or bounce cheque or dd
-     * | Function - 28
+     * | Function - 27
+     * | API - 25
      */
     public function clearOrBounceCheque(Request $req)
     {
@@ -1080,7 +1089,8 @@ class AgencyController extends Controller
 
     /**
      * | Verify Single Application Approve or reject
-     * | Function - 29
+     * | Function - 28
+     * | API - 26
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -1169,7 +1179,7 @@ class AgencyController extends Controller
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
-     * | Function - 30
+     * | Function - 29
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1203,7 +1213,8 @@ class AgencyController extends Controller
 
     /**
      * | send back to citizen
-     * | Function - 31
+     * | Function - 30
+     * | API - 27
      */
     public function backToCitizen(Request $req)
     {
@@ -1253,7 +1264,8 @@ class AgencyController extends Controller
 
     /**
      * | Back To Citizen Inbox
-     * | Function - 32
+     * | Function - 31
+     * | API - 28
      */
     public function listBtcInbox()
     {
@@ -1295,7 +1307,7 @@ class AgencyController extends Controller
 
     /**
      * | Check full document upload or not
-     * | Function - 33
+     * | Function - 32
      */
     public function checkFullUpload($applicationId)
     {
@@ -1319,7 +1331,8 @@ class AgencyController extends Controller
 
     /**
      * | Re-upload rejetced documents
-     * | Function - 34
+     * | Function - 33
+     * | API - 29
      */
     public function reuploadDocument(Request $req)
     {
@@ -1351,7 +1364,8 @@ class AgencyController extends Controller
     }
     /**
      * | Search application by mobile no., entity name, and owner name
-     * | Function - 35
+     * | Function - 34
+     * | API - 30
      */
     public function searchByNameorMobile(Request $req)
     {
@@ -1383,7 +1397,8 @@ class AgencyController extends Controller
     /**
      * Check isAgency or Not
      * @return void
-     * | Function - 36
+     * | Function - 35
+     * | API - 31
      */
     public function isAgency(Request $req)
     {
@@ -1415,7 +1430,8 @@ class AgencyController extends Controller
 
     /**
      * | Get Agency Dashboard
-     * | Function - 37
+     * | Function - 36
+     * | API - 32
      */
     public function getAgencyDashboard(Request $req)
     {

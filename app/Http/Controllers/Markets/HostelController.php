@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Markets;
 
+use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hostel\RenewalRequest;
 use App\Http\Requests\Hostel\StoreRequest;
@@ -80,14 +81,9 @@ class HostelController extends Controller
             $req->request->add($citizenId);
 
             // Generate Application No
-            $reqData = [
-                "paramId" => $this->_tempParamId,
-                'ulbId' => $req->ulbId
-            ];
-            $refResponse = Http::withToken($req->bearerToken())
-                ->post($this->_baseUrl . 'api/id-generator', $reqData);
-            $idGenerateData = json_decode($refResponse);
-            $applicationNo = ['application_no' => $idGenerateData->data];
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
@@ -200,8 +196,6 @@ class HostelController extends Controller
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
-
-            // return ($data);
 
             $metaReqs['customFor'] = 'HOSTEL';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
@@ -356,9 +350,6 @@ class HostelController extends Controller
         }
     }
 
-
-
-
     /**
      * Forward or Backward Application
      * @param Request $request
@@ -373,7 +364,6 @@ class HostelController extends Controller
             'receiverRoleId' => 'required|integer',
             'comment' => 'required',
         ]);
-
         try {
             // Variable initialization
             $startTime = microtime(true);
@@ -407,8 +397,6 @@ class HostelController extends Controller
         }
     }
 
-
-
     /**
      * Post Independent Comment
      * @param Request $request
@@ -422,7 +410,6 @@ class HostelController extends Controller
             'applicationId' => 'required|integer',
             'senderRoleId' => 'nullable|integer'
         ]);
-
         try {
             // Variable initialization
             $startTime = microtime(true);
@@ -564,15 +551,8 @@ class HostelController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                // License NO Generate
-                $reqData = [
-                    "paramId" => $this->_paramId,
-                    'ulbId' => $mMarActiveHostel->ulb_id
-                ];
-                $refResponse = Http::withToken($req->bearerToken())
-                    ->post($this->_baseUrl . 'api/id-generator', $reqData);
-
-                $idGenerateData = json_decode($refResponse);
+                $mCalculateRate = new CalculateRate;
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate License No
 
                 if ($mMarActiveHostel->renew_no == NULL) {
                     // Hostel Application replication
@@ -580,7 +560,7 @@ class HostelController extends Controller
                     $approvedhostel->setTable('mar_hostels');
                     $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
                     $approvedhostel->payment_amount = $req->payment_amount;
-                    $approvedhostel->license_no = $idGenerateData->data;
+                    $approvedhostel->license_no = $generatedId;
                     $approvedhostel->approve_date = Carbon::now();
                     $approvedhostel->save();
 
@@ -589,7 +569,7 @@ class HostelController extends Controller
                     $approvedhostel->approve_date = Carbon::now();
                     $approvedhostel->setTable('mar_hostel_renewals');
                     $approvedhostel->app_id = $mMarActiveHostel->id;
-                    $approvedhostel->license_no = $idGenerateData->data;
+                    $approvedhostel->license_no = $generatedId;
                     $approvedhostel->save();
 
                     $mMarActiveHostel->delete();
@@ -642,7 +622,6 @@ class HostelController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -686,8 +665,6 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * Rejected Application List
@@ -734,7 +711,6 @@ class HostelController extends Controller
             'id' => 'required|integer',
         ]);
         try {
-
             // Variable initialization
             $startTime = microtime(true);
 
@@ -772,7 +748,6 @@ class HostelController extends Controller
         }
     }
 
-
     /**
      * Get application Details For Payment
      * @return void
@@ -805,7 +780,6 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Payment Application Via Cash
@@ -913,8 +887,6 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
 
 
     /**
@@ -1037,9 +1009,6 @@ class HostelController extends Controller
         }
     }
 
-
-
-
     /**
      * | Send back to citizen
      * | Function - 24
@@ -1091,7 +1060,6 @@ class HostelController extends Controller
         }
     }
 
-
     /**
      * | Back To Citizen Inbox
      * | Function - 25
@@ -1133,6 +1101,7 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
         }
     }
+    
     /**
      * | Check full document uploaded or not
      * | Function - 26
@@ -1194,8 +1163,6 @@ class HostelController extends Controller
         }
     }
 
-
-
     /**
      * | Get Application Details For Renew
      * | Function - 28
@@ -1239,6 +1206,10 @@ class HostelController extends Controller
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
+
+            $mCalculateRate = new CalculateRate;
+            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $applicationNo = ['application_no' => $generatedId];
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
