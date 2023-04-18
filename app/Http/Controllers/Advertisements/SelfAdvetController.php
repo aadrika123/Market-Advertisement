@@ -1340,7 +1340,7 @@ class SelfAdvetController extends Controller
 
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $btcList = $mAdvActiveSelfadvertisement->getSelfAdvertisementList($ulbId)
-                ->whereIn('adv_active_selfadvertisements.current_role', $roleId)
+                ->whereIn('adv_active_selfadvertisements.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
                 ->orderByDesc('adv_active_selfadvertisements.id')
