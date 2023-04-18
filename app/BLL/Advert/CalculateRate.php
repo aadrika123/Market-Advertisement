@@ -41,21 +41,21 @@ class CalculateRate
         return $displayArea * 10;   // Rs. 10  per Square ft.
     }
 
-    public function getMovableVehiclePayment($typology, $zone,$license_from,$license_to)
+    public function getMovableVehiclePayment($typology, $zone, $license_from, $license_to)
     {
-        $rate=DB::table('adv_typology_mstrs')
+        $rate = DB::table('adv_typology_mstrs')
             ->select(DB::raw("case when $zone = 1 then rate_zone_a
                               when $zone = 2 then rate_zone_b
                               when $zone = 3 then rate_zone_c
                         else 0 end as rate"))
             ->where('id', $typology)
             ->first()->rate;
-            $toDate = Carbon::parse($license_to);
-            $fromDate = Carbon::parse($license_from);
-    
-            $noOfDays = $toDate->diffInDays($fromDate);
-    
-            return ($noOfDays * $rate);
+        $toDate = Carbon::parse($license_to);
+        $fromDate = Carbon::parse($license_from);
+
+        $noOfDays = $toDate->diffInDays($fromDate);
+
+        return ($noOfDays * $rate);
     }
 
 

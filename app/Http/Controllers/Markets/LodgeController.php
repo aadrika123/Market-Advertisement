@@ -553,7 +553,7 @@ class LodgeController extends Controller
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate License No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveLodge->ulb_id); // Generate License No
 
                 if ($mMarActiveLodge->renew_no == NULL) {
                     // Lodge Application replication
