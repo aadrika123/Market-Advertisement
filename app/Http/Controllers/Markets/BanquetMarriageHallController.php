@@ -15,6 +15,7 @@ use App\Models\Markets\MarActiveBanquteHall;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedBanquteHall;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -1097,8 +1098,11 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $mMarBanquteHall = new MarBanquteHall();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1169,9 +1173,12 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvCheckDtl = new AdvChequeDtl(); 
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

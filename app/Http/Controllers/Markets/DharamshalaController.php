@@ -13,6 +13,7 @@ use App\Models\Markets\MarActiveDharamshala;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedDharamshala;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -1100,8 +1101,11 @@ class DharamshalaController extends Controller
             $startTime = microtime(true);
 
             $mMarDharamshala = new MarDharamshala();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarDharamshala::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarDharamshala->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1172,8 +1176,11 @@ class DharamshalaController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarDharamshala::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

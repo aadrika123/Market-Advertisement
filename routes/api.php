@@ -79,6 +79,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         // Route::post('advert/self/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/self/reupload-document', 'reuploadDocument');          // 33 ( Reupload Rejected Document )
         Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');          //34 ( Search application by name and mobile no )
+        Route::post('advert/self/application-reports', 'applicationReports');          //35 ( Search application by name and mobile no )
     });
     
 
@@ -97,7 +98,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('markets/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
         Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
-        Route::post('advertisements/analytical-dashboard', 'analyticalDashboard');      // 11 ( Application Details For Payments )
+        Route::post('advertisements/application-reports', 'applicationReports');      // 11 ( Application Reports )
      });
 
     /**

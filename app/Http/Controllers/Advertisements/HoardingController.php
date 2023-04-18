@@ -13,6 +13,7 @@ use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvRejectedHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -1045,8 +1046,11 @@ class HoardingController extends Controller
             $startTime = microtime(true);
 
             $mAdvHoarding = new AdvHoarding();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvHoarding->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1120,8 +1124,11 @@ class HoardingController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

@@ -13,6 +13,7 @@ use App\Models\Markets\MarActiveLodge;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarLodge;
 use App\Models\Markets\MarRejectedLodge;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -1079,8 +1080,11 @@ class LodgeController extends Controller
             $startTime = microtime(true);
 
             $mMarLodge = new MarLodge();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarLodge->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1151,8 +1155,11 @@ class LodgeController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

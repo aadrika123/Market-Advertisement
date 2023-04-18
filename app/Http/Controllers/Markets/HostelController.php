@@ -13,6 +13,7 @@ use App\Models\Markets\MarActiveHostel;
 use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedHostel;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -799,8 +800,11 @@ class HostelController extends Controller
             $startTime = microtime(true);
 
             $mMarHostel = new MarHostel();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarHostel::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarHostel->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -870,8 +874,11 @@ class HostelController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarHostel::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

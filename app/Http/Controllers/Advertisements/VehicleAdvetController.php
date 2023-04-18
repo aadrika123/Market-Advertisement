@@ -11,6 +11,8 @@ use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Advertisements\AdvRejectedVehicle;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Param\AdvMarTransaction;
+use App\Models\Param\AdvMarTransactions;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Http\Request;
@@ -956,8 +958,11 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvVehicle->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cash");
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -1027,8 +1032,11 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cheque/DD");
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

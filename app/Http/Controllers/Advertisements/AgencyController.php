@@ -21,6 +21,7 @@ use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -995,8 +996,11 @@ class AgencyController extends Controller
             $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $d = $mAdvAgency->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1069,8 +1073,11 @@ class AgencyController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

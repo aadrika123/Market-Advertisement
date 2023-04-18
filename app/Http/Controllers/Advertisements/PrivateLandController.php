@@ -11,6 +11,7 @@ use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvRejectedPrivateland;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 
@@ -987,8 +988,11 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvPrivateland = new AdvPrivateland();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1061,8 +1065,11 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);

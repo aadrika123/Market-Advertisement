@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Redis;
 use Symfony\Component\Process\ExecutableFinder;
 
 use App\BLL\Advert\CalculateRate;
+use App\Models\Param\AdvMarTransaction;
+use App\Models\Param\AdvMartransactions;
 
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
@@ -45,7 +47,7 @@ use App\BLL\Advert\CalculateRate;
  * | Workflow ID=129
  * | Ulb Workflow ID=245
  * | Changes By Bikash 
- * | Status - Closed, By - Bikash 14 Apr 2023 (Total No of Lines - 1444), Total Function - 37 , Total API- 34
+ * | Status - Open, By - Bikash 14 Apr 2023 (Total No of Lines - 1444), Total Function - 37 , Total API- 34
  */
 
 class SelfAdvetController extends Controller
@@ -1052,8 +1054,11 @@ class SelfAdvetController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvSelfadvertisement::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvSelfadvertisement->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1068,7 +1073,6 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Entry Cheque or DD
@@ -1124,8 +1128,11 @@ class SelfAdvetController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=AdvSelfadvertisement::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cheque/DD");
             DB::commit();
             $endTime = microtime(true);
 
@@ -1439,6 +1446,25 @@ class SelfAdvetController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $listApplications, "050134", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050134", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Self Advertisement Application Reports 
+     * | Function - 38
+     * | API - 35
+     */
+    public function applicationReports(Request $req){
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'nullable|in:approve,reject',
+            'parameter' => $req->filterBy == 'mobileNo' ? 'required|digits:10' : 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+        }catch(Exception $e){
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050135", 1.0, "271ms", "POST", "", "");
         }
     }
 }

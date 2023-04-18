@@ -46,6 +46,7 @@ use App\Models\Markets\MarLodgeRenewal;
 use App\Models\Markets\MarRejectedBanquteHall;
 use App\Models\Markets\MarRejectedHostel;
 use App\Models\Markets\MarRejectedLodge;
+use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use Carbon\Carbon;
 use Exception;
@@ -195,8 +196,8 @@ class ParamController extends Controller
     public function paymentSuccessFailure(Request $req)
     {
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
             DB::beginTransaction();
             $updateData = [
                 'payment_date' => Carbon::now(),
@@ -237,6 +238,10 @@ class ParamController extends Controller
                 DB::table('adv_selfadvet_renewals')
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
                     ->update($updateData);
+
+                $appDetails = AdvSelfadvertisement::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
@@ -265,6 +270,10 @@ class ParamController extends Controller
                 DB::table('adv_vehicle_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
                     ->update($updateData);
+
+                $appDetails = AdvVehicle::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
 
                 // DB::table('adv_agencies')
@@ -298,6 +307,10 @@ class ParamController extends Controller
                 DB::table('adv_agency_renewals')
                     ->where('id', $mAdvAgency->last_renewal_id)
                     ->update($updateData);
+
+                $appDetails = AdvAgency::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
 
                 // DB::table('adv_privatelands')
@@ -330,6 +343,9 @@ class ParamController extends Controller
                 DB::table('adv_privateland_renewals')
                     ->where('id', $mAdvPrivateland->last_renewal_id)
                     ->update($updateData);
+                $appDetails = AdvPrivateland::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
 
                 // DB::table('adv_agency_licenses')
@@ -362,6 +378,9 @@ class ParamController extends Controller
                 DB::table('adv_hoarding_renewals')
                     ->where('id', $mAdvHoarding->last_renewal_id)
                     ->update($updateData);
+                $appDetails = AdvHoarding::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
 
                 // DB::table('mar_banqute_halls')
@@ -401,6 +420,10 @@ class ParamController extends Controller
                 // DB::table('mar_banqute_hall_renewals')
                 //     ->where('id', $mMarBanquteHall->last_renewal_id)
                 //     ->update($updateData);
+
+                $appDetails = MarBanquteHall::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
 
                 // DB::table('mar_hostels')
@@ -433,6 +456,9 @@ class ParamController extends Controller
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarHostel->last_renewal_id)
                     ->update($updateData);
+                $appDetails = MarHostel::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
 
                 $mMarLodge = MarLodge::find($req->id);
@@ -462,6 +488,9 @@ class ParamController extends Controller
                 DB::table('mar_lodge_renewals')
                     ->where('id', $mMarLodge->last_renewal_id)
                     ->update($updateData);
+                $appDetails = MarLodge::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date = Carbon::now();
@@ -489,6 +518,9 @@ class ParamController extends Controller
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
+                    $appDetails = MarDharamshala::find($req->id);
+                    $mAdvMarTransaction = new AdvMarTransaction();
+                    $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             }
             DB::commit();
             $endTime = microtime(true);
@@ -512,33 +544,33 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
             // Get Advertesement Payment Details
             if ($req->workflowId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Self Advertisement Tax";
             } elseif ($req->workflowId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Private Land Tax";
             } elseif ($req->workflowId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
             } elseif ($req->workflowId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Agency Tax";
             } elseif ($req->workflowId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hoarding Tax";
             }
 
@@ -546,22 +578,22 @@ class ParamController extends Controller
             elseif ($req->workflowId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
             } elseif ($req->workflowId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hostel Tax";
             } elseif ($req->workflowId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Lodge Tax";
             } elseif ($req->workflowId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount)." Only /-";
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Dharamshala Tax";
             }
             $endTime = microtime(true);
@@ -583,8 +615,8 @@ class ParamController extends Controller
     public function advertDashboard()
     {
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
 
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
@@ -641,8 +673,8 @@ class ParamController extends Controller
     public function marketDashboard()
     {
         try {
-             // Variable initialization
-             $startTime = microtime(true);
+            // Variable initialization
+            $startTime = microtime(true);
 
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
@@ -810,217 +842,5 @@ class ParamController extends Controller
     public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service)
     {
         $notification_service->sendWhatsappNotification();
-    }
-
-
-
-    public function analyticalDashboard(Request $req)
-    {
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $madvSelfAdvertisement = new AdvSelfadvertisement();
-            $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
-            $advert['ApprovedApplications'] = count($approveList);
-
-            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
-            $pendingList = $mAdvActiveSelfadvertisement->allPendingList();              // Find Self Advertisement Pending Applications
-            $advert['PendingApplications'] = count($pendingList);
-
-            $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
-            $advert['RejectedApplications'] = count($rejectList);
-
-            $self['title'] = "Self Advertisement";
-            $self['approveName'] = 'Approve';
-            $self['ApprovalCount'] = $advert['ApprovedApplications'];
-            $self['rejectName'] = 'Reject';
-            $self['rejectedCount'] =  $advert['RejectedApplications'];
-            $self['pendingName'] = 'Pending';
-            $self['pendingCount'] = $advert['PendingApplications'];
-            $finalData[] = $self;
-
-            $mAdvPrivateland = new AdvPrivateland();
-            $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
-            $advert['pvtLandApprovedApplications'] = count($pvtapproveList);
-
-            $mAdvActivePrivateland = new AdvActivePrivateland();
-            $pendingList = $mAdvActivePrivateland->allPendingList();              // Find Private Land Pending Applications
-            $advert['pvtLandPendingApplications'] = count($pendingList);
-
-            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
-            $advert['pvtLandRejectedApplications'] = count($pvtRejectList);
-
-
-            $pvtLand['title'] = "Private Land";
-            $pvtLand['approveName'] = 'Approve';
-            $pvtLand['ApprovalCount'] = $advert['pvtLandApprovedApplications'];
-            $pvtLand['rejectName'] = 'Reject';
-            $pvtLand['rejectedCount'] =  $advert['pvtLandRejectedApplications'];
-            $pvtLand['pendingName'] = 'Pending';
-            $pvtLand['pendingCount'] = $advert['pvtLandPendingApplications'];
-            $finalData[] = $pvtLand;
-
-            $mAdvVehicle = new AdvVehicle();
-            $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
-            $advert['vehicleApprovedApplications'] = count($vehicleApproveList);
-
-            $mAdvActiveVehicle = new AdvActiveVehicle();
-            $pendingList = $mAdvActiveVehicle->allPendingList();              // Find Vehicle Pending Applications
-            $advert['vehiclePendingApplications'] = count($pendingList);
-
-
-            $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
-            $advert['vehicleRejectedApplications'] = count($vehicleRejectList);
-
-
-            $vehicle['title'] = "Movable Vehicle";
-            $vehicle['approveName'] = 'Approve';
-            $vehicle['ApprovalCount'] = $advert['vehicleApprovedApplications'];
-            $vehicle['rejectName'] = 'Reject';
-            $vehicle['rejectedCount'] =  $advert['vehicleRejectedApplications'];
-            $vehicle['pendingName'] = 'Pending';
-            $vehicle['pendingCount'] = $advert['vehiclePendingApplications'];
-            $finalData[] = $vehicle;
-
-
-            $mAdvAgency = new AdvAgency();
-            $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
-            $advert['agencyApprovedApplications'] = count($agencyApproveList);
-
-            $mAdvActiveAgency = new AdvActiveAgency();
-            $pendingList = $mAdvActiveAgency->allPendingList();              // Find Agency Pending Applications
-            $advert['agencyPendingApplications'] = count($pendingList);
-
-            $mAdvRejectedAgency = new AdvRejectedAgency();
-            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
-            $advert['agencyRejectedApplications'] = count($agencyRejectList);
-
-            $agency['title'] = "Agency";
-            $agency['approveName'] = 'Approve';
-            $agency['ApprovalCount'] = $advert['agencyApprovedApplications'];
-            $agency['rejectName'] = 'Reject';
-            $agency['rejectedCount'] =  $advert['agencyRejectedApplications'];
-            $agency['pendingName'] = 'Pending';
-            $agency['pendingCount'] = $advert['agencyPendingApplications'];
-            $finalData[] = $agency;
-
-            $mAdvHoarding = new AdvHoarding();
-            $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
-            $advert['hoardingApprovedApplications'] = count($hoardingApproveList);
-
-            $mAdvActiveHoarding = new AdvActiveHoarding();
-            $pendingList = $mAdvActiveHoarding->allPendingList();              // Find Hoarding Pending Applications
-            $advert['hoardingPendingApplications'] = count($pendingList);
-
-            $mAdvRejectedHoarding = new AdvRejectedHoarding();
-            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
-            $advert['hoardingRejectedApplications'] = count($hoardingRejectList);
-
-            $hoarding['title'] = "Hoarding";
-            $hoarding['approveName'] = 'Approve';
-            $hoarding['ApprovalCount'] = $advert['hoardingApprovedApplications'];
-            $hoarding['rejectName'] = 'Reject';
-            $hoarding['rejectedCount'] =  $advert['hoardingRejectedApplications'];
-            $hoarding['pendingName'] = 'Pending';
-            $hoarding['pendingCount'] = $advert['hoardingPendingApplications'];
-            $finalData[] = $hoarding;
-
-            $mMarBanquteHall = new MarBanquteHall();
-            $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
-            $advert['banquetApprovedApplications'] = count($approveList);
-
-            $mMarActiveBanquteHall = new MarActiveBanquteHall();
-            $pendingList = $mMarActiveBanquteHall->allPendingList();              // Find Banquet Marriage Pending Applications
-            $advert['banquetPendingApplications'] = count($pendingList);
-
-            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();                  // Find Banquet Hall Rejected Applications
-            $advert['banquetRejectedApplications'] = count($rejectList);
-
-            $banquet['title'] = "Banquet/Marriage Hall";
-            $banquet['approveName'] = 'Approve';
-            $banquet['ApprovalCount'] = $advert['banquetApprovedApplications'];
-            $banquet['rejectName'] = 'Reject';
-            $banquet['rejectedCount'] =  $advert['banquetRejectedApplications'];
-            $banquet['pendingName'] = 'Pending';
-            $banquet['pendingCount'] = $advert['banquetPendingApplications'];
-            $finalData[] = $banquet;
-
-            $mMarHostel = new MarHostel();
-            $hostelapproveList = $mMarHostel->allApproveList();                             // Find Hostel Approve Applications
-            $advert['hostelApprovedApplications'] = count($hostelapproveList);
-
-            $mMarActiveHostel = new MarActiveHostel();
-            $pendingList = $mMarActiveHostel->allPendingList();              // Find Hostel Pending Applications
-            $advert['hostelPendingApplications'] = count($pendingList);
-
-            $mMarRejectedHostel = new MarRejectedHostel();
-            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();                 // Find Hostel Rejected Applications
-            $advert['hostelRejectedApplications'] = count($hostelRejectList);
-
-            $hostel['title'] = "Hostel";
-            $hostel['approveName'] = 'Approve';
-            $hostel['ApprovalCount'] = $advert['hostelApprovedApplications'];
-            $hostel['rejectName'] = 'Reject';
-            $hostel['rejectedCount'] =  $advert['hostelRejectedApplications'];
-            $hostel['pendingName'] = 'Pending';
-            $hostel['pendingCount'] = $advert['hostelPendingApplications'];
-            $finalData[] = $hostel;
-
-            $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList();                               // Find Lodge Approve Applications
-            $advert['lodgeApprovedApplications'] = count($lodgeApproveList);
-
-            $mMarActiveLodge = new MarActiveLodge();
-            $pendingList = $mMarActiveLodge->allPendingList();              // Find Lodge Pending Applications
-            $advert['lodgePendingApplications'] = count($pendingList);
-
-
-            $mMarRejectedLodge = new MarRejectedLodge();
-            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();                   // Find Lodge Rejected Applications
-            $advert['lodgeRejectedApplications'] = count($lodgeRejectList);
-
-            $lodge['title'] = "Lodge";
-            $lodge['approveName'] = 'Approve';
-            $lodge['ApprovalCount'] = $advert['lodgeApprovedApplications'];
-            $lodge['rejectName'] = 'Reject';
-            $lodge['rejectedCount'] =  $advert['lodgeRejectedApplications'];
-            $lodge['pendingName'] = 'Pending';
-            $lodge['pendingCount'] = $advert['lodgePendingApplications'];
-            $finalData[] = $lodge;
-
-            $mMarDharamshala = new MarDharamshala();
-            $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
-            $advert['dharamshalaApprovedApplications'] = count($dharamshalaApproveList);
-
-            $mMarActiveDharamshala = new MarActiveDharamshala();
-            $pendingList = $mMarActiveDharamshala->allPendingList();                 // Find Dharamshala Pending Applications
-            $advert['dharamshalaPendingApplications'] = count($pendingList);
-
-            $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
-            $advert['dharamshalaRejectedApplications'] = count($dharamshalaRejectList);
-
-            $dharamshala['title'] = "Dharamshala";
-            $dharamshala['approveName'] = 'Approve';
-            $dharamshala['ApprovalCount'] = $advert['dharamshalaApprovedApplications'];
-            $dharamshala['rejectName'] = 'Reject';
-            $dharamshala['rejectedCount'] =  $advert['dharamshalaRejectedApplications'];
-            $dharamshala['pendingName'] = 'Pending';
-            $dharamshala['pendingCount'] = $advert['dharamshalaPendingApplications'];
-            $finalData[] = $dharamshala;
-
-            
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $finalData, "050211", "1.0", "$executionTime Sec", "POST");
-        } catch (Exception $e) {
-            return responseMsgs(false,$e->getMessage(), "", "050211", 1.0, "271ms", "POST", "", "");
-        }
     }
 }
