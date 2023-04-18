@@ -609,7 +609,7 @@ class VehicleAdvetController extends Controller
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getMovableVehiclePayment($typology, $zone);
+                $amount = $mCalculateRate->getMovableVehiclePayment($typology, $zone, $mAdvActiveVehicle->license_from, $mAdvActiveVehicle->license_to);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
