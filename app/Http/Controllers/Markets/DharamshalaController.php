@@ -561,7 +561,7 @@ class DharamshalaController extends Controller
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveDharamshala->ulb_id); // Generate Application No
 
                 if ($mMarActiveDharamshala->renew_no == NULL) {
                     // dharamshala Application replication

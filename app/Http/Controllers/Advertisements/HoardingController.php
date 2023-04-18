@@ -589,7 +589,7 @@ class HoardingController extends Controller
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveHoarding->ulb_id); // Generate Application No
 
                 if ($mAdvActiveHoarding->renew_no == NULL) {
                     // approved Hording Application replication

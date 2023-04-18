@@ -621,7 +621,6 @@ class PrivateLandController extends Controller
             if ($refGetFinisher->role_id != $req->roleId) {
                 return responseMsgs(false, " Access Forbidden", "");
             }
-
             DB::beginTransaction();
             // Approval
             if ($req->status == 1) {
@@ -631,14 +630,14 @@ class PrivateLandController extends Controller
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone);
+                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone, $mAdvActivePrivateland->license_from,$mAdvActivePrivateland->license_to);
                 $payment_amount = ['payment_amount' => $amount];
 
                 // $payment_amount = ['payment_amount' =>1000];
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate License No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActivePrivateland->ulb_id); // Generate License No
 
                 if ($mAdvActivePrivateland->renew_no == NULL) {
                     // approved Private Land Application replication

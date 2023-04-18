@@ -1,7 +1,8 @@
-<?php 
+<?php
 
 namespace App\BLL\Advert;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Http;
  * | Status - Open
  */
 
- 
+
 class CalculateRate
 {
     protected $_baseUrl;
@@ -22,15 +23,16 @@ class CalculateRate
         $this->_baseUrl = Config::get('constants.BASE_URL');
     }
 
-    public function generateId($token,$paramId,$ulbId){
-         // Generate Application No
-         $reqData = [
+    public function generateId($token, $paramId, $ulbId)
+    {
+        // Generate Application No
+        $reqData = [
             "paramId" => $paramId,
             'ulbId' => $ulbId
         ];
         $refResponse = Http::withToken($token)
             ->post($this->_baseUrl . 'api/id-generator', $reqData);
-       $idGenerateData = json_decode($refResponse);
+        $idGenerateData = json_decode($refResponse);
         return $idGenerateData->data;
     }
 
@@ -50,19 +52,25 @@ class CalculateRate
             ->first()->rate;
     }
 
-    
-    public function getPrivateLandPayment($typology, $zone)
+
+    public function getPrivateLandPayment($typology, $zone, $license_from, $license_to)
     {
-        return DB::table('adv_typology_mstrs')
-            ->select(DB::raw("case when $zone = 1 then rate_zone_a
-                              when $zone = 2 then rate_zone_b
-                              when $zone = 3 then rate_zone_c
+        $rate = DB::table('adv_typology_mstrs')
+            ->select(DB::raw("case when $zone = 1 then one_day_rate_zone_a
+                              when $zone = 2 then one_day_rate_zone_b
+                              when $zone = 3 then one_day_rate_zone_c
                         else 0 end as rate"))
             ->where('id', $typology)
             ->first()->rate;
+        $toDate = Carbon::parse($license_to);
+        $fromDate = Carbon::parse($license_from);
+
+        $noOfDays = $toDate->diffInDays($fromDate);
+
+        return ($noOfDays * $rate);
     }
 
-    
+
     /**
      * | Get Hording price
      */
@@ -77,4 +85,3 @@ class CalculateRate
             ->first()->rate;
     }
 }
-  

@@ -614,7 +614,7 @@ class VehicleAdvetController extends Controller
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveVehicle->ulb_id); // Generate Application No
                 // approved Vehicle Application replication
                 if ($mAdvActiveVehicle->renew_no == NULL) {
                     $approvedVehicle = $mAdvActiveVehicle->replicate();

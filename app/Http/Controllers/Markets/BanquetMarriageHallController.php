@@ -561,7 +561,7 @@ class BanquetMarriageHallController extends Controller
                 $req->request->add($payment_amount);
 
                 $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $req->ulbId); // Generate Application No
+                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveBanquteHall->ulb_id); // Generate Application No
 
                 if ($mMarActiveBanquteHall->renew_no == NULL) {
                     // Banqute Hall Application replication
