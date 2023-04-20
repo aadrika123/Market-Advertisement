@@ -4,6 +4,7 @@ namespace App\Models\Advertisements;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdvRejectedSelfadvertisement extends Model
 {
@@ -64,8 +65,32 @@ class AdvRejectedSelfadvertisement extends Model
                 'entity_address',
                 'payment_status',
                 'rejected_date',
+                'entity_ward_id',
+                'application_type',
+                DB::raw("'Rejected' as applicationStatus"),
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    /**
+     * | Get Application Reject List by Role Ids
+     */
+    public function rejectedApplicationForReport()
+    {
+        return AdvRejectedSelfadvertisement::select(
+                'id',
+                'application_no',
+                'application_date',
+                'applicant',
+                'entity_name',
+                'entity_address',
+                'payment_status',
+                'rejected_date',
+                'entity_ward_id',
+                'application_type',
+                DB::raw("'Rejected' as applicationStatus"),
+            )
+            ->orderByDesc('id')->get();
     }
 }

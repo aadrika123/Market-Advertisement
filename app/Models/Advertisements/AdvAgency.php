@@ -192,6 +192,7 @@ class AdvAgency extends Model
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $mAdvAgency->payment_status = $req->status;
+            $mAdvAgency->payment_mode= "Cash";
             $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
@@ -216,6 +217,7 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->payment_amount =  $mAdvAgency->amount;
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
+            $mAdvAgencyRenewal->payment_mode = "Cash";
             $mAdvAgencyRenewal->valid_from = $mAdvAgency->valid_from;
             $mAdvAgencyRenewal->valid_upto = $mAdvAgency->valid_upto;
             $mAdvAgencyRenewal->payment_details = json_encode($payDetails);

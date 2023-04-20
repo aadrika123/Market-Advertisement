@@ -20,6 +20,7 @@ class AdvSelfadvertisement extends Model
             'applicant',
             'applicant as owner_name',
             'entity_name',
+            'entity_ward_id',
             'mobile_no',
             'entity_address',
             'payment_status',
@@ -32,7 +33,9 @@ class AdvSelfadvertisement extends Model
             'valid_upto',
             'valid_from',
             'user_id',
+            'application_type',
             DB::raw("'selfAdvt' as type"),
+            DB::raw("'Approved' as applicationStatus"),
         )
             ->orderByDesc('id')
             ->get();
@@ -149,6 +152,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id = $mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId-" . time();
             $mAdvSelfadvertisement->payment_date = Carbon::now();
+            $mAdvSelfadvertisement->payment_mode = "Cash";
 
             $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
@@ -169,6 +173,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_status = 1;
             $mAdvSelfAdvertRenewal->payment_id =  $pay_id;
             $mAdvSelfAdvertRenewal->payment_date = Carbon::now();
+            $mAdvSelfAdvertRenewal->payment_mode = "Cash";
             $mAdvSelfAdvertRenewal->valid_from = $mAdvSelfadvertisement->valid_from;
             $mAdvSelfAdvertRenewal->valid_upto = $mAdvSelfadvertisement->valid_upto;
             $mAdvSelfAdvertRenewal->payment_details = json_encode($payDetails);
@@ -254,5 +259,34 @@ class AdvSelfadvertisement extends Model
                                                 ->first();
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
         return $recieptDetails;
+    }
+
+    public function allApproveListForReport()
+    {
+        return AdvSelfadvertisement::select(
+            'id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'applicant as owner_name',
+            'entity_name',
+            'entity_ward_id',
+            'mobile_no',
+            'entity_address',
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'ulb_id',
+            'workflow_id',
+            'citizen_id',
+            'license_no',
+            'valid_upto',
+            'valid_from',
+            'user_id',
+            'application_type',
+            DB::raw("'selfAdvt' as type"),
+            DB::raw("'Approved' as applicationStatus"),
+        )
+            ->orderByDesc('id')->get();
     }
 }

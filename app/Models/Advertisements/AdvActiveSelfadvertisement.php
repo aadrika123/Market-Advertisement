@@ -414,4 +414,12 @@ class AdvActiveSelfadvertisement extends Model
     {
         return AdvActiveSelfadvertisement::all();
     }
+
+    public function allPendingListForReport()
+    {
+        return AdvActiveSelfadvertisement::select(
+                                            '*',
+                                            DB::raw("'Pending' as applicationStatus"),
+        )->get();
+    }
 }

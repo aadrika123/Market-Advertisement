@@ -354,6 +354,7 @@ class AdvHoarding extends Model
             // Self Agency License Table Update
             $mAdvHoarding = AdvHoarding::find($req->applicationId);        // Application ID
             $mAdvHoarding->payment_status = $req->status;
+            $mAdvHoarding->payment_mode = "Cash";
             $pay_id = $mAdvHoarding->payment_id = "Cash-$req->applicationId-" . time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvHoarding->payment_date = Carbon::now();
@@ -375,6 +376,7 @@ class AdvHoarding extends Model
             // Agency License Renewal Table Updation
             $mAdvHoardingRenewal = AdvHoardingRenewal::find($renewal_id);
             $mAdvHoardingRenewal->payment_status = 1;
+            $mAdvHoardingRenewal->payment_mode = "Cash";
             $mAdvHoardingRenewal->payment_id =  $pay_id;
             $mAdvHoardingRenewal->payment_date = Carbon::now();
             $mAdvHoardingRenewal->valid_from = $mAdvHoarding->valid_from;

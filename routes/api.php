@@ -79,7 +79,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         // Route::post('advert/self/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/self/reupload-document', 'reuploadDocument');          // 33 ( Reupload Rejected Document )
         Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');          //34 ( Search application by name and mobile no )
-        Route::post('advert/self/application-reports', 'applicationReports');          //35 ( Search application by name and mobile no )
+        Route::post('advert/self/get-application-between-date', 'getApplicationBetweenDate');          //35 ( Get Application Between two date )
+        Route::post('advert/self/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //36 ( Get Application Financial Year Wise )
+        Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');          //37 ( Get Application Financial Year Wise )
+        Route::post('advert/self/payment-collection', 'paymentCollection');          //38 ( Get Application Financial Year Wise )
     });
     
 
@@ -99,6 +102,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
         Route::post('advertisements/application-reports', 'applicationReports');      // 11 ( Application Reports )
+        Route::post('advertisements/get-financial-year-master-data', 'getFinancialMasterData');      // 11 ( Get Financial Year For Search )
      });
 
     /**
@@ -138,6 +142,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/vehicle/list-btc-inbox', 'listBtcInbox');          // 29 ( list Application Back to citizen )        
         // Route::post('advert/vehicle/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
         Route::post('advert/vehicle/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Document )
+        Route::post('advert/vehicle/get-application-between-date', 'getApplicationBetweenDate');          //31 ( Get Application Between two date )
+        Route::post('advert/vehicle/payment-collection', 'paymentCollection');          //32 ( Get Application Financial Year Wise )
+    
     });
     
     /**
@@ -174,7 +181,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/pvt-land/verify-or-reject-doc', 'verifyOrRejectDoc');          // 27 ( Verify or Reject Document )
         Route::post('advert/pvt-land/back-to-citizen', 'backToCitizen');          // 28 ( Application Back to Citizen )
         Route::post('advert/pvt-land/list-btc-inbox', 'listBtcInbox');          // 29 ( list BTC Inbox )
-       Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Documents )
+        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Documents )
+        Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');          //35 ( Get Application Between two date )
+        Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');          //36 ( Get Application Financial Year Wise )
+        Route::post('advert/pvt-land/payment-collection', 'paymentCollection');          //37 ( Get Application Financial Year Wise )
     });
 
     /**
@@ -217,6 +227,8 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/search-by-name-or-mobile', 'searchByNameorMobile');          //30 ( Search application by name and mobile no )
         Route::post('advert/agency/is-agency', 'isAgency'); // 31 (Get Agency Approve or not By Login Token)
         Route::post('advert/agency/get-agency-dashboard', 'getAgencyDashboard'); //32 (Get Agency Dashboard)
+        Route::post('advert/agency/get-application-between-date', 'getApplicationBetweenDate');          //33 ( Get Application Between two date )
+        Route::post('advert/agency/payment-collection', 'paymentCollection');          //34( Get Application Financial Year Wise )
     });
 
 
@@ -265,6 +277,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/blacklist-hording', 'blacklistHording'); // 37 (Blacklist Hording)
         Route::post('advert/hording/list-hording-blacklist', 'listHordingBlacklist'); // 38 (list Blacklist Hording)
         Route::post('advert/hording/agency-dashboard-graph', 'agencyDashboardGraph'); // 39 (list Blacklist Hording)
+        Route::post('advert/hording/get-application-between-date', 'getApplicationBetweenDate');          //40 ( Get Application Between two date )
+        Route::post('advert/hording/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //41 ( Get Application Financial Year Wise )
+        Route::post('advert/hording/payment-collection', 'paymentCollection');          //42 ( Get Application Financial Year Wise )
+    
     });
 
 

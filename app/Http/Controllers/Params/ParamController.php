@@ -207,13 +207,11 @@ class ParamController extends Controller
             ];
 
             if ($req->workflowId == $this->_selfAdvt) { // Self Advertisement Payment
-                // DB::table('adv_selfadvertisements')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
-
+            
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
 
                 $mAdvSelfadvertisement->payment_date = Carbon::now();
+                $mAdvSelfadvertisement->payment_mode= "Online";
                 $mAdvSelfadvertisement->payment_status = 1;
                 $mAdvSelfadvertisement->payment_id = $req->paymentId;
                 $mAdvSelfadvertisement->payment_details = $req->all();
@@ -234,6 +232,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvSelfadvertisement->valid_from;
                 $updateData['valid_upto'] = $mAdvSelfadvertisement->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('adv_selfadvet_renewals')
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
@@ -246,6 +245,7 @@ class ParamController extends Controller
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
                 $mAdvVehicle->payment_date = Carbon::now();
+                $mAdvVehicle->payment_mode = "Online";
                 $mAdvVehicle->payment_status = 1;
                 $mAdvVehicle->payment_id = $req->paymentId;
                 $mAdvVehicle->payment_details = $req->all();
@@ -266,6 +266,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvVehicle->valid_from;
                 $updateData['valid_upto'] = $mAdvVehicle->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('adv_vehicle_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
@@ -276,14 +277,11 @@ class ParamController extends Controller
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
 
-                // DB::table('adv_agencies')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
-
                 $mAdvAgency = AdvAgency::find($req->id);
 
                 $mAdvAgency->payment_date = Carbon::now();
                 $mAdvAgency->payment_status = 1;
+                $mAdvAgency->payment_mode = "Online";
                 $mAdvAgency->payment_id = $req->paymentId;
                 $mAdvAgency->payment_details = $req->all();
 
@@ -303,6 +301,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvAgency->valid_from;
                 $updateData['valid_upto'] = $mAdvAgency->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('adv_agency_renewals')
                     ->where('id', $mAdvAgency->last_renewal_id)
@@ -313,12 +312,9 @@ class ParamController extends Controller
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
 
-                // DB::table('adv_privatelands')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
-
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
                 $mAdvPrivateland->payment_date = Carbon::now();
+                $mAdvPrivateland->payment_mode = "Online";
                 $mAdvPrivateland->payment_status = 1;
                 $mAdvPrivateland->payment_id = $req->paymentId;
                 $mAdvPrivateland->payment_details = $req->all();
@@ -339,6 +335,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvPrivateland->valid_from;
                 $updateData['valid_upto'] = $mAdvPrivateland->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('adv_privateland_renewals')
                     ->where('id', $mAdvPrivateland->last_renewal_id)
@@ -348,13 +345,10 @@ class ParamController extends Controller
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
 
-                // DB::table('adv_agency_licenses')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
-
                 $mAdvHoarding = AdvHoarding::find($req->id);
                 $mAdvHoarding->payment_date = Carbon::now();
                 $mAdvHoarding->payment_status = 1;
+                $mAdvHoarding->payment_mode = "Online";
                 $mAdvHoarding->payment_id = $req->paymentId;
                 $mAdvHoarding->payment_details = $req->all();
 
@@ -374,6 +368,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvHoarding->valid_from;
                 $updateData['valid_upto'] = $mAdvHoarding->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('adv_hoarding_renewals')
                     ->where('id', $mAdvHoarding->last_renewal_id)
@@ -382,10 +377,6 @@ class ParamController extends Controller
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
             } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
-
-                // DB::table('mar_banqute_halls')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
                 $mMarBanquteHall->payment_date = Carbon::now();
@@ -415,20 +406,10 @@ class ParamController extends Controller
                     ->where('id', $mMarBanquteHall->last_renewal_id)
                     ->update($updateData);
 
-                // $updateData['payment_amount'] = $req->amount;
-                // // update in Renewals Table
-                // DB::table('mar_banqute_hall_renewals')
-                //     ->where('id', $mMarBanquteHall->last_renewal_id)
-                //     ->update($updateData);
-
                 $appDetails = MarBanquteHall::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
-
-                // DB::table('mar_hostels')
-                //     ->where('id', $req->id)
-                //     ->update($updateData);
 
                 $mMarHostel = MarHostel::find($req->id);
                 $mMarHostel->payment_date = Carbon::now();
@@ -842,5 +823,17 @@ class ParamController extends Controller
     public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service)
     {
         $notification_service->sendWhatsappNotification();
+    }
+
+    public function getFinancialMasterData(Request $req){
+        try{
+            $startTime = microtime(true);
+            $financialYear=RefAdvParamstring::select('id','string_parameter')->where('param_category_id','1017')->orderBy('string_parameter')->get();
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "010050202717", 1.0, "$executionTime Sec", "POST", "", "");
+        }catch(Exception $e){
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
+        }
     }
 }

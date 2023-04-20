@@ -1354,4 +1354,120 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
         }
     }
+    /**
+     * | Get Application Between Two Dates
+     * | Function - 34
+     * | API - 31
+     */
+    public function getApplicationBetweenDate(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050131", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            #=============================================================
+            $approveList = DB::table('adv_vehicles')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $pendingList = DB::table('adv_active_vehicles')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $rejectList = DB::table('adv_rejected_vehicles')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+            #=============================================================
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050131", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050131", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | COllection From New or Renew Application
+     * | Function - 35
+     * | API - 32
+     */
+    public function paymentCollection(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050132", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $endTime = microtime(true);
+
+            $approveList = DB::table('adv_vehicle_renewals')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+                ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->payMode == 'All') {
+                $data = $approveList;
+            }
+            if ($req->payMode == 'Online') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cash') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cheque/DD') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            $data = $data->paginate($req->perPage);
+
+            $ap = $data->toArray();
+
+            $amounts = collect();
+            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+                $amounts->push($item->payment_amount);
+            });
+
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050132", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050132", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }

@@ -109,7 +109,8 @@ class AdvChequeDtl extends Model
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
-                        'valid_upto' => $valid_upto,
+                        'valid_upto' => $valid_upto, 
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 AdvAgency::where('id', $applicationId)->update($metaReqs);
@@ -123,7 +124,8 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
                         'valid_from' => $valid_from,
-                        'valid_upto' => $valid_upto,
+                        'valid_upto' => $valid_upto, 
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 $status=AdvAgencyRenewal::where('agencyadvet_id', $applicationId)->update($metaReqs);
@@ -157,6 +159,7 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 AdvSelfadvertisement::where('id', $applicationId)->update($metaReqs);
@@ -171,6 +174,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 $status=AdvSelfadvetRenewal::where('id', $applicationId)->update($metaReqs);
@@ -203,6 +207,7 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 AdvPrivateland::where('id', $applicationId)->update($metaReqs);
@@ -217,6 +222,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 $status=AdvPrivatelandRenewal::where('id', $applicationId)->update($metaReqs);
@@ -249,6 +255,7 @@ class AdvChequeDtl extends Model
                         'payment_date' => Carbon::now(),
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 AdvVehicle::where('id', $applicationId)->update($metaReqs);
@@ -263,6 +270,7 @@ class AdvChequeDtl extends Model
                         'payment_amount' => $amount,
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 $status=AdvVehicleRenewal::where('id', $applicationId)->update($metaReqs);
@@ -294,7 +302,8 @@ class AdvChequeDtl extends Model
                         'payment_status' => "1",
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 AdvHoarding::where('id', $applicationId)->update($metaReqs);
@@ -310,6 +319,7 @@ class AdvChequeDtl extends Model
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
                         'payment_amount' => $amount,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 $status=AdvHoardingRenewal::where('licenseadvet_id', $applicationId)->update($metaReqs);

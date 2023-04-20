@@ -142,6 +142,7 @@ public function getPaymentDetails($paymentId)
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
             $mAdvVehicle->payment_status = $req->status;
+            $mAdvVehicle->payment_mode = "Cash";
             $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId-".time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
@@ -166,6 +167,7 @@ public function getPaymentDetails($paymentId)
             $mAdvVehicleRenewal->payment_status = 1;
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
+            $mAdvVehicleRenewal->payment_mode = "Cash";
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
             $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;

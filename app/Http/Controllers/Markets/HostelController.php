@@ -70,6 +70,7 @@ class HostelController extends Controller
      * | Apply for Hostel 
      * | @param StoreRequest 
      * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -105,6 +106,7 @@ class HostelController extends Controller
      * | Inbox List
      * | @param Request $req
      * | Function - 02
+     * | API - 02
      */
     public function listInbox(Request $req)
     {
@@ -133,6 +135,7 @@ class HostelController extends Controller
     /**
      * | Outbox List
      * | Function - 03
+     * | API - 03
      */
     public function listOutbox(Request $req)
     {
@@ -161,6 +164,7 @@ class HostelController extends Controller
     /**
      * | Application Details
      * | Function - 04
+     * | API - 04
      */
 
     public function getDetailsById(Request $req)
@@ -259,6 +263,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 06
+     * | API - 05
      */
     public function listAppliedApplications(Request $req)
     {
@@ -288,6 +293,7 @@ class HostelController extends Controller
      * @param Request $request
      * @return void
      * | Function - 07
+     * | API - 06
      */
     public function escalateApplication(Request $request)
     {
@@ -320,6 +326,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 08
+     * | API - 07
      */
     public function listEscalated(Request $req)
     {
@@ -356,6 +363,7 @@ class HostelController extends Controller
      * @param Request $request
      * @return void
      * | Function - 09
+     * | API - 08
      */
     public function forwardNextLevel(Request $request)
     {
@@ -403,6 +411,7 @@ class HostelController extends Controller
      * @param Request $request
      * @return void
      * | Function - 10
+     * | API - 09
      */
     public function commentApplication(Request $request)
     {
@@ -453,6 +462,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 11
+     * | API - 10
      */
     public function viewHostelDocuments(Request $req)
     {
@@ -471,6 +481,7 @@ class HostelController extends Controller
     /**
      * | Get Uploaded Active Document by application ID
      * | Function - 12
+     * | API - 11
      */
     public function viewActiveDocument(Request $req)
     {
@@ -491,6 +502,7 @@ class HostelController extends Controller
     /**
      * | Workflow View Uploaded Document by application ID
      * | Function - 13
+     * | API - 12
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
