@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Lodge Operations
- * | Status - Closed (14 Apr 2023)  Total no. of lines - 1308
+ * | Status - Open (14 Apr 2023), Total Function - 35, Total API - 31,  Total no. of lines - 1497
  */
 
 class LodgeController extends Controller
@@ -637,10 +637,10 @@ class LodgeController extends Controller
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $msg, "", '050713', 01, "$executionTime Sec", 'Post', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050713', 01, "$executionTime Sec", 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false,  $e->getMessage(), "", '050713', 01, "", 'Post', $req->deviceId);
+            return responseMsgs(false,  $e->getMessage(), "", '050713', 01, "", 'POST', $req->deviceId);
         }
     }
 
@@ -1294,9 +1294,9 @@ class LodgeController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050727", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050827", 1.0, "", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
         }
     }
     /**
@@ -1317,12 +1317,12 @@ class LodgeController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050728", 1.0, "$executionTime Sec", "POST", "", "");
             else
-                return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "", "POST", "", "");
+                return responseMsgs(false, "Application Not Updated !!!", "", "050728", 1.0, "", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), $e->getMessage(), "050828", 1.0, "", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), $e->getMessage(), "050728", 1.0, "", "POST", "", "");
         }
     }     
     
@@ -1334,7 +1334,7 @@ class LodgeController extends Controller
     public function getApplicationBetweenDate(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050829", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050729", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
         $validator = Validator::make($req->all(), [
@@ -1380,9 +1380,9 @@ class LodgeController extends Controller
             #=============================================================
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050829", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050729", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050829", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050729", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1394,7 +1394,7 @@ class LodgeController extends Controller
     public function getApplicationFinancialYearWise(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050830", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050730", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
 
@@ -1428,9 +1428,9 @@ class LodgeController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050830", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050730", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050830", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050730", 1.0, "271ms", "POST", "", "");
         }
     }
 

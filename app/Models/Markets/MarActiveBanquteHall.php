@@ -275,9 +275,11 @@ class MarActiveBanquteHall extends Model
                     'et.string_parameter as electricitytype',
                     'wst.string_parameter as watersupplytype',
                     'ldt.string_parameter as landDeedType',
+                    'ly.string_parameter as licenseYear',
                 )
                 ->where('mar_active_banqute_halls.id', $id)
                 ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_active_banqute_halls.hall_type')
+                ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_banqute_halls.license_year::int'))
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_active_banqute_halls.residential_ward_id')
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_banqute_halls.permanent_ward_id')
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_banqute_halls.entity_ward_id')
@@ -303,9 +305,11 @@ class MarActiveBanquteHall extends Model
                 'et.string_parameter as electricitytype',
                 'wst.string_parameter as watersupplytype',
                 'ldt.string_parameter as landDeedType',
+                'ly.string_parameter as licenseYear',
             )
             ->where('mar_rejected_banqute_halls.id', $id)
             ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_rejected_banqute_halls.hall_type')
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_banqute_halls.license_year::int'))
             ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_banqute_halls.residential_ward_id')
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_banqute_halls.permanent_ward_id')
             ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_banqute_halls.entity_ward_id')
@@ -331,9 +335,11 @@ class MarActiveBanquteHall extends Model
                 'et.string_parameter as electricitytype',
                 'wst.string_parameter as watersupplytype',
                 'ldt.string_parameter as landDeedType',
+                'ly.string_parameter as licenseYear',
             )
             ->where('mar_banqute_halls.id', $id)
             ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_banqute_halls.hall_type')
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_banqute_halls.license_year::int'))
             ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_banqute_halls.residential_ward_id')
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_banqute_halls.permanent_ward_id')
             ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_banqute_halls.entity_ward_id')

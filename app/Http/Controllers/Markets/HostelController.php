@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Hostel Operations
- * | Status - Open (14 Apr 2023)  Total no. of lines - 
+ * | Status - Open (14 Apr 2023), Total Function - 34, Total API - 31,  Total no. of lines - 1482
  */
 class HostelController extends Controller
 {

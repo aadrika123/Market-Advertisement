@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Dharamshala Operations
- * | Status - Closed, By Bikash - 17 Apr 2023, Total Function - 31, Total API - 28,  Total no. of lines - 1319
+ * | Status - Open , By Bikash - 17 Apr 2023, Total Function - 34, Total API - 31,  Total no. of lines - 1496
  */
 class DharamshalaController extends Controller
 {

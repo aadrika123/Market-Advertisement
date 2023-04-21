@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar
  * | Hoarding Controller
- * | Status - Closed, By - Bikash - 17 Apr 2023, Total API - 39 , Total Function - 42 , total no of lines - 1664
+ * | Status - Closed, By - Bikash - 17 Apr 2023, Total API - 42 , Total Function - 45 , total no of lines - 1836
  */
 class HoardingController extends Controller
 {

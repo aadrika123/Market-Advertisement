@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Validator;
  * | Created on - 06-02-2023
  * | Created By - Bikash Kumar
  * | Banquet Marriage Hall operations
- * | Status - Closed, by Bikash - 17 Apr 2023, Total Api - 28, Total Function - 31, Total No of Lines - 1308
+ * | Status - Closed, by Bikash - 17 Apr 2023, Total API - 31, Total Function - 34, Total No of Lines - 1471
  */
 class BanquetMarriageHallController extends Controller
 {

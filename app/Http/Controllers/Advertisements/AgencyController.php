@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Redis;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Agency Operations
- * | Status - Closed, By - Bikash kumar 17 Apr 2023, Total API - 32, Total Function - 36, Total no. of Lines - 1462
+ * | Status - Closed, By - Bikash kumar 17 Apr 2023, Total API - 34, Total Function - 38, Total no. of Lines - 1586
  */
 class AgencyController extends Controller
 {
