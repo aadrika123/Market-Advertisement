@@ -321,7 +321,11 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/lodge/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Payments )
         Route::post('market/lodge/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
         Route::post('market/lodge/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
-        Route::post('market/lodge/edit-application', 'editApplication');          // 28 ( Edit Applications )
+        Route::post('market/lodge/edit-application', 'editApplication');          // 28 ( Edit Applications ) 
+        
+        Route::post('market/lodge/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
+        Route::post('market/lodge/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
+        Route::post('market/lodge/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
     });
 
     /**
@@ -363,6 +367,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bm-hall/renew-application', 'renewApplication');          // 26 ( Renew Applications )
         Route::post('market/bm-hall/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
         Route::post('market/bm-hall/edit-application', 'editApplication');          // 28 ( Edit Applications )
+
+        Route::post('market/bm-hall/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
+        Route::post('market/bm-hall/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
+        Route::post('market/bm-hall/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
     });
 
 
@@ -404,6 +412,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/hostel/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
         Route::post('market/hostel/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
         Route::post('market/hostel/edit-application', 'editApplication');          // 28 ( Edit Applications )
+        
+        Route::post('market/hostel/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
+        Route::post('market/hostel/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
+        Route::post('market/hostel/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
     });
 
     /**
@@ -444,6 +456,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/renew-application', 'renewApplication');          // 26 ( Renew Application )
         Route::post('market/dharamshala/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
         Route::post('market/dharamshala/edit-application', 'editApplication');          // 28 ( Edit Applications )
+
+        Route::post('market/dharamshala/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
+        Route::post('market/dharamshala/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
+        Route::post('market/dharamshala/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
     });
 
 });

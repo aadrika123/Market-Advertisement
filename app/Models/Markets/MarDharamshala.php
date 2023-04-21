@@ -99,6 +99,7 @@ class MarDharamshala extends Model
             // Dharamshala Table Update
             $mMarDharamshala = MarDharamshala::find($req->applicationId);
             $mMarDharamshala->payment_status = $req->status;
+            $mMarDharamshala->payment_mode = "Cash";
             $pay_id = $mMarDharamshala->payment_id = "Cash-$req->applicationId-" . time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mMarDharamshala->payment_date = Carbon::now();
@@ -120,6 +121,7 @@ class MarDharamshala extends Model
             // Renewal Table Updation
             $mMarDharamshalaRenewal = MarDharamshalaRenewal::find($renewal_id);
             $mMarDharamshalaRenewal->payment_status = 1;
+            $mMarDharamshalaRenewal->payment_mode = "Cash";
             $mMarDharamshalaRenewal->payment_id =  $pay_id;
             $mMarDharamshalaRenewal->payment_date = Carbon::now();
             $mMarDharamshalaRenewal->valid_from = $mMarDharamshala->valid_from;

@@ -1678,7 +1678,7 @@ class HoardingController extends Controller
     public function getApplicationBetweenDate(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050140", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050640", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
         $validator = Validator::make($req->all(), [
@@ -1721,9 +1721,9 @@ class HoardingController extends Controller
             #=============================================================
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050140", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050640", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050140", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050640", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1736,7 +1736,7 @@ class HoardingController extends Controller
     public function getApplicationFinancialYearWise(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050141", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050641", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
 
@@ -1768,9 +1768,9 @@ class HoardingController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050141", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050641", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050141", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050641", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1782,7 +1782,7 @@ class HoardingController extends Controller
     public function paymentCollection(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050142", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050642", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
 
@@ -1828,9 +1828,9 @@ class HoardingController extends Controller
             });
 
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050142", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050642", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050142", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050642", 1.0, "271ms", "POST", "", "");
         }
     }
 }

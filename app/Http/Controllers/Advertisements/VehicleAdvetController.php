@@ -1362,7 +1362,7 @@ class VehicleAdvetController extends Controller
     public function getApplicationBetweenDate(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050131", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050331", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
         $validator = Validator::make($req->all(), [
@@ -1405,9 +1405,9 @@ class VehicleAdvetController extends Controller
             #=============================================================
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050131", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050331", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050131", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050331", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -1419,7 +1419,7 @@ class VehicleAdvetController extends Controller
     public function paymentCollection(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050132", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050332", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
 
@@ -1465,9 +1465,9 @@ class VehicleAdvetController extends Controller
             });
 
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050132", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050132", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
         }
     }
 }

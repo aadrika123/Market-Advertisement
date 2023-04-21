@@ -73,6 +73,7 @@ class LodgeController extends Controller
      * | Apply for Lodge
      * | @param StoreRequest 
      * | Function - 01
+     * | API - 01
      */
     public function addNew(StoreRequest $req)
     {
@@ -108,6 +109,7 @@ class LodgeController extends Controller
      * | Inbox List
      * | @param Request $req
      * | Function - 02
+     * | API - 02
      */
     public function listInbox(Request $req)
     {
@@ -136,6 +138,7 @@ class LodgeController extends Controller
     /**
      * | Outbox List
      * | Function - 03
+     * | API - 03
      */
     public function listOutbox(Request $req)
     {
@@ -164,6 +167,7 @@ class LodgeController extends Controller
     /**
      * | Application Details
      * | Function - 04
+     * | API - 04
      */
 
     public function getDetailsById(Request $req)
@@ -261,6 +265,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 06
+     * | API - 05
      */
     public function listAppliedApplications(Request $req)
     {
@@ -290,6 +295,7 @@ class LodgeController extends Controller
      * @param Request $request
      * @return void
      * | Function - 07
+     * | API - 06
      */
     public function escalateApplication(Request $request)
     {
@@ -322,6 +328,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 08
+     * | API - 07
      */
     public function listEscalated(Request $req)
     {
@@ -354,13 +361,12 @@ class LodgeController extends Controller
     }
 
 
-
-
     /**
      * Forward or Backward Application
      * @param Request $request
      * @return void
      * | Function - 09
+     * | API - 08
      */
     public function forwardNextLevel(Request $request)
     {
@@ -412,6 +418,7 @@ class LodgeController extends Controller
      * @param Request $request
      * @return void
      * | Function - 10
+     * | API - 09
      */
     public function commentApplication(Request $request)
     {
@@ -463,6 +470,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 11
+     * | API - 10
      */
     public function viewLodgeDocuments(Request $req)
     {
@@ -481,6 +489,7 @@ class LodgeController extends Controller
     /**
      * | Get Uploaded Active Document by application ID
      * | Function - 12
+     * | API - 11
      */
     public function viewActiveDocument(Request $req)
     {
@@ -501,6 +510,7 @@ class LodgeController extends Controller
     /**
      * | Workflow View Uploaded Document by application ID
      * | Function - 13
+     * | API - 12
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
@@ -522,6 +532,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 14
+     * | API - 13
      */
     public function approvedOrReject(Request $req)
     {
@@ -638,6 +649,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 15
+     * | API - 14
      */
     public function listApproved(Request $req)
     {
@@ -673,6 +685,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 16
+     * | API - 15
      */
     public function listRejected(Request $req)
     {
@@ -705,6 +718,7 @@ class LodgeController extends Controller
      * @param Request $req
      * @return void
      * | Function - 18
+     * | API - 16
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -754,6 +768,7 @@ class LodgeController extends Controller
      * Get application Details For Payment
      * @return void
      * | Function - 19
+     * | API - 17
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -787,6 +802,7 @@ class LodgeController extends Controller
     /**
      * | Verify Single Application Approve or reject
      * | Function - 20
+     * | API - 18
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -911,6 +927,7 @@ class LodgeController extends Controller
     /**
      * | Send back to citizen
      * | Function - 22
+     * | API - 19
      */
     public function backToCitizen(Request $req)
     {
@@ -963,6 +980,7 @@ class LodgeController extends Controller
     /**
      * | Back To Citizen Inbox
      * | Function - 23
+     * | API - 20
      */
     public function listBtcInbox()
     {
@@ -1002,6 +1020,11 @@ class LodgeController extends Controller
         }
     }
 
+
+    /**
+     * | Check full document are upload or not
+     * | Function - 24
+     */
     public function checkFullUpload($applicationId)
     {
 
@@ -1030,7 +1053,8 @@ class LodgeController extends Controller
 
     /**
      * | Reupload Rejected Documents
-     * | Function - 24
+     * | Function - 25
+     * | API - 21
      */
     public function reuploadDocument(Request $req)
     {
@@ -1064,7 +1088,8 @@ class LodgeController extends Controller
 
     /**
      * | Application payment via cash
-     * | Function - 25
+     * | Function - 26
+     * | API - 22
      */
     public function paymentByCash(Request $req)
     {
@@ -1103,7 +1128,8 @@ class LodgeController extends Controller
 
     /**
      * | Entry Cheque or DD for payment
-     * | Function - 26
+     * | Function - 27
+     * | API - 23
      */
     public function entryChequeDd(Request $req)
     {
@@ -1137,7 +1163,8 @@ class LodgeController extends Controller
 
     /** 
      * | Clear or bounce cheque or dd
-     * | Function - 27
+     * | Function - 28
+     * | API - 24
      */
     public function clearOrBounceCheque(Request $req)
     {
@@ -1179,7 +1206,8 @@ class LodgeController extends Controller
 
     /**
      * | Get Application Details For Renew
-     * | Function - 28
+     * | Function - 29
+     * | API - 25
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -1210,7 +1238,8 @@ class LodgeController extends Controller
     /**
      * | Apply for Lodge
      * | @param StoreRequest 
-     * | Function - 29
+     * | Function - 30
+     * | API - 26
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -1242,7 +1271,8 @@ class LodgeController extends Controller
     }
     /**
      * | Get Application Details For Update Application
-     * | Function - 30
+     * | Function - 31
+     * | API - 27
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1271,7 +1301,8 @@ class LodgeController extends Controller
     }
     /**
      * | Update Application 
-     * | Function - 31
+     * | Function - 32
+     * | API - 28
      */
     public function editApplication(UpdateRequest $req)
     {
@@ -1292,6 +1323,175 @@ class LodgeController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getMessage(), "050828", 1.0, "", "POST", "", "");
+        }
+    }     
+    
+    /**
+     * | Get Application Between Two Dates
+     * | Function - 33
+     * | API - 29
+     */
+    public function getApplicationBetweenDate(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050829", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            #=============================================================
+            $approveList = DB::table('mar_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $pendingList = DB::table('mar_active_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
+                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $rejectList = DB::table('mar_rejected_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
+                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+            #=============================================================
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050829", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050829", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Application Financial Year Wise
+     * | Function - 34
+     * | API - 30
+     */
+    public function getApplicationFinancialYearWise(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050830", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'entityWard' => 'required|integer',
+            'perPage' => 'required|integer',
+            'financialYear' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $approveList = DB::table('mar_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+
+            $pendingList = DB::table('mar_active_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+
+            $rejectList = DB::table('mar_rejected_lodges')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+
+            $data = collect(array());
+            $data = $approveList->union($pendingList)->union($rejectList);
+            $data = $data->paginate($req->perPage);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050830", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050830", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | COllection From New or Renew Application
+     * | Function - 35
+     * | API - 31
+     */
+    public function paymentCollection(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050831", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $endTime = microtime(true);
+
+            $approveList = DB::table('mar_lodge_renewals')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+                ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->payMode == 'All') {
+                $data = $approveList;
+            }
+            if ($req->payMode == 'Online') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cash') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cheque/DD') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            $data = $data->paginate($req->perPage);
+
+            $ap = $data->toArray();
+
+            $amounts = collect();
+            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+                $amounts->push($item->payment_amount);
+            });
+
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050831", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050831", 1.0, "271ms", "POST", "", "");
         }
     }
 }

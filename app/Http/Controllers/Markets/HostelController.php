@@ -221,9 +221,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050904", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "");
+            return responseMsgs(false, $e->getMessage(), "", "050904", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
     /**
@@ -282,9 +282,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Applied Applications", $data1, "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050905", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050905", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -315,9 +315,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Hostel is Escalated' : "Hostel is removed from Escalated", '', "050107", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Hostel is Escalated' : "Hostel is removed from Escalated", '', "050906", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050107", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050906", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -352,9 +352,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050108", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", remove_null($advData), "050907", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050108", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050907", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -399,10 +399,10 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050109", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050908", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050109", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050908", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -449,10 +449,10 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050110", "1.0", " $executionTime Sec", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050909", "1.0", " $executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050110", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050909", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -517,10 +517,8 @@ class HostelController extends Controller
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050115", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050912", "1.0", "$executionTime Sec", "POST", "");
     }
-
-
 
 
     /**
@@ -528,6 +526,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 14
+     * | API - 13
      */
     public function approvedOrReject(Request $req)
     {
@@ -638,10 +637,10 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, $msg, "", '050117', 01, "$executionTime Sec", 'Post', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050913', 01, "$executionTime Sec", 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false,  $e->getMessage(), "", '050117', 01, "", 'Post', $req->deviceId);
+            return responseMsgs(false,  $e->getMessage(), "", '050913', 01, "", 'POST', $req->deviceId);
         }
     }
 
@@ -650,6 +649,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 15
+     * | API - 14
      */
     public function listApproved(Request $req)
     {
@@ -673,9 +673,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Approved Application List", $data1, "040103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050914", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050914", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -684,6 +684,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 16
+     * | API - 15
      */
     public function listRejected(Request $req)
     {
@@ -705,9 +706,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Rejected Application List", $data1, "040103", "1.0", "$executionTime ", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050915", "1.0", "$executionTime ", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040103", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050915", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -717,6 +718,7 @@ class HostelController extends Controller
      * @param Request $req
      * @return void
      * | Function - 17
+     * | API - 16
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -755,9 +757,9 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050123", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050916", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050916", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -765,6 +767,7 @@ class HostelController extends Controller
      * Get application Details For Payment
      * @return void
      * | Function - 18
+     * | API - 17
      */
     public function getApplicationDetailsForPayment(Request $req)
     {
@@ -788,129 +791,17 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, 'Data Fetched',  $data, "050124", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050917", "1.0", "$executionTime Sec", "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050917", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
-    /**
-     * | Payment Application Via Cash
-     * | Function - 19
-     */
-    public function paymentByCash(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mMarHostel = new MarHostel();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarHostel::find($req->applicationId);
-            DB::beginTransaction();
-            $data = $mMarHostel->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Entry Cheque or DD for payment
-     * | Function - 20
-     */
-    public function entryChequeDd(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
-            'bankName' => 'required|string',
-            'branchName' => 'required|string',
-            'chequeNo' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
-            $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "040501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
-     * | Clear or Bounce cheque for payment
-     * | Function - 21
-     */
-    public function clearOrBounceCheque(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string',
-            'status' => 'required|string',
-            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
-            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-
-            $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarHostel::find($req->applicationId);
-            DB::beginTransaction();
-            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
-            DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "040501", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "040501", "1.0", "", 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "040501", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-
+ 
     /**
      * | Verify Single Application Approve or reject
-     * | Function - 22
+     * | Function - 19
+     * | API - 18
      */
     public function verifyOrRejectDoc(Request $req)
     {
@@ -987,16 +878,16 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050918", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050918", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
-     * | Function - 23
+     * | Function - 20
      */
     public function ifFullDocVerified($applicationId)
     {
@@ -1030,7 +921,8 @@ class HostelController extends Controller
 
     /**
      * | Send back to citizen
-     * | Function - 24
+     * | Function - 21
+     * | API - 19
      */
     public function backToCitizen(Request $req)
     {
@@ -1073,15 +965,16 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Successfully Done", "", "", '010710', '01', "$executionTime Sec", 'POST', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050919', '01', "$executionTime Sec", 'POST', '');
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050919", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
     /**
      * | Back To Citizen Inbox
-     * | Function - 25
+     * | Function - 22
+     * | API - 20
      */
     public function listBtcInbox()
     {
@@ -1115,15 +1008,15 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), 010717, 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050920", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", "050920", 1.0, "271ms", "POST", "", "");
         }
     }
     
     /**
      * | Check full document uploaded or not
-     * | Function - 26
+     * | Function - 23
      */
     public function checkFullUpload($applicationId)
     {
@@ -1151,7 +1044,8 @@ class HostelController extends Controller
 
     /**
      * | Re-upload rejected document by citizen
-     * | Function - 27
+     * | Function - 24
+     * | API - 21
      */
     public function reuploadDocument(Request $req)
     {
@@ -1175,16 +1069,133 @@ class HostelController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Document Uploaded Successfully", "", 010717, 1.0, " $executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050921", 1.0, " $executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "", 010717, 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Document Not Uploaded", "", "050921", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+       /**
+     * | Payment Application Via Cash
+     * | Function - 25
+     * | API - 22
+     */
+    public function paymentByCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarHostel = new MarHostel();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarHostel::find($req->applicationId);
+            DB::beginTransaction();
+            $data = $mMarHostel->paymentByCash($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050922", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "050922", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050922", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Entry Cheque or DD for payment
+     * | Function - 26
+     * | API - 23
+     */
+    public function entryChequeDd(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|string',               //  temp_id of Application
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $workflowId = ['workflowId' => $this->_workflowIds];
+            $req->request->add($workflowId);
+            $transNo = $mAdvCheckDtl->entryChequeDd($req);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050923", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050923", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Clear or Bounce cheque for payment
+     * | Function - 27
+     * | API - 24
+     */
+    public function clearOrBounceCheque(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'paymentId' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => $req->status == 1 ? 'nullable|string' : 'required|string',
+            'bounceAmount' => $req->status == 1 ? 'nullable|numeric' : 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction=new AdvMarTransaction();
+            $appDetails=MarHostel::find($req->applicationId);
+            DB::beginTransaction();
+            $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
+            DB::commit();
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            if ($req->status == '1' && $status == 1) {
+                return responseMsgs(true, "Payment Successfully !!", '', "050924", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "050924", "1.0", "", 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050924", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
     /**
      * | Get Application Details For Renew
      * | Function - 28
+     * | API - 25
      */
     public function getApplicationDetailsForRenew(Request $req)
     {
@@ -1205,9 +1216,9 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050925", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "040301", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050925", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
@@ -1215,6 +1226,7 @@ class HostelController extends Controller
      * | Apply for Lodge
      * | @param StoreRequest 
      * | Function - 29
+     * | API - 26
      */
     public function renewApplication(RenewalRequest $req)
     {
@@ -1236,16 +1248,17 @@ class HostelController extends Controller
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050926", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050926", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
     /**
      * | Get Application Details For Update Application
      * | Function - 30
+     * | API - 27
      */
     public function getApplicationDetailsForEdit(Request $req)
     {
@@ -1264,14 +1277,15 @@ class HostelController extends Controller
                 throw new Exception("Application Not Found !!!");
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050927", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Featched !!!", "", "050927", 1.0, "271ms", "POST", "", "");
         }
     }
     /**
-     * Application Updation
+     * | Application Updation
      * | Function - 31
+     * | API - 28
      */
     public function editApplication(UpdateRequest $req)
     {
@@ -1288,12 +1302,181 @@ class HostelController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050928", 1.0, "$executionTime Sec", "POST", "", "");
             else
-                return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "271ms", "POST", "", "");
+                return responseMsgs(false, "Application Not Updated !!!", "", "050928", 1.0, "271ms", "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, "Application Not Updated !!!", $e->getMessage(), "050828", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Updated !!!", $e->getMessage(), "050928", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    
+    /**
+     * | Get Application Between Two Dates
+     * | Function - 32
+     * | API - 29
+     */
+    public function getApplicationBetweenDate(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050929", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            #=============================================================
+            $approveList = DB::table('mar_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $pendingList = DB::table('mar_active_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
+                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $rejectList = DB::table('mar_rejected_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
+                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+            #=============================================================
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050929", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050929", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Application Financial Year Wise
+     * | Function - 33
+     * | API - 30
+     */
+    public function getApplicationFinancialYearWise(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050930", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'entityWard' => 'required|integer',
+            'perPage' => 'required|integer',
+            'financialYear' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $approveList = DB::table('mar_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+
+            $pendingList = DB::table('mar_active_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+
+            $rejectList = DB::table('mar_rejected_hostels')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+
+            $data = collect(array());
+            $data = $approveList->union($pendingList)->union($rejectList);
+            $data = $data->paginate($req->perPage);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050930", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050930", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | COllection From New or Renew Application
+     * | Function - 34
+     * | API - 31
+     */
+    public function paymentCollection(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050931", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $endTime = microtime(true);
+
+            $approveList = DB::table('mar_hostel_renewals')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+                ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->payMode == 'All') {
+                $data = $approveList;
+            }
+            if ($req->payMode == 'Online') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cash') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->payMode == 'Cheque/DD') {
+                $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            $data = $data->paginate($req->perPage);
+
+            $ap = $data->toArray();
+
+            $amounts = collect();
+            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+                $amounts->push($item->payment_amount);
+            });
+
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050931", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050931", 1.0, "271ms", "POST", "", "");
         }
     }
 }

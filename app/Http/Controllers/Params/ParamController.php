@@ -381,6 +381,7 @@ class ParamController extends Controller
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
                 $mMarBanquteHall->payment_date = Carbon::now();
                 $mMarBanquteHall->payment_status = 1;
+                $mMarBanquteHall->payment_mode = "Online";
                 $mMarBanquteHall->payment_id = $req->paymentId;
                 $mMarBanquteHall->payment_details = $req->all();
 
@@ -401,6 +402,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarBanquteHall->valid_from;
                 $updateData['valid_upto'] = $mMarBanquteHall->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('mar_banqute_hall_renewals')
                     ->where('id', $mMarBanquteHall->last_renewal_id)
@@ -414,6 +416,7 @@ class ParamController extends Controller
                 $mMarHostel = MarHostel::find($req->id);
                 $mMarHostel->payment_date = Carbon::now();
                 $mMarHostel->payment_status = 1;
+                $mMarHostel->payment_mode = "Online";
                 $mMarHostel->payment_id = $req->paymentId;
                 $mMarHostel->payment_details = $req->all();
 
@@ -433,6 +436,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarHostel->valid_from;
                 $updateData['valid_upto'] = $mMarHostel->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarHostel->last_renewal_id)
@@ -445,6 +449,7 @@ class ParamController extends Controller
                 $mMarLodge = MarLodge::find($req->id);
                 $mMarLodge->payment_date = Carbon::now();
                 $mMarLodge->payment_status = 1;
+                $mMarLodge->payment_mode = "Online";
                 $mMarLodge->payment_id = $req->paymentId;
                 $mMarLodge->payment_details = $req->all();
 
@@ -465,6 +470,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarLodge->valid_from;
                 $updateData['valid_upto'] = $mMarLodge->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('mar_lodge_renewals')
                     ->where('id', $mMarLodge->last_renewal_id)
@@ -476,6 +482,7 @@ class ParamController extends Controller
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date = Carbon::now();
                 $mMarDharamshala->payment_status = 1;
+                $mMarDharamshala->payment_mode = "Online";
                 $mMarDharamshala->payment_id = $req->paymentId;
                 $mMarDharamshala->payment_details = $req->all();
 
@@ -495,6 +502,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mMarDharamshala->valid_from;
                 $updateData['valid_upto'] = $mMarDharamshala->valid_upto;
+                $updateData['payment_mode'] = "Online";
                 // update in Renewals Table
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)

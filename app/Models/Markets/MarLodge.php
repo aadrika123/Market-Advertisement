@@ -99,6 +99,7 @@ class MarLodge extends Model
             // Lodge Table Update
             $mMarLodge = MarLodge::find($req->applicationId);
             $mMarLodge->payment_status = $req->status;
+            $mMarLodge->payment_mode = "Cash";
             $pay_id = $mMarLodge->payment_id = "Cash-$req->applicationId-" . time();
             $mMarLodge->payment_date = Carbon::now();
 
@@ -120,6 +121,7 @@ class MarLodge extends Model
             // Renewal Table Updation
             $mMarLodgeRenewal = MarLodgeRenewal::find($renewal_id);
             $mMarLodgeRenewal->payment_status = 1;
+            $mMarLodgeRenewal->payment_mode = "Cash";
             $mMarLodgeRenewal->payment_id =  $pay_id;
             $mMarLodgeRenewal->payment_date = Carbon::now();
             $mMarLodgeRenewal->valid_from = $mMarLodge->valid_from;

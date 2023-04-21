@@ -103,6 +103,7 @@ class MarBanquteHall extends Model
             // Banquet Hall Table Update
             $mMarBanquteHall = MarBanquteHall::find($req->applicationId);
             $mMarBanquteHall->payment_status = $req->status;
+            $mMarBanquteHall->payment_mode = "Cash";
             $pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarBanquteHall->payment_date = Carbon::now();
 
@@ -123,6 +124,7 @@ class MarBanquteHall extends Model
             // Renewal Table Updation
             $mMarBanquteHallRenewal = MarBanquteHallRenewal::find($renewal_id);
             $mMarBanquteHallRenewal->payment_status = 1;
+            $mMarBanquteHallRenewal->payment_mode = "Cash";
             $mMarBanquteHallRenewal->payment_id =  $pay_id;
             $mMarBanquteHallRenewal->payment_date = Carbon::now();
             $mMarBanquteHallRenewal->valid_from = $mMarBanquteHall->valid_from;

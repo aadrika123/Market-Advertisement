@@ -101,6 +101,7 @@ class MarHostel extends Model
             // Hostel Table Update
             $mMarHostel = MarHostel::find($req->applicationId);
             $mMarHostel->payment_status = $req->status;
+            $mMarHostel->payment_mode = "Cash";
             $pay_id=$mMarHostel->payment_id = "Cash-$req->applicationId-".time();
             $mMarHostel->payment_date = Carbon::now();
 
@@ -122,6 +123,7 @@ class MarHostel extends Model
             // Renewal Table Updation
             $mMarHostelRenewal = MarHostelRenewal::find($renewal_id);
             $mMarHostelRenewal->payment_status = 1;
+            $mMarHostelRenewal->payment_mode = "Cash";
             $mMarHostelRenewal->payment_id =  $pay_id;
             $mMarHostelRenewal->payment_date = Carbon::now();
             $mMarHostelRenewal->valid_from = $mMarHostel->valid_from;

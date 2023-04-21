@@ -2,6 +2,8 @@
 
 namespace App\Models\Advertisements;
 
+use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarBanquteHallRenewal;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarDharamshalaRenewal;
 use App\Models\Markets\MarHostel;
@@ -26,6 +28,7 @@ class AdvChequeDtl extends Model
     protected $_lodge;
     protected $_hostel;
     protected $_dharamshala;
+    protected $_banquet;
     public function __construct()
     {
         $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
@@ -33,6 +36,7 @@ class AdvChequeDtl extends Model
         $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
         $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        $this->_banquet = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_dharamshala=Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
@@ -334,7 +338,8 @@ class AdvChequeDtl extends Model
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 MarLodge::where('id', $applicationId)->update($metaReqs);
@@ -346,7 +351,8 @@ class AdvChequeDtl extends Model
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
-                        'payment_amount' => $amount,
+                        'payment_amount' => $amount,,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 return MarLodgeRenewal::where('app_id', $applicationId)->update($metaReqs);
@@ -358,7 +364,8 @@ class AdvChequeDtl extends Model
                         'payment_id' => $payment_id,
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
-                        'payment_date' => Carbon::now()
+                        'payment_date' => Carbon::now(),
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 MarHostel::where('id', $applicationId)->update($metaReqs);
@@ -371,6 +378,7 @@ class AdvChequeDtl extends Model
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
                         'payment_amount' => $amount,
+                        'payment_mode' => "Cheque/DD",
                     ],
                 );
                 return MarHostelRenewal::where('app_id', $applicationId)->update($metaReqs);
@@ -398,6 +406,32 @@ class AdvChequeDtl extends Model
                     ],
                 );
                 return MarDharamshalaRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_banquet) {
+                // update on Dharamshala Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now(),
+                        'payment_mode' => "Cheque/DD",
+                    ],
+                );
+                MarBanquteHall::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_banqute_halls')->where('id', $applicationId)->first()->payment_amount;
+                // update on Dharamshala renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => "By CHEQUE/DD",
+                        'payment_status' => "1",
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                        'payment_mode' => "Cheque/DD",
+                    ],
+                );
+                return MarBanquteHallRenewal::where('app_id', $applicationId)->update($metaReqs);
             }
         }elseif($req->status=='2'){   // Cheque Cancelled 
             if ($workflowId == $this->_agency) {
@@ -591,6 +625,30 @@ class AdvChequeDtl extends Model
                     ],
                 );
                 return MarDharamshalaRenewal::where('app_id', $applicationId)->update($metaReqs);
+            }
+            elseif ($workflowId == $this->_banquet) {
+                // update on Banquet Hall Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now()
+                    ],
+                );
+                MarBanquteHall::where('id', $applicationId)->update($metaReqs);
+                $amount = DB::table('mar_banqute_halls')->where('id', $applicationId)->first()->payment_amount;
+                // update on Banquet Hall  renewal Table
+                $metaReqs = array_merge(
+                    [
+                        'payment_id' => $payment_id,
+                        'payment_details' => $req->remarks,
+                        'payment_status' => $req->status,
+                        'payment_date' => Carbon::now(),
+                        'payment_amount' => $amount,
+                    ],
+                );
+                return MarBanquteHallRenewal::where('app_id', $applicationId)->update($metaReqs);
             }
         }
     }
