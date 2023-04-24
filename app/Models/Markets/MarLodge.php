@@ -213,4 +213,11 @@ class MarLodge extends Model
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
+
+    /**
+     * | Approve List For Report
+     */
+    public function approveListForReport(){
+        return MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','lodge_type','license_year','ulb_id',DB::raw("'Approve' as application_status"));
+    }
 }

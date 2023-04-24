@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Route;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar (17 Jan 2023)
  * | Module Id for Advetisements=05
+ * | Status - Closed By Bikash on 24 Apr 2023
  */
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
@@ -39,6 +40,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Self Advertisements
      * | Controller-01
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(SelfAdvetController::class)->group(function () {
         Route::post('advert/self/add-new', 'addNew');       // 01 ( Save Application )
@@ -89,6 +91,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Param Strings 
      * | Controller-02
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(ParamController::class)->group(function () {
         Route::post('crud/param-strings', 'paramStrings');                              // 01 ( Get Param String List)
@@ -108,6 +111,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Movable Vehicles 
      * | Controller-03
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(VehicleAdvetController::class)->group(function () {
         Route::post('advert/vehicle/add-new', 'addNew');    // 01 ( Save Application )
@@ -150,6 +154,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Private Lands
      * | Controller-04 
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(PrivateLandController::class)->group(function () {
         Route::post('advert/pvt-land/add-new', 'addNew'); // 01   ( Save Application )  
@@ -190,6 +195,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Agency 
      * | Controller-05 
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(AgencyController::class)->group(function () {
 
@@ -235,6 +241,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
     /**
      * | Hoarding 
      * | Controller-06 
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(HoardingController::class)->group(function () {
         Route::post('advert/hording/get-hording-category', 'getHordingCategory');  // 01 ( Get Typology List )
@@ -289,6 +296,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-07
      * | By - Bikash Kumar
      * | Date 21-02-2023
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(LodgeController::class)->group(function () {
         Route::post('market/lodge/add-new', 'addNew'); // 01   ( Save Application )  
@@ -326,6 +334,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/lodge/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/lodge/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/lodge/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
+        
+        Route::post('market/lodge/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise )
+        Route::post('market/lodge/get-application-by-lodge-type', 'getApplicationByLodgelType');          //33 ( Get Application hostel type Wise )
     });
 
     /**
@@ -333,7 +344,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-08
      * | By - Bikash Kumar
      * | Date 18-02-2023
-     * | Status - Open
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(BanquetMarriageHallController::class)->group(function () {
         Route::post('market/bm-hall/add-new', 'addNew'); // 01   ( Save Application )  
@@ -371,6 +382,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bm-hall/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/bm-hall/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/bm-hall/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
+
+        Route::post('market/bm-hall/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise )
+        Route::post('market/bm-hall/get-application-by-hall-type', 'getApplicationByHallType');          //32 ( Get Application Rule Wise )
+        Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');          //33 ( Get Application organization type Wise )
     });
 
 
@@ -379,6 +394,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-09
      * | By - Bikash Kumar
      * | Date 20-02-2023
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(HostelController::class)->group(function () {
         Route::post('market/hostel/add-new', 'addNew'); // 01   ( Save Application )  
@@ -416,6 +432,10 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/hostel/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/hostel/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/hostel/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
+
+        
+        Route::post('market/hostel/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise )
+        Route::post('market/hostel/get-application-by-hostel-type', 'getApplicationByHostelType');          //33 ( Get Application Hostel type Wise )
     });
 
     /**
@@ -423,6 +443,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Controller-10
      * | By - Bikash Kumar
      * | Date 21-02-2023
+     * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(DharamshalaController::class)->group(function () {
         Route::post('market/dharamshala/add-new', 'addNew'); // 01   ( Save Application )  
@@ -460,6 +481,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/dharamshala/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/dharamshala/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
+
+        Route::post('market/dharamshala/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise ).
+        Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType');          //32 ( Get Application Organization type Wise )
     });
 
 });

@@ -4,6 +4,7 @@ namespace App\Models\Markets;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MarRejectedDharamshala extends Model
 {
@@ -45,5 +46,9 @@ class MarRejectedDharamshala extends Model
            )
            ->orderByDesc('id')
            ->get();
+   }
+
+   public function pendingListForReport(){
+    return MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type','ulb_id','license_year',DB::raw("'Reject' as application_status"));
    }
 }

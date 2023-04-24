@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Lodge Operations
- * | Status - Open (14 Apr 2023), Total Function - 35, Total API - 31,  Total no. of lines - 1497
+ * | Status - Closed (24 Apr 2023), Total Function - 37, Total API - 33,  Total no. of lines - 1638
  */
 
 class LodgeController extends Controller
@@ -198,7 +198,7 @@ class LodgeController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);
             $cardElement = [
-                'headerTitle' => "About Lodge",
+                'headerTitle' => "Lodge",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
@@ -1352,19 +1352,22 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('mar_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('mar_active_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $mMarLodge=new MarLodge();
+            $approveList=$mMarLodge->approveListForReport();
 
-            $rejectList = DB::table('mar_rejected_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $approveList =$approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId) ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+   
+            $mMarActiveLodge=new MarActiveLodge();
+            $pendingList=$mMarActiveLodge->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedLodge=new MarRejectedLodge();
+            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
@@ -1411,15 +1414,22 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $approveList = DB::table('mar_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            $mMarLodge=new MarLodge();
+            $approveList=$mMarLodge->approveListForReport();
 
-            $pendingList = DB::table('mar_active_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
 
-            $rejectList = DB::table('mar_rejected_lodges')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mMarActiveLodge=new MarActiveLodge();
+            $pendingList=$mMarActiveLodge->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+
+   
+            $mMarRejectedLodge=new MarRejectedLodge();
+            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
 
             $data = collect(array());
@@ -1442,7 +1452,7 @@ class LodgeController extends Controller
     public function paymentCollection(Request $req)
     {
         if (authUser()->ulb_id < 1)
-            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050831", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050731", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = authUser()->ulb_id;
 
@@ -1489,9 +1499,140 @@ class LodgeController extends Controller
             });
 
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050831", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050731", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050831", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050731", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+        /**
+     * | Rule Wise Applications
+     * | Function - 36
+     * | API - 32
+     */
+    public function ruleWiseApplications(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050732", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'ruleType' => 'required|in:All,New Rule,Old Rule',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            #=============================================================
+            $mMarLodge=new MarLodge();
+            $approveList=$mMarLodge->approveListForReport();
+
+            $approveList =$approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
+            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveLodge=new MarActiveLodge();
+            $pendingList=$mMarActiveLodge->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedLodge=new MarRejectedLodge();
+            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+            #=============================================================
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050732", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050732", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+       /**
+     * | Get Application Hosteml Type Wise
+     * | Function - 37
+     * | API - 33
+     */
+    public function getApplicationByLodgelType(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050733", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'lodgeType' => 'required|integer',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarLodge=new MarLodge();
+            $approveList=$mMarLodge->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveLodge=new MarActiveLodge();
+            $pendingList=$mMarActiveLodge->pendingListForReport();
+
+            $pendingList =  $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedLodge=new MarRejectedLodge();
+            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050733", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050733", 1.0, "271ms", "POST", "", "");
         }
     }
 }

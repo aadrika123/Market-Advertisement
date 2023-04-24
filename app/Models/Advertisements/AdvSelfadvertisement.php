@@ -289,4 +289,10 @@ class AdvSelfadvertisement extends Model
         )
             ->orderByDesc('id')->get();
     }
+/**
+ * | Get Approve Application List For Report
+ */
+    public function approveListForReport(){
+        return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id','license_year','display_type',DB::raw("'Approve' as application_status"));
+    }
 }

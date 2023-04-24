@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Validator;
  * | Created on - 06-02-2023
  * | Created By - Bikash Kumar
  * | Banquet Marriage Hall operations
- * | Status - Closed, by Bikash - 17 Apr 2023, Total API - 31, Total Function - 34, Total No of Lines - 1471
+ * | Status - Closed, by Bikash - 24 Apr 2023, Total API - 34, Total Function - 36, Total No of Lines - 1679
  */
 class BanquetMarriageHallController extends Controller
 {
@@ -200,7 +200,7 @@ class BanquetMarriageHallController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);                       // Trait function to get Card Details
             $cardElement = [
-                'headerTitle' => "About Banqute-Marriage Hall",
+                'headerTitle' => "Banqute/Marriage Hall",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
@@ -578,7 +578,7 @@ class BanquetMarriageHallController extends Controller
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->setTable('mar_banqute_hall_renewals');
-                    $approvedbanqutehall->license_no =$generatedId;
+                    $approvedbanqutehall->license_no = $generatedId;
                     $approvedbanqutehall->app_id = $temp_id;
                     $approvedbanqutehall->save();
 
@@ -1068,7 +1068,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-          /**
+    /**
      * | Payment via cash for application
      * | Function - 25
      * | API - 22
@@ -1086,11 +1086,11 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $mMarBanquteHall = new MarBanquteHall();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarBanquteHall::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1107,7 +1107,7 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-    
+
     /**
      * | Entry Cheque or DD for Payment
      * | Function - 26
@@ -1161,12 +1161,12 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $mAdvCheckDtl = new AdvChequeDtl(); 
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarBanquteHall::find($req->applicationId);
+            $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1183,7 +1183,7 @@ class BanquetMarriageHallController extends Controller
     }
 
 
-    
+
     /**
      * | Get Application Details For Renew
      * | Function - 28
@@ -1241,9 +1241,9 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050826", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-  
 
-        /**
+
+    /**
      * | Get APplication Details For Edit
      * | Function - 30
      * | API - 27
@@ -1326,18 +1326,21 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('mar_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('mar_active_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectListForReport();
 
-            $rejectList = DB::table('mar_rejected_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
@@ -1385,15 +1388,21 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $approveList = DB::table('mar_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->approveListForReport();
 
-            $pendingList = DB::table('mar_active_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
 
-            $rejectList = DB::table('mar_rejected_banqute_halls')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
 
             $data = collect(array());
@@ -1466,6 +1475,205 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $data, "050831", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050831", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Rule Wise Applications
+     * | Function - 34
+     * | API - 32
+     */
+    public function ruleWiseApplications(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050832", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'ruleType' => 'required|in:All,New Rule,Old Rule',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            #=============================================================
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+
+            if ($req->ruleType == 'New Rule' || $req->ruleType == 'Old Rule') {
+                $data1 = $data->where('rule', '=', $req->ruleType);
+            }
+            $data = $data1->paginate($req->perPage);
+            #=============================================================
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050832", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050832", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Application Display Wise
+     * | Function - 35
+     * | API - 33
+     */
+    public function getApplicationByHallType(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050833", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'hallType' => 'required|integer',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('hall_type', $req->hallType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('hall_type', $req->hallType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('hall_type', $req->hallType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050833", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050833", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Application Display Wise
+     * | Function - 36
+     * | API - 34
+     */
+    public function getApplicationByOrganizationType(Request $req)
+    {
+        if (authUser()->ulb_id < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'organizationType' => 'required|integer',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mMarBanquteHall = new MarBanquteHall();
+            $approveList = $mMarBanquteHall->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('organization_type', $req->organizationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $pendingList = $mMarActiveBanquteHall->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('organization_type', $req->organizationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
+            $rejectList = $mMarRejectedBanquteHall->rejectListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('hall_type', $req->organizationType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050834", 1.0, "$executionTime Sec", "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050834", 1.0, "271ms", "POST", "", "");
         }
     }
 }

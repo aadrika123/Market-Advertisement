@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Redis;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Agency Operations
- * | Status - Closed, By - Bikash kumar 17 Apr 2023, Total API - 34, Total Function - 38, Total no. of Lines - 1586
+ * | Status - Closed, By - Bikash kumar 24 Apr 2023, Total API - 34, Total Function - 38, Total no. of Lines - 1592
  */
 class AgencyController extends Controller
 {
@@ -957,7 +957,7 @@ class AgencyController extends Controller
                 $citizenId = ['citizenId' => authUser()->id];
                 $req->request->add($citizenId);
             }
-            
+
             $mCalculateRate = new CalculateRate;
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
@@ -996,11 +996,11 @@ class AgencyController extends Controller
             $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvAgency::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $d = $mAdvAgency->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1073,11 +1073,11 @@ class AgencyController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvAgency::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1467,7 +1467,7 @@ class AgencyController extends Controller
         }
     }
 
-     /**
+    /**
      * | Get Application Between Two Dates
      * | Function - 37
      * | API - 33
@@ -1492,16 +1492,22 @@ class AgencyController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('adv_agencies')
-                ->select('id', 'application_no', 'entity_name', 'application_date', 'application_type', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvAgency = new AdvAgency();
+            $approveList = $mAdvAgency->approveListForReport();
+
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('adv_active_agencies')
-                ->select('id', 'application_no', 'entity_name', 'application_date', 'application_type', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $pendingList = $mAdvActiveAgency->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $rejectList = DB::table('adv_rejected_agencies')
-                ->select('id', 'application_no', 'entity_name', 'application_date', 'application_type', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvRejectedAgency = new AdvRejectedAgency();
+            $rejectList = $mAdvRejectedAgency->rejectListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());

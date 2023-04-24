@@ -231,5 +231,8 @@ public function getPaymentDetails($paymentId)
         return $recieptDetails;
     }
 
+    public function approveListForReport(){
+        return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Approve' as application_status"));
+    }
 
 }

@@ -461,4 +461,12 @@ class MarActiveDharamshala extends Model
     {
         return MarActiveDharamshala::all();
     }
+
+
+    /**
+     * | Get Pending List For Application
+     */
+    public function pendingListForReport(){
+        return MarActiveDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','ulb_id','license_year',DB::raw("'Active' as application_status"));
+    }
 }

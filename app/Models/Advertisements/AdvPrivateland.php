@@ -227,4 +227,8 @@ public function getPaymentDetails($paymentId)
         return $recieptDetails;
     }
 
+    public function approveListForReport(){
+       return AdvPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id','ulb_id','display_type', DB::raw("'Approve' as application_status"));
+    }
+
 }

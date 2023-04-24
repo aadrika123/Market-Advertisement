@@ -253,4 +253,8 @@ class AdvAgency extends Model
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
         return $recieptDetails;
     }
+
+    public function approveListForReport(){
+        return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type','ulb_id', DB::raw("'Approve' as application_status"));
+    }
 }

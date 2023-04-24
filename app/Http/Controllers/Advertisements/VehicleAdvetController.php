@@ -40,7 +40,7 @@ class VehicleAdvetController extends Controller
      * | Created By- Anshu Kumar 
      * | Changes By- Bikash Kumar 
      * | Created for the Movable Vehicles Operations
-     * | Status - Closed, By Bikash on 21 Apr 2023,  Total no. of lines - 1473, Total Function - 35, Total API - 32
+     * | Status - Closed, By Bikash on 24 Apr 2023,  Total no. of lines - 1475, Total Function - 35, Total API - 32
      */
 
 
@@ -902,8 +902,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
-
     /**
      * Summary of application Details For Payment
      * @param Request $req
@@ -958,11 +956,11 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvVehicle::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvVehicle->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -1032,11 +1030,11 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvVehicle::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Advertisement","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cheque/DD");
             DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -1082,8 +1080,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050326", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Verify Single Application Approve or reject
@@ -1379,16 +1375,22 @@ class VehicleAdvetController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('adv_vehicles')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvVehicle = new AdvVehicle();
+            $approveList = $mAdvVehicle->approveListForReport();
+
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('adv_active_vehicles')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $pendingList = $mAdvActiveVehicle->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $rejectList = DB::table('adv_rejected_vehicles')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $rejectList = $mAdvRejectedVehicle->rejectListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());

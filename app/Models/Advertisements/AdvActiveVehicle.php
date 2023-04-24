@@ -454,4 +454,8 @@ class AdvActiveVehicle extends Model
     {
         return AdvActiveVehicle::all();
     }
+
+    public function pendingListForReport(){
+        return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Active' as application_status"));
+    }
 }

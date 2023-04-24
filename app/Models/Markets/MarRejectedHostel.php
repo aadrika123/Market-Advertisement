@@ -4,6 +4,7 @@ namespace App\Models\Markets;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MarRejectedHostel extends Model
 {
@@ -51,5 +52,9 @@ class MarRejectedHostel extends Model
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function rejectListForReport(){
+        return MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type','hostel_type', 'ulb_id','license_year',DB::raw("'Reject' as application_status"));
     }
 }

@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar
  * | Hoarding Controller
- * | Status - Closed, By - Bikash - 17 Apr 2023, Total API - 42 , Total Function - 45 , total no of lines - 1836
+ * | Status - Closed, By - Bikash - 24 Apr 2023, Total API - 42 , Total Function - 45 , total no of lines - 1848
  */
 class HoardingController extends Controller
 {
@@ -1046,11 +1046,11 @@ class HoardingController extends Controller
             $startTime = microtime(true);
 
             $mAdvHoarding = new AdvHoarding();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvHoarding::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvHoarding->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1124,11 +1124,11 @@ class HoardingController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvHoarding::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1669,7 +1669,7 @@ class HoardingController extends Controller
         }
     }
 
-    
+
     /**
      * | Get Application Between Two Dates
      * | Function - 43
@@ -1695,16 +1695,22 @@ class HoardingController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('adv_hoardings')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvHoarding = new AdvHoarding();
+            $approveList = $mAdvHoarding->approveListForReport();
+
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('adv_active_hoardings')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $pendingList = $mAdvActiveHoarding->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $rejectList = DB::table('adv_rejected_hoardings')
-                ->select('id', 'application_no','application_date', 'application_type', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $rejectList = $mAdvRejectedHoarding->rejectListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
@@ -1752,15 +1758,21 @@ class HoardingController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $approveList = DB::table('adv_hoardings')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Approve' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            $mAdvHoarding = new AdvHoarding();
+            $approveList = $mAdvHoarding->approveListForReport();
 
-            $pendingList = DB::table('adv_active_hoardings')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Active' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $pendingList = $mAdvActiveHoarding->pendingListForReport();
+
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('license_year', $req->financialYear);
 
-            $rejectList = DB::table('adv_rejected_hoardings')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Reject' as application_status"))->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            $mAdvRejectedHoarding = new AdvRejectedHoarding();
+            $rejectList = $mAdvRejectedHoarding->rejectListForReport();
+
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
 
             $data = collect(array());
             $data = $approveList->union($pendingList)->union($rejectList);

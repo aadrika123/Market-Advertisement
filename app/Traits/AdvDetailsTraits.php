@@ -16,6 +16,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
@@ -113,6 +114,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Applicantion No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
@@ -168,6 +170,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
@@ -219,6 +222,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'Applicant', 'key' => 'applicant', 'value' => $data['applicant']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],

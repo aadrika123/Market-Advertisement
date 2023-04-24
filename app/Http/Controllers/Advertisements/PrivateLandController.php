@@ -40,7 +40,7 @@ use PhpParser\Node\Expr\Empty_;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Private Land Operations
- * | Status -  Closed, By - Bikash - 15 Apr 2023 total no of lines - 1587, Total Function - 36, Tolal API - 33
+ * | Status -  Closed, By - Bikash - 24 Apr 2023 total no of lines - 1597, Total Function - 36, Tolal API - 33
  */
 
 class PrivateLandController extends Controller
@@ -631,7 +631,7 @@ class PrivateLandController extends Controller
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone, $mAdvActivePrivateland->license_from,$mAdvActivePrivateland->license_to);
+                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone, $mAdvActivePrivateland->license_from, $mAdvActivePrivateland->license_to);
                 $payment_amount = ['payment_amount' => $amount];
 
                 // $payment_amount = ['payment_amount' =>1000];
@@ -988,11 +988,11 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvPrivateland = new AdvPrivateland();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvPrivateland::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1065,11 +1065,11 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=AdvPrivateland::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId,"Advertisement","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1401,7 +1401,7 @@ class PrivateLandController extends Controller
         }
     }
 
-    
+
     /**
      * | Get Application Between Two Dates
      * | Function - 34
@@ -1428,18 +1428,20 @@ class PrivateLandController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $approveList = DB::table('adv_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $mAdvPrivateland = new AdvPrivateland();
+            $approveList = $mAdvPrivateland->approveListForReport();
 
-            $pendingList = DB::table('adv_active_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $rejectList = DB::table('adv_rejected_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $pendingList = $mAdvActivePrivateland->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $rejectList = $mAdvRejectedPrivateland->rejectListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
@@ -1490,18 +1492,22 @@ class PrivateLandController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $approveList = DB::table('adv_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"))->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $mAdvPrivateland = new AdvPrivateland();
+            $approveList = $mAdvPrivateland->approveListForReport();
+
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $pendingList = DB::table('adv_active_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Active' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $pendingList = $mAdvActivePrivateland->pendingListForReport();
+
+            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $rejectList = DB::table('adv_rejected_privatelands')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Reject' as application_status"))
-                ->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
+            $rejectList = $mAdvRejectedPrivateland->rejectListForReport();
+
+            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());

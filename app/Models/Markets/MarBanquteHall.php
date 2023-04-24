@@ -215,4 +215,9 @@ class MarBanquteHall extends Model
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
+
+
+    public function  approveListForReport(){
+        return MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','hall_type', 'ulb_id','license_year','organization_type',DB::raw("'Approve' as application_status"));
+    }
 }

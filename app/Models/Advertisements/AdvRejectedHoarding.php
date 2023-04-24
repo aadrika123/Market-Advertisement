@@ -4,6 +4,7 @@ namespace App\Models\Advertisements;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdvRejectedHoarding extends Model
 {
@@ -58,5 +59,9 @@ class AdvRejectedHoarding extends Model
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function rejectListForReport(){
+        return AdvRejectedHoarding::select('id', 'application_no', 'application_date', 'application_type','license_year','ulb_id', DB::raw("'Reject' as application_status"));
     }
 }

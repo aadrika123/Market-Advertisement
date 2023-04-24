@@ -16,6 +16,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
             ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
@@ -60,6 +61,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
             ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
@@ -110,6 +112,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
             ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
@@ -148,6 +151,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
             ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],

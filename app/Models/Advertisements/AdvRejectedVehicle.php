@@ -4,6 +4,7 @@ namespace App\Models\Advertisements;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdvRejectedVehicle extends Model
 {
@@ -67,5 +68,9 @@ class AdvRejectedVehicle extends Model
             )
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function rejectListForReport(){
+        return AdvRejectedVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Reject' as application_status"));
     }
 }
