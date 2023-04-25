@@ -124,7 +124,7 @@ class AdvVehicle extends Model
             'adv_vehicles.permanent_address as address',
             'adv_vehicles.entity_name',
             'adv_vehicles.payment_details',
-            'adv_vehicles.ulb_name as ulbName'
+            'ulb_masters.ulb_name as ulbName'
         )
             ->leftjoin('ulb_masters', 'adv_vehicles.ulb_id', '=', 'ulb_masters.id')
             ->where('adv_vehicles.payment_id', $paymentId)
