@@ -17,7 +17,8 @@ class RefAdvParamstring extends Model
         return DB::table('ref_adv_paramstrings')
             ->select(
                 "ref_adv_paramstrings.id",
-                "ref_adv_paramstrings.string_parameter",
+                DB::raw('CONCAT(UPPER(SUBSTRING(ref_adv_paramstrings.string_parameter,1,1)),LOWER(SUBSTRING(ref_adv_paramstrings.string_parameter,2))) as string_parameter'),
+                // "ref_adv_paramstrings.string_parameter",
                 "c.param_category",
                 "ref_adv_paramstrings.param_category_id"
             )
