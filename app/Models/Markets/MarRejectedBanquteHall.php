@@ -43,6 +43,9 @@ class MarRejectedBanquteHall extends Model
             ->get();
     }
 
+    /**
+     * | Reject List For Report
+     */
     public function rejectListForReport(){
         return MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','hall_type', 'ulb_id','license_year','organization_type',DB::raw("'Reject' as application_status"));
     }

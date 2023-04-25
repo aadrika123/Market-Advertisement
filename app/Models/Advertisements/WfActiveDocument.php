@@ -43,26 +43,26 @@ class WfActiveDocument extends Model
         $metaReqs->save();
     }
 
-/**
- * | view Uploaded documents
- */
+    /**
+     * | view Uploaded documents
+     */
     public function uploadDocumentsViewById($appId, $workflowId)
     {
         $data = WfActiveDocument::select('*', DB::raw("replace(doc_code,'_',' ') as doc_val"), DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
             ->where(['active_id' => $appId, 'workflow_id' => $workflowId])
-            ->where('current_status','1')
+            ->where('current_status', '1')
             ->get();
         return $data;
     }
 
-/**
- * | view Uploaded documents Active
- */
+    /**
+     * | view Uploaded documents Active
+     */
     public function uploadedActiveDocumentsViewById($appId, $workflowId)
     {
         $data = WfActiveDocument::select('*', DB::raw("replace(doc_code,'_',' ') as doc_val"), DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
             ->where(['active_id' => $appId, 'workflow_id' => $workflowId])
-            ->where('current_status','1')
+            ->where('current_status', '1')
             ->get();
         return $data;
     }
@@ -97,22 +97,24 @@ class WfActiveDocument extends Model
             ->get();
     }
 
-    public function totalNoOfDocs($docCode){
-        $noOfDocs=RefRequiredDocument::select('requirements')
-                                    ->where('code',$docCode)
-                                    ->first();
-        $totalNoOfDocs=explode("#",$noOfDocs);
+    public function totalNoOfDocs($docCode)
+    {
+        $noOfDocs = RefRequiredDocument::select('requirements')
+            ->where('code', $docCode)
+            ->first();
+        $totalNoOfDocs = explode("#", $noOfDocs);
         return count($totalNoOfDocs);
     }
 
 
-    public function totalUploadedDocs($applicationId,$workflowId,$moduleId){
-        return WfActiveDocument::where('active_id',$applicationId)
-                                 ->where('workflow_id',$workflowId)
-                                 ->where('module_id',$moduleId)
-                                 ->where('current_status','1')
-                                 ->where('verify_status', '!=', 2)
-                                 ->count();
+    public function totalUploadedDocs($applicationId, $workflowId, $moduleId)
+    {
+        return WfActiveDocument::where('active_id', $applicationId)
+            ->where('workflow_id', $workflowId)
+            ->where('module_id', $moduleId)
+            ->where('current_status', '1')
+            ->where('verify_status', '!=', 2)
+            ->count();
     }
 
     // public function totalApproveDoc($applicationId,$workflowId,$moduleId){

@@ -48,42 +48,42 @@ class AdvActiveSelfadvertisement extends Model
             'display_type' => $req->displayType,
             'installation_location' => $req->installationLocation,
             'brand_display_name' => $req->brandDisplayName,
-            'user_id'=>$req->userId,
-            'advt_category'=>$req->advtCategory
+            'user_id' => $req->userId,
+            'advt_category' => $req->advtCategory
         ];
     }
 
-     // helper meta reqs
-     public function metaRenewalReqs($req)
-     {
-         return [
-             'applicant' => $req->applicantName,
-             'application_no' => $req->application_no,
-             'license_year' => $req->licenseYear,
-             'father' => $req->fatherName,
-             'email' => $req->email,
-             'residence_address' => $req->residenceAddress,
-             'ward_id' => $req->wardId,
-             'permanent_address' => $req->permanentAddress,
-             'permanent_ward_id' => $req->permanentWardId,
-             'entity_name' => $req->entityName,
-             'entity_address' => $req->entityAddress,
-             'entity_ward_id' => $req->entityWardId,
-             'mobile_no' => $req->mobileNo,
-             'aadhar_no' => $req->aadharNo,
-             'trade_license_no' => $req->tradeLicenseNo,
-             'holding_no' => $req->holdingNo,
-             'gst_no' => $req->gstNo,
-             'longitude' => $req->longitude,
-             'latitude' => $req->latitude,
-             'display_area' => $req->displayArea,
-             'display_type' => $req->displayType,
-             'installation_location' => $req->installationLocation,
-             'brand_display_name' => $req->brandDisplayName,
-             'user_id'=>$req->userId,
-             'advt_category'=>$req->advtCategory
-         ];
-     }
+    // helper meta reqs
+    public function metaRenewalReqs($req)
+    {
+        return [
+            'applicant' => $req->applicantName,
+            'application_no' => $req->application_no,
+            'license_year' => $req->licenseYear,
+            'father' => $req->fatherName,
+            'email' => $req->email,
+            'residence_address' => $req->residenceAddress,
+            'ward_id' => $req->wardId,
+            'permanent_address' => $req->permanentAddress,
+            'permanent_ward_id' => $req->permanentWardId,
+            'entity_name' => $req->entityName,
+            'entity_address' => $req->entityAddress,
+            'entity_ward_id' => $req->entityWardId,
+            'mobile_no' => $req->mobileNo,
+            'aadhar_no' => $req->aadharNo,
+            'trade_license_no' => $req->tradeLicenseNo,
+            'holding_no' => $req->holdingNo,
+            'gst_no' => $req->gstNo,
+            'longitude' => $req->longitude,
+            'latitude' => $req->latitude,
+            'display_area' => $req->displayArea,
+            'display_type' => $req->displayType,
+            'installation_location' => $req->installationLocation,
+            'brand_display_name' => $req->brandDisplayName,
+            'user_id' => $req->userId,
+            'advt_category' => $req->advtCategory
+        ];
+    }
 
     // Store Self Advertisements(1)
     public function addNew($req)
@@ -101,7 +101,7 @@ class AdvActiveSelfadvertisement extends Model
         ];
         $mDocuments = $req->documents;
 
-       $metaReqs = array_merge(
+        $metaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
@@ -118,45 +118,45 @@ class AdvActiveSelfadvertisement extends Model
         return $req->application_no;
     }
 
-     // Renewal Self Advertisements(1)
-     public function renewalSelfAdvt($req)
-     {
-         $bearerToken = $req->bearerToken();
-         $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
-         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
-         $ipAddress = getClientIpAddress();
-         $mRenewNo = ['renew_no' => 'SELF/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
-         $details=AdvSelfadvertisement::find($req->applicationId);                              // Find Previous Application No
-         $licenseNo=['license_no'=>$details->license_no];
-         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
-             'workflow_id' => $ulbWorkflows['id'],
-             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-             'current_role_id' => $ulbWorkflows['initiator_role_id'],
-             'last_role_id' => $ulbWorkflows['initiator_role_id'],
-             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-         ];
-         $mDocuments = $req->documents;
- 
-         $metaReqs = array_merge(
-             [
-                 'ulb_id' => $req->ulbId,
-                 'citizen_id' => $req->citizenId,
-                 'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress,
-                 'application_type' => "Renew"
-             ],
-             $this->metaRenewalReqs($req),
-             $mRenewNo,
-             $licenseNo,
-             $ulbWorkflowReqs
-         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
-         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
-         $this->uploadDocument($tempId, $mDocuments);
-         return $mRenewNo;
-     }
+    // Renewal Self Advertisements(1)
+    public function renewalSelfAdvt($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mRenewNo = ['renew_no' => 'SELF/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
+        $details = AdvSelfadvertisement::find($req->applicationId);                              // Find Previous Application No
+        $licenseNo = ['license_no' => $details->license_no];
+        $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
+            ],
+            $this->metaRenewalReqs($req),
+            $mRenewNo,
+            $licenseNo,
+            $ulbWorkflowReqs
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
+        $this->uploadDocument($tempId, $mDocuments);
+        return $mRenewNo;
+    }
 
 
-   /**
+    /**
      * upload Document By Admin
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -195,7 +195,7 @@ class AdvActiveSelfadvertisement extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        $list=AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
+        $list = AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
                 'id',
                 'application_no',
@@ -216,7 +216,7 @@ class AdvActiveSelfadvertisement extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function getDetailsById($id,$type=NULL)
+    public function getDetailsById($id, $type = NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -244,50 +244,50 @@ class AdvActiveSelfadvertisement extends Model
                 ->first();
         } elseif ($type == 'Reject') {
             $details = DB::table('adv_rejected_selfadvertisements')
-            ->select(
-                'adv_rejected_selfadvertisements.*',
-                'u.ulb_name',
-                'p.string_parameter as m_license_year',
-                'w.ward_name as ward_no',
-                'pw.ward_name as permanent_ward_no',
-                'ew.ward_name as entity_ward_no',
-                'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location',
-                'r.role_name as m_current_role'
-            )
-            ->where('adv_rejected_selfadvertisements.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
-            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_selfadvertisements.license_year')
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_selfadvertisements.ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_selfadvertisements.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_selfadvertisements.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_selfadvertisements.display_type')
-            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_selfadvertisements.installation_location')
-            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
-            ->first();
-        }elseif ($type == 'Approve'){
+                ->select(
+                    'adv_rejected_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role'
+                )
+                ->where('adv_rejected_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
+                ->first();
+        } elseif ($type == 'Approve') {
             $details = DB::table('adv_selfadvertisements')
-            ->select(
-                'adv_selfadvertisements.*',
-                'u.ulb_name',
-                'p.string_parameter as m_license_year',
-                'w.ward_name as ward_no',
-                'pw.ward_name as permanent_ward_no',
-                'ew.ward_name as entity_ward_no',
-                'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location',
-                'r.role_name as m_current_role'
-            )
-            ->where('adv_selfadvertisements.id', $id)
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
-            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_selfadvertisements.ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_selfadvertisements.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
-            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
-            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
-            ->first();
+                ->select(
+                    'adv_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role'
+                )
+                ->where('adv_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
+                ->first();
         }
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
@@ -357,7 +357,7 @@ class AdvActiveSelfadvertisement extends Model
             ->orderByDesc('id')
             ->get();
     }
-    
+
     /**
      * | Get Application Details By Id
      */
@@ -380,9 +380,10 @@ class AdvActiveSelfadvertisement extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.SELF_ADVET_RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -399,14 +400,14 @@ class AdvActiveSelfadvertisement extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
-    } 
+    }
 
-       /**
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -418,12 +419,16 @@ class AdvActiveSelfadvertisement extends Model
     public function allPendingListForReport()
     {
         return AdvActiveSelfadvertisement::select(
-                                            '*',
-                                            DB::raw("'Pending' as applicationStatus"),
+            '*',
+            DB::raw("'Pending' as applicationStatus"),
         )->get();
     }
 
-    public function pendingListForReport(){
-        return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id','license_year','display_type',DB::raw("'Active' as application_status"));
+    /**
+     * | Pending List For Report
+     */
+    public function pendingListForReport()
+    {
+        return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Active' as application_status"));
     }
 }

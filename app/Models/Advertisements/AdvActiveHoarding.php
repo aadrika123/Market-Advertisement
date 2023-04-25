@@ -422,6 +422,9 @@ class AdvActiveHoarding extends Model
         return AdvActiveVehicle::all();
     }
 
+    /**
+     * | Pending List For Report
+     */
     public function pendingListForReport(){
         return AdvActiveVehicle::select('id', 'application_no', 'application_date', 'application_type', 'license_year','ulb_id',DB::raw("'Active' as application_status"));
     }

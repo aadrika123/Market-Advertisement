@@ -50,25 +50,25 @@ class MarActiveBanquteHall extends Model
             'latitude' => $req->latitude,
             'organization_type' => $req->organizationType,
             'floor_area' => $req->floorArea,
-            'land_deed_type'=>$req->landDeedType,
+            'land_deed_type' => $req->landDeedType,
 
 
-            
-            'water_supply_type'=>$req->waterSupplyType,
-            'electricity_type'=>$req->electricityType,
-            'security_type'=>$req->securityType,
-            'cctv_camera'=>$req->cctvCamera,
-            'fire_extinguisher'=>$req->fireExtinguisher,
-            'entry_gate'=>$req->entryGate,
-            'exit_gate'=>$req->exitGate,
-            'two_wheelers_parking'=>$req->twoWheelersParking,
-            'four_wheelers_parking'=>$req->fourWheelersParking,
-            'aadhar_card'=>$req->aadharCard,
-            'pan_card'=>$req->panCard,
-            'application_no'=>$req->application_no,
+
+            'water_supply_type' => $req->waterSupplyType,
+            'electricity_type' => $req->electricityType,
+            'security_type' => $req->securityType,
+            'cctv_camera' => $req->cctvCamera,
+            'fire_extinguisher' => $req->fireExtinguisher,
+            'entry_gate' => $req->entryGate,
+            'exit_gate' => $req->exitGate,
+            'two_wheelers_parking' => $req->twoWheelersParking,
+            'four_wheelers_parking' => $req->fourWheelersParking,
+            'aadhar_card' => $req->aadharCard,
+            'pan_card' => $req->panCard,
+            'application_no' => $req->application_no,
         ];
     }
-    
+
     public function updateMetaReqs($req)
     {
         return [
@@ -82,19 +82,19 @@ class MarActiveBanquteHall extends Model
             'latitude' => $req->latitude,
             'organization_type' => $req->organizationType,
             'floor_area' => $req->floorArea,
-            'land_deed_type'=>$req->landDeedType,
+            'land_deed_type' => $req->landDeedType,
 
-            'water_supply_type'=>$req->waterSupplyType,
-            'electricity_type'=>$req->electricityType,
-            'security_type'=>$req->securityType,
-            'cctv_camera'=>$req->cctvCamera,
-            'fire_extinguisher'=>$req->fireExtinguisher,
-            'entry_gate'=>$req->entryGate,
-            'exit_gate'=>$req->exitGate,
-            'two_wheelers_parking'=>$req->twoWheelersParking,
-            'four_wheelers_parking'=>$req->fourWheelersParking,
-            'aadhar_card'=>$req->aadharCard,
-            'pan_card'=>$req->panCard,
+            'water_supply_type' => $req->waterSupplyType,
+            'electricity_type' => $req->electricityType,
+            'security_type' => $req->securityType,
+            'cctv_camera' => $req->cctvCamera,
+            'fire_extinguisher' => $req->fireExtinguisher,
+            'entry_gate' => $req->entryGate,
+            'exit_gate' => $req->exitGate,
+            'two_wheelers_parking' => $req->twoWheelersParking,
+            'four_wheelers_parking' => $req->fourWheelersParking,
+            'aadhar_card' => $req->aadharCard,
+            'pan_card' => $req->panCard,
         ];
     }
 
@@ -141,8 +141,8 @@ class MarActiveBanquteHall extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'BMHALL/REN-' . random_int(100000, 999999)];                  // Generate Application No
-        $details=MarBanquteHall::find($req->applicationId);                              // Find Previous Application No
-        $mLicenseNo=['license_no'=>$details->license_no];
+        $details = MarBanquteHall::find($req->applicationId);                              // Find Previous Application No
+        $mLicenseNo = ['license_no' => $details->license_no];
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -183,7 +183,7 @@ class MarActiveBanquteHall extends Model
         $mMarActiveBanquteHall = new MarActiveBanquteHall();
         $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId,$docUpload, $mWfActiveDocument,$mMarActiveBanquteHall,$relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveBanquteHall, $relativePath) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveBanquteHall->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -203,8 +203,9 @@ class MarActiveBanquteHall extends Model
         });
     }
 
-    public function getApplicationDtls($appId){
-        
+    public function getApplicationDtls($appId)
+    {
+
         return MarActiveBanquteHall::select('*')
             ->where('id', $appId)
             ->first();
@@ -232,7 +233,7 @@ class MarActiveBanquteHall extends Model
         return $inbox;
     }
 
-      /**
+    /**
      * | Get Application Outbox List by Role Ids
      */
     public function listOutbox($roleIds)
@@ -258,7 +259,7 @@ class MarActiveBanquteHall extends Model
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function getDetailsById($id,$type=NULL)
+    public function getDetailsById($id, $type = NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -293,69 +294,69 @@ class MarActiveBanquteHall extends Model
         } elseif ($type == 'Reject') {
             // $details = DB::table('mar_rejected_banqute_halls')
             $details = DB::table('mar_rejected_banqute_halls')
-            ->select(
-                'mar_rejected_banqute_halls.*',
-                'u.ulb_name',
-                'w.ward_name as ward_no',
-                'pw.ward_name as permanent_ward_no',
-                'ew.ward_name as entity_ward_no',
-                'ht.string_parameter as halltype',
-                'ot.string_parameter as organizationtype',
-                'st.string_parameter as securitytype',
-                'et.string_parameter as electricitytype',
-                'wst.string_parameter as watersupplytype',
-                'ldt.string_parameter as landDeedType',
-                'ly.string_parameter as licenseYear',
-            )
-            ->where('mar_rejected_banqute_halls.id', $id)
-            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_rejected_banqute_halls.hall_type')
-            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_rejected_banqute_halls.license_year::int'))
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_banqute_halls.residential_ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_banqute_halls.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_banqute_halls.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_banqute_halls.organization_type')
-            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_rejected_banqute_halls.security_type')
-            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_rejected_banqute_halls.electricity_type')
-            ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_rejected_banqute_halls.water_supply_type')
-            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_rejected_banqute_halls.land_deed_type')
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_banqute_halls.ulb_id')
-            ->first();
-        }elseif ($type == 'Approve'){
+                ->select(
+                    'mar_rejected_banqute_halls.*',
+                    'u.ulb_name',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'ht.string_parameter as halltype',
+                    'ot.string_parameter as organizationtype',
+                    'st.string_parameter as securitytype',
+                    'et.string_parameter as electricitytype',
+                    'wst.string_parameter as watersupplytype',
+                    'ldt.string_parameter as landDeedType',
+                    'ly.string_parameter as licenseYear',
+                )
+                ->where('mar_rejected_banqute_halls.id', $id)
+                ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_rejected_banqute_halls.hall_type')
+                ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_rejected_banqute_halls.license_year::int'))
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_rejected_banqute_halls.residential_ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_rejected_banqute_halls.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_rejected_banqute_halls.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_rejected_banqute_halls.organization_type')
+                ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_rejected_banqute_halls.security_type')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_rejected_banqute_halls.electricity_type')
+                ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_rejected_banqute_halls.water_supply_type')
+                ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_rejected_banqute_halls.land_deed_type')
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_rejected_banqute_halls.ulb_id')
+                ->first();
+        } elseif ($type == 'Approve') {
             // $details = DB::table('mar_banqute_halls')
             $details = DB::table('mar_banqute_halls')
-            ->select(
-                'mar_banqute_halls.*',
-                'u.ulb_name',
-                'w.ward_name as ward_no',
-                'pw.ward_name as permanent_ward_no',
-                'ew.ward_name as entity_ward_no',
-                'ht.string_parameter as halltype',
-                'ot.string_parameter as organizationtype',
-                'st.string_parameter as securitytype',
-                'et.string_parameter as electricitytype',
-                'wst.string_parameter as watersupplytype',
-                'ldt.string_parameter as landDeedType',
-                'ly.string_parameter as licenseYear',
-            )
-            ->where('mar_banqute_halls.id', $id)
-            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_banqute_halls.hall_type')
-            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_banqute_halls.license_year::int'))
-            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_banqute_halls.residential_ward_id')
-            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_banqute_halls.permanent_ward_id')
-            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_banqute_halls.entity_ward_id')
-            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_banqute_halls.organization_type')
-            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_banqute_halls.security_type')
-            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_banqute_halls.electricity_type')
-            ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_banqute_halls.water_supply_type')
-            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_banqute_halls.land_deed_type')
-            ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_banqute_halls.ulb_id')
-            ->first();
+                ->select(
+                    'mar_banqute_halls.*',
+                    'u.ulb_name',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'ht.string_parameter as halltype',
+                    'ot.string_parameter as organizationtype',
+                    'st.string_parameter as securitytype',
+                    'et.string_parameter as electricitytype',
+                    'wst.string_parameter as watersupplytype',
+                    'ldt.string_parameter as landDeedType',
+                    'ly.string_parameter as licenseYear',
+                )
+                ->where('mar_banqute_halls.id', $id)
+                ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', 'mar_banqute_halls.hall_type')
+                ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_banqute_halls.license_year::int'))
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'mar_banqute_halls.residential_ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_banqute_halls.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_banqute_halls.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', 'mar_banqute_halls.organization_type')
+                ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', 'mar_banqute_halls.security_type')
+                ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'mar_banqute_halls.electricity_type')
+                ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_banqute_halls.water_supply_type')
+                ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', 'mar_banqute_halls.land_deed_type')
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'mar_banqute_halls.ulb_id')
+                ->first();
         }
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
 
-    
+
     /**
      * | Get Citizen Applied applications
      * | @param citizenId
@@ -377,7 +378,7 @@ class MarActiveBanquteHall extends Model
             ->get();
     }
 
-    
+
     public function getBanquetMarriageHallDetails($appId)
     {
         return MarActiveBanquteHall::select('*')
@@ -385,7 +386,7 @@ class MarActiveBanquteHall extends Model
             ->first();
     }
 
-    
+
     public function getBanquetMarriageHallList($ulbId)
     {
         return MarActiveBanquteHall::select('*')
@@ -395,9 +396,10 @@ class MarActiveBanquteHall extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -414,82 +416,84 @@ class MarActiveBanquteHall extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
     }
 
 
-    public function getApplicationDetailsForEdit($appId){
-        $details=MarActiveBanquteHall::select('mar_active_banqute_halls.*',
-                        'mar_active_banqute_halls.organization_type as organization_type_id',
-                        'mar_active_banqute_halls.land_deed_type as land_deed_type_id',
-                        'mar_active_banqute_halls.water_supply_type as water_supply_type_id',
-                        'mar_active_banqute_halls.hall_type as hall_type_id',
-                        'mar_active_banqute_halls.electricity_type as electricity_type_id',
-                        'mar_active_banqute_halls.security_type as security_type_id',
-                        'ly.string_parameter as license_year_name',
-                        'rw.ward_name as resident_ward_name',
-                        'ew.ward_name as entity_ward_name',
-                        'ot.string_parameter as organization_type_name',
-                        'ldt.string_parameter as land_deed_type_name',
-                        'ldt.string_parameter as water_supply_type_name',
-                        'ht.string_parameter as hall_type_name',
-                        'et.string_parameter as electricity_type_name',
-                        'st.string_parameter as security_type_name',
-                        'pw.ward_name as permanent_ward_name',
-                        'ulb.ulb_name',
-                        DB::raw("'Banquet/Marriage Hall' as headerTitle")
-                        )
-                        ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_active_banqute_halls.license_year::int'))
-                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_active_banqute_halls.entity_ward_id::int'))
-                        ->leftJoin('ref_adv_paramstrings as ot','ot.id','=',DB::raw('mar_active_banqute_halls.organization_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as ldt','ldt.id','=',DB::raw('mar_active_banqute_halls.land_deed_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as ht','ht.id','=',DB::raw('mar_active_banqute_halls.hall_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as wt','wt.id','=',DB::raw('mar_active_banqute_halls.water_supply_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as et','et.id','=',DB::raw('mar_active_banqute_halls.electricity_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as st','st.id','=',DB::raw('mar_active_banqute_halls.security_type::int'))
-                        ->leftJoin('ulb_ward_masters as ew','ew.id','=','mar_active_banqute_halls.entity_ward_id')
-                        ->leftJoin('ulb_ward_masters as pw','pw.id','=','mar_active_banqute_halls.permanent_ward_id')
-                        ->leftJoin('ulb_masters as ulb','ulb.id','=','mar_active_banqute_halls.ulb_id')
-                        ->where('mar_active_banqute_halls.id',$appId)
-                        ->first();
-        if(!empty($details)){
+    public function getApplicationDetailsForEdit($appId)
+    {
+        $details = MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.*',
+            'mar_active_banqute_halls.organization_type as organization_type_id',
+            'mar_active_banqute_halls.land_deed_type as land_deed_type_id',
+            'mar_active_banqute_halls.water_supply_type as water_supply_type_id',
+            'mar_active_banqute_halls.hall_type as hall_type_id',
+            'mar_active_banqute_halls.electricity_type as electricity_type_id',
+            'mar_active_banqute_halls.security_type as security_type_id',
+            'ly.string_parameter as license_year_name',
+            'rw.ward_name as resident_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'ldt.string_parameter as water_supply_type_name',
+            'ht.string_parameter as hall_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ulb.ulb_name',
+            DB::raw("'Banquet/Marriage Hall' as headerTitle")
+        )
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_banqute_halls.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_active_banqute_halls.entity_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_active_banqute_halls.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_active_banqute_halls.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', DB::raw('mar_active_banqute_halls.hall_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_active_banqute_halls.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_active_banqute_halls.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_active_banqute_halls.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_banqute_halls.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_banqute_halls.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_active_banqute_halls.ulb_id')
+            ->where('mar_active_banqute_halls.id', $appId)
+            ->first();
+        if (!empty($details)) {
             $mWfActiveDocument = new WfActiveDocument();
             $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);
-            $details['documents']=$documents;
+            $details['documents'] = $documents;
         }
         return $details;
     }
 
-/**
- * | Update Application
- */
-    public function updateApplication($req){
-        $mMarActiveBanquteHall=MarActiveBanquteHall::findorfail($req->applicationId);
-        $mMarActiveBanquteHall->remarks=$req->remarks;
-        $mMarActiveBanquteHall->hall_type=$req->hallType;
-        $mMarActiveBanquteHall->organization_type=$req->organizationType;
-        $mMarActiveBanquteHall->floor_area=$req->floorArea;
-        $mMarActiveBanquteHall->land_deed_type=$req->landDeedType;
-        $mMarActiveBanquteHall->water_supply_type=$req->waterSupplyType;
-        $mMarActiveBanquteHall->electricity_type=$req->electricityType;
-        $mMarActiveBanquteHall->security_type=$req->securityType;
-        $mMarActiveBanquteHall->cctv_camera=$req->cctvCamera;
-        $mMarActiveBanquteHall->fire_extinguisher=$req->fireExtinguisher;
-        $mMarActiveBanquteHall->entry_gate=$req->entryGate;
-        $mMarActiveBanquteHall->exit_gate=$req->exitGate;
-        $mMarActiveBanquteHall->two_wheelers_parking=$req->twoWheelersParking;
-        $mMarActiveBanquteHall->four_wheelers_parking=$req->fourWheelersParking;
+    /**
+     * | Update Application
+     */
+    public function updateApplication($req)
+    {
+        $mMarActiveBanquteHall = MarActiveBanquteHall::findorfail($req->applicationId);
+        $mMarActiveBanquteHall->remarks = $req->remarks;
+        $mMarActiveBanquteHall->hall_type = $req->hallType;
+        $mMarActiveBanquteHall->organization_type = $req->organizationType;
+        $mMarActiveBanquteHall->floor_area = $req->floorArea;
+        $mMarActiveBanquteHall->land_deed_type = $req->landDeedType;
+        $mMarActiveBanquteHall->water_supply_type = $req->waterSupplyType;
+        $mMarActiveBanquteHall->electricity_type = $req->electricityType;
+        $mMarActiveBanquteHall->security_type = $req->securityType;
+        $mMarActiveBanquteHall->cctv_camera = $req->cctvCamera;
+        $mMarActiveBanquteHall->fire_extinguisher = $req->fireExtinguisher;
+        $mMarActiveBanquteHall->entry_gate = $req->entryGate;
+        $mMarActiveBanquteHall->exit_gate = $req->exitGate;
+        $mMarActiveBanquteHall->two_wheelers_parking = $req->twoWheelersParking;
+        $mMarActiveBanquteHall->four_wheelers_parking = $req->fourWheelersParking;
         $mMarActiveBanquteHall->save();
         // dd($mMarActiveBanquteHall);
         return $mMarActiveBanquteHall;
     }
 
-     
-         /**
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -498,8 +502,11 @@ class MarActiveBanquteHall extends Model
         return MarActiveBanquteHall::all();
     }
 
-    public function pendingListForReport(){
-        return MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','hall_type', 'ulb_id','license_year','organization_type',DB::raw("'Active' as application_status"));
+    /**
+     * | Pending List For Report
+     */
+    public function pendingListForReport()
+    {
+        return MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"));
     }
-
 }

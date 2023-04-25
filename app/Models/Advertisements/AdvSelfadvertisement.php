@@ -120,9 +120,9 @@ class AdvSelfadvertisement extends Model
             ->first();
     }
 
-/**
- * | Get Payment Details
- */
+    /**
+     * | Get Payment Details
+     */
     public function getPaymentDetails($paymentId)
     {
         $details = AdvSelfadvertisement::select(
@@ -133,13 +133,13 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.entity_name',
             'adv_selfadvertisements.payment_details',
             'ulb_masters.ulb_name as ulbName'
-            )
-        ->leftjoin('ulb_masters','adv_selfadvertisements.ulb_id','=','ulb_masters.id')
-        ->where('adv_selfadvertisements.payment_id', $paymentId)
-        ->first();
-        $details->payment_details=json_decode($details->payment_details);
-        $details->towards="Self Advertisement Payments";
-        $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        )
+            ->leftjoin('ulb_masters', 'adv_selfadvertisements.ulb_id', '=', 'ulb_masters.id')
+            ->where('adv_selfadvertisements.payment_id', $paymentId)
+            ->first();
+        $details->payment_details = json_decode($details->payment_details);
+        $details->towards = "Self Advertisement Payments";
+        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
 
@@ -177,9 +177,9 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->valid_from = $mAdvSelfadvertisement->valid_from;
             $mAdvSelfAdvertRenewal->valid_upto = $mAdvSelfadvertisement->valid_upto;
             $mAdvSelfAdvertRenewal->payment_details = json_encode($payDetails);
-            $status= $mAdvSelfAdvertRenewal->save();
-            $returnData['status']=$status;
-            $returnData['payment_id']=$pay_id;
+            $status = $mAdvSelfAdvertRenewal->save();
+            $returnData['status'] = $status;
+            $returnData['payment_id'] = $pay_id;
             return $returnData;
         }
     }
@@ -244,19 +244,20 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Reciept Details 
      */
-    public function getApprovalLetter($applicationId){
+    public function getApprovalLetter($applicationId)
+    {
         $recieptDetails = AdvSelfadvertisement::select(
-                                                        'adv_selfadvertisements.approve_date',
-                                                        // DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
-                                                        'adv_selfadvertisements.applicant as applicant_name',
-                                                        'adv_selfadvertisements.application_no',
-                                                        'adv_selfadvertisements.license_no',
-                                                        'adv_selfadvertisements.payment_date as license_start_date',
-                                                        DB::raw('case when adv_selfadvertisements.payment_date is NULL then adv_selfadvertisements.approve_date END as license_start_date'),
-                                                        DB::raw('CONCAT(application_date,id) AS reciept_no')
-                                                        )
-                                                ->where('adv_selfadvertisements.id',$applicationId)
-                                                ->first();
+            'adv_selfadvertisements.approve_date',
+            // DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
+            'adv_selfadvertisements.applicant as applicant_name',
+            'adv_selfadvertisements.application_no',
+            'adv_selfadvertisements.license_no',
+            'adv_selfadvertisements.payment_date as license_start_date',
+            DB::raw('case when adv_selfadvertisements.payment_date is NULL then adv_selfadvertisements.approve_date END as license_start_date'),
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('adv_selfadvertisements.id', $applicationId)
+            ->first();
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
         return $recieptDetails;
     }
@@ -289,10 +290,12 @@ class AdvSelfadvertisement extends Model
         )
             ->orderByDesc('id')->get();
     }
-/**
- * | Get Approve Application List For Report
- */
-    public function approveListForReport(){
-        return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id','license_year','display_type',DB::raw("'Approve' as application_status"));
+    
+    /**
+     * | Get Approve Application List For Report
+     */
+    public function approveListForReport()
+    {
+        return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Approve' as application_status"));
     }
 }

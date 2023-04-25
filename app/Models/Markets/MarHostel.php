@@ -217,7 +217,7 @@ class MarHostel extends Model
     }
 
     /**
-     * | Get Approved list 
+     * | Get Approved list For Report
      */
     public function approveListForReport(){
         return MarHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','hostel_type','ulb_id','license_year',DB::raw("'Approve' as application_status"));

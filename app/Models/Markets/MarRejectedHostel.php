@@ -54,6 +54,9 @@ class MarRejectedHostel extends Model
             ->get();
     }
 
+    /**
+     * | Reject List For Report
+     */
     public function rejectListForReport(){
         return MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type','hostel_type', 'ulb_id','license_year',DB::raw("'Reject' as application_status"));
     }

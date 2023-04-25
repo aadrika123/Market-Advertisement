@@ -58,6 +58,6 @@ class AdvTypologyMstr extends Model
             ->orderBy('type_inner')
             ->get();
 
-       return  $typology;
+        return  $typology;
     }
 }

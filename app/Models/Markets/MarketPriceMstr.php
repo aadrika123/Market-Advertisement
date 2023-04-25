@@ -10,55 +10,55 @@ class MarketPriceMstr extends Model
 {
     use HasFactory;
 
-    
+
     /**
      * | Get Finisher Id while approve or reject application
      * | @param wfWorkflowId ulb workflow id 
      */
-    public function getMarketTaxPrice($workflowId,$floor_area,$ulbId)
+    public function getMarketTaxPrice($workflowId, $floor_area, $ulbId)
     {
         // DB::enableQueryLog();
         // $floor_area=5000;
-        $price=MarketPriceMstr::select('market_price_mstrs.price',"ulb_masters.category")
-                ->join(DB::raw("(SELECT *, category::int AS category_code 
+        $price = MarketPriceMstr::select('market_price_mstrs.price', "ulb_masters.category")
+            ->join(
+                DB::raw("(SELECT *, category::int AS category_code 
                                 FROM ulb_masters 
                                 WHERE  id=$ulbId
                                 ) AS ulb_masters"),
-                    function($join)use($ulbId)
-                    {
-                        $join->on("market_price_mstrs.ulb_type","ulb_masters.category_code")
-                        ->where("ulb_masters.id",$ulbId);
-                    }
-                    )
-                ->where('workflow_id',$workflowId)
-                // ->where('ulb_type', DB::raw("SELECT category FROM ulb_masters WHERE id=$ulbId"))
-                ->where(function($where) use($floor_area)
-                {
-                    $where->where("range_from_sqft","<=",ceil($floor_area))
-                    ->where("range_upto_sqft", ">=", ceil($floor_area)) ;  
-
+                function ($join) use ($ulbId) {
+                    $join->on("market_price_mstrs.ulb_type", "ulb_masters.category_code")
+                        ->where("ulb_masters.id", $ulbId);
+                }
+            )
+            ->where('workflow_id', $workflowId)
+            // ->where('ulb_type', DB::raw("SELECT category FROM ulb_masters WHERE id=$ulbId"))
+            ->where(
+                function ($where) use ($floor_area) {
+                    $where->where("range_from_sqft", "<=", ceil($floor_area))
+                        ->where("range_upto_sqft", ">=", ceil($floor_area));
                 }
             )
             ->first()->price;
-            // dd(DB::getQueryLog());
-         return $price;
+        // dd(DB::getQueryLog());
+        return $price;
     }
 
-    public function getMarketTaxPriceGovtHostel($workflowId,$ulbId){
-        $price=MarketPriceMstr::select('market_price_mstrs.price',"ulb_masters.category")
-        ->join(DB::raw("(SELECT *, category::int AS category_code 
+    public function getMarketTaxPriceGovtHostel($workflowId, $ulbId)
+    {
+        $price = MarketPriceMstr::select('market_price_mstrs.price', "ulb_masters.category")
+            ->join(
+                DB::raw("(SELECT *, category::int AS category_code 
                         FROM ulb_masters 
                         WHERE  id=$ulbId
                         ) AS ulb_masters"),
-            function($join)use($ulbId)
-            {
-                $join->on("market_price_mstrs.ulb_type","ulb_masters.category_code")
-                ->where("ulb_masters.id",$ulbId);
-            }
+                function ($join) use ($ulbId) {
+                    $join->on("market_price_mstrs.ulb_type", "ulb_masters.category_code")
+                        ->where("ulb_masters.id", $ulbId);
+                }
             )
-        ->where('workflow_id',$workflowId)
-        ->where('is_governmental','1')
-        ->first()->price;
+            ->where('workflow_id', $workflowId)
+            ->where('is_governmental', '1')
+            ->first()->price;
         return $price;
     }
 }

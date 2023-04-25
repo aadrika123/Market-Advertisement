@@ -46,103 +46,103 @@ class MarActiveHostel extends Model
             'longitude' => $req->longitude,
             'latitude' => $req->latitude,
             'organization_type' => $req->organizationType,
-            'land_deed_type'=>$req->landDeedType,
-            'mess_type'=>$req->messType,
-            'no_of_beds'=>$req->noOfBeds,
-            'no_of_rooms'=>$req->noOfRooms,
-            
-            'water_supply_type'=>$req->waterSupplyType,
-            'electricity_type'=>$req->electricityType,
-            'security_type'=>$req->securityType,
-            'cctv_camera'=>$req->cctvCamera,
-            'fire_extinguisher'=>$req->fireExtinguisher,
-            'entry_gate'=>$req->entryGate,
-            'exit_gate'=>$req->exitGate,
-            'two_wheelers_parking'=>$req->twoWheelersParking,
-            'four_wheelers_parking'=>$req->fourWheelersParking,
-            'aadhar_card'=>$req->aadharCard,
-            'pan_card'=>$req->panCard,
-            'rule'=>$req->rule,
+            'land_deed_type' => $req->landDeedType,
+            'mess_type' => $req->messType,
+            'no_of_beds' => $req->noOfBeds,
+            'no_of_rooms' => $req->noOfRooms,
+
+            'water_supply_type' => $req->waterSupplyType,
+            'electricity_type' => $req->electricityType,
+            'security_type' => $req->securityType,
+            'cctv_camera' => $req->cctvCamera,
+            'fire_extinguisher' => $req->fireExtinguisher,
+            'entry_gate' => $req->entryGate,
+            'exit_gate' => $req->exitGate,
+            'two_wheelers_parking' => $req->twoWheelersParking,
+            'four_wheelers_parking' => $req->fourWheelersParking,
+            'aadhar_card' => $req->aadharCard,
+            'pan_card' => $req->panCard,
+            'rule' => $req->rule,
             // 'is_school_college_univ'=>$req->isSchoolCollegeUniv,
             // 'school_college_univ_name'=>$req->schoolCollegeUnivName,
-            'is_approve_by_govt'=>$req->isApproveByGovt,
-            'application_no'=>$req->application_no,
+            'is_approve_by_govt' => $req->isApproveByGovt,
+            'application_no' => $req->application_no,
             // 'govt_type'=>$req->govtType,
         ];
     }
-     // Store Application Foe Hostel(1)
-     public function addNew($req)
-     {
-         $bearerToken = $req->bearerToken();
-         $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
-         $ipAddress = getClientIpAddress();
+    // Store Application Foe Hostel(1)
+    public function addNew($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
         //  $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
-         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
-             'workflow_id' => $ulbWorkflows['id'],
-             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-             'current_role_id' => $ulbWorkflows['initiator_role_id'],
-             'last_role_id' => $ulbWorkflows['initiator_role_id'],
-             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-         ];
-         $mDocuments = $req->documents;
- 
-         $metaReqs = array_merge(
-             [
-                 'ulb_id' => $req->ulbId,
-                 'citizen_id' => $req->citizenId,
-                 'application_date' => $this->_applicationDate,
-                 'ip_address' => $ipAddress,
-                 'application_type' => "New Apply"
-             ],
-             $this->metaReqs($req),
-             $ulbWorkflowReqs
-         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'application_type' => "New Apply"
+            ],
+            $this->metaReqs($req),
+            $ulbWorkflowReqs
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-         $this->uploadDocument($tempId, $mDocuments);
- 
-         return $req->application_no;
-     }
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $req->application_no;
+    }
 
 
-      // Renew Application For Hostel(1)
-      public function renewApplication($req)
-      {
-          $bearerToken = $req->bearerToken();
-          $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-          $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
-          $ipAddress = getClientIpAddress();
-          $mRenewNo = ['renew_no' => 'HOSTEL/REN-' . random_int(100000, 999999)];                  // Generate Application No
-          $details=MarHostel::find($req->applicationId);                              // Find Previous Application No
-          $mLicenseNo=['license_no'=>$details->license_no];
-          $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
-              'workflow_id' => $ulbWorkflows['id'],
-              'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-              'current_role_id' => $ulbWorkflows['initiator_role_id'],
-              'last_role_id' => $ulbWorkflows['initiator_role_id'],
-              'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-          ];
-          $mDocuments = $req->documents;
-  
-          $metaReqs = array_merge(
-              [
-                  'ulb_id' => $req->ulbId,
-                  'citizen_id' => $req->citizenId,
-                  'application_date' => $this->_applicationDate,
-                  'ip_address' => $ipAddress,
-                  'application_type'=>"Renew"
-              ],
-              $this->metaReqs($req),
-              $mLicenseNo,
-              $mRenewNo,
-              $ulbWorkflowReqs
-          );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
-         $tempId = MarActiveHostel::create($metaReqs)->id;
-          $this->uploadDocument($tempId, $mDocuments);
-  
-          return $mRenewNo['renew_no'];;
-      }
-      /**
+    // Renew Application For Hostel(1)
+    public function renewApplication($req)
+    {
+        $bearerToken = $req->bearerToken();
+        $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        $ipAddress = getClientIpAddress();
+        $mRenewNo = ['renew_no' => 'HOSTEL/REN-' . random_int(100000, 999999)];                  // Generate Application No
+        $details = MarHostel::find($req->applicationId);                              // Find Previous Application No
+        $mLicenseNo = ['license_no' => $details->license_no];
+        $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
+            'workflow_id' => $ulbWorkflows['id'],
+            'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+            'current_role_id' => $ulbWorkflows['initiator_role_id'],
+            'last_role_id' => $ulbWorkflows['initiator_role_id'],
+            'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+        ];
+        $mDocuments = $req->documents;
+
+        $metaReqs = array_merge(
+            [
+                'ulb_id' => $req->ulbId,
+                'citizen_id' => $req->citizenId,
+                'application_date' => $this->_applicationDate,
+                'ip_address' => $ipAddress,
+                'application_type' => "Renew"
+            ],
+            $this->metaReqs($req),
+            $mLicenseNo,
+            $mRenewNo,
+            $ulbWorkflowReqs
+        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        $tempId = MarActiveHostel::create($metaReqs)->id;
+        $this->uploadDocument($tempId, $mDocuments);
+
+        return $mRenewNo['renew_no'];;
+    }
+    /**
      * upload Document By Citizen At the time of Registration
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -154,7 +154,7 @@ class MarActiveHostel extends Model
         $mMarActiveHostel = new MarActiveHostel();
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId,$docUpload, $mWfActiveDocument,$mMarActiveHostel,$relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveHostel->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -174,15 +174,16 @@ class MarActiveHostel extends Model
         });
     }
 
-    
-    public function getApplicationDtls($appId){
-        
+
+    public function getApplicationDtls($appId)
+    {
+
         return MarActiveHostel::select('*')
             ->where('id', $appId)
             ->first();
     }
 
-        /**
+    /**
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
@@ -204,7 +205,7 @@ class MarActiveHostel extends Model
         return $inbox;
     }
 
-      /**
+    /**
      * | Get Application Outbox List by Role Ids
      */
     public function listOutbox($roleIds)
@@ -225,13 +226,13 @@ class MarActiveHostel extends Model
         return $outbox;
     }
 
-    
+
 
     /**
      * | Get Application Details by id
      * | @param SelfAdvertisements id
      */
-    public function getDetailsById($id,$type=NULL)
+    public function getDetailsById($id, $type = NULL)
     {
         $details = array();
         if ($type == 'Active' || $type == NULL) {
@@ -296,7 +297,7 @@ class MarActiveHostel extends Model
                 ->leftJoin('ref_adv_paramstrings as wst', 'wst.id', '=', 'mar_rejected_hostels.water_supply_type')
                 ->where('mar_rejected_hostels.id', $id)
                 ->first();
-        }elseif ($type == 'Approve'){
+        } elseif ($type == 'Approve') {
             $details = DB::table('mar_hostels')
                 ->select(
                     'mar_hostels.*',
@@ -331,7 +332,7 @@ class MarActiveHostel extends Model
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
-        /**
+    /**
      * | Get Citizen Applied applications
      * | @param citizenId
      */
@@ -353,7 +354,7 @@ class MarActiveHostel extends Model
             ->get();
     }
 
-        
+
     public function getHostelDetails($appId)
     {
         return MarActiveHostel::select('*')
@@ -361,7 +362,7 @@ class MarActiveHostel extends Model
             ->first();
     }
 
-    
+
     public function getHostelList($ulbId)
     {
         return MarActiveHostel::select('*')
@@ -371,9 +372,10 @@ class MarActiveHostel extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -390,9 +392,9 @@ class MarActiveHostel extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
     }
@@ -400,72 +402,75 @@ class MarActiveHostel extends Model
     /**
      * | Get Application Details For Update 
      */
-    public function getApplicationDetailsForEdit($appId){
-        return MarActiveHostel::select('mar_active_hostels.*',
-                        'mar_active_hostels.hostel_type as hostel_type_id',
-                        'mar_active_hostels.organization_type as organization_type_id',
-                        'mar_active_hostels.land_deed_type as land_deed_type_id',
-                        'mar_active_hostels.mess_type as mess_type_id',
-                        'mar_active_hostels.water_supply_type as water_supply_type_id',
-                        'mar_active_hostels.electricity_type as electricity_type_id',
-                        'mar_active_hostels.security_type as security_type_id',
-                        'mar_active_hostels.no_of_rooms as noOfRooms',
-                        'mar_active_hostels.no_of_beds as noOfBeds',
-                        'ly.string_parameter as license_year_name',
-                        DB::raw("case when mar_active_hostels.is_approve_by_govt = true then 'Yes'
+    public function getApplicationDetailsForEdit($appId)
+    {
+        return MarActiveHostel::select(
+            'mar_active_hostels.*',
+            'mar_active_hostels.hostel_type as hostel_type_id',
+            'mar_active_hostels.organization_type as organization_type_id',
+            'mar_active_hostels.land_deed_type as land_deed_type_id',
+            'mar_active_hostels.mess_type as mess_type_id',
+            'mar_active_hostels.water_supply_type as water_supply_type_id',
+            'mar_active_hostels.electricity_type as electricity_type_id',
+            'mar_active_hostels.security_type as security_type_id',
+            'mar_active_hostels.no_of_rooms as noOfRooms',
+            'mar_active_hostels.no_of_beds as noOfBeds',
+            'ly.string_parameter as license_year_name',
+            DB::raw("case when mar_active_hostels.is_approve_by_govt = true then 'Yes'
                         else 'No' end as is_approve_by_govt_name"),
-                        DB::raw("case when mar_active_hostels.is_approve_by_govt = true then 1
+            DB::raw("case when mar_active_hostels.is_approve_by_govt = true then 1
                         else 0 end as is_approve_by_govt_id"),
-                        'lt.string_parameter as hostel_type_name',
-                        'ot.string_parameter as organization_type_name',
-                        'ldt.string_parameter as land_deed_type_name',
-                        'mt.string_parameter as mess_type_name',
-                        'wt.string_parameter as water_supply_type_name',
-                        'et.string_parameter as electricity_type_name',
-                        'st.string_parameter as security_type_name',
-                        'pw.ward_name as permanent_ward_name',
-                        'ew.ward_name as entity_ward_name',
-                        'rw.ward_name as residential_ward_name',
-                        'ulb.ulb_name',
-                        DB::raw("'Hostel' as headerTitle")
-                        )
-                        ->leftJoin('ref_adv_paramstrings as ly','ly.id','=',DB::raw('mar_active_hostels.license_year::int'))
-                        ->leftJoin('ulb_ward_masters as rw','rw.id','=',DB::raw('mar_active_hostels.residential_ward_id::int'))
-                        ->leftJoin('ref_adv_paramstrings as lt','lt.id','=',DB::raw('mar_active_hostels.hostel_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as ot','ot.id','=',DB::raw('mar_active_hostels.organization_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as ldt','ldt.id','=',DB::raw('mar_active_hostels.land_deed_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as mt','mt.id','=',DB::raw('mar_active_hostels.mess_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as wt','wt.id','=',DB::raw('mar_active_hostels.water_supply_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as et','et.id','=',DB::raw('mar_active_hostels.electricity_type::int'))
-                        ->leftJoin('ref_adv_paramstrings as st','st.id','=',DB::raw('mar_active_hostels.security_type::int'))
-                        ->leftJoin('ulb_ward_masters as ew','ew.id','=','mar_active_hostels.entity_ward_id')
-                        ->leftJoin('ulb_ward_masters as pw','pw.id','=','mar_active_hostels.permanent_ward_id')
-                        ->leftJoin('ulb_masters as ulb','ulb.id','=','mar_active_hostels.ulb_id')
-                        ->where('mar_active_hostels.id',$appId)->first();
+            'lt.string_parameter as hostel_type_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'mt.string_parameter as mess_type_name',
+            'wt.string_parameter as water_supply_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'rw.ward_name as residential_ward_name',
+            'ulb.ulb_name',
+            DB::raw("'Hostel' as headerTitle")
+        )
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_hostels.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_active_hostels.residential_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', DB::raw('mar_active_hostels.hostel_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_active_hostels.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_active_hostels.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', DB::raw('mar_active_hostels.mess_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_active_hostels.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_active_hostels.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_active_hostels.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_hostels.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_hostels.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_active_hostels.ulb_id')
+            ->where('mar_active_hostels.id', $appId)->first();
     }
 
-    public function updateApplication($req){
-        $MarActiveHostel=MarActiveHostel::findorfail($req->applicationId);
-        $MarActiveHostel->remarks=$req->remarks;
-        $MarActiveHostel->organization_type=$req->organizationType;
-        $MarActiveHostel->land_deed_type=$req->landDeedType;
-        $MarActiveHostel->water_supply_type=$req->waterSupplyType;
-        $MarActiveHostel->electricity_type=$req->electricityType;
-        $MarActiveHostel->security_type=$req->securityType;
-        $MarActiveHostel->cctv_camera=$req->cctvCamera;
-        $MarActiveHostel->fire_extinguisher=$req->fireExtinguisher;
-        $MarActiveHostel->entry_gate=$req->entryGate;
-        $MarActiveHostel->exit_gate=$req->exitGate;
-        $MarActiveHostel->two_wheelers_parking=$req->twoWheelersParking;
-        $MarActiveHostel->four_wheelers_parking=$req->fourWheelersParking;
-        $MarActiveHostel->no_of_beds=$req->noOfBeds;
-        $MarActiveHostel->no_of_rooms=$req->noOfRooms;
+    public function updateApplication($req)
+    {
+        $MarActiveHostel = MarActiveHostel::findorfail($req->applicationId);
+        $MarActiveHostel->remarks = $req->remarks;
+        $MarActiveHostel->organization_type = $req->organizationType;
+        $MarActiveHostel->land_deed_type = $req->landDeedType;
+        $MarActiveHostel->water_supply_type = $req->waterSupplyType;
+        $MarActiveHostel->electricity_type = $req->electricityType;
+        $MarActiveHostel->security_type = $req->securityType;
+        $MarActiveHostel->cctv_camera = $req->cctvCamera;
+        $MarActiveHostel->fire_extinguisher = $req->fireExtinguisher;
+        $MarActiveHostel->entry_gate = $req->entryGate;
+        $MarActiveHostel->exit_gate = $req->exitGate;
+        $MarActiveHostel->two_wheelers_parking = $req->twoWheelersParking;
+        $MarActiveHostel->four_wheelers_parking = $req->fourWheelersParking;
+        $MarActiveHostel->no_of_beds = $req->noOfBeds;
+        $MarActiveHostel->no_of_rooms = $req->noOfRooms;
         $MarActiveHostel->save();
         // dd($mMarActiveBanquteHall);
         return $MarActiveHostel;
     }
 
-          /**
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -473,9 +478,12 @@ class MarActiveHostel extends Model
     {
         return MarActiveHostel::all();
     }
-
-    public function pendingListForReport(){
-        return MarActiveHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','hostel_type','ulb_id','license_year',DB::raw("'Active' as application_status"));
+    
+    /**
+     * | Pending List For Report
+     */
+    public function pendingListForReport()
+    {
+        return MarActiveHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"));
     }
- 
 }

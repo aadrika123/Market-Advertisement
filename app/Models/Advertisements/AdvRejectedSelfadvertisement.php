@@ -10,7 +10,7 @@ class AdvRejectedSelfadvertisement extends Model
 {
     use HasFactory;
 
-     /**
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function listRejected($citizenId)
@@ -29,8 +29,8 @@ class AdvRejectedSelfadvertisement extends Model
             ->orderByDesc('id')
             ->get();
     }
-    
-     /**
+
+    /**
      * | Get Application Reject List by Login JSK
      */
     public function listJskRejectedApplication($userId)
@@ -50,25 +50,25 @@ class AdvRejectedSelfadvertisement extends Model
             ->get();
     }
 
-    
-     /**
+
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function rejectedApplication()
     {
         return AdvRejectedSelfadvertisement::select(
-                'id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'rejected_date',
-                'entity_ward_id',
-                'application_type',
-                DB::raw("'Rejected' as applicationStatus"),
-            )
+            'id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+            'entity_address',
+            'payment_status',
+            'rejected_date',
+            'entity_ward_id',
+            'application_type',
+            DB::raw("'Rejected' as applicationStatus"),
+        )
             ->orderByDesc('id')
             ->get();
     }
@@ -79,22 +79,26 @@ class AdvRejectedSelfadvertisement extends Model
     public function rejectedApplicationForReport()
     {
         return AdvRejectedSelfadvertisement::select(
-                'id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'rejected_date',
-                'entity_ward_id',
-                'application_type',
-                DB::raw("'Rejected' as applicationStatus"),
-            )
+            'id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+            'entity_address',
+            'payment_status',
+            'rejected_date',
+            'entity_ward_id',
+            'application_type',
+            DB::raw("'Rejected' as applicationStatus"),
+        )
             ->orderByDesc('id')->get();
     }
-
-    public function rejectListForReport(){
-        return AdvRejectedSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id','license_year','display_type',DB::raw("'Reject' as application_status"));
+    
+    /**
+     * | Reject List For Report
+     */
+    public function rejectListForReport()
+    {
+        return AdvRejectedSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Reject' as application_status"));
     }
 }

@@ -10,8 +10,8 @@ class AdvRejectedVehicle extends Model
 {
     use HasFactory;
 
-    
-     /**
+
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function listRejected($citizenId)
@@ -31,8 +31,8 @@ class AdvRejectedVehicle extends Model
             ->orderByDesc('id')
             ->get();
     }
-    
-     /**
+
+    /**
      * | Get Application Reject List by Login JSK
      */
     public function listJskRejectedApplication($userId)
@@ -59,18 +59,22 @@ class AdvRejectedVehicle extends Model
     public function rejectedApplication()
     {
         return AdvRejectedVehicle::select(
-                'id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'rejected_date',
-            )
+            'id',
+            'application_no',
+            'application_date',
+            'applicant',
+            'entity_name',
+            'rejected_date',
+        )
             ->orderByDesc('id')
             ->get();
     }
 
-    public function rejectListForReport(){
-        return AdvRejectedVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Reject' as application_status"));
+    /**
+     * | Reject List For Report
+     */
+    public function rejectListForReport()
+    {
+        return AdvRejectedVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Reject' as application_status"));
     }
 }

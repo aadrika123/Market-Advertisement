@@ -1363,7 +1363,7 @@ class DharamshalaController extends Controller
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $rejectList = $mMarRejectedDharamshala->pendingListForReport();
+            $rejectList = $mMarRejectedDharamshala->rejectListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
@@ -1426,7 +1426,7 @@ class DharamshalaController extends Controller
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $rejectList = $mMarRejectedDharamshala->pendingListForReport();
+            $rejectList = $mMarRejectedDharamshala->rejectListForReport();
 
             $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
@@ -1544,7 +1544,7 @@ class DharamshalaController extends Controller
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $rejectList = $mMarRejectedDharamshala->pendingListForReport();
+            $rejectList = $mMarRejectedDharamshala->rejectListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
@@ -1612,7 +1612,7 @@ class DharamshalaController extends Controller
 
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $rejectList = $mMarRejectedDharamshala->pendingListForReport();
+            $rejectList = $mMarRejectedDharamshala->rejectListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('organization_type', $req->organizationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);

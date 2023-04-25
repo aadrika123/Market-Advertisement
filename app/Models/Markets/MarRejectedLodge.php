@@ -49,7 +49,6 @@ class MarRejectedLodge extends Model
            ->get();
    }
 
-
    /**
     * | Rejected List For Report
     */

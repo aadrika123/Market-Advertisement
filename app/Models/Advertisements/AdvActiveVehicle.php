@@ -138,7 +138,7 @@ class AdvActiveVehicle extends Model
         return $req->application_no;
     }
 
-    
+
     /**
      * | Store function for Renew(1)
      * | @param request 
@@ -151,8 +151,8 @@ class AdvActiveVehicle extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
-        $details=AdvVehicle::find($req->applicationId);                              // Find Previous Application No
-        $licenseNo=['license_no'=>$details->license_no];
+        $details = AdvVehicle::find($req->applicationId);                              // Find Previous Application No
+        $licenseNo = ['license_no' => $details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role' => $ulbWorkflows['initiator_role_id'],
@@ -446,7 +446,7 @@ class AdvActiveVehicle extends Model
         return $docDetails['active_id'];
     }
 
-         /**
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -455,7 +455,11 @@ class AdvActiveVehicle extends Model
         return AdvActiveVehicle::all();
     }
 
-    public function pendingListForReport(){
-        return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Active' as application_status"));
+    /**
+     * | Pending List For Report
+     */
+    public function pendingListForReport()
+    {
+        return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Active' as application_status"));
     }
 }

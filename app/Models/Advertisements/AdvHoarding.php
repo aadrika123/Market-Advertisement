@@ -508,6 +508,9 @@ class AdvHoarding extends Model
         return $recieptDetails;
     }
 
+    /**
+     * | Approve List For Report
+     */
     public function approveListForReport(){
         return AdvHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year','ulb_id',DB::raw("'Approve' as application_status"));
     }

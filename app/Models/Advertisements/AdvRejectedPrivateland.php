@@ -10,7 +10,7 @@ class AdvRejectedPrivateland extends Model
 {
     use HasFactory;
 
-     /**
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function listRejected($citizenId)
@@ -28,8 +28,8 @@ class AdvRejectedPrivateland extends Model
             ->orderByDesc('id')
             ->get();
     }
-    
-     /**
+
+    /**
      * | Get Application Reject List by Login JSK
      */
     public function listJskRejectedApplication($userId)
@@ -48,25 +48,29 @@ class AdvRejectedPrivateland extends Model
             ->get();
     }
 
-     /**
+    /**
      * | Get All Application Reject List
      */
     public function rejectedApplication()
     {
         return AdvRejectedPrivateland::select(
-                'id',
-                'application_no',
-                'application_date',
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
-                'rejected_date',
-            )
+            'id',
+            'application_no',
+            'application_date',
+            // 'entity_address',
+            // 'old_application_no',
+            // 'payment_status',
+            'rejected_date',
+        )
             ->orderByDesc('id')
             ->get();
     }
 
-    public function rejectListForReport(){
-        return AdvRejectedPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id','ulb_id','display_type',DB::raw("'Reject' as application_status"));
+    /**
+     * | Reject List For Report
+     */
+    public function rejectListForReport()
+    {
+        return AdvRejectedPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Reject' as application_status"));
     }
 }

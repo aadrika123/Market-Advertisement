@@ -40,31 +40,31 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listApproved($citizenId,$userType)
+    public function listApproved($citizenId, $userType)
     {
         $allApproveList = $this->allApproveList();
-        foreach($allApproveList as $key => $list){
-            $activeVehicle=AdvActiveVehicle::where('application_no',$list['application_no'])->count();
-            $current_date=carbon::now()->format('Y-m-d');
-            $notify_date=carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
-            if($current_date >= $notify_date){
-                if($activeVehicle==0){
-                    $allApproveList[$key]['renew_option']='1';     // Renew option Show
-                }else{
-                    $allApproveList[$key]['renew_option']='0';     // Already Renew
+        foreach ($allApproveList as $key => $list) {
+            $activeVehicle = AdvActiveVehicle::where('application_no', $list['application_no'])->count();
+            $current_date = carbon::now()->format('Y-m-d');
+            $notify_date = carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+            if ($current_date >= $notify_date) {
+                if ($activeVehicle == 0) {
+                    $allApproveList[$key]['renew_option'] = '1';     // Renew option Show
+                } else {
+                    $allApproveList[$key]['renew_option'] = '0';     // Already Renew
                 }
             }
-            if($current_date < $notify_date){
-                $allApproveList[$key]['renew_option']='0';      // Renew option Not Show 0
+            if ($current_date < $notify_date) {
+                $allApproveList[$key]['renew_option'] = '0';      // Renew option Not Show 0
             }
-            if($list['valid_upto'] < $current_date){
-                $allApproveList[$key]['renew_option']='Expired';    // Renew Expired 
+            if ($list['valid_upto'] < $current_date) {
+                $allApproveList[$key]['renew_option'] = 'Expired';    // Renew Expired 
             }
         }
-        if($userType=='Citizen'){
+        if ($userType == 'Citizen') {
             return collect($allApproveList->where('citizen_id', $citizenId))->values();
-        }else{
-            return collect($allApproveList)->values(); 
+        } else {
+            return collect($allApproveList)->values();
         }
     }
 
@@ -109,56 +109,57 @@ class AdvVehicle extends Model
             ->first();
     }
 
-    
-   
-   /**
- * | Get Payment Details
- */
-public function getPaymentDetails($paymentId)
-{ 
-    // $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
-    $details = AdvVehicle::select(
-        'adv_vehicles.payment_amount',
-        'adv_vehicles.payment_id',
-        'adv_vehicles.payment_date',
-        'adv_vehicles.permanent_address as address',
-        'adv_vehicles.entity_name',
-        'adv_vehicles.payment_details',
-        'adv_vehicles.ulb_name as ulbName'
-        )
-    ->leftjoin('ulb_masters','adv_vehicles.ulb_id','=','ulb_masters.id')
-    ->where('adv_vehicles.payment_id', $paymentId)
-    ->first();
-    $details->payment_details=json_decode($details->payment_details);
-    $details->towards="Movable Vehicle Advertisement Payments";
-    $details->payment_date=Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
-    return $details;
-}
 
-    
-    public function paymentByCash($req){
+
+    /**
+     * | Get Payment Details
+     */
+    public function getPaymentDetails($paymentId)
+    {
+        // $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
+        $details = AdvVehicle::select(
+            'adv_vehicles.payment_amount',
+            'adv_vehicles.payment_id',
+            'adv_vehicles.payment_date',
+            'adv_vehicles.permanent_address as address',
+            'adv_vehicles.entity_name',
+            'adv_vehicles.payment_details',
+            'adv_vehicles.ulb_name as ulbName'
+        )
+            ->leftjoin('ulb_masters', 'adv_vehicles.ulb_id', '=', 'ulb_masters.id')
+            ->where('adv_vehicles.payment_id', $paymentId)
+            ->first();
+        $details->payment_details = json_decode($details->payment_details);
+        $details->towards = "Movable Vehicle Advertisement Payments";
+        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        return $details;
+    }
+
+
+    public function paymentByCash($req)
+    {
 
         if ($req->status == '1') {
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
             $mAdvVehicle->payment_status = $req->status;
             $mAdvVehicle->payment_mode = "Cash";
-            $pay_id=$mAdvVehicle->payment_id = "Cash-$req->applicationId-".time();
+            $pay_id = $mAdvVehicle->payment_id = "Cash-$req->applicationId-" . time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
 
             // Payment Details
-            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvVehicle->payment_amount,'workflowId'=>$mAdvVehicle->workflow_id,'userId'=>$mAdvVehicle->citizen_id,'ulbId'=>$mAdvVehicle->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvVehicle->payment_details =  json_encode($payDetails);
-            if($mAdvVehicle->renew_no==NULL){
+            if ($mAdvVehicle->renew_no == NULL) {
                 $mAdvVehicle->valid_from = Carbon::now();
                 $mAdvVehicle->valid_upto = Carbon::now()->addYears(1)->subDay(1);
-            }else{
-                $previousApplication=$this->findPreviousApplication($mAdvVehicle->license_no);
+            } else {
+                $previousApplication = $this->findPreviousApplication($mAdvVehicle->license_no);
                 $mAdvVehicle->valid_from = $previousApplication->valid_upto;
                 $mAdvVehicle->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(1)->subDay(1);
-            }  
+            }
             $mAdvVehicle->save();
             $renewal_id = $mAdvVehicle->last_renewal_id;
 
@@ -171,68 +172,75 @@ public function getPaymentDetails($paymentId)
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
             $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;
-            $status=$mAdvVehicleRenewal->save();
-            $returnData['status']=$status;
-            $returnData['payment_id']=$pay_id;
+            $status = $mAdvVehicleRenewal->save();
+            $returnData['status'] = $status;
+            $returnData['payment_id'] = $pay_id;
             return $returnData;
         }
     }
 
     // Find Previous Payment Date
-    public function findPreviousApplication($license_no){
-        return $details=AdvVehicleRenewal::select('valid_upto')
-                                    ->where('license_no',$license_no)
-                                    ->orderByDesc('id')
-                                    ->skip(1)->first();
+    public function findPreviousApplication($license_no)
+    {
+        return $details = AdvVehicleRenewal::select('valid_upto')
+            ->where('license_no', $license_no)
+            ->orderByDesc('id')
+            ->skip(1)->first();
     }
 
-    
-    public function applicationDetailsForRenew($appId){
-        $details=AdvVehicle::select('adv_vehicles.*',
-                            'adv_vehicles.typology as typology_id',
-                            'adv_vehicles.display_type as display_type_id',
-                            'adv_vehicles.vehicle_type as vehicle_type_id',
-                            'dt.string_parameter as display_type',
-                            'vt.string_parameter as vehicle_type',
-                            'typo.descriptions as typology',
-                            'w.ward_name',
-                            'pw.ward_name as permanent_ward_name',
-                            'ulb.ulb_name',
-                            )
-                            ->leftJoin('ref_adv_paramstrings as dt','dt.id','=',DB::raw('adv_vehicles.display_type::int'))
-                            ->leftJoin('ref_adv_paramstrings as vt','vt.id','=',DB::raw('adv_vehicles.vehicle_type::int'))
-                            ->leftJoin('adv_typology_mstrs as typo','typo.id','=','adv_vehicles.typology')
-                            ->leftJoin('ulb_ward_masters as w','w.id','=','adv_vehicles.ward_id')
-                            ->leftJoin('ulb_ward_masters as pw','pw.id','=','adv_vehicles.permanent_ward_id')
-                            ->leftJoin('ulb_masters as ulb','ulb.id','=','adv_vehicles.ulb_id')
-                            ->where('adv_vehicles.id',$appId)->first();
-        if(!empty($details)){
+
+    public function applicationDetailsForRenew($appId)
+    {
+        $details = AdvVehicle::select(
+            'adv_vehicles.*',
+            'adv_vehicles.typology as typology_id',
+            'adv_vehicles.display_type as display_type_id',
+            'adv_vehicles.vehicle_type as vehicle_type_id',
+            'dt.string_parameter as display_type',
+            'vt.string_parameter as vehicle_type',
+            'typo.descriptions as typology',
+            'w.ward_name',
+            'pw.ward_name as permanent_ward_name',
+            'ulb.ulb_name',
+        )
+            ->leftJoin('ref_adv_paramstrings as dt', 'dt.id', '=', DB::raw('adv_vehicles.display_type::int'))
+            ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', DB::raw('adv_vehicles.vehicle_type::int'))
+            ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_vehicles.typology')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_vehicles.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_vehicles.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'adv_vehicles.ulb_id')
+            ->where('adv_vehicles.id', $appId)->first();
+        if (!empty($details)) {
             $mWfActiveDocument = new WfActiveDocument();
             $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);
-            $details['documents']=$documents;
+            $details['documents'] = $documents;
         }
         return $details;
     }
 
-     /**
+    /**
      * | Get Reciept Details 
      */
-    public function getApprovalLetter($applicationId){
+    public function getApprovalLetter($applicationId)
+    {
         $recieptDetails = AdvVehicle::select(
-                                            'adv_vehicles.approve_date',
-                                            'adv_vehicles.applicant as applicant_name',
-                                            'adv_vehicles.application_no',
-                                            'adv_vehicles.license_no',
-                                            'adv_vehicles.payment_date as license_start_date',
-                                            DB::raw('CONCAT(application_date,id) AS reciept_no')
-                                            )
-                                    ->where('adv_vehicles.id',$applicationId)
-                                    ->first();
+            'adv_vehicles.approve_date',
+            'adv_vehicles.applicant as applicant_name',
+            'adv_vehicles.application_no',
+            'adv_vehicles.license_no',
+            'adv_vehicles.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('adv_vehicles.id', $applicationId)
+            ->first();
         return $recieptDetails;
     }
 
-    public function approveListForReport(){
-        return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type','ulb_id', DB::raw("'Approve' as application_status"));
+    /**
+     * | Approve List For Report 
+     */
+    public function approveListForReport()
+    {
+        return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
-
 }

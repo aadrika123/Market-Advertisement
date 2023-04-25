@@ -254,6 +254,9 @@ class AdvAgency extends Model
         return $recieptDetails;
     }
 
+    /**
+     * | Approve List For Report
+     */
     public function approveListForReport(){
         return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type','ulb_id', DB::raw("'Approve' as application_status"));
     }

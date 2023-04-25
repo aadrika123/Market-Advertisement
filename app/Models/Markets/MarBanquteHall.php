@@ -216,8 +216,11 @@ class MarBanquteHall extends Model
         return $details;
     }
 
-
-    public function  approveListForReport(){
-        return MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','hall_type', 'ulb_id','license_year','organization_type',DB::raw("'Approve' as application_status"));
+    /**
+     * | Approve List For Report
+     */
+    public function  approveListForReport()
+    {
+        return MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approve' as application_status"));
     }
 }

@@ -402,6 +402,9 @@ class AdvActivePrivateland extends Model
         return AdvActivePrivateland::all();
     }
 
+    /**
+     * | Pending List For Report
+     */
     public function pendingListForReport(){
         return AdvActivePrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id','ulb_id','display_type',DB::raw("'Active' as application_status"));
     }

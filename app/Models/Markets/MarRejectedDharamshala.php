@@ -48,7 +48,10 @@ class MarRejectedDharamshala extends Model
            ->get();
    }
 
-   public function pendingListForReport(){
+   /**
+    * | Reject List For Report
+    */
+   public function rejectListForReport(){
     return MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type','ulb_id','license_year',DB::raw("'Reject' as application_status"));
    }
 }
