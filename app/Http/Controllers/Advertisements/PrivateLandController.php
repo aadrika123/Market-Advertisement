@@ -627,7 +627,7 @@ class PrivateLandController extends Controller
             if ($req->status == 1) {
                 $typology = $mAdvActivePrivateland->typology;
                 $zone = $mAdvActivePrivateland->zone;
-                if ($zone === NULL) {
+                if ($zone == NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();

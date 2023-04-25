@@ -607,7 +607,7 @@ class VehicleAdvetController extends Controller
             if ($req->status == 1) {
                 $typology = $mAdvActiveVehicle->typology;
                 $zone = $mAdvActiveVehicle->zone;
-                if ($zone === NULL) {
+                if ($zone == NULL) {
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();
