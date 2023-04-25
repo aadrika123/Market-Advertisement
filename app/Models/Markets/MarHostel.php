@@ -199,16 +199,16 @@ class MarHostel extends Model
      */
     public function getPaymentDetails($paymentId){
         $details = MarHostel::select(
-            'adv_hostels.payment_amount',
-            'adv_hostels.payment_id',
-            'adv_hostels.payment_date',
-            'adv_hostels.permanent_address as address',
-            'adv_hostels.entity_name',
-            'adv_hostels.payment_details',
+            'mar_hostels.payment_amount',
+            'mar_hostels.payment_id',
+            'mar_hostels.payment_date',
+            'mar_hostels.permanent_address as address',
+            'mar_hostels.entity_name',
+            'mar_hostels.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )
-            ->leftjoin('ulb_masters', 'adv_hostels.ulb_id', '=', 'ulb_masters.id')
-            ->where('adv_hostels.payment_id', $paymentId)
+            ->leftjoin('ulb_masters', 'mar_hostels.ulb_id', '=', 'ulb_masters.id')
+            ->where('mar_hostels.payment_id', $paymentId)
             ->first();
             $details->payment_details=json_decode($details->payment_details);
             $details->towards="Hostel Payments";

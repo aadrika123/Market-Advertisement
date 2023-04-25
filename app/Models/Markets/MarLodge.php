@@ -197,16 +197,16 @@ class MarLodge extends Model
     public function getPaymentDetails($paymentId)
     {
         $details = MarLodge::select(
-            'adv_lodges.payment_amount',
-            'adv_lodges.payment_id',
-            'adv_lodges.payment_date',
-            'adv_lodges.permanent_address as address',
-            'adv_lodges.entity_name',
-            'adv_lodges.payment_details',
+            'mar_lodges.payment_amount',
+            'mar_lodges.payment_id',
+            'mar_lodges.payment_date',
+            'mar_lodges.permanent_address as address',
+            'mar_lodges.entity_name',
+            'mar_lodges.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )
-            ->leftjoin('ulb_masters', 'adv_lodges.ulb_id', '=', 'ulb_masters.id')
-            ->where('adv_lodges.payment_id', $paymentId)
+            ->leftjoin('ulb_masters', 'mar_lodges.ulb_id', '=', 'ulb_masters.id')
+            ->where('mar_lodges.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Lodge Payments";

@@ -199,16 +199,16 @@ class MarBanquteHall extends Model
     {
         //    $details = MarBanquteHall::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name','payment_details')
         $details = MarBanquteHall::select(
-            'adv_hostels.payment_amount',
-            'adv_hostels.payment_id',
-            'adv_hostels.payment_date',
-            'adv_hostels.permanent_address as address',
-            'adv_hostels.entity_name',
-            'adv_hostels.payment_details',
+            'mar_banqute_halls.payment_amount',
+            'mar_banqute_halls.payment_id',
+            'mar_banqute_halls.payment_date',
+            'mar_banqute_halls.permanent_address as address',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )
-            ->leftjoin('ulb_masters', 'adv_hostels.ulb_id', '=', 'ulb_masters.id')
-            ->where('adv_hostels.payment_id', $paymentId)
+            ->leftjoin('ulb_masters', 'mar_banqute_halls.ulb_id', '=', 'ulb_masters.id')
+            ->where('mar_banqute_halls.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Banquet/Marriage Hall Payments";
