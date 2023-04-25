@@ -77,8 +77,8 @@ class AdvAgency extends Model
      * | Get Application Approve List by Role Ids
      */
     public function listApproved($citizenId, $userType)
-    {
-        $allApproveList = $this->allApproveList();
+    { 
+        return $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
         } else {

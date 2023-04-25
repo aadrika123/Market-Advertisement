@@ -198,7 +198,6 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(AgencyController::class)->group(function () {
-
         Route::post('advert/agency/add-new', 'addNew');             // 01   ( Save Application )
         Route::post('advert/agency/get-agency-details', 'getAgencyDetails');             // 02  ( Agency Details )
         Route::post('advert/agency/list-inbox', 'listInbox');             // 03 ( Application Inbox Lists )

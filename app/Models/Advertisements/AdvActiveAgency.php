@@ -493,7 +493,7 @@ class AdvActiveAgency extends Model
     }
 
     public function pendingListForReport(){
-        return AdvActiveAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type','ulb_id', DB::raw("'Active' as application_status"))l
+        return AdvActiveAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type','ulb_id', DB::raw("'Active' as application_status"));
     }
 
 }
