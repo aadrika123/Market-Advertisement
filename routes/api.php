@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Route;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar (17 Jan 2023)
  * | Module Id for Advetisements=05
- * | Status - Closed By Bikash on 24 Apr 2023
+ * | Status - Closed By Bikash on 25 Apr 2023
  */
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
