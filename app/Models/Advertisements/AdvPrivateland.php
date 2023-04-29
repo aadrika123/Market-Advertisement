@@ -23,6 +23,7 @@ class AdvPrivateland extends Model
             'applicant',
             'applicant as owner_name',
             'application_date',
+            'application_type',
             'entity_name',
             'mobile_no',
             'entity_address',

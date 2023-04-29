@@ -55,6 +55,7 @@ class AdvAgency extends Model
             'id',
             'application_no',
             'application_date',
+            'application_type',
             'entity_name',
             'payment_status',
             'mobile_no',

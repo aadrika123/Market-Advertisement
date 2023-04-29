@@ -18,6 +18,7 @@ class AdvVehicle extends Model
             'id',
             'application_no',
             'application_date',
+            'application_type',
             'applicant',
             'applicant as owner_name',
             'entity_name',
