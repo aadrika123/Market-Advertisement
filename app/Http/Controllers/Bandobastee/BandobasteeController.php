@@ -43,7 +43,7 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mUlbId = authUser()->ulb_id;
             if ($mUlbId == '')
-                throw new Exception("You Are Not Authorished !!!");                                                    // If Cache Memory is not available
+                throw new Exception("You Are Not Authorished !!!");                                                    
             $data = array();
             $mBdstand = new Bdstand();
             $strings = $mBdstand->masters($mUlbId);
@@ -55,12 +55,8 @@ class BandobasteeController extends Controller
 
 
             $mBdMaster = new BdMaster();
-            $listMaster = $mBdMaster->listMaster();                  // Get Bandobastee List
+            $listMaster = $mBdMaster->listMaster();                             // Get Bandobastee List
             $data['bandobasteeCategories']['BandobasteeType'] = $listMaster;
-
-
-
-
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -90,6 +86,9 @@ class BandobasteeController extends Controller
         }
     }
 
+    /**
+     * | Get Stand List
+     */
     public function getStands(Request $req)
     {
         $mUlbId = authUser()->ulb_id;
@@ -115,6 +114,9 @@ class BandobasteeController extends Controller
         }
     }
 
+    /**
+     * | Add New Bandobastee
+     */
     public function addNew(StoreRequest $req)
     {
         if (authUser()->ulb_id == '')
@@ -127,7 +129,7 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $mCalculateRate = new CalculateRate;
-            $gst = $mCalculateRate->calculateAmount($req->baseAmount, $this->_gstAmt);   // Calculate GST Amount From BLL
+            $gst = $mCalculateRate->calculateAmount($req->baseAmount, $this->_gstAmt);          // Calculate GST Amount From BLL
             $gstAmt = ['gstAmt' => $gst];
             $req->merge($gstAmt);
 
@@ -135,11 +137,11 @@ class BandobasteeController extends Controller
             $req->merge($ulbId);
 
 
-            $tcs = $mCalculateRate->calculateAmount($req->baseAmount, $this->_tcsAmt);     // Calculate TCS Amount From BLL
+            $tcs = $mCalculateRate->calculateAmount($req->baseAmount, $this->_tcsAmt);          // Calculate TCS Amount From BLL
             $tcsAmt = ['tcsAmt' => $tcs];
             $req->merge($tcsAmt);
 
-            $totalAmount = ['totalAmount' => ($tcs + $gst + $req->baseAmount)];               // Calculate Total Amount
+            $totalAmount = ['totalAmount' => ($tcs + $gst + $req->baseAmount)];                 // Calculate Total Amount
             $req->merge($totalAmount);
 
             DB::beginTransaction();
@@ -155,6 +157,9 @@ class BandobasteeController extends Controller
         }
     }
 
+    /**
+     * | Get Penalty Lisrt Master
+     */
     public function listPenalty(Request $req)
     {
         try {
@@ -170,6 +175,10 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Stand Settler List
+     */
     public function listSettler(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -190,6 +199,9 @@ class BandobasteeController extends Controller
         }
     }
 
+    /**
+     * | Settler Installment Payment
+     */
     public function installmentPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -225,9 +237,12 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Settler Installment Payment List
+     */
     public function listInstallmentPayment(Request $req)
     {
-
         $validator = Validator::make($req->all(), [
             'settlerId' => 'required|integer',
         ]);
@@ -256,6 +271,9 @@ class BandobasteeController extends Controller
         }
     }
 
+    /**
+     * | Add Penalty and performamnce Security Money
+     */
     public function addPenaltyOrPerformanceSecurity(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -287,6 +305,10 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Settler Transaction 
+     */
     public function listSettlerTransaction(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -300,9 +322,6 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mBdSettlerTransaction = new BdSettlerTransaction();
 
-            // $mBdStand = BdSettler::find($req->settlerId);
-            // $ulbId = ['ulbId' => $mBdStand->ulb_id];
-            // $req->request->add($ulbId);
             $credit = 0;
             $debit = 0;
             $list = $mBdSettlerTransaction->listSettlerTransaction($req->settlerId);
@@ -322,6 +341,10 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Parking List
+     */
     public function listParking(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -342,6 +365,10 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Parking Settler List
+     */
     public function listParkingSettler(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -362,7 +389,9 @@ class BandobasteeController extends Controller
         }
     }
 
-
+    /**
+     * | Get Bazar List
+     */
     public function listBazar(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -383,7 +412,9 @@ class BandobasteeController extends Controller
         }
     }
 
-
+    /**
+     * | Get Bazar Settler List
+     */
     public function listBazarSettler(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -404,6 +435,10 @@ class BandobasteeController extends Controller
         }
     }
 
+
+    /**
+     * | Get Banquet Hall List
+     */
     public function listBanquetHall(Request $req)
     {
         if (authUser()->ulb_id == '')
@@ -424,7 +459,9 @@ class BandobasteeController extends Controller
         }
     }
 
-    
+    /**
+     * | Get Banquet Hall Settler List
+     */
     public function listBanquetHallSettler(Request $req)
     {
         if (authUser()->ulb_id == '')

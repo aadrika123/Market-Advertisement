@@ -497,29 +497,29 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      */
     Route::controller(BandobasteeController::class)->group(function () {
         Route::post('market/bandobastee/bandobastee-master', 'bandobasteeMaster');                          // 01   ( Get Stand Category )  
-        Route::post('market/bandobastee/get-stand-category', 'getStandCategory');                           // 01   ( Get Stand Category )  
-        Route::post('market/bandobastee/get-stands', 'getStands');                                          // 02   ( Get Stand and Category wise ULB )  
-        Route::post('market/bandobastee/add-new', 'addNew');                                                // 03   ( Save Application )  
-        Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 04   ( Get Panalty List ) 
-        Route::post('market/bandobastee/list-settler', 'listSettler');                                      // 05   ( Get Settler List )  
-        Route::post('market/bandobastee/installment-payment', 'installmentPayment');                        // 06   ( Installment Payment )  
-        Route::post('market/bandobastee/list-installment-payment', 'listInstallmentPayment');               // 07   ( Installment Payment List )  
-        Route::post('market/bandobastee/list-bandobastee', 'listBandobastee');                              // 08   ( Bandobastee List ) 
+        Route::post('market/bandobastee/get-stand-category', 'getStandCategory');                           // 02   ( Get Stand Category )  
+        Route::post('market/bandobastee/get-stands', 'getStands');                                          // 03   ( Get Stand and Category wise ULB )  
+        Route::post('market/bandobastee/add-new', 'addNew');                                                // 04   ( Save Application )  
+        Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 05   ( Get Panalty List ) 
+        Route::post('market/bandobastee/list-settler', 'listSettler');                                      // 06   ( Get Settler List )  
+        Route::post('market/bandobastee/installment-payment', 'installmentPayment');                        // 07   ( Installment Payment )  
+        Route::post('market/bandobastee/list-installment-payment', 'listInstallmentPayment');               // 08   ( Installment Payment List )  
+        Route::post('market/bandobastee/list-bandobastee', 'listBandobastee');                              // 09   ( Bandobastee List ) 
         // Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 08   ( Bandobastee List ) 
-        Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 08   ( Add Penalty or Performance Security Money List )  
-        Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 08   ( Transaction List ) 
+        Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 09   ( Add Penalty or Performance Security Money List )  
+        Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 10   ( Transaction List ) 
         
         /* ===================== Parking Api ========================================= */
-        Route::post('market/bandobastee/list-parking', 'listParking');                                        // 08   ( Parking List )
-        Route::post('market/bandobastee/list-parking-settler', 'listParkingSettler');                          // 08   ( Parking Settler List )
+        Route::post('market/bandobastee/list-parking', 'listParking');                                        // 11   ( Parking List )
+        Route::post('market/bandobastee/list-parking-settler', 'listParkingSettler');                          // 12   ( Parking Settler List )
         
         /* ===================== Bazar Api ========================================= */
-        Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 08   ( Bazar List )
-        Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 08   ( Bazar Settler List )
+        Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 13   ( Bazar List )
+        Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 14   ( Bazar Settler List )
         
-        /* ===================== Bazar Api ========================================= */
-        Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 08   ( Banquet Hall List )
-        Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 08   ( BanquetHall Settler List )
+        /* ===================== Banquet Hall Api ========================================= */
+        Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 15   ( Banquet Hall List )
+        Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 16   ( BanquetHall Settler List )
 
     });
 });
