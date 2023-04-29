@@ -5,6 +5,7 @@ use App\Http\Controllers\Advertisements\HoardingController;
 use App\Http\Controllers\Advertisements\PrivateLandController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
+use App\Http\Controllers\Bandobastee\BandobasteeController;
 use App\Http\Controllers\Markets\BanquetMarriageHallController;
 use App\Http\Controllers\Markets\LodgeController;
 use App\Http\Controllers\Markets\HostelController;
@@ -30,7 +31,7 @@ use Illuminate\Support\Facades\Route;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar (17 Jan 2023)
  * | Module Id for Advetisements=05
- * | Status - Closed By Bikash on 25 Apr 2023
+ * | Status - Closed By Bikash on 25 Apr 2023  , Re-Open For Bandobastee on 26 Apr 2023
  */
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
@@ -86,7 +87,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');          //37 ( Get Application Financial Year Wise )
         Route::post('advert/self/payment-collection', 'paymentCollection');          //38 ( Get Application Financial Year Wise )
     });
-    
+
 
     /**
      * | Param Strings 
@@ -106,7 +107,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
         Route::post('advertisements/application-reports', 'applicationReports');      // 11 ( Application Reports )
         Route::post('advertisements/get-financial-year-master-data', 'getFinancialMasterData');      // 11 ( Get Financial Year For Search )
-     });
+    });
 
     /**
      * | Movable Vehicles 
@@ -148,9 +149,9 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/vehicle/reupload-document', 'reuploadDocument');          // 30 ( Reupload Rejected Document )
         Route::post('advert/vehicle/get-application-between-date', 'getApplicationBetweenDate');          //31 ( Get Application Between two date )
         Route::post('advert/vehicle/payment-collection', 'paymentCollection');          //32 ( Get Application Financial Year Wise )
-    
+
     });
-    
+
     /**
      * | Private Lands
      * | Controller-04 
@@ -224,7 +225,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/agency/payment-by-cash', 'agencyPaymentByCash');          // 23 ( Application Details For Payments )
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');          // 24 ( Application Details For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 25 ( Application Details For Payments )
-         Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');          // 26 ( Application Details For Payments )
+        Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');          // 26 ( Application Details For Payments )
         Route::post('advert/agency/back-to-citizen', 'backToCitizen');          // 27 ( Application Details For Payments )
         Route::post('advert/agency/list-btc-inbox', 'listBtcInbox');          // 28 ( Application Details For Payments )
         // Route::post('advert/agency/check-full-upload', 'checkFullUpload');          // 19 ( Application Details For Payments )
@@ -286,7 +287,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('advert/hording/get-application-between-date', 'getApplicationBetweenDate');          //40 ( Get Application Between two date )
         Route::post('advert/hording/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //41 ( Get Application Financial Year Wise )
         Route::post('advert/hording/payment-collection', 'paymentCollection');          //42 ( Get Application Financial Year Wise )
-    
+
     });
 
 
@@ -324,16 +325,16 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/lodge/payment-by-cash', 'paymentByCash');          // 22 ( Application Details For Payments )
         Route::post('market/lodge/entry-cheque-dd', 'entryChequeDd');          // 23 ( Application Details For Payments )
         Route::post('market/lodge/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 24 ( Application Details For Payments )
-        
+
         Route::post('market/lodge/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Payments )
         Route::post('market/lodge/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
         Route::post('market/lodge/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
         Route::post('market/lodge/edit-application', 'editApplication');          // 28 ( Edit Applications ) 
-        
+
         Route::post('market/lodge/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/lodge/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/lodge/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
-        
+
         Route::post('market/lodge/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise )
         Route::post('market/lodge/get-application-by-lodge-type', 'getApplicationByLodgelType');          //33 ( Get Application hostel type Wise )
     });
@@ -372,7 +373,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bm-hall/payment-by-cash', 'paymentByCash');          // 22 ( Cash Payments )
         Route::post('market/bm-hall/entry-cheque-dd', 'entryChequeDd');          // 23 ( Entry Cheque or DD For Payments )
         Route::post('market/bm-hall/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 24 (Clear or Bouns Cheque For Payments )
-    
+
         Route::post('market/bm-hall/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Get Application Details For Renew )
         Route::post('market/bm-hall/renew-application', 'renewApplication');          // 26 ( Renew Applications )
         Route::post('market/bm-hall/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
@@ -422,17 +423,17 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/hostel/payment-by-cash', 'paymentByCash');          // 22 ( Application Details For Payments )
         Route::post('market/hostel/entry-cheque-dd', 'entryChequeDd');          // 23 ( Application Details For Payments )
         Route::post('market/hostel/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 24 ( Application Details For Payments )
-        
+
         Route::post('market/hostel/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Payments )
         Route::post('market/hostel/renew-application', 'renewApplication');          // 26 ( Application Details For Payments )
         Route::post('market/hostel/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
         Route::post('market/hostel/edit-application', 'editApplication');          // 28 ( Edit Applications )
-        
+
         Route::post('market/hostel/get-application-between-date', 'getApplicationBetweenDate');          //29 ( Get Application Between two date )
         Route::post('market/hostel/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //30 ( Get Application Financial Year Wise )
         Route::post('market/hostel/payment-collection', 'paymentCollection');          //31 ( Get Application Financial Year Wise )
 
-        
+
         Route::post('market/hostel/rule-wise-applications', 'ruleWiseApplications');          //32 ( Get Application Rule Wise )
         Route::post('market/hostel/get-application-by-hostel-type', 'getApplicationByHostelType');          //33 ( Get Application Hostel type Wise )
     });
@@ -471,7 +472,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/payment-by-cash', 'paymentByCash');          // 22 ( Payment via Cash )
         Route::post('market/dharamshala/entry-cheque-dd', 'entryChequeDd');          // 23 ( Entry Cheque or DD For Payments )
         Route::post('market/dharamshala/clear-or-bounce-cheque', 'clearOrBounceCheque');          // 24 (Clear or Bouns Cheque For Payments )
-         
+
         Route::post('market/dharamshala/get-renew-application-details', 'getApplicationDetailsForRenew');          // 25 ( Application Details For Renew )
         Route::post('market/dharamshala/renew-application', 'renewApplication');          // 26 ( Renew Application )
         Route::post('market/dharamshala/get-application-details-for-edit', 'getApplicationDetailsForEdit');          // 27 ( View Application Details For Edit )
@@ -485,4 +486,40 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType');          //32 ( Get Application Organization type Wise )
     });
 
+
+
+    /**
+     * | Dharamshala Controller
+     * | Controller-11
+     * | Created By - Bikash Kumar
+     * | Date 26-04-2023
+     * | Status - Open
+     */
+    Route::controller(BandobasteeController::class)->group(function () {
+        Route::post('market/bandobastee/bandobastee-master', 'bandobasteeMaster');                          // 01   ( Get Stand Category )  
+        Route::post('market/bandobastee/get-stand-category', 'getStandCategory');                           // 01   ( Get Stand Category )  
+        Route::post('market/bandobastee/get-stands', 'getStands');                                          // 02   ( Get Stand and Category wise ULB )  
+        Route::post('market/bandobastee/add-new', 'addNew');                                                // 03   ( Save Application )  
+        Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 04   ( Get Panalty List ) 
+        Route::post('market/bandobastee/list-settler', 'listSettler');                                      // 05   ( Get Settler List )  
+        Route::post('market/bandobastee/installment-payment', 'installmentPayment');                        // 06   ( Installment Payment )  
+        Route::post('market/bandobastee/list-installment-payment', 'listInstallmentPayment');               // 07   ( Installment Payment List )  
+        Route::post('market/bandobastee/list-bandobastee', 'listBandobastee');                              // 08   ( Bandobastee List ) 
+        // Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 08   ( Bandobastee List ) 
+        Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 08   ( Add Penalty or Performance Security Money List )  
+        Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 08   ( Transaction List ) 
+        
+        /* ===================== Parking Api ========================================= */
+        Route::post('market/bandobastee/list-parking', 'listParking');                                        // 08   ( Parking List )
+        Route::post('market/bandobastee/list-parking-settler', 'listParkingSettler');                          // 08   ( Parking Settler List )
+        
+        /* ===================== Bazar Api ========================================= */
+        Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 08   ( Bazar List )
+        Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 08   ( Bazar Settler List )
+        
+        /* ===================== Bazar Api ========================================= */
+        Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 08   ( Banquet Hall List )
+        Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 08   ( BanquetHall Settler List )
+
+    });
 });

@@ -90,4 +90,9 @@ class CalculateRate
             ->where('id', $typology_id)
             ->first()->rate;
     }
+
+    public function calculateAmount($amount,$perAmt){
+        return ($amount*$perAmt)/100;
+    }
+
 }
