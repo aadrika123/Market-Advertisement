@@ -312,6 +312,7 @@ class AdvActivePrivateland extends Model
                 'id',
                 'application_no',
                 'application_date',
+                'application_type',
                 'applicant',
                 'entity_name',
                 'entity_address',
