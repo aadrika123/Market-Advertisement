@@ -717,13 +717,13 @@ class SelfAdvetController extends Controller
                 $data['payment_amount'] = ['payment_amount' => 0];
                 $data['payment_status'] = ['payment_status' => 1];
                 if ($mAdvActiveSelfadvertisement->advt_category > 10) {
-                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area);   // Calculate Price
+                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area,$mAdvActiveSelfadvertisement->ulb_id);   // Calculate Price
                     $data['payment_status'] = ['payment_status' => 0];
                     $data['payment_amount'] = ['payment_amount' => $payment_amount];
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
-
+                
                 $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
 
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {

@@ -36,6 +36,9 @@ class BandobasteeController extends Controller
         $this->_tcsAmt = Config::get('constants.TCS_AMT');
     }
 
+    /**
+     * | List of Masters Data of Bandobastee
+     */
     public function bandobasteeMaster(Request $req)
     {
         try {
@@ -174,8 +177,7 @@ class BandobasteeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
+ 
     /**
      * | Get Stand Settler List
      */

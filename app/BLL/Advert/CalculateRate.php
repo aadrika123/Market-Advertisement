@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
  * | Calculate Price On Advertisement & Market
  * | Created By- Bikash Kumar
  * | Created On 12-04-2023 
- * | Status - Open
+ * | Status - Closed
  */
 
 
@@ -36,9 +36,14 @@ class CalculateRate
         return $idGenerateData->data;
     }
 
-    public function getAdvertisementPayment($displayArea)
+    public function getAdvertisementPayment($displayArea,$ulbId)
     {
-        return $displayArea * 10;   // Rs. 10  per Square ft.
+        
+        $rate = DB::table('adv_selfadvertisement_price_lists')
+            ->select('rate')
+            ->where('ulb_id', $ulbId)
+            ->first()->rate;
+        return $displayArea * $rate;   
     }
 
     public function getMovableVehiclePayment($typology, $zone, $license_from, $license_to)

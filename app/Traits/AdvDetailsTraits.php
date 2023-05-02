@@ -27,7 +27,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['m_license_year']],
             ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
-            ['displayString' => 'Ward ID', 'key' => 'wardId', 'value' => $data['ward_id']],
+            ['displayString' => 'Ward', 'key' => 'wardId', 'value' => $data['ward_no']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
             ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],

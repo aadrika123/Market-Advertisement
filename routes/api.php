@@ -505,7 +505,6 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bandobastee/installment-payment', 'installmentPayment');                        // 07   ( Installment Payment )  
         Route::post('market/bandobastee/list-installment-payment', 'listInstallmentPayment');               // 08   ( Installment Payment List )  
         Route::post('market/bandobastee/list-bandobastee', 'listBandobastee');                              // 09   ( Bandobastee List ) 
-        // Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 08   ( Bandobastee List ) 
         Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 09   ( Add Penalty or Performance Security Money List )  
         Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 10   ( Transaction List ) 
         
