@@ -46,7 +46,7 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mUlbId = authUser()->ulb_id;
             if ($mUlbId == '')
-                throw new Exception("You Are Not Authorished !!!");                                                    
+                throw new Exception("You Are Not Authorished !!!");
             $data = array();
             $mBdstand = new Bdstand();
             $strings = $mBdstand->masters($mUlbId);
@@ -177,7 +177,7 @@ class BandobasteeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
- 
+
     /**
      * | Get Stand Settler List
      */
@@ -476,6 +476,26 @@ class BandobasteeController extends Controller
             $mBdSettler = new BdSettler();
 
             $list = $mBdSettler->listBanquetHallSettler($ulbId);
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function getBandobasteeCategory(Request $req)
+    {
+        if (authUser()->ulb_id == '')
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mBdMaster = new BdMaster();
+
+            $list = $mBdMaster->listMaster($ulbId);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");

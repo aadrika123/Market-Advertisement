@@ -449,6 +449,8 @@ class PrivateLandController extends Controller
             $adv = AdvActivePrivateland::find($request->applicationId);
             if ($adv->doc_verify_status == '0')
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
+            if ($adv->zone == NULL)
+                throw new Exception("Zone Not Selected !!!");
             $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
@@ -474,7 +476,6 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      * | Comment on Application
@@ -533,7 +534,6 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050411", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      * | Get Uploaded Document by application ID

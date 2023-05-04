@@ -4,6 +4,7 @@ namespace App\Models\Bandobastee;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class BdSettler extends Model
 {
@@ -45,6 +46,9 @@ class BdSettler extends Model
     {
         return BdSettler::select(
             'bd_settlers.*',
+            DB::raw('cast(settlement_from as date) as settlement_from'),
+            DB::raw('cast(settlement_upto as date) as settlement_upto'),
+            // DB::raw("DATE_FORMAT(bd_settlers.settlement_upto, '%d-%M-%Y') as formatted_dob"),
             'bd_stands.stand_name',
             'bd_stand_categories.stand_category as stand_type'
         )
