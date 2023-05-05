@@ -410,7 +410,11 @@ class HoardingController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             $adv = AdvActiveHoarding::find($request->applicationId);
-            if ($adv->doc_verify_status == '0')
+            if ($adv->parked == NULL && $adv->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($adv->parked == '1' && $adv->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($adv->doc_verify_status == '0' && $adv->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $request->senderRoleId;
             $adv->current_role_id = $request->receiverRoleId;

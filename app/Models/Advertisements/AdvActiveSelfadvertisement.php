@@ -206,6 +206,7 @@ class AdvActiveSelfadvertisement extends Model
                 'payment_status',
                 'doc_upload_status',
                 'application_type',
+                'parked',
                 'workflow_id',
             )
             ->orderByDesc('id')

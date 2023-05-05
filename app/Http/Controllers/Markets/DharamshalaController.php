@@ -381,7 +381,11 @@ class DharamshalaController extends Controller
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);
-            if ($mMarActiveDharamshala->doc_verify_status == '0')
+            if ($mMarActiveDharamshala->parked == NULL && $mMarActiveDharamshala->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($mMarActiveDharamshala->parked == '1' && $mMarActiveDharamshala->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($mMarActiveDharamshala->doc_verify_status == '0' && $mMarActiveDharamshala->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $mMarActiveDharamshala->last_role_id = $mMarActiveDharamshala->current_role_id;
             $mMarActiveDharamshala->current_role_id = $request->receiverRoleId;

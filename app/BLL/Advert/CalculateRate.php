@@ -49,9 +49,9 @@ class CalculateRate
     public function getMovableVehiclePayment($typology, $zone, $license_from, $license_to)
     {
         $rate = DB::table('adv_typology_mstrs')
-            ->select(DB::raw("case when $zone = 1 then rate_zone_a
-                              when $zone = 2 then rate_zone_b
-                              when $zone = 3 then rate_zone_c
+            ->select(DB::raw("case when $zone = 1 then one_day_rate_zone_a
+                              when $zone = 2 then one_day_rate_zone_b
+                              when $zone = 3 then one_day_rate_zone_c
                         else 0 end as rate"))
             ->where('id', $typology)
             ->first()->rate;

@@ -316,6 +316,7 @@ class AdvActivePrivateland extends Model
                 'applicant',
                 'entity_name',
                 'entity_address',
+                'parked',
                 'doc_upload_status'
             )
             ->orderByDesc('id')

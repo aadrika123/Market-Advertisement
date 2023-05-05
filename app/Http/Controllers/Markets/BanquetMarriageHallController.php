@@ -386,7 +386,11 @@ class BanquetMarriageHallController extends Controller
 
             // Marriage Banqute Hall Application Update Current Role Updation
             $adv = MarActiveBanquteHall::find($request->applicationId);
-            if ($adv->doc_verify_status == '0')
+            if ($adv->parked == NULL && $adv->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($adv->parked == '1' && $adv->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($adv->doc_verify_status == '0' && $adv->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             $adv->last_role_id = $adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;

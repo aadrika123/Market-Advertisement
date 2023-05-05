@@ -318,6 +318,7 @@ class AdvActiveAgency extends Model
                 'address',
                 'doc_upload_status',
                 'application_type',
+                'parked',
             )
             ->orderByDesc('id')
             ->get();

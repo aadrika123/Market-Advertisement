@@ -379,8 +379,13 @@ class HostelController extends Controller
 
             // Marriage Banqute Hall Application Update Current Role Updation
             $mMarActiveHostel = MarActiveHostel::find($request->applicationId);
-            if ($mMarActiveHostel->doc_verify_status == '0')
+            if ($mMarActiveHostel->parked == NULL && $mMarActiveHostel->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($mMarActiveHostel->parked == '1' && $mMarActiveHostel->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($mMarActiveHostel->doc_verify_status == '0' && $mMarActiveHostel->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
+
             $mMarActiveHostel->last_role_id = $mMarActiveHostel->current_role_id;
             $mMarActiveHostel->current_role_id = $request->receiverRoleId;
             $mMarActiveHostel->save();

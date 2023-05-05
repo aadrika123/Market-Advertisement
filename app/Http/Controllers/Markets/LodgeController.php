@@ -383,7 +383,11 @@ class LodgeController extends Controller
 
             // Marriage Banqute Hall Application Update Current Role Updation
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
-            if ($mMarActiveLodge->doc_verify_status == '0')
+            if ($mMarActiveLodge->parked == NULL && $mMarActiveLodge->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($mMarActiveLodge->parked == '1' && $mMarActiveLodge->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($mMarActiveLodge->doc_verify_status == '0' && $mMarActiveLodge->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
 
             $mMarActiveLodge->last_role_id = $mMarActiveLodge->current_role_id;
@@ -1105,11 +1109,11 @@ class LodgeController extends Controller
             $startTime = microtime(true);
 
             $mMarLodge = new MarLodge();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarLodge::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarLodge->paymentByCash($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cash");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1182,11 +1186,11 @@ class LodgeController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $mAdvMarTransaction=new AdvMarTransaction();
-            $appDetails=MarLodge::find($req->applicationId);
+            $mAdvMarTransaction = new AdvMarTransaction();
+            $appDetails = MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds,"Market","Cheque/DD");
+            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 
             $endTime = microtime(true);
@@ -1324,8 +1328,8 @@ class LodgeController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getMessage(), "050728", 1.0, "", "POST", "", "");
         }
-    }     
-    
+    }
+
     /**
      * | Get Application Between Two Dates
      * | Function - 33
@@ -1353,21 +1357,21 @@ class LodgeController extends Controller
             $startTime = microtime(true);
             #=============================================================
 
-            $mMarLodge=new MarLodge();
-            $approveList=$mMarLodge->approveListForReport();
+            $mMarLodge = new MarLodge();
+            $approveList = $mMarLodge->approveListForReport();
 
-            $approveList =$approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId) ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
-   
-            $mMarActiveLodge=new MarActiveLodge();
-            $pendingList=$mMarActiveLodge->pendingListForReport();
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mMarActiveLodge = new MarActiveLodge();
+            $pendingList = $mMarActiveLodge->pendingListForReport();
 
             $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $mMarRejectedLodge=new MarRejectedLodge();
-            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $rejectList = $mMarRejectedLodge->rejectedListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
@@ -1414,20 +1418,20 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $mMarLodge=new MarLodge();
-            $approveList=$mMarLodge->approveListForReport();
+            $mMarLodge = new MarLodge();
+            $approveList = $mMarLodge->approveListForReport();
 
             $approveList = $approveList->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
 
-            $mMarActiveLodge=new MarActiveLodge();
-            $pendingList=$mMarActiveLodge->pendingListForReport();
+            $mMarActiveLodge = new MarActiveLodge();
+            $pendingList = $mMarActiveLodge->pendingListForReport();
 
             $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
-            ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
+                ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
 
-   
-            $mMarRejectedLodge=new MarRejectedLodge();
-            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $rejectList = $mMarRejectedLodge->rejectedListForReport();
 
             $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->where('entity_ward_id', $req->entityWard)->where('license_year', $req->financialYear);
@@ -1505,7 +1509,7 @@ class LodgeController extends Controller
         }
     }
 
-        /**
+    /**
      * | Rule Wise Applications
      * | Function - 36
      * | API - 32
@@ -1532,20 +1536,20 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
             #=============================================================
-            $mMarLodge=new MarLodge();
-            $approveList=$mMarLodge->approveListForReport();
+            $mMarLodge = new MarLodge();
+            $approveList = $mMarLodge->approveListForReport();
 
-            $approveList =$approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
-            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $mMarActiveLodge=new MarActiveLodge();
-            $pendingList=$mMarActiveLodge->pendingListForReport();
+            $mMarActiveLodge = new MarActiveLodge();
+            $pendingList = $mMarActiveLodge->pendingListForReport();
 
             $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $mMarRejectedLodge=new MarRejectedLodge();
-            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $rejectList = $mMarRejectedLodge->rejectedListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('rule', $req->ruleType)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
@@ -1570,7 +1574,7 @@ class LodgeController extends Controller
         }
     }
 
-       /**
+    /**
      * | Get Application Hosteml Type Wise
      * | Function - 37
      * | API - 33
@@ -1598,20 +1602,20 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $mMarLodge=new MarLodge();
-            $approveList=$mMarLodge->approveListForReport();
+            $mMarLodge = new MarLodge();
+            $approveList = $mMarLodge->approveListForReport();
 
             $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
-            ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $mMarActiveLodge=new MarActiveLodge();
-            $pendingList=$mMarActiveLodge->pendingListForReport();
+            $mMarActiveLodge = new MarActiveLodge();
+            $pendingList = $mMarActiveLodge->pendingListForReport();
 
             $pendingList =  $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
-            $mMarRejectedLodge=new MarRejectedLodge();
-            $rejectList=$mMarRejectedLodge->rejectedListForReport();
+            $mMarRejectedLodge = new MarRejectedLodge();
+            $rejectList = $mMarRejectedLodge->rejectedListForReport();
 
             $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('lodge_type', $req->lodgeType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);

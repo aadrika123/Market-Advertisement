@@ -333,8 +333,12 @@ class AdvHoarding extends Model
             'adv_hoardings.payment_amount',
             'adv_hoardings.payment_id',
             'adv_hoardings.payment_date',
-            'adv_hoardings.entity_address as address',
-            'adv_hoardings.entity_name',
+            // 'adv_hoardings.entity_address as address',
+            DB::raw("case when adv_hoardings.zone_id = 1 then 'Zone A'
+                              when adv_hoardings.zone_id = 2 then 'Zone B'
+                              when adv_hoardings.zone_id = 3 then 'Zone C'
+                        else 'N/A' end as address"),
+            // 'adv_hoardings.entity_name',
             'adv_hoardings.payment_details',
             'ulb_masters.ulb_name as ulbName'
             )

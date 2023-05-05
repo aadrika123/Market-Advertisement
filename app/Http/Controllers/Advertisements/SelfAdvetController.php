@@ -458,8 +458,14 @@ class SelfAdvetController extends Controller
         try {
             $startTime = microtime(true);
             $adv = AdvActiveSelfadvertisement::find($request->applicationId);
-            if ($adv->doc_verify_status == '0')
+            if ($adv->parked == NULL && $adv->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($adv->parked == '1' && $adv->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($adv->doc_verify_status == '0' && $adv->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
+            if ($adv->parked == '1')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
             $adv->last_role_id = $adv->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
@@ -717,13 +723,13 @@ class SelfAdvetController extends Controller
                 $data['payment_amount'] = ['payment_amount' => 0];
                 $data['payment_status'] = ['payment_status' => 1];
                 if ($mAdvActiveSelfadvertisement->advt_category > 10) {
-                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area,$mAdvActiveSelfadvertisement->ulb_id);   // Calculate Price
+                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area, $mAdvActiveSelfadvertisement->ulb_id);   // Calculate Price
                     $data['payment_status'] = ['payment_status' => 0];
                     $data['payment_amount'] = ['payment_amount' => $payment_amount];
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
-                
+
                 $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
 
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
@@ -1013,9 +1019,12 @@ class SelfAdvetController extends Controller
      */
     public function applicationDetailsForPayment(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'applicationId' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
             $startTime = microtime(true);

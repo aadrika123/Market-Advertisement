@@ -365,6 +365,7 @@ class AdvActiveVehicle extends Model
                 'vehicle_no',
                 'vehicle_name',
                 'application_type',
+                'parked',
                 'doc_upload_status'
             )
             ->orderByDesc('id')

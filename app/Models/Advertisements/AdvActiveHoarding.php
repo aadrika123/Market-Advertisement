@@ -300,6 +300,7 @@ class AdvActiveHoarding extends Model
                 'application_date',
                 'license_no',
                 'application_type',
+                'parked',
                 // 'bank_name',
                 // 'account_no',
                 // 'ifsc_code',

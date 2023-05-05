@@ -433,7 +433,11 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);
-            if ($mAdvActiveVehicle->doc_verify_status == '0')
+            if ($mAdvActiveVehicle->parked == NULL && $mAdvActiveVehicle->doc_upload_status == '0')
+                throw new Exception("Document Rejected Please Send Back to Citizen !!!");
+            if ($mAdvActiveVehicle->parked == '1' && $mAdvActiveVehicle->doc_upload_status == '0')
+                throw new Exception("Document Are Not Re-upload By Citizen !!!");
+            if ($mAdvActiveVehicle->doc_verify_status == '0' && $mAdvActiveVehicle->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
             if ($mAdvActiveVehicle->zone == NULL)
                 throw new Exception("Zone Not Selected !!!");
