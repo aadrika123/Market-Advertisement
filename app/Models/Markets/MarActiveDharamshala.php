@@ -336,6 +336,7 @@ class MarActiveDharamshala extends Model
                 'entity_address',
                 'doc_upload_status',
                 'application_type',
+                'parked',
             )
             ->orderByDesc('id')
             ->get();

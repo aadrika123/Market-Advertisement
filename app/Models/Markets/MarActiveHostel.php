@@ -349,6 +349,7 @@ class MarActiveHostel extends Model
                 'doc_upload_status',
                 'doc_verify_status',
                 'application_type',
+                'parked',
             )
             ->orderByDesc('id')
             ->get();
