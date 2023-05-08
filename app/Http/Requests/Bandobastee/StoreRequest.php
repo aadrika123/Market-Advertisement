@@ -28,7 +28,7 @@ class StoreRequest extends FormRequest
         return [
             'settlerName' => 'required|string|max:255',
             'mobileNo' => 'required|numeric|digits:10',
-            'panNo' => 'required|string|max:10',
+            'panNo' => 'nullable|string|max:10',
             'gstNo' => 'nullable|string',
             'settlementFrom' => 'required|date_format:Y-m-d',
             'settlementUpto' => 'required|date_format:Y-m-d',
