@@ -107,4 +107,12 @@ return [
   "DHARAMSHALA_WORKFLOWS" => "406",
   "DHARAMSHALA_DOC_CODE" => "DHARAMSHALA",
   "DHARAMSHALA_DOC_CODE_RENEW" => "DHARAMSHALA_RENEW",
+
+ /**
+   * | ---------- Dharamshala -----------
+   */
+  "GST_AMT" => 18,
+  "TCS_AMT" => 2,
+
+
 ];

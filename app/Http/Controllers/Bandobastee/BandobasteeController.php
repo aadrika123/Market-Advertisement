@@ -32,8 +32,8 @@ class BandobasteeController extends Controller
     //Constructor
     public function __construct()
     {
-        $this->_gstAmt = Config::get('constants.GST_AMT');
-        $this->_tcsAmt = Config::get('constants.TCS_AMT');
+        $this->_gstAmt = Config::get('workflow-constants.GST_AMT');
+        $this->_tcsAmt = Config::get('workflow-constants.TCS_AMT');
     }
 
     /**
