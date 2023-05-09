@@ -201,6 +201,30 @@ class BandobasteeController extends Controller
         }
     }
 
+    public function listSettler1(Request $req)
+    {
+        if (authUser()->ulb_id == '')
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = authUser()->ulb_id;
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+            $mBdSettler = new BdSettler();
+            $listSettler = $mBdSettler->listSettler($ulbId);
+            // )->map(function (int $settler, int $key) {
+            //    $totalInstallmentAmt=
+            // });
+            // $listSettler = $listSettler->where('ulb_id', $ulbId);
+            // $listSettler = $listSettler
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+            return responseMsgs(true, "Settler List", $listSettler, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
     /**
      * | Settler Installment Payment
      */
@@ -282,7 +306,7 @@ class BandobasteeController extends Controller
             'settlerId' => 'required|integer',
             'amount' => 'required|numeric',
             'isPenalty' => 'required|boolean',
-            'remarks' => 'required|string',
+            'remarks' => 'nullable|string',
             'penaltyType' => 'nullable|string',
         ]);
         if ($validator->fails()) {
@@ -327,17 +351,22 @@ class BandobasteeController extends Controller
             $credit = 0;
             $debit = 0;
             $list = $mBdSettlerTransaction->listSettlerTransaction($req->settlerId);
+            $ps=collect();
+            $pty=collect();
             foreach ($list as $l) {
                 if ($l['is_penalty'] == NULL) {
                     $credit += $l['amount'];
+                    $ps->push($l);
                 } else {
                     $debit += $l['amount'];
+                    $pty->push($l);
                 }
             }
             $availableBalance = $credit - $debit;
+// return $ps->first()->amount;
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetch Successfully", ['transactionHistory' => $list, 'availableBalance' => $availableBalance], "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Data Fetch Successfully", ['performanceSecurityAmt' => $ps->first()->amount,'penalty' => $pty, 'availableBalance' => $availableBalance], "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
