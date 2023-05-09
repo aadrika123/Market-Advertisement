@@ -40,6 +40,7 @@ class StoreRequest extends FormRequest
             'bazarId' => 'nullable|integer',
             'banquetHallId' => 'nullable|integer',
             'bandobasteeType' => 'required|integer',
+            'remarks' => 'nullable|string',
         ];
     }
 

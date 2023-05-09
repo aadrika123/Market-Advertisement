@@ -192,10 +192,10 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $listSettler = $mBdSettler->listSettler($ulbId);
-            $listSettler = $listSettler->where('ulb_id', $ulbId);
+            // $listSettler = $listSettler->where('ulb_id', $ulbId);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Category List", $listSettler, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Settler List", $listSettler, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -262,7 +262,7 @@ class BandobasteeController extends Controller
             $mBdPayment = new BdPayment();
 
             $listInstallment = $mBdPayment->listInstallmentPayment($req->settlerId)->map(function ($val) {
-                $val->payment_date = Carbon::parse($val->payment_date)->format('d-m-Y');
+                $val->installment_date = Carbon::parse($val->installment_date)->format('d-m-Y');
                 return $val;
             });
             $endTime = microtime(true);

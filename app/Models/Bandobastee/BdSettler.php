@@ -31,7 +31,8 @@ class BdSettler extends Model
             'tcs_amount' => $req->tcsAmt,
             'total_amount' => $req->totalAmount,
             'emd_amount' => $req->emdAmount,
-            'bandobastee_type' => $req->bandobasteeType
+            'bandobastee_type' => $req->bandobasteeType,
+            'remarks' => $req->remarks
         ];
         return $abs;
     }
