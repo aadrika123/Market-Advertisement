@@ -17,8 +17,8 @@ class BdPayment extends Model
         return [
             'settler_id' => $req->settlerId,
             'ulb_id' => $req->ulbId,
-            'payment_date' => $req->paymentDate,
-            'payment_amount' => $req->paymentAmount,
+            'installment_date' => $req->installmentDate,
+            'installment_amount' => $req->installmentAmount,
         ];
     }
 
@@ -30,7 +30,7 @@ class BdPayment extends Model
 
     public function listInstallmentPayment($settlerId)
     {
-        return BdPayment::select('payment_amount', DB::raw('cast(payment_date as date) as payment_date'))
+        return BdPayment::select('installment_amount', DB::raw('cast(installment_date as date) as installment_date'))
             ->where('settler_id', $settlerId)
             ->get();
     }

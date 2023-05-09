@@ -209,7 +209,7 @@ class BandobasteeController extends Controller
         $validator = Validator::make($req->all(), [
             // 'ulbId' => 'required|integer',
             'settlerId' => 'required|integer',
-            'paymentAmount' => 'required|numeric',
+            'installmentAmount' => 'required|numeric',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -227,8 +227,8 @@ class BandobasteeController extends Controller
             $ulbId = ['ulbId' => $mBdStand->ulb_id];
             $req->request->add($ulbId);
 
-            $paymentDate = ['paymentDate' => Carbon::now()->format('Y-m-d')];
-            $req->request->add($paymentDate);
+            $installmentDate = ['installmentDate' => Carbon::now()->format('Y-m-d')];
+            $req->request->add($installmentDate);
             // return $req;
             $listSettler = $mBdPayment->installmentPayment($req);
             $endTime = microtime(true);
