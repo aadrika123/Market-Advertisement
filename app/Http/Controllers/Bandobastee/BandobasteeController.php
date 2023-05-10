@@ -139,7 +139,6 @@ class BandobasteeController extends Controller
             $ulbId = ['ulbId' => $ulbId];
             $req->merge($ulbId);
 
-
             $tcs = $mCalculateRate->calculateAmount($req->baseAmount, $this->_tcsAmt);          // Calculate TCS Amount From BLL
             $tcsAmt = ['tcsAmt' => $tcs];
             $req->merge($tcsAmt);
@@ -181,7 +180,7 @@ class BandobasteeController extends Controller
     /**
      * | Get Stand Settler List
      */
-    public function listSettler(Request $req)
+    public function listSettler1(Request $req)
     {
         if (authUser()->ulb_id == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
@@ -201,7 +200,7 @@ class BandobasteeController extends Controller
         }
     }
 
-    public function listSettler1(Request $req)
+    public function listSettler(Request $req)
     {
         if (authUser()->ulb_id == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
@@ -212,17 +211,34 @@ class BandobasteeController extends Controller
             $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $listSettler = $mBdSettler->listSettler($ulbId);
-            // )->map(function (int $settler, int $key) {
-            //    $totalInstallmentAmt=
-            // });
-            // $listSettler = $listSettler->where('ulb_id', $ulbId);
-            // $listSettler = $listSettler
+            $list=$listSettler->map(function ($settler) {
+                $totalAmt=$this->totalInstallment($settler->id);
+                $settler->paid_amount = $totalAmt['installment_amount'];
+                $settler->performance_security_amount = $totalAmt['performance_security_amount'];
+                $settler->due_amount = $settler->total_amount-($totalAmt['installment_amount']+$settler->emd_amount);
+                $settler->total_penalty = $totalAmt['total_penalty'];
+                $settler->rest_performance_security = ($totalAmt['performance_security_amount']-$totalAmt['total_penalty']);
+                return $settler;
+            });
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Settler List", $listSettler, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Settler List", $list, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+
+/**
+ * | Calculate All type of price
+ */
+    public function totalInstallment($id){
+        $mBdPayment=new BdPayment();
+        $priceList['installment_amount']=$mBdPayment->totalInstallment($id);
+        $mBdSettlerTransaction=new BdSettlerTransaction();
+        $priceList['performance_security_amount']=$mBdSettlerTransaction->performanceSecurity($id,"false");
+        $priceList['total_penalty']=$mBdSettlerTransaction->performanceSecurity($id,"true");
+        // print_r($priceList); die;
+        return $priceList;
     }
 
     /**

@@ -1091,9 +1091,9 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             $mMarBanquteHall = new MarBanquteHall();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
+            $appDetails = MarBanquteHall::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
@@ -1167,9 +1167,9 @@ class BanquetMarriageHallController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarBanquteHall::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = MarBanquteHall::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 

@@ -993,9 +993,9 @@ class PrivateLandController extends Controller
 
             $mAdvPrivateland = new AdvPrivateland();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
+            $appDetails = AdvPrivateland::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
@@ -1070,9 +1070,9 @@ class PrivateLandController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvPrivateland::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = AdvPrivateland::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 

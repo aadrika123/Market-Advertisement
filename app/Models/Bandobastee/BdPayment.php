@@ -34,4 +34,8 @@ class BdPayment extends Model
             ->where('settler_id', $settlerId)
             ->get();
     }
+
+    public function totalInstallment($id){
+        return DB::table('bd_payments')->select(DB::raw('sum(installment_amount) as installment_amount'))->where('settler_id',$id)->first()->installment_amount;
+    }
 }

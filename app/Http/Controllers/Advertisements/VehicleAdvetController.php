@@ -961,9 +961,9 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvVehicle->paymentByCash($req);
+            $appDetails = AdvVehicle::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
             DB::commit();
             $endTime = microtime(true);
@@ -1035,9 +1035,9 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvVehicle::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = AdvVehicle::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cheque/DD");
             DB::commit();
             $endTime = microtime(true);

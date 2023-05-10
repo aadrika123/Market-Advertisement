@@ -1051,9 +1051,9 @@ class HoardingController extends Controller
 
             $mAdvHoarding = new AdvHoarding();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvHoarding->paymentByCash($req);
+            $appDetails = AdvHoarding::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
@@ -1129,9 +1129,9 @@ class HoardingController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvHoarding::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = AdvHoarding::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 

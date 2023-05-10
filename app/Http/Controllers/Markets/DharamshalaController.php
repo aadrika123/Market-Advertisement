@@ -1106,9 +1106,9 @@ class DharamshalaController extends Controller
 
             $mMarDharamshala = new MarDharamshala();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarDharamshala::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarDharamshala->paymentByCash($req);
+            $appDetails = MarDharamshala::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
@@ -1181,9 +1181,9 @@ class DharamshalaController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarDharamshala::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = MarDharamshala::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 

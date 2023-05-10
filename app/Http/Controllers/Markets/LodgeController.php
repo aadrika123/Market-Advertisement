@@ -1110,9 +1110,9 @@ class LodgeController extends Controller
 
             $mMarLodge = new MarLodge();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarLodge->paymentByCash($req);
+            $appDetails = MarLodge::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
@@ -1187,9 +1187,9 @@ class LodgeController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarLodge::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = MarLodge::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 

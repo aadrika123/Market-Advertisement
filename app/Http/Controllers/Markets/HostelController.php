@@ -1101,9 +1101,9 @@ class HostelController extends Controller
 
             $mMarHostel = new MarHostel();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarHostel::find($req->applicationId);
             DB::beginTransaction();
             $data = $mMarHostel->paymentByCash($req);
+            $appDetails = MarHostel::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
@@ -1177,9 +1177,9 @@ class HostelController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = MarHostel::find($req->applicationId);
             DB::beginTransaction();
             $status = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = MarHostel::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 

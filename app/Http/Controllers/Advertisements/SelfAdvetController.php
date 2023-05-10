@@ -104,7 +104,7 @@ class SelfAdvetController extends Controller
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
-            $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);       //<--------------- Model function to store 
+            $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);                                       //<--------------- Model function to store 
             DB::commit();
 
             $endTime = microtime(true);
@@ -1065,9 +1065,9 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvSelfadvertisement::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvSelfadvertisement->paymentByCash($req);
+            $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
             DB::commit();
 
@@ -1139,9 +1139,9 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvSelfadvertisement::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cheque/DD");
             DB::commit();
             $endTime = microtime(true);

@@ -39,4 +39,8 @@ class BdSettlerTransaction extends Model
         ->orderBy('id', 'ASC')
             ->get();
     }
+
+    public function performanceSecurity($id,$type){
+        return DB::table('bd_settler_transactions')->select(DB::raw('sum(amount) as amount'))->where('settler_id',$id)->where('is_penalty',$type)->first()->amount;
+    }
 }

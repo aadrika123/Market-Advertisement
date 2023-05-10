@@ -49,6 +49,7 @@ class BdSettler extends Model
             'bd_settlers.*',
             DB::raw('cast(settlement_from as date) as settlement_from'),
             DB::raw('cast(settlement_upto as date) as settlement_upto'),
+            // DB::raw("'' as installment_amount"),
             // DB::raw("DATE_FORMAT(bd_settlers.settlement_upto, '%d-%M-%Y') as formatted_dob"),
             'bd_stands.stand_name',
             'bd_stand_categories.stand_category as stand_type'

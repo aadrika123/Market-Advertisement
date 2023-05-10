@@ -1000,9 +1000,9 @@ class AgencyController extends Controller
 
             $mAdvAgency = new AdvAgency();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $d = $mAdvAgency->paymentByCash($req);
+            $appDetails = AdvAgency::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
@@ -1077,9 +1077,9 @@ class AgencyController extends Controller
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
-            $appDetails = AdvAgency::find($req->applicationId);
             DB::beginTransaction();
             $data = $mAdvCheckDtl->clearOrBounceCheque($req);
+            $appDetails = AdvAgency::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 
