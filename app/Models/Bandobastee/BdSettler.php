@@ -66,6 +66,8 @@ class BdSettler extends Model
         return BdSettler::select(
             'bd_settlers.*',
             'bd_parkings.parking_name',
+            DB::raw('cast(settlement_from as date) as settlement_from'),
+            DB::raw('cast(settlement_upto as date) as settlement_upto'),
         )
             ->leftjoin('bd_parkings', 'bd_parkings.id', '=', 'bd_settlers.parking_id')
             ->where('bd_settlers.parking_id', '!=', NULL)
@@ -78,6 +80,8 @@ class BdSettler extends Model
         return BdSettler::select(
             'bd_settlers.*',
             'bd_bazars.bazar_name',
+            DB::raw('cast(settlement_from as date) as settlement_from'),
+            DB::raw('cast(settlement_upto as date) as settlement_upto'),
         )
             ->leftjoin('bd_bazars', 'bd_bazars.id', '=', 'bd_settlers.bazar_id')
             ->where('bd_settlers.bazar_id', '!=', NULL)
