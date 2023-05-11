@@ -492,7 +492,7 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
      * | Dharamshala Controller
      * | Controller-11
      * | Created By - Bikash Kumar
-     * | Date 26-04-2023
+     * | Date - 26-04-2023
      * | Status - Open
      */
     Route::controller(BandobasteeController::class)->group(function () {
@@ -501,25 +501,21 @@ Route::group(['middleware' => 'auth.citizen', 'json.response'], function () {
         Route::post('market/bandobastee/get-stands', 'getStands');                                          // 03   ( Get Stand and Category wise ULB )  
         Route::post('market/bandobastee/add-new', 'addNew');                                                // 04   ( Save Application )  
         Route::post('market/bandobastee/list-penalty', 'listPenalty');                                      // 05   ( Get Panalty List ) 
-        Route::post('market/bandobastee/list-settler', 'listSettler');                                    // 05   ( Get Panalty List ) 
-        Route::post('market/bandobastee/list-settler1', 'listSettler1');                                      // 06   ( Get Settler List )  
+        Route::post('market/bandobastee/list-settler', 'listSettler');                                      // 06   ( Get Stand Settler List )   
         Route::post('market/bandobastee/installment-payment', 'installmentPayment');                        // 07   ( Installment Payment )  
         Route::post('market/bandobastee/list-installment-payment', 'listInstallmentPayment');               // 08   ( Installment Payment List )  
         Route::post('market/bandobastee/get-bandobastee-category', 'getBandobasteeCategory');                              // 09   ( Bandobastee List ) 
-        Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 09   ( Add Penalty or Performance Security Money List )  
-        Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 10   ( Transaction List ) 
-        
+        Route::post('market/bandobastee/add-penalty-or-performance-security', 'addPenaltyOrPerformanceSecurity');       // 10   ( Add Penalty or Performance Security Money List )  
+        Route::post('market/bandobastee/list-settler-transaction', 'listSettlerTransaction');                // 11   ( Transaction List ) 
         /* ===================== Parking Api ========================================= */
-        Route::post('market/bandobastee/list-parking', 'listParking');                                        // 11   ( Parking List )
-        Route::post('market/bandobastee/list-parking-settler', 'listParkingSettler');                          // 12   ( Parking Settler List )
-        
+        Route::post('market/bandobastee/list-parking', 'listParking');                                        // 12   ( Parking List )
+        Route::post('market/bandobastee/list-parking-settler', 'listParkingSettler');                          // 13   ( Parking Settler List )
         /* ===================== Bazar Api ========================================= */
-        Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 13   ( Bazar List )
-        Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 14   ( Bazar Settler List )
-        
+        Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 14   ( Bazar List )
+        Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 15   ( Bazar Settler List )
         /* ===================== Banquet Hall Api ========================================= */
-        Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 15   ( Banquet Hall List )
-        Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 16   ( BanquetHall Settler List )
+        // Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 16   ( Banquet Hall List )
+        // Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 17   ( BanquetHall Settler List )
 
     });
 });

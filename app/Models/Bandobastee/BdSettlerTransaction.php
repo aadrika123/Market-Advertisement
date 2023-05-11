@@ -34,13 +34,14 @@ class BdSettlerTransaction extends Model
 
     public function listSettlerTransaction($settlerId)
     {
-        return BdSettlerTransaction::select('id','amount',DB::raw('cast(date as date) as date'),'is_penalty','penalty_type','remarks')
-        ->where('settler_id', $settlerId)
-        ->orderBy('id', 'ASC')
+        return BdSettlerTransaction::select('id', 'amount', DB::raw('cast(date as date) as date'), 'is_penalty', 'penalty_type', 'remarks')
+            ->where('settler_id', $settlerId)
+            ->orderBy('id', 'ASC')
             ->get();
     }
 
-    public function performanceSecurity($id,$type){
-        return DB::table('bd_settler_transactions')->select(DB::raw('sum(amount) as amount'))->where('settler_id',$id)->where('is_penalty',$type)->first()->amount;
+    public function performanceSecurity($id, $type)
+    {
+        return DB::table('bd_settler_transactions')->select(DB::raw('sum(amount) as amount'))->where('settler_id', $id)->where('is_penalty', $type)->first()->amount;
     }
 }

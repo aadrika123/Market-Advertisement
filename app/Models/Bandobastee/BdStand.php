@@ -19,11 +19,12 @@ class BdStand extends Model
         $this->_applicationDate = Carbon::now()->format('Y-m-d H:i:s');
     }
 
-    public function listStands($categoryId,$ulb){
-        return BdStand::select('id','stand_name')
-                        ->where(['status'=>'1','stand_category_id'=>$categoryId,'ulb_id'=>$ulb])
-                        ->orderBy('id')
-                        ->get();
+    public function listStands($categoryId, $ulb)
+    {
+        return BdStand::select('id', 'stand_name')
+            ->where(['status' => '1', 'stand_category_id' => $categoryId, 'ulb_id' => $ulb])
+            ->orderBy('id')
+            ->get();
     }
 
     public function masters($ulbId)
@@ -37,9 +38,9 @@ class BdStand extends Model
                 "bd_stands.stand_category_id"
             )
             ->leftJoin('bd_stand_categories as c', 'c.id', '=', 'bd_stands.stand_category_id')
-            ->where('bd_stands.status','1')
-            ->where('bd_stands.ulb_id',$ulbId)
-            ->orderBy('bd_stands.id','Asc')
+            ->where('bd_stands.status', '1')
+            ->where('bd_stands.ulb_id', $ulbId)
+            ->orderBy('bd_stands.id', 'Asc')
             ->get();
     }
 }

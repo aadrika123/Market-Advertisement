@@ -9,9 +9,10 @@ class BdStandCategory extends Model
 {
     use HasFactory;
 
-    public function listCategory(){
-        return BdStandCategory::select('id','stand_category')
-                                ->where('status','1')
-                                ->get();
+    public function listCategory()
+    {
+        return BdStandCategory::select('id', 'stand_category')
+            ->where('status', '1')
+            ->get();
     }
 }

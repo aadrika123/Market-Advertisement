@@ -73,7 +73,8 @@ class BdSettler extends Model
             ->get();
     }
 
-    public function listBazarSettler($ulbId){
+    public function listBazarSettler($ulbId)
+    {
         return BdSettler::select(
             'bd_settlers.*',
             'bd_bazars.bazar_name',
@@ -84,7 +85,8 @@ class BdSettler extends Model
             ->get();
     }
 
-    public function listBanquetHallSettler($ulbId){
+    public function listBanquetHallSettler($ulbId)
+    {
         return BdSettler::select(
             'bd_settlers.*',
             'bd_banquet_halls.banquet_hall_name',

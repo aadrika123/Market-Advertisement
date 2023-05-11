@@ -9,7 +9,8 @@ class BdBanquetHall extends Model
 {
     use HasFactory;
 
-    public function listBanquetHall($ulbId){
+    public function listBanquetHall($ulbId)
+    {
         return BdBanquetHall::select('id', 'banquet_hall_name')
             ->where('ulb_id', $ulbId)
             ->orderBy('id', 'ASC')

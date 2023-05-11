@@ -9,7 +9,8 @@ class BdBazar extends Model
 {
     use HasFactory;
 
-    public function listBazar($ulbId){
+    public function listBazar($ulbId)
+    {
         return BdBazar::select('id', 'bazar_name')
             ->where('ulb_id', $ulbId)
             ->orderBy('id', 'ASC')

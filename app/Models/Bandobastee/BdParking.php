@@ -16,5 +16,4 @@ class BdParking extends Model
             ->orderBy('id', 'ASC')
             ->get();
     }
-
 }

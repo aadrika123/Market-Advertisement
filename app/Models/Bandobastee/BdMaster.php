@@ -9,10 +9,11 @@ class BdMaster extends Model
 {
     use HasFactory;
 
-    public function listMaster(){
-        return BdMaster::select('id','bandobastee_name')
-        ->where(['status'=>'1'])
-        ->orderBy('id')
-        ->get();
+    public function listMaster()
+    {
+        return BdMaster::select('id', 'bandobastee_name')
+            ->where(['status' => '1'])
+            ->orderBy('id')
+            ->get();
     }
 }
