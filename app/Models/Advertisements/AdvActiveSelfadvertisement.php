@@ -89,8 +89,8 @@ class AdvActiveSelfadvertisement extends Model
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -111,7 +111,8 @@ class AdvActiveSelfadvertisement extends Model
             ],
             $this->metaReqs($req),
             $ulbWorkflowReqs
-        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        ); 
+                                                                                                // Add Relative Path as Request and Client Ip Address etc.
         $tempId = AdvActiveSelfadvertisement::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments);
 
@@ -122,8 +123,8 @@ class AdvActiveSelfadvertisement extends Model
     public function renewalSelfAdvt($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId,$req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'SELF/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
         $details = AdvSelfadvertisement::find($req->applicationId);                              // Find Previous Application No

@@ -48,6 +48,7 @@ use App\Models\Markets\MarRejectedHostel;
 use App\Models\Markets\MarRejectedLodge;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
+use App\Models\Workflows\WfWorkflow;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -79,15 +80,27 @@ class ParamController extends Controller
     //Constructor
     public function __construct()
     {
-        $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
-        $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
-        $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
-        $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-        $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
-        $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
-        $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-        $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
-        $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+        // $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+        // $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        // $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
+        // $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+        // $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        // $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        // $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        // $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        // $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+        // $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+        // $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
+
+        $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
+        $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LAND_WF_MASTER_ID');
+        $this->_movableVehicle = Config::get('workflow-constants.VEHICLE_WF_MASTER_ID');
+        $this->_agency = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
+        $this->_hording = Config::get('workflow-constants.HORDING_WF_MASTER_ID');
+        $this->_banquetHall = Config::get('workflow-constants.BANQUTE_HALL_WF_MASTER_ID');
+        $this->_hostel = Config::get('workflow-constants.HOSTEL_WF_MASTER_ID');
+        $this->_lodge = Config::get('workflow-constants.LODGE_WF_MASTER_ID');
+        $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WF_MASTER_ID');
         $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
     }
@@ -205,8 +218,9 @@ class ParamController extends Controller
                 'payment_id' => $req->paymentId,
                 'payment_details' => $req->all(),
             ];
+            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
 
-            if ($req->workflowId == $this->_selfAdvt) { // Self Advertisement Payment
+            if ($wfworkflowMasterId == $this->_selfAdvt) { // Self Advertisement Payment
             
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
 
@@ -241,7 +255,7 @@ class ParamController extends Controller
                 $appDetails = AdvSelfadvertisement::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($req->workflowId == $this->_movableVehicle) { // Movable Vechicles Payment
+            } elseif ($wfworkflowMasterId == $this->_movableVehicle) { // Movable Vechicles Payment
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
                 $mAdvVehicle->payment_date = Carbon::now();
@@ -275,7 +289,7 @@ class ParamController extends Controller
                 $appDetails = AdvVehicle::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($req->workflowId ==  $this->_agency) { // Agency Apply Payment
+            } elseif ($wfworkflowMasterId ==  $this->_agency) { // Agency Apply Payment
 
                 $mAdvAgency = AdvAgency::find($req->id);
 
@@ -310,7 +324,7 @@ class ParamController extends Controller
                 $appDetails = AdvAgency::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($req->workflowId == $this->_pvtLand) { // Private Land Payment
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) { // Private Land Payment
 
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
                 $mAdvPrivateland->payment_date = Carbon::now();
@@ -343,7 +357,7 @@ class ParamController extends Controller
                 $appDetails = AdvPrivateland::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($req->workflowId == $this->_hording) { // Hording Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_hording) { // Hording Apply Payment
 
                 $mAdvHoarding = AdvHoarding::find($req->id);
                 $mAdvHoarding->payment_date = Carbon::now();
@@ -376,7 +390,7 @@ class ParamController extends Controller
                 $appDetails = AdvHoarding::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($req->workflowId == $this->_banquetHall) { // Hording Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_banquetHall) { // Hording Apply Payment
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
                 $mMarBanquteHall->payment_date = Carbon::now();
@@ -411,7 +425,7 @@ class ParamController extends Controller
                 $appDetails = MarBanquteHall::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($req->workflowId == $this->_hostel) { // Hostel Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_hostel) { // Hostel Apply Payment
 
                 $mMarHostel = MarHostel::find($req->id);
                 $mMarHostel->payment_date = Carbon::now();
@@ -444,7 +458,7 @@ class ParamController extends Controller
                 $appDetails = MarHostel::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($req->workflowId == $this->_lodge) { // Lodge Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_lodge) { // Lodge Apply Payment
 
                 $mMarLodge = MarLodge::find($req->id);
                 $mMarLodge->payment_date = Carbon::now();
@@ -478,7 +492,7 @@ class ParamController extends Controller
                 $appDetails = MarLodge::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($req->workflowId == $this->_dharamshala) { // Dharamshala Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) { // Dharamshala Apply Payment
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date = Carbon::now();
                 $mMarDharamshala->payment_status = 1;
@@ -535,28 +549,29 @@ class ParamController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
+            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
             // Get Advertesement Payment Details
-            if ($req->workflowId == $this->_selfAdvt) {
+            if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Self Advertisement Tax";
-            } elseif ($req->workflowId == $this->_pvtLand) {
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Private Land Tax";
-            } elseif ($req->workflowId ==  $this->_movableVehicle) {
+            } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
-            } elseif ($req->workflowId == $this->_agency) {
+            } elseif ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Agency Tax";
-            } elseif ($req->workflowId == $this->_hording) {
+            } elseif ($wfworkflowMasterId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
@@ -564,22 +579,22 @@ class ParamController extends Controller
             }
 
             // Get Market Payment Details
-            elseif ($req->workflowId == $this->_banquetHall) {
+            elseif ($wfworkflowMasterId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
-            } elseif ($req->workflowId == $this->_hostel) {
+            } elseif ($wfworkflowMasterId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hostel Tax";
-            } elseif ($req->workflowId == $this->_lodge) {
+            } elseif ($wfworkflowMasterId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Lodge Tax";
-            } elseif ($req->workflowId == $this->_dharamshala) {
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
@@ -796,24 +811,24 @@ class ParamController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
             // Get Advertesement Reciept Details
-            if ($req->workflowId == $this->_selfAdvt) {
+            if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
-            } elseif ($req->workflowId == $this->_pvtLand) {
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->applicationId);
-            } elseif ($req->workflowId ==  $this->_movableVehicle) {
+            } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $recieptDetails = $mAdvVehicle->getApprovalLetter($req->applicationId);
-            } elseif ($req->workflowId == $this->_agency) {
+            } elseif ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
-            } elseif ($req->workflowId == $this->_hording) {
+            } elseif ($wfworkflowMasterId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
-            } elseif ($req->workflowId == $this->_banquetHall) {
+            } elseif ($wfworkflowMasterId == $this->_banquetHall) {
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }
@@ -843,5 +858,13 @@ class ParamController extends Controller
         }catch(Exception $e){
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
         }
+    }
+
+
+    /**
+     * | Get Workflow Master Id 
+     */
+    public function getWorkflowMasterId($workflowId){
+        return WfWorkflow::select('wf_master_id')->where('id',$workflowId)->first()->wf_master_id;  
     }
 }

@@ -16,6 +16,7 @@ use App\Models\Markets\MarRejectedHostel;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
@@ -51,12 +52,13 @@ class HostelController extends Controller
     protected $_baseUrl;
     protected $_tempParamId;
     protected $_paramId;
+    protected $_wfMasterId;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
         $this->_modelObj = new MarActiveHostel();
-        $this->_workflowIds = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = Config::get('workflow-constants.HOSTEL_DOC_CODE');
@@ -64,6 +66,8 @@ class HostelController extends Controller
         $this->_paramId = Config::get('workflow-constants.HOS_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_HOS_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+
+        $this->_wfMasterId = Config::get('workflow-constants.HOSTEL_WF_MASTER_ID');
     }
 
     /**
@@ -87,6 +91,10 @@ class HostelController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
@@ -343,7 +351,10 @@ class HostelController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->_repository->specialInboxHostel($this->_workflowIds)                      // Repository function to get Markets Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->_repository->specialInboxHostel($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
                 ->where('mar_active_hostels.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -471,10 +482,22 @@ class HostelController extends Controller
      */
     public function viewHostelDocuments(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050910", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -496,9 +519,15 @@ class HostelController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -511,13 +540,25 @@ class HostelController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         // Variable initialization
         $startTime = microtime(true);
+        if ($req->type == 'Active')
+            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
 
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,$workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1111,7 +1152,7 @@ class HostelController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050922", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050922", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050922", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1140,9 +1181,9 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfId = MarHostel::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
@@ -1246,6 +1287,10 @@ class HostelController extends Controller
             $mCalculateRate = new CalculateRate;
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
+
+             // $mWfWorkflow=new WfWorkflow();
+             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 

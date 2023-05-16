@@ -92,9 +92,8 @@ class AdvActiveAgency extends Model
         $directors = $req->directors;
         $bearerToken = $req->bearerToken();
         $metaReqs = $this->metaReqs($req);
-
-        $workflowId = Config::get('workflow-constants.AGENCY');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.AGENCY');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests

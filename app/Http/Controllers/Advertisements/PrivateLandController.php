@@ -25,6 +25,7 @@ use App\Traits\AdvDetailsTraits;
 use App\Traits\WorkflowTrait;
 use App\Models\Workflows\WorkflowTrack;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 
@@ -58,16 +59,19 @@ class PrivateLandController extends Controller
     protected $_tempParamId;
     protected $_paramId;
     protected $_baseUrl;
+    protected $_wfMasterId;
     public function __construct(iSelfAdvetRepo $privateland_repo)
     {
         $this->_modelObj = new AdvActivePrivateland();
-        $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.PRIVATE_LANDS_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_LAND_ID');
         $this->_paramId = Config::get('workflow-constants.LAND_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $privateland_repo;
+
+        $this->_wfMasterId = Config::get('workflow-constants.PRIVATE_LAND_WF_MASTER_ID');
     }
 
     /**
@@ -92,8 +96,13 @@ class PrivateLandController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
+            DB::beginTransaction();
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
+            DB::commit();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -158,8 +167,11 @@ class PrivateLandController extends Controller
             $applicationNo = ['application_no' => $generatedId];
 
             $req->request->add($applicationNo);
-
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
+            DB::beginTransaction();
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
+            DB::commit();
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -415,7 +427,10 @@ class PrivateLandController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->Repository->specialPrivateLandInbox($this->_workflowIds)          // Repository function to get Advertiesment Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->Repository->specialPrivateLandInbox($workflowId)          // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_privatelands.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -548,9 +563,15 @@ class PrivateLandController extends Controller
     {
         // Variable initialization
         $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvPrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedPrivateland::find($req->applicationId)->workflow_id;
         $data = array();
         if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -572,10 +593,16 @@ class PrivateLandController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         // Variable initialization
-        $startTime = microtime(true);
+        // $startTime = microtime(true);
+        if ($req->type == 'Active')
+            $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvPrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedPrivateland::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);  // Get uploaded Documents
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);  // Get uploaded Documents
         $data1['data'] = $data;
         return $data1;
     }
@@ -589,9 +616,15 @@ class PrivateLandController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvPrivateland::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedPrivateland::find($req->applicationId)->workflow_id;
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -955,9 +988,8 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvPrivateland = new AdvPrivateland();
-            $workflowId = $this->_workflowIds;
             if ($req->applicationId) {
-                $data = $mAdvPrivateland->getApplicationDetailsForPayment($req->applicationId, $workflowId);
+                $data = $mAdvPrivateland->getApplicationDetailsForPayment($req->applicationId);
             }
 
             if (!$data)
@@ -1003,7 +1035,7 @@ class PrivateLandController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050423", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!",  ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050423", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(true, "Payment Rejected !!", '', "050423", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1034,7 +1066,8 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $wfId = AdvPrivateland::find($req->applicationId)->workflow_id;
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);                        // Entry Cheque Or DD
 
@@ -1080,7 +1113,7 @@ class PrivateLandController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050425", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050425", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050425", "1.0", "", 'POST', $req->deviceId ?? "");
             }

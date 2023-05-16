@@ -15,6 +15,7 @@ use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\TradeLicence;
 use App\Models\Workflows\WfRoleusermap;
+use App\Models\Workflows\WfWorkflow;
 use App\Traits\WorkflowTrait;
 use Exception;
 use Illuminate\Http\Request;
@@ -63,18 +64,22 @@ class SelfAdvetController extends Controller
     protected $_tempParamId;
     protected $_baseUrl;
 
+    protected $_wfMasterId;
+
     //Constructor
     public function __construct(iSelfAdvetRepo $self_repo)
     {
         DB::enableQueryLog();
         $this->_modelObj = new AdvActiveSelfadvertisement();
-        $this->_workflowIds = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_repository = $self_repo;
         $this->_docCode = Config::get('workflow-constants.SELF_ADVERTISMENT_DOC_CODE');
         $this->_paramId = Config::get('workflow-constants.SELF_ID');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_SELF_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+
+        $this->_wfMasterId = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
     }
 
 
@@ -102,6 +107,10 @@ class SelfAdvetController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);                                       //<--------------- Model function to store 
@@ -169,6 +178,9 @@ class SelfAdvetController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->renewalSelfAdvt($req);       //<--------------- Model function to store 
@@ -429,7 +441,10 @@ class SelfAdvetController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->_repository->specialInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->_repository->specialInbox($workflowId)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
                 ->whereIn('ward_id', $wardId)
@@ -613,9 +628,18 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), "", "050115", "1.0", "", "POST", $req->deviceId ?? "");
         }
+        // $mWfWorkflow=new WfWorkflow();
+        // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId,$ulbId);      // get workflow Id
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedSelfadvertisement::find($req->applicationId)->workflow_id;
+        // $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -633,9 +657,16 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedSelfadvertisement::find($req->applicationId)->workflow_id;
+
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -683,8 +714,14 @@ class SelfAdvetController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedSelfadvertisement::find($req->applicationId)->workflow_id;
         $data = array();
-        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
         return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", "$executionTime Sec", "POST", "");
@@ -1074,7 +1111,7 @@ class SelfAdvetController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050127", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             }
@@ -1092,7 +1129,7 @@ class SelfAdvetController extends Controller
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  temp_id of Application
+            'applicationId' => 'required|integer',               //  temp_id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
@@ -1103,8 +1140,9 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
+            $wfId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
 
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);                              // Store Cheque Details In Model
@@ -1148,7 +1186,7 @@ class SelfAdvetController extends Controller
 
             $executionTime = $endTime - $startTime;
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050129", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050129", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050129", "1.0", "", 'POST', $req->deviceId ?? "");
             }

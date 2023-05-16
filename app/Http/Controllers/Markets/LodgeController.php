@@ -16,6 +16,7 @@ use App\Models\Markets\MarRejectedLodge;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
@@ -54,12 +55,13 @@ class LodgeController extends Controller
     protected $_baseUrl;
     protected $_tempParamId;
     protected $_paramId;
+    protected $_wfMasterId;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
         $this->_modelObj = new MarActiveLodge();
-        $this->_workflowIds = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.LODGE_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.LODGE_DOC_CODE');
@@ -68,6 +70,8 @@ class LodgeController extends Controller
         $this->_paramId = Config::get('workflow-constants.LOD_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_LOD_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+
+        $this->_wfMasterId = Config::get('workflow-constants.LODGE_WF_MASTER_ID');
     }
     /**
      * | Apply for Lodge
@@ -88,8 +92,11 @@ class LodgeController extends Controller
             $mCalculateRate = new CalculateRate;
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
-
             $req->request->add($applicationNo);
+
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->addNew($req);       //<--------------- Model function to store 
@@ -344,8 +351,10 @@ class LodgeController extends Controller
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
 
-            $advData = $this->_repository->specialInboxLodge($this->_workflowIds)                      // Repository function to get Markets Details
+            $advData = $this->_repository->specialInboxLodge($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
                 ->where('mar_active_lodges.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -478,10 +487,24 @@ class LodgeController extends Controller
      */
     public function viewLodgeDocuments(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050710", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        // $mWfWorkflow=new WfWorkflow();
+        // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId,$ulbId);      // get workflow Id
+        if ($req->type == 'Active')
+            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -503,9 +526,15 @@ class LodgeController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -519,10 +548,16 @@ class LodgeController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
+        if ($req->type == 'Active')
+            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarLodge::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1120,7 +1155,7 @@ class LodgeController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050722", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050722", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050722", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1149,9 +1184,9 @@ class LodgeController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfId = MarLodge::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
@@ -1259,6 +1294,10 @@ class LodgeController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 

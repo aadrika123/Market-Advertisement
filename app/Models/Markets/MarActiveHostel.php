@@ -74,8 +74,8 @@ class MarActiveHostel extends Model
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         //  $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
@@ -109,8 +109,8 @@ class MarActiveHostel extends Model
     public function renewApplication($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HOSTEL/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = MarHostel::find($req->applicationId);                              // Find Previous Application No

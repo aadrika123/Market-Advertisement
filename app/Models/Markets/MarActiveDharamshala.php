@@ -71,8 +71,8 @@ class MarActiveDharamshala extends Model
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         //  $mApplicationNo = ['application_no' => 'DHARAMSHALA-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
@@ -107,8 +107,8 @@ class MarActiveDharamshala extends Model
     public function renewApplication($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $details = MarDharamshala::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo = ['license_no' => $details->license_no];

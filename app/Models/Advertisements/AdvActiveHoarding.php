@@ -24,7 +24,7 @@ class AdvActiveHoarding extends Model
     public function __construct()
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
-        $this->_workflowId=Config::get('workflow-constants.AGENCY_HORDING');
+        // $this->_workflowId=Config::get('workflow-constants.AGENCY_HORDING');
     }
 
 
@@ -95,8 +95,8 @@ class AdvActiveHoarding extends Model
         // Variable Initializing
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->MetaReqs($req);
-        $workflowId = $this->_workflowId;
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = $this->_workflowId;
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -141,8 +141,8 @@ class AdvActiveHoarding extends Model
         // Variable Initializing
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->RenewMetaReqs($req);
-        $workflowId = $this->_workflowId;
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = $this->_workflowId;
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
         $details=AdvHoarding::find($req->applicationId);                              // Find Previous Application No

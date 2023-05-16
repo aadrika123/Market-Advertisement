@@ -102,8 +102,8 @@ class MarActiveBanquteHall extends Model
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'BMHALL-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
@@ -137,8 +137,8 @@ class MarActiveBanquteHall extends Model
     public function renewApplication($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);                 // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'BMHALL/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = MarBanquteHall::find($req->applicationId);                              // Find Previous Application No

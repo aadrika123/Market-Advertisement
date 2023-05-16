@@ -110,8 +110,8 @@ class AdvActivePrivateland extends Model
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'LAND-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -145,8 +145,8 @@ class AdvActivePrivateland extends Model
     public function renewalApplication($req)
     {
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId,$req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewalNo = ['renew_no' => 'LAND/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details=AdvPrivateland::find($req->applicationId);                              // Find Previous Application No

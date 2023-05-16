@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Config;
 
 use App\Traits\AdvDetailsTraits;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 use App\Models\Workflows\WorkflowTrack;
@@ -62,16 +63,19 @@ class AgencyController extends Controller
     protected $_tempParamId;
     protected $_paramId;
     protected $_baseUrl;
+    protected $_wfMasterId;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
-        $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_AGY_ID');
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $agency_repo;
+
+        $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
     }
 
     /**
@@ -100,6 +104,9 @@ class AgencyController extends Controller
             $applicationNo = ['application_no' => $generatedId];
 
             $req->request->add($applicationNo);
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $agency->addNew($req);       //<--------------- Model function to store 
@@ -395,7 +402,11 @@ class AgencyController extends Controller
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
-            $advData = $this->Repository->specialAgencyInbox($this->_workflowIds)                      // Repository function to get Advertiesment Details
+
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->Repository->specialAgencyInbox($workflowId)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_agencies.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -524,10 +535,24 @@ class AgencyController extends Controller
      */
     public function viewAgencyDocuments(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050511", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        // $mWfWorkflow=new WfWorkflow();
+        // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId,$ulbId);      // get workflow Id
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $workflowId);
         } else {
             throw new Exception("Required Application Id ");
         }
@@ -549,9 +574,15 @@ class AgencyController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -565,10 +596,16 @@ class AgencyController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,$workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1010,7 +1047,7 @@ class AgencyController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $d['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $d['paymentId'], 'workflowId' => $this->_workflowIds], "050523", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $d['paymentId'], 'workflowId' => $appDetails->workflow_id], "050523", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050523", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1039,16 +1076,16 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfId = AdvAgency::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo, 'workflowId' => $this->_workflowIds], "050524", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050524", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050524", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1087,7 +1124,7 @@ class AgencyController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050525", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050525", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050525", "1.0", "", 'POST', $req->deviceId ?? "");
             }

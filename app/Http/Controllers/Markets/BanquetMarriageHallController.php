@@ -18,6 +18,7 @@ use App\Models\Markets\MarRejectedBanquteHall;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
@@ -55,12 +56,13 @@ class BanquetMarriageHallController extends Controller
     protected $_paramId;
     protected $_tempParamId;
     protected $_baseUrl;
+    protected $_wfMasterId;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
         $this->_modelObj = new MarActiveBanquteHall();
-        $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.BANQUTE_MARRIGE_HALL_DOC_CODE');
@@ -69,6 +71,9 @@ class BanquetMarriageHallController extends Controller
         $this->_paramId = Config::get('workflow-constants.BQT_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_BQT_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+
+
+        $this->_wfMasterId = Config::get('workflow-constants.BANQUTE_HALL_WF_MASTER_ID');
     }
 
     /**
@@ -90,6 +95,9 @@ class BanquetMarriageHallController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
@@ -351,7 +359,10 @@ class BanquetMarriageHallController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->_repository->specialInbox($this->_workflowIds)                      // Repository function to get Markets Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->_repository->specialInbox($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
                 ->where('mar_active_banqute_halls.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -476,10 +487,23 @@ class BanquetMarriageHallController extends Controller
      */
     public function viewBmHallDocuments(Request $req)
     {
+
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050810", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -500,9 +524,15 @@ class BanquetMarriageHallController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -515,10 +545,16 @@ class BanquetMarriageHallController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
+        if ($req->type == 'Active')
+            $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1101,7 +1137,7 @@ class BanquetMarriageHallController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050822", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050822", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050822", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1131,9 +1167,9 @@ class BanquetMarriageHallController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfId = MarBanquteHall::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 

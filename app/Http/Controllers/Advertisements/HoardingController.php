@@ -16,6 +16,7 @@ use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
@@ -53,16 +54,19 @@ class HoardingController extends Controller
     protected $_tempParamId;
     protected $_paramId;
     protected $_baseUrl;
+    protected $_wfMasterId;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActivehoarding();
-        $this->_workflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_HORDING_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_HOR_ID');
         $this->_paramId = Config::get('workflow-constants.HOR_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->Repository = $agency_repo;
+
+        $this->_wfMasterId = Config::get('workflow-constants.HORDING_WF_MASTER_ID');
     }
 
     /**
@@ -142,6 +146,9 @@ class HoardingController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
@@ -374,7 +381,10 @@ class HoardingController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->Repository->specialAgencyLicenseInbox($this->_workflowIds)   // Repository function to get Advertiesment Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->Repository->specialAgencyLicenseInbox($workflowId)   // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_hoardings.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -505,10 +515,22 @@ class HoardingController extends Controller
      */
     public function viewHoardingDocuments(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050612", "1.0", "", "POST", $req->deviceId ?? "");
+        }
         $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedHoarding::find($req->applicationId)->workflow_id;
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,  $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
@@ -530,9 +552,15 @@ class HoardingController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedHoarding::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -548,9 +576,15 @@ class HoardingController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedHoarding::find($req->applicationId)->workflow_id;
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1017,6 +1051,9 @@ class HoardingController extends Controller
 
             $req->request->add($applicationNo);
 
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
+
             DB::beginTransaction();
             $RenewNo = $mAdvActiveHoarding->renewalHording($req);       //<--------------- Model function to store 
             DB::commit();
@@ -1061,7 +1098,7 @@ class HoardingController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050626", "1.0", "", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050626", "1.0", "", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050626", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             }
@@ -1094,7 +1131,8 @@ class HoardingController extends Controller
             $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $wfId = AdvHoarding::find($req->applicationId)->workflow_id;
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
@@ -1139,7 +1177,7 @@ class HoardingController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "050628", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050628", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050628", "1.0", "", 'POST', $req->deviceId ?? "");
             }

@@ -16,6 +16,7 @@ use App\Models\Markets\MarRejectedDharamshala;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Repositories\Markets\iMarketRepo;
@@ -50,12 +51,12 @@ class DharamshalaController extends Controller
     protected $_paramId;
     protected $_tempParamId;
     protected $_baseUrl;
-
+    protected $_wfMasterId;
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
         $this->_modelObj = new MarActiveDharamshala();
-        $this->_workflowIds = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+        // $this->_workflowIds = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.MARKET_MODULE_ID');
         $this->_repository = $mar_repo;
         $this->_docCode = config::get('workflow-constants.DHARAMSHALA_DOC_CODE');
@@ -64,6 +65,8 @@ class DharamshalaController extends Controller
         $this->_paramId = Config::get('workflow-constants.DRSL_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_DRSL_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+
+        $this->_wfMasterId = Config::get('workflow-constants.DHARAMSHALA_WF_MASTER_ID');
     }
     /**
      * | Apply for Dharamshala
@@ -85,6 +88,10 @@ class DharamshalaController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveDharamshala->addNew($req);       //<--------------- Model function to store 
@@ -344,7 +351,10 @@ class DharamshalaController extends Controller
                 return $item->ward_id;
             });
 
-            $advData = $this->_repository->specialInboxmDharamshala($this->_workflowIds)                      // Repository function to get Markets Details
+            $mWfWorkflow = new WfWorkflow();
+            $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+
+            $advData = $this->_repository->specialInboxmDharamshala($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
                 ->where('mar_active_dharamshalas.ulb_id', $ulbId)
                 // ->whereIn('ward_mstr_id', $wardId)
@@ -472,10 +482,22 @@ class DharamshalaController extends Controller
      */
     public function viewDharamshalaDocuments(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050910", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedDharamshala::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId && $req->type) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
@@ -496,9 +518,15 @@ class DharamshalaController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+        if ($req->type == 'Active')
+            $workflowId = MarActiveDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedDharamshala::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
-        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $this->_workflowIds);
+        $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
         $data1['data'] = $data;
         return $data1;
     }
@@ -512,11 +540,16 @@ class DharamshalaController extends Controller
     {
         // Variable initialization
         $startTime = microtime(true);
-
+        if ($req->type == 'Active')
+            $workflowId = MarActiveDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarDharamshala::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedDharamshala::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $this->_workflowIds);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
 
         $endTime = microtime(true);
@@ -1116,7 +1149,7 @@ class DharamshalaController extends Controller
             $executionTime = $endTime - $startTime;
 
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $this->_workflowIds], "051022", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "051022", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "051022", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1145,9 +1178,9 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $wfId = MarDharamshala::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
-            $workflowId = ['workflowId' => $this->_workflowIds];
+            $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 

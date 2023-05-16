@@ -107,8 +107,8 @@ class AdvActiveVehicle extends Model
     {
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId,$req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'VEHICLE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -147,8 +147,8 @@ class AdvActiveVehicle extends Model
     {
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
-        $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
+        // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = AdvVehicle::find($req->applicationId);                              // Find Previous Application No
