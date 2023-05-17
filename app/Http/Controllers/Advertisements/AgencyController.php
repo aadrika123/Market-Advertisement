@@ -574,12 +574,7 @@ class AgencyController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -596,16 +591,11 @@ class AgencyController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,$workflowId);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;

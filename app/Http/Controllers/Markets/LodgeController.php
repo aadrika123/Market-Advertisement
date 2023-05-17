@@ -526,12 +526,7 @@ class LodgeController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        if ($req->type == 'Active')
-            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = MarLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
+        $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -548,12 +543,7 @@ class LodgeController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = MarLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
+        $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

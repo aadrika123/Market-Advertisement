@@ -519,12 +519,7 @@ class HostelController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        if ($req->type == 'Active')
-            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
+        $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -548,17 +543,12 @@ class HostelController extends Controller
         }
         // Variable initialization
         $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
+        $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
 
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId,$workflowId);
+            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -1288,9 +1278,9 @@ class HostelController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
 
-             // $mWfWorkflow=new WfWorkflow();
-             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
-             $req->request->add($WfMasterId);
+            // $mWfWorkflow=new WfWorkflow();
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 

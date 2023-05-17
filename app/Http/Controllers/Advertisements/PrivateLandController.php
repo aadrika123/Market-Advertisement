@@ -594,12 +594,7 @@ class PrivateLandController extends Controller
         }
         // Variable initialization
         // $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvPrivateland::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedPrivateland::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);  // Get uploaded Documents
@@ -616,12 +611,7 @@ class PrivateLandController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
-        if ($req->type == 'Active')
-            $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvPrivateland::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedPrivateland::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
         $data = array();
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);

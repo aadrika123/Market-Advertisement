@@ -578,12 +578,8 @@ class VehicleAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedVehicle::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
+
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -601,13 +597,7 @@ class VehicleAdvetController extends Controller
         // Variable Initialization
         $startTime = microtime(true);
 
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedVehicle::find($req->applicationId)->workflow_id;
-
+        $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
@@ -961,7 +951,7 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
-            
+
             if ($req->applicationId) {
                 $data = $mAdvVehicle->detailsForPayments($req->applicationId);
             }

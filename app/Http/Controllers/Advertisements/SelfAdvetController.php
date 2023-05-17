@@ -657,12 +657,8 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedSelfadvertisement::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
+
 
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -714,12 +710,8 @@ class SelfAdvetController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $mWfActiveDocument = new WfActiveDocument();
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedSelfadvertisement::find($req->applicationId)->workflow_id;
+        $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
+
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         $endTime = microtime(true);
