@@ -540,12 +540,7 @@ class BanquetMarriageHallController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-        if ($req->type == 'Active')
             $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
-            $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

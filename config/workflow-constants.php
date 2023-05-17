@@ -129,5 +129,9 @@ return [
   "GST_AMT" => 18,
   "TCS_AMT" => 2,
 
+ // User Types
+ "USER_TYPES" => [
+  "1" => "Citizen",
+],
 
 ];
