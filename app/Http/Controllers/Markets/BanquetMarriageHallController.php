@@ -524,7 +524,12 @@ class BanquetMarriageHallController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        if ($req->type == 'Active')
+            $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -540,7 +545,7 @@ class BanquetMarriageHallController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-            $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
+        $workflowId = MarActiveBanquteHall::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

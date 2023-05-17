@@ -552,7 +552,13 @@ class HoardingController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
+        $mWfActiveDocument = new WfActiveDocument();
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvHoarding::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedHoarding::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);

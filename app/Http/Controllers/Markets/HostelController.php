@@ -543,7 +543,12 @@ class HostelController extends Controller
         }
         // Variable initialization
         $startTime = microtime(true);
-        $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
+        if ($req->type == 'Active')
+            $workflowId = MarActiveHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = MarHostel::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = MarRejectedHostel::find($req->applicationId)->workflow_id;
 
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();

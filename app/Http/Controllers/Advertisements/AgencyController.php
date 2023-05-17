@@ -591,7 +591,12 @@ class AgencyController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-        $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+        if ($req->type == 'Active')
+            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Approve')
+            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
+        elseif ($req->type == 'Reject')
+            $workflowId = AdvRejectedAgency::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {
