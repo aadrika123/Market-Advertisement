@@ -535,12 +535,10 @@ class DharamshalaController extends Controller
     {
         // Variable initialization
         $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = MarActiveDharamshala::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
+        if (isset($req->type) && $req->type == 'Approve')
             $workflowId = MarDharamshala::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedDharamshala::find($req->applicationId)->workflow_id;
+        else
+            $workflowId = MarActiveDharamshala::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

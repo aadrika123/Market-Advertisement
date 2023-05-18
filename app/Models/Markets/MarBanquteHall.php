@@ -203,7 +203,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.payment_id',
             'mar_banqute_halls.payment_date',
             'mar_banqute_halls.permanent_address as address',
-            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.applicant as entity_name',
             'mar_banqute_halls.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )

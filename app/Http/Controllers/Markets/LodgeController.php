@@ -543,12 +543,10 @@ class LodgeController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $startTime = microtime(true);
-        if ($req->type == 'Active')
-            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
+        if (isset($req->type) && $req->type == 'Approve')
             $workflowId = MarLodge::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = MarRejectedLodge::find($req->applicationId)->workflow_id;
+        else
+            $workflowId = MarActiveLodge::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

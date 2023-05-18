@@ -117,7 +117,7 @@ class AdvPrivateland extends Model
             'adv_privatelands.payment_id',
             'adv_privatelands.payment_date',
             'adv_privatelands.entity_address as address',
-            'adv_privatelands.entity_name',
+            'adv_privatelands.applicant as entity_name',
             'adv_privatelands.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )

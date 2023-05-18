@@ -597,12 +597,10 @@ class VehicleAdvetController extends Controller
         // Variable Initialization
         $startTime = microtime(true);
 
-        if ($req->type == 'Active')
-            $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Approve')
+        if (isset($req->type) && $req->type == 'Approve')
             $workflowId = AdvVehicle::find($req->applicationId)->workflow_id;
-        elseif ($req->type == 'Reject')
-            $workflowId = AdvRejectedVehicle::find($req->applicationId)->workflow_id;
+        else
+            $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         if ($req->applicationId) {

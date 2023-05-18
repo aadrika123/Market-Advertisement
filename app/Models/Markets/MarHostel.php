@@ -203,7 +203,7 @@ class MarHostel extends Model
             'mar_hostels.payment_id',
             'mar_hostels.payment_date',
             'mar_hostels.permanent_address as address',
-            'mar_hostels.entity_name',
+            'mar_hostels.applicant as entity_name',
             'mar_hostels.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )

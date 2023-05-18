@@ -197,7 +197,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.payment_id',
             'mar_dharamshalas.payment_date',
             'mar_dharamshalas.permanent_address as address',
-            'mar_dharamshalas.entity_name',
+            'mar_dharamshalas.applicant as entity_name',
             'mar_dharamshalas.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )

@@ -338,7 +338,7 @@ class AdvHoarding extends Model
                               when adv_hoardings.zone_id = 2 then 'Zone B'
                               when adv_hoardings.zone_id = 3 then 'Zone C'
                         else 'N/A' end as address"),
-            // 'adv_hoardings.entity_name',
+            'adv_hoardings.property_owner_name as entity_name',
             'adv_hoardings.payment_details',
             'ulb_masters.ulb_name as ulbName'
             )

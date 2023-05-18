@@ -123,7 +123,7 @@ class AdvVehicle extends Model
             'adv_vehicles.payment_id',
             'adv_vehicles.payment_date',
             'adv_vehicles.permanent_address as address',
-            'adv_vehicles.entity_name',
+            'adv_vehicles.applicant as entity_name',
             'adv_vehicles.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )

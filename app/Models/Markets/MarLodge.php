@@ -201,7 +201,7 @@ class MarLodge extends Model
             'mar_lodges.payment_id',
             'mar_lodges.payment_date',
             'mar_lodges.permanent_address as address',
-            'mar_lodges.entity_name',
+            'mar_lodges.applicant entity_name',
             'mar_lodges.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )
