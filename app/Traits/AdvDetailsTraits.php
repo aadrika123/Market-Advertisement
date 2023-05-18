@@ -198,7 +198,6 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => $data['application_date']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
-            ['displayString' => 'Pending Amount', 'key' => 'pending_amount', 'value' => $data['pending_amount']],
         ]);
     }
 

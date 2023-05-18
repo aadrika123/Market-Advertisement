@@ -595,7 +595,7 @@ class BanquetMarriageHallController extends Controller
             if ($req->status == 1) {
 
                 $mMarketPriceMstr = new MarketPriceMstr();
-                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveBanquteHall->workflow_id, $mMarActiveBanquteHall->floor_area, $mMarActiveBanquteHall->ulb_id);
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($this->_wfMasterId, $mMarActiveBanquteHall->floor_area, $mMarActiveBanquteHall->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 

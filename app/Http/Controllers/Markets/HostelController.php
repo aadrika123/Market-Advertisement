@@ -593,10 +593,10 @@ class HostelController extends Controller
             if ($req->status == 1) {
 
                 $mMarketPriceMstr = new MarketPriceMstr();
-                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveHostel->workflow_id, $mMarActiveHostel->no_of_beds, $mMarActiveHostel->ulb_id);
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($this->_wfMasterId, $mMarActiveHostel->no_of_beds, $mMarActiveHostel->ulb_id);
 
                 if ($mMarActiveHostel->is_approve_by_govt == true) {
-                    $amount = $mMarketPriceMstr->getMarketTaxPriceGovtHostel($mMarActiveHostel->workflow_id, $mMarActiveHostel->ulb_id);
+                    $amount = $mMarketPriceMstr->getMarketTaxPriceGovtHostel($this->_wfMasterId, $mMarActiveHostel->ulb_id);
                 }
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);

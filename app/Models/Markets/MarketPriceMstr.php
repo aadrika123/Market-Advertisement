@@ -15,7 +15,7 @@ class MarketPriceMstr extends Model
      * | Get Finisher Id while approve or reject application
      * | @param wfWorkflowId ulb workflow id 
      */
-    public function getMarketTaxPrice($workflowId, $floor_area, $ulbId)
+    public function getMarketTaxPrice($WfMasterId, $floor_area, $ulbId)
     {
         // DB::enableQueryLog();
         // $floor_area=5000;
@@ -30,7 +30,7 @@ class MarketPriceMstr extends Model
                         ->where("ulb_masters.id", $ulbId);
                 }
             )
-            ->where('workflow_id', $workflowId)
+            ->where('wf_master_id', $WfMasterId)
             // ->where('ulb_type', DB::raw("SELECT category FROM ulb_masters WHERE id=$ulbId"))
             ->where(
                 function ($where) use ($floor_area) {
@@ -43,7 +43,7 @@ class MarketPriceMstr extends Model
         return $price;
     }
 
-    public function getMarketTaxPriceGovtHostel($workflowId, $ulbId)
+    public function getMarketTaxPriceGovtHostel($WfMasterId, $ulbId)
     {
         $price = MarketPriceMstr::select('market_price_mstrs.price', "ulb_masters.category")
             ->join(
@@ -56,7 +56,7 @@ class MarketPriceMstr extends Model
                         ->where("ulb_masters.id", $ulbId);
                 }
             )
-            ->where('workflow_id', $workflowId)
+            ->where('wf_master_id', $WfMasterId)
             ->where('is_governmental', '1')
             ->first()->price;
         return $price;

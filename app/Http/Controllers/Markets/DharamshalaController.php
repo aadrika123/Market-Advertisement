@@ -587,7 +587,7 @@ class DharamshalaController extends Controller
 
 
                 $mMarketPriceMstr = new MarketPriceMstr();
-                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveDharamshala->workflow_id, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($this->_wfMasterId, $mMarActiveDharamshala->floor_area, $mMarActiveDharamshala->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 

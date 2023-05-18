@@ -592,7 +592,7 @@ class LodgeController extends Controller
             // Approval
             if ($req->status == 1) {
                 $mMarketPriceMstr = new MarketPriceMstr();
-                $amount = $mMarketPriceMstr->getMarketTaxPrice($mMarActiveLodge->workflow_id, $mMarActiveLodge->no_of_beds, $mMarActiveLodge->ulb_id);
+                $amount = $mMarketPriceMstr->getMarketTaxPrice($this->_wfMasterId, $mMarActiveLodge->no_of_beds, $mMarActiveLodge->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
