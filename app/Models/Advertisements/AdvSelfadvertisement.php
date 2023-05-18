@@ -130,7 +130,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.payment_id',
             'adv_selfadvertisements.payment_date',
             'adv_selfadvertisements.entity_address as address',
-            'adv_selfadvertisements.entity_name',
+            'adv_selfadvertisements.applicant as entity_name',
             'adv_selfadvertisements.payment_details',
             'ulb_masters.ulb_name as ulbName'
         )
