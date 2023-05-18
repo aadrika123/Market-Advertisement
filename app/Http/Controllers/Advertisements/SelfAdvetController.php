@@ -710,8 +710,12 @@ class SelfAdvetController extends Controller
         // Variable initialization
         $startTime = microtime(true);
         $ulbId = authUser()->ulb_id;
-        $mWfWorkflow = new WfWorkflow();
-        $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+        // $mWfWorkflow = new WfWorkflow();
+        // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
+        if (isset($req->type) && $req->type == 'Approve')
+            $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
+        else
+            $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
 
         $data = array();
