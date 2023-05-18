@@ -236,6 +236,7 @@ class SelfAdvetController extends Controller
 
             return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
+            dd($e->getFile(),$e->getLine(),$e->getMessage());
             return responseMsgs(false, $e->getMessage(), "", "050105", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }

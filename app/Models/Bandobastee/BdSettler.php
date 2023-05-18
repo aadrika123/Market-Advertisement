@@ -58,6 +58,7 @@ class BdSettler extends Model
             ->leftjoin('bd_stand_categories', 'bd_stand_categories.id', '=', 'bd_settlers.stand_category_id')
             ->where('bd_settlers.stand_id', '!=', NULL)
             ->where('bd_settlers.ulb_id', $ulbId)
+            ->orderBy('id')
             ->get();
     }
 
@@ -72,6 +73,7 @@ class BdSettler extends Model
             ->leftjoin('bd_parkings', 'bd_parkings.id', '=', 'bd_settlers.parking_id')
             ->where('bd_settlers.parking_id', '!=', NULL)
             ->where('bd_settlers.ulb_id', $ulbId)
+            ->orderBy('id')
             ->get();
     }
 
@@ -86,6 +88,7 @@ class BdSettler extends Model
             ->leftjoin('bd_bazars', 'bd_bazars.id', '=', 'bd_settlers.bazar_id')
             ->where('bd_settlers.bazar_id', '!=', NULL)
             ->where('bd_settlers.ulb_id', $ulbId)
+            ->orderBy('id')
             ->get();
     }
 
@@ -98,6 +101,7 @@ class BdSettler extends Model
             ->leftjoin('bd_banquet_halls', 'bd_banquet_halls.id', '=', 'bd_settlers.banquet_hall_id')
             ->where('bd_settlers.banquet_hall_id', '!=', NULL)
             ->where('bd_settlers.ulb_id', $ulbId)
+            ->orderBy('id')
             ->get();
     }
 }
