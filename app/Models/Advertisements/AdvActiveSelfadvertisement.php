@@ -53,7 +53,7 @@ class AdvActiveSelfadvertisement extends Model
         ];
     }
 
-    // helper meta reqs
+    // helper meta reqs for renewal
     public function metaRenewalReqs($req)
     {
         return [
@@ -419,6 +419,9 @@ class AdvActiveSelfadvertisement extends Model
         return AdvActiveSelfadvertisement::all();
     }
 
+    /**
+     * | Get Pending Application for Report
+     */
     public function allPendingListForReport()
     {
         return AdvActiveSelfadvertisement::select(

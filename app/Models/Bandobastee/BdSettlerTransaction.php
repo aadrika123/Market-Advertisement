@@ -13,6 +13,9 @@ class BdSettlerTransaction extends Model
 
     protected $guarded = [];
 
+    /**
+     * | Make meta request for store records
+     */
     public function metaReqs($req)
     {
         return [
@@ -26,12 +29,18 @@ class BdSettlerTransaction extends Model
         ];
     }
 
+    /**
+     * | Add penalty and performence security money
+     */
     public function addTransaction($req)
     {
         $metaReqs = $this->metaReqs($req);
         return BdSettlerTransaction::create($metaReqs);
     }
 
+    /**
+     * | List Settler Transaction
+     */
     public function listSettlerTransaction($settlerId)
     {
         return BdSettlerTransaction::select('id', 'amount', DB::raw('cast(date as date) as date'), 'is_penalty', 'penalty_type', 'remarks')
@@ -39,7 +48,9 @@ class BdSettlerTransaction extends Model
             ->orderBy('id', 'ASC')
             ->get();
     }
-
+    /**
+     * | Get perforamnce security money and penalty list
+     */
     public function performanceSecurity($id, $type)
     {
         return DB::table('bd_settler_transactions')->select(DB::raw('sum(amount) as amount'))->where('settler_id', $id)->where('is_penalty', $type)->first()->amount;

@@ -65,7 +65,7 @@ class AdvActivePrivateland extends Model
         return $metaReqs;
     }
 
-    
+
     /**
      * | Meta Data Uses to Renewal Application
      */
@@ -106,7 +106,9 @@ class AdvActivePrivateland extends Model
         return $metaReqs;
     }
 
-
+    /**
+     * | Apply for private Land
+     */
     public function addNew($req)
     {
         $bearerToken = $req->bearerToken();
@@ -141,16 +143,18 @@ class AdvActivePrivateland extends Model
         return $req->application_no;
     }
 
-    
+    /**
+     * | Renewal For private land
+     */
     public function renewalApplication($req)
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId,$req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewalNo = ['renew_no' => 'LAND/REN-' . random_int(100000, 999999)];                  // Generate Application No
-        $details=AdvPrivateland::find($req->applicationId);                              // Find Previous Application No
-        $licenseNo=['license_no'=>$details->license_no];
+        $details = AdvPrivateland::find($req->applicationId);                              // Find Previous Application No
+        $licenseNo = ['license_no' => $details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -213,7 +217,9 @@ class AdvActivePrivateland extends Model
         });
     }
 
-
+    /**
+     * | Get private land application details by Id 
+     */
     public function getPrivatelandDetails($appId)
     {
         return AdvActivePrivateland::select('*')
@@ -229,7 +235,7 @@ class AdvActivePrivateland extends Model
     public function getDetailsById($id, $type)
     {
         $details = array();
-        if ($type == "Active" || $type==NULL) {
+        if ($type == "Active" || $type == NULL) {
             $details = DB::table('adv_active_privatelands')
                 ->select(
                     'adv_active_privatelands.*',
@@ -256,7 +262,7 @@ class AdvActivePrivateland extends Model
                 ->where('adv_privatelands.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')
                 ->first();
-        } 
+        }
 
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
@@ -305,6 +311,9 @@ class AdvActivePrivateland extends Model
         return $outbox;
     }
 
+    /**
+     * | Get Applied application list
+     */
     public function listAppliedApplications($citizenId)
     {
         return AdvActivePrivateland::where('citizen_id', $citizenId)
@@ -340,17 +349,23 @@ class AdvActivePrivateland extends Model
             ->get();
     }
 
-    
-    public function entryZone($req){
+    /**
+     * | Zone Entry for Zone
+     */
+    public function entryZone($req)
+    {
         $AdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);        // Application ID
-        if($AdvActivePrivateland->zone==NULL){
+        if ($AdvActivePrivateland->zone == NULL) {
             $AdvActivePrivateland->zone = $req->zone;
             return $AdvActivePrivateland->save();
-        }else{
+        } else {
             return 0;
         }
     }
 
+    /**
+     * | Get application details for private land by id
+     */
     public function getPrivateLandNo($appId)
     {
         return AdvActivePrivateland::select('*')
@@ -358,19 +373,23 @@ class AdvActivePrivateland extends Model
             ->first();
     }
 
+    /**
+     * | Get List of private land ULB wise
+     */
     public function getPrivateLandList($ulbId)
     {
         return AdvActivePrivateland::select('*')
             ->where('adv_active_privatelands.ulb_id', $ulbId);
     }
 
-    
+
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -387,15 +406,15 @@ class AdvActivePrivateland extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
     }
 
-    
-         /**
+
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -407,8 +426,8 @@ class AdvActivePrivateland extends Model
     /**
      * | Pending List For Report
      */
-    public function pendingListForReport(){
-        return AdvActivePrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id','ulb_id','display_type',DB::raw("'Active' as application_status"));
+    public function pendingListForReport()
+    {
+        return AdvActivePrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Active' as application_status"));
     }
-
 }

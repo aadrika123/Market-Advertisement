@@ -91,7 +91,9 @@ class MarLodge extends Model
             ->first();
     }
 
-
+    /**
+     * | Application via Cash
+     */
     public function paymentByCash($req)
     {
 
@@ -217,7 +219,8 @@ class MarLodge extends Model
     /**
      * | Approve List For Report
      */
-    public function approveListForReport(){
-        return MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','lodge_type','license_year','ulb_id',DB::raw("'Approve' as application_status"));
+    public function approveListForReport()
+    {
+        return MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
 }

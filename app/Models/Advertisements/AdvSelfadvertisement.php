@@ -142,7 +142,9 @@ class AdvSelfadvertisement extends Model
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
-
+    /**
+     * | Payment By Cash
+     */
     public function paymentByCash($req)
     {
 
@@ -184,6 +186,9 @@ class AdvSelfadvertisement extends Model
         }
     }
 
+    /**
+     * | Get Previous application valid date for renewal
+     */
     public function findPreviousApplication($license_no)
     {
         return $details = AdvSelfadvetRenewal::select('valid_upto')
@@ -193,7 +198,9 @@ class AdvSelfadvertisement extends Model
     }
 
 
-
+    /**
+     * | Get Application Details for Renew
+     */
     public function applicationDetailsForRenew($appId)
     {
         $details = AdvSelfadvertisement::select(
@@ -227,7 +234,6 @@ class AdvSelfadvertisement extends Model
     /**
      * | Search Application by Name or Mobile 
      */
-
     public function searchByNameorMobile($req)
     {
         $list = AdvSelfadvertisement::select('adv_agencies.*', 'et.string_parameter as entityType', 'adv_agencies.entity_type as entity_type_id')
@@ -262,6 +268,9 @@ class AdvSelfadvertisement extends Model
         return $recieptDetails;
     }
 
+    /**
+     * | Get Approve list for Report
+     */
     public function allApproveListForReport()
     {
         return AdvSelfadvertisement::select(
@@ -290,7 +299,7 @@ class AdvSelfadvertisement extends Model
         )
             ->orderByDesc('id')->get();
     }
-    
+
     /**
      * | Get Approve Application List For Report
      */

@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\DB;
 class MarRejectedLodge extends Model
 {
     use HasFactory;
-
-           
+          
      /**
      * | Get Application Reject List by Role Ids
      */
@@ -30,7 +29,6 @@ class MarRejectedLodge extends Model
             ->orderByDesc('id')
             ->get();
     }    
-    
     
     /**
     * | Get All Application Reject List

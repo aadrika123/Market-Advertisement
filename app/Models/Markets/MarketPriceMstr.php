@@ -10,7 +10,6 @@ class MarketPriceMstr extends Model
 {
     use HasFactory;
 
-
     /**
      * | Get Finisher Id while approve or reject application
      * | @param wfWorkflowId ulb workflow id 
@@ -43,6 +42,9 @@ class MarketPriceMstr extends Model
         return $price;
     }
 
+    /**
+     * | Get price for hostel approved by state or indian government
+     */
     public function getMarketTaxPriceGovtHostel($WfMasterId, $ulbId)
     {
         $price = MarketPriceMstr::select('market_price_mstrs.price', "ulb_masters.category")

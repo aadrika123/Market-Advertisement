@@ -80,18 +80,6 @@ class ParamController extends Controller
     //Constructor
     public function __construct()
     {
-        // $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
-        // $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
-        // $this->_movableVehicle = Config::get('workflow-constants.MOVABLE_VEHICLE_WORKFLOWS');
-        // $this->_agency = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-        // $this->_hording = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
-        // $this->_banquetHall = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
-        // $this->_hostel = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
-        // $this->_lodge = Config::get('workflow-constants.LODGE_WORKFLOWS');
-        // $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
-        // $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-        // $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
-
         $this->_selfAdvt = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
         $this->_pvtLand = Config::get('workflow-constants.PRIVATE_LAND_WF_MASTER_ID');
         $this->_movableVehicle = Config::get('workflow-constants.VEHICLE_WF_MASTER_ID');
@@ -218,14 +206,14 @@ class ParamController extends Controller
                 'payment_id' => $req->paymentId,
                 'payment_details' => $req->all(),
             ];
-            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
+            $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
 
             if ($wfworkflowMasterId == $this->_selfAdvt) { // Self Advertisement Payment
-            
+
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
 
                 $mAdvSelfadvertisement->payment_date = Carbon::now();
-                $mAdvSelfadvertisement->payment_mode= "Online";
+                $mAdvSelfadvertisement->payment_mode = "Online";
                 $mAdvSelfadvertisement->payment_status = 1;
                 $mAdvSelfadvertisement->payment_id = $req->paymentId;
                 $mAdvSelfadvertisement->payment_details = $req->all();
@@ -521,9 +509,9 @@ class ParamController extends Controller
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
-                    $appDetails = MarDharamshala::find($req->id);
-                    $mAdvMarTransaction = new AdvMarTransaction();
-                    $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
+                $appDetails = MarDharamshala::find($req->id);
+                $mAdvMarTransaction = new AdvMarTransaction();
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             }
             DB::commit();
             $endTime = microtime(true);
@@ -536,7 +524,9 @@ class ParamController extends Controller
         }
     }
 
-
+    /**
+     * | Get Payment Details for all workflow
+     */
     public function getPaymentDetails(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -549,7 +539,7 @@ class ParamController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
+            $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
             // Get Advertesement Payment Details
             if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
@@ -811,7 +801,7 @@ class ParamController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $wfworkflowMasterId=$this->getWorkflowMasterId($req->workflowId);
+            $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
             // Get Advertesement Reciept Details
             if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
@@ -848,14 +838,18 @@ class ParamController extends Controller
         $notification_service->sendWhatsappNotification();
     }
 
-    public function getFinancialMasterData(Request $req){
-        try{
+    /**
+     * | Get Financial year Master data
+     */
+    public function getFinancialMasterData(Request $req)
+    {
+        try {
             $startTime = microtime(true);
-            $financialYear=RefAdvParamstring::select('id','string_parameter')->where('param_category_id','1017')->orderBy('string_parameter')->get();
+            $financialYear = RefAdvParamstring::select('id', 'string_parameter')->where('param_category_id', '1017')->orderBy('string_parameter')->get();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "010050202717", 1.0, "$executionTime Sec", "POST", "", "");
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
         }
     }
@@ -864,7 +858,8 @@ class ParamController extends Controller
     /**
      * | Get Workflow Master Id 
      */
-    public function getWorkflowMasterId($workflowId){
-        return WfWorkflow::select('wf_master_id')->where('id',$workflowId)->first()->wf_master_id;  
+    public function getWorkflowMasterId($workflowId)
+    {
+        return WfWorkflow::select('wf_master_id')->where('id', $workflowId)->first()->wf_master_id;
     }
 }

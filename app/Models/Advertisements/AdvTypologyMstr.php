@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class AdvTypologyMstr extends Model
 {
     use HasFactory;
-
+    /**
+     * | Get Typology List for Master DataF
+     */
     public function listTypology()
     {
         $typology = AdvTypologyMstr::where('status', '1')
@@ -32,6 +34,9 @@ class AdvTypologyMstr extends Model
         return $fData;
     }
 
+    /**
+     * | Get Hoarding Category
+     */
     public function getHordingCategory()
     {
         $typology = AdvTypologyMstr::where('status', '1')
@@ -46,6 +51,9 @@ class AdvTypologyMstr extends Model
         return $typology;
     }
 
+    /**
+     * | Get Typology List for application form
+     */
     public function listTypology1()
     {
         $typology = AdvTypologyMstr::where('status', '1')

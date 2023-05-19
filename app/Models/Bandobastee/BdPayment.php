@@ -11,7 +11,10 @@ class BdPayment extends Model
     use HasFactory;
 
     protected $guarded = [];
-
+    
+    /**
+     * | Make Request data for store
+     */
     public function metaReqs($req)
     {
         return [
@@ -22,12 +25,18 @@ class BdPayment extends Model
         ];
     }
 
+    /**
+     * | Add installment payment
+     */
     public function installmentPayment($req)
     {
         $metaReqs = $this->metaReqs($req);
         return BdPayment::create($metaReqs);
     }
 
+    /**
+     * | Get installment mayment list
+     */
     public function listInstallmentPayment($settlerId)
     {
         return BdPayment::select('installment_amount', DB::raw('cast(installment_date as date) as installment_date'))
@@ -35,6 +44,9 @@ class BdPayment extends Model
             ->get();
     }
 
+    /**
+     * | Count total paid installment
+     */
     public function totalInstallment($id)
     {
         return DB::table('bd_payments')->select(DB::raw('sum(installment_amount) as installment_amount'))->where('settler_id', $id)->first()->installment_amount;

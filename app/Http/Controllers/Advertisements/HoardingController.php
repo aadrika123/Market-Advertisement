@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar
  * | Hoarding Controller
- * | Status - Closed, By - Bikash - 24 Apr 2023, Total API - 42 , Total Function - 45 , total no of lines - 1848
+ * | Status - Closed, By - Bikash - 24 Apr 2023, Total API - 42 , Total Function - 45 , total no of lines - 1882
  */
 class HoardingController extends Controller
 {
@@ -90,7 +90,6 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050601", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Get Typology List

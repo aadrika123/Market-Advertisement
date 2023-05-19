@@ -91,7 +91,9 @@ class MarDharamshala extends Model
             ->first();
     }
 
-
+    /**
+     * | Get Payment vai Cash
+     */
     public function paymentByCash($req)
     {
 
@@ -213,7 +215,8 @@ class MarDharamshala extends Model
     /**
      * | Get Approve List For Report
      */
-    public function approveListForReport(){
-        return MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','organization_type','ulb_id','license_year',DB::raw("'Approve' as application_status"));
+    public function approveListForReport()
+    {
+        return MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"));
     }
 }

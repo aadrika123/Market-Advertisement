@@ -25,6 +25,9 @@ class MarActiveLodge extends Model
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
     }
 
+    /**
+     * | Make metarequest for store 
+     */
     public function metaReqs($req)
     {
         return [
@@ -66,6 +69,7 @@ class MarActiveLodge extends Model
             'application_no' => $req->application_no,
         ];
     }
+
     // Store Application For Lodge(1)
     public function addNew($req)
     {
@@ -139,6 +143,7 @@ class MarActiveLodge extends Model
 
         return $mRenewNo['renew_no'];
     }
+
     /**
      * upload Document By Citizen At the time of Registration
      * @param Request $req
@@ -171,7 +176,9 @@ class MarActiveLodge extends Model
         });
     }
 
-
+    /**
+     * | Get Application details by Id
+     */
     public function getApplicationDtls($appId)
     {
 
@@ -222,7 +229,6 @@ class MarActiveLodge extends Model
             ->get();
         return $outbox;
     }
-
 
 
     /**
@@ -353,7 +359,9 @@ class MarActiveLodge extends Model
             ->get();
     }
 
-
+    /**
+     * | Get Application details by Application Id
+     */
     public function getLodgeDetails($appId)
     {
         return MarActiveLodge::select('*')
@@ -361,6 +369,9 @@ class MarActiveLodge extends Model
             ->first();
     }
 
+    /**
+     * | Get All application List Ulb Wise
+     */
     public function getLodgeList($ulbId)
     {
         return MarActiveLodge::select('*')
@@ -396,7 +407,6 @@ class MarActiveLodge extends Model
         $docDetails->save();
         return $docDetails['active_id'];
     }
-
 
 
     /**
@@ -444,6 +454,9 @@ class MarActiveLodge extends Model
             ->where('mar_active_lodges.id', $appId)->first();
     }
 
+    /**
+     * | Update or edit applictaion
+     */
     public function updateApplication($req)
     {
         $mMarActiveLodge = MarActiveLodge::findorfail($req->applicationId);
@@ -480,6 +493,6 @@ class MarActiveLodge extends Model
      */
     public function pendingListForReport()
     {
-        return MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type','license_year','ulb_id', DB::raw("'Active' as application_status"));
+        return MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
     }
 }

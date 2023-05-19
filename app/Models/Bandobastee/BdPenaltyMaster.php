@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class BdPenaltyMaster extends Model
 {
     use HasFactory;
+    
+    /**
+     * | Get penalty List
+     */
     public function listPenalty()
     {
         return BdPenaltyMaster::select('id', 'penalty_name')

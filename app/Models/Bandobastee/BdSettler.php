@@ -11,6 +11,9 @@ class BdSettler extends Model
     use HasFactory;
     protected $guarded = [];
 
+    /**
+     * | Meta Request for store Settler records
+     */
     public function metaReqs($req)
     {
         $abs = [
@@ -37,12 +40,18 @@ class BdSettler extends Model
         return $abs;
     }
 
+    /**
+     * | Store function for Settler Records
+     */
     public function addNew($req)
     {
         $metaReqs = $this->metaReqs($req);
         return BdSettler::create($metaReqs);
     }
 
+    /**
+     * | Get Settler Recors of Stand
+     */
     public function listSettler($ulbId)
     {
         return BdSettler::select(
@@ -62,6 +71,9 @@ class BdSettler extends Model
             ->get();
     }
 
+    /**
+     * | Get Settler Records for Parking
+     */
     public function listParkingSettler($ulbId)
     {
         return BdSettler::select(
@@ -77,6 +89,9 @@ class BdSettler extends Model
             ->get();
     }
 
+    /** 
+     * | Get Settler records for Bazar
+     */
     public function listBazarSettler($ulbId)
     {
         return BdSettler::select(
@@ -92,6 +107,9 @@ class BdSettler extends Model
             ->get();
     }
 
+    /**
+     * | Get Settler Records for Banquet Hall
+     */
     public function listBanquetHallSettler($ulbId)
     {
         return BdSettler::select(

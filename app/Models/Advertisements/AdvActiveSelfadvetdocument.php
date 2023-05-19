@@ -24,6 +24,7 @@ class AdvActiveSelfadvetdocument extends Model
             'workflow_id' => $req->workflowId
         ];
     }
+    
     /**
      * | Store
      * | @param Request $req

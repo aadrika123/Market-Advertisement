@@ -48,7 +48,7 @@ use App\Models\Param\AdvMartransactions;
  * | Workflow ID=129
  * | Ulb Workflow ID=245
  * | Changes By Bikash 
- * | Status - Open, By - Bikash 24 Apr 2023 (Total No of Lines - 1693), Total Function - 41 , Total API- 38
+ * | Status - Open, By - Bikash 24 Apr 2023 (Total No of Lines - 1733), Total Function - 41 , Total API- 38
  */
 
 class SelfAdvetController extends Controller
@@ -724,7 +724,6 @@ class SelfAdvetController extends Controller
     }
 
 
-
     /**
      * | Final Approval and Rejection of the Application
      * |  Function - 20
@@ -988,8 +987,6 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050124", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Generate Payment Order ID

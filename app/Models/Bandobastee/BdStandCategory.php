@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class BdStandCategory extends Model
 {
     use HasFactory;
-
+    /**
+     * | Get stand category List
+     */
     public function listCategory()
     {
         return BdStandCategory::select('id', 'stand_category')

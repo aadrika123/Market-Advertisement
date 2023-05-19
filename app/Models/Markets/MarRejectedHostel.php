@@ -33,7 +33,6 @@ class MarRejectedHostel extends Model
             ->get();
     }
 
-
             
      /**
      * | Get All Application Reject List

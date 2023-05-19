@@ -11,8 +11,6 @@ class WfActiveDocument extends Model
     use HasFactory;
     protected $fillable = ['active_id'];
 
-
-
     public function getDocByRefIds($activeId, $workflowId, $moduleId)
     {
         return WfActiveDocument::select(
@@ -26,6 +24,9 @@ class WfActiveDocument extends Model
             ->get();
     }
 
+    /**
+     * | Upload document funcation
+     */
     public function postDocuments($req)
     {
         $metaReqs = new WfActiveDocument();
@@ -97,6 +98,9 @@ class WfActiveDocument extends Model
             ->get();
     }
 
+    /**
+     * | Get Total no of document for upload
+     */
     public function totalNoOfDocs($docCode)
     {
         $noOfDocs = RefRequiredDocument::select('requirements')
@@ -106,7 +110,9 @@ class WfActiveDocument extends Model
         return count($totalNoOfDocs);
     }
 
-
+    /**
+     * | Get total uploaded documents
+     */
     public function totalUploadedDocs($applicationId, $workflowId, $moduleId)
     {
         return WfActiveDocument::where('active_id', $applicationId)

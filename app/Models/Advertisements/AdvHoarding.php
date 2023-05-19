@@ -223,15 +223,13 @@ class AdvHoarding extends Model
         return $data;
     }
 
-
-
     /**
      * | Make Agency Dashboard for Graph
      */
     public function agencyDashboardGraph($citizenId, $licenseYear)
     {
         // Approved Application
-       $data['approvedAppl'] = AdvHoarding::select('*')
+        $data['approvedAppl'] = AdvHoarding::select('*')
             ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get()
             ->groupBy(function ($date) {
@@ -242,7 +240,7 @@ class AdvHoarding extends Model
             $allApproved->push($item->count());
             return $data[$key] = $item->count();
         });
-       $data1['countApprovedAppl']['totalApproved'] = $allApproved->sum();
+        $data1['countApprovedAppl']['totalApproved'] = $allApproved->sum();
 
 
         //pending Application
@@ -273,17 +271,17 @@ class AdvHoarding extends Model
         });
         $data1['countRejectAppl']['totalRejected'] = $allRejected->sum();
 
-        $data2['payment'] = AdvHoardingRenewal::select('payment_date','payment_amount')
+        $data2['payment'] = AdvHoardingRenewal::select('payment_date', 'payment_amount')
             ->where(['citizen_id' => $citizenId])
             ->get()
             ->groupBy(function ($val) {
                 return Carbon::parse($val->payment_date)->format('M');
             });
-            
-            $payment=array();
-            $multiplied = $data2['payment']->map(function ( $item, $key) use ($payment){ 
-                return $payment[$key]=$item->sum('payment_amount');
-            });
+
+        $payment = array();
+        $multiplied = $data2['payment']->map(function ($item, $key) use ($payment) {
+            return $payment[$key] = $item->sum('payment_amount');
+        });
 
         $finalData = array();
         for ($i = 0; $i < 12; $i++) {
@@ -305,10 +303,9 @@ class AdvHoarding extends Model
                 $finalData[$i]['approved'] = 0;
             }
             $finalData[$i]['total'] = $finalData[$i]['approved'] + $finalData[$i]['reject'] + $finalData[$i]['pending'];
-            
         }
-        $paymentData=array();
-        for($i = 0; $i < 12; $i++){
+        $paymentData = array();
+        for ($i = 0; $i < 12; $i++) {
             $x = strtotime("$i month");
             $paymentData[$i]['month'] = date('M', $x);
             if (isset($multiplied[date('M', $x)])) {
@@ -317,8 +314,8 @@ class AdvHoarding extends Model
                 $paymentData[$i]['total'] = 0;
             }
         }
-        $finalData1['graph']=$finalData;
-        $finalData1['payment']=$paymentData;
+        $finalData1['graph'] = $finalData;
+        $finalData1['payment'] = $paymentData;
         return  $finalData1;
     }
 
@@ -341,16 +338,19 @@ class AdvHoarding extends Model
             'adv_hoardings.property_owner_name as entity_name',
             'adv_hoardings.payment_details',
             'ulb_masters.ulb_name as ulbName'
-            )
-        ->leftjoin('ulb_masters','adv_hoardings.ulb_id','=','ulb_masters.id')
-        ->where('adv_hoardings.payment_id', $paymentId)
-        ->first();
+        )
+            ->leftjoin('ulb_masters', 'adv_hoardings.ulb_id', '=', 'ulb_masters.id')
+            ->where('adv_hoardings.payment_id', $paymentId)
+            ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Hoarding Payments";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         return $details;
     }
 
+    /**
+     * | Payment Via Cash
+     */
     public function paymentByCash($req)
     {
 
@@ -403,6 +403,9 @@ class AdvHoarding extends Model
             ->skip(1)->first();
     }
 
+    /**
+     * | Get Application Details For Renew
+     */
     public function applicationDetailsForRenew($appId)
     {
         $details = AdvHoarding::select(
@@ -515,7 +518,8 @@ class AdvHoarding extends Model
     /**
      * | Approve List For Report
      */
-    public function approveListForReport(){
-        return AdvHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year','ulb_id',DB::raw("'Approve' as application_status"));
+    public function approveListForReport()
+    {
+        return AdvHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
 }

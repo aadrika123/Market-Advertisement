@@ -63,7 +63,9 @@ class AdvActiveVehicle extends Model
         return $metaReqs;
     }
 
-
+    /**
+     * | Meta Data Uses to Renew application in DB
+     */
     public function metaRenewReqs($req)
     {
         $metaReqs = [
@@ -108,7 +110,7 @@ class AdvActiveVehicle extends Model
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId,$req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'VEHICLE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -137,7 +139,6 @@ class AdvActiveVehicle extends Model
 
         return $req->application_no;
     }
-
 
     /**
      * | Store function for Renew(1)
@@ -202,6 +203,10 @@ class AdvActiveVehicle extends Model
         return $outbox;
     }
 
+    /**
+     * | Store Uploaded document after application store
+     */
+
     public function uploadDocument($tempId, $documents)
     {
         collect($documents)->map(function ($doc) use ($tempId) {
@@ -229,6 +234,9 @@ class AdvActiveVehicle extends Model
         });
     }
 
+    /**
+     * | Get application details by application Id
+     */
     public function getApplicationDetails($appId)
     {
         return AdvActiveVehicle::select('*')
@@ -237,7 +245,9 @@ class AdvActiveVehicle extends Model
     }
 
 
-
+    /**
+     * | Inbox List
+     */
     public function listInbox($roleIds)
     {
         $inbox = DB::table('adv_active_vehicles')
@@ -257,7 +267,9 @@ class AdvActiveVehicle extends Model
         return $inbox;
     }
 
-
+    /**
+     * | Get Application detals by Id
+     */
     public function getDetailsById($id, $type)
     {
         $details = array();
@@ -333,17 +345,6 @@ class AdvActiveVehicle extends Model
         }
 
         $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
-
-        //     $documents = DB::table('adv_active_selfadvetdocuments')
-        //     ->select(
-        //         'adv_active_selfadvetdocuments.*',
-        //         'd.document_name as doc_type',
-        //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
-        //     )
-        //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-        //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-        //     ->get();
-        // $details['documents'] = remove_null($documents->toArray());
         return $details;
     }
 
@@ -395,7 +396,9 @@ class AdvActiveVehicle extends Model
             ->get();
     }
 
-
+    /**
+     * | Entry Zone for application
+     */
     public function entryZone($req)
     {
         $AdvActiveVehicle = AdvActiveVehicle::find($req->applicationId);        // Application ID
@@ -403,6 +406,9 @@ class AdvActiveVehicle extends Model
         return $AdvActiveVehicle->save();
     }
 
+    /**
+     * | Get Application Details
+     */
     public function getVehicleNo($appId)
     {
         return AdvActiveVehicle::select('*')
@@ -410,8 +416,9 @@ class AdvActiveVehicle extends Model
             ->first();
     }
 
-
-
+    /**
+     * | Get Vehicle list ulbwise
+     */
     public function getVehicleList($ulbId)
     {
         return AdvActiveVehicle::select('*')

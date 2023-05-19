@@ -1078,7 +1078,6 @@ class PrivateLandController extends Controller
      * | Function - 26
      * | API - 25
      */
-
     public function clearOrBounceCheque(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1149,7 +1148,6 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050426", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Verify Single Application Approve or reject

@@ -11,18 +11,21 @@ use Carbon\Carbon;
 class AdvAgency extends Model
 {
     use HasFactory;
-
+    
+    /**
+     * | Get Agency Details by Agency Id
+     */
     public function getagencyDetails($id)
     {
-       $details1=DB::table('adv_agencies')
-                    ->select('adv_agencies.*','et.string_parameter as entity_type_name')
-                    ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
-                    ->where('adv_agencies.id', $id)
-                    ->first();
+        $details1 = DB::table('adv_agencies')
+            ->select('adv_agencies.*', 'et.string_parameter as entity_type_name')
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
+            ->where('adv_agencies.id', $id)
+            ->first();
         $details = json_decode(json_encode($details1), true);
         if (!empty($details)) {
-            $details['expiry_date']=$details['valid_upto'];
-            $warning_date=carbon::parse($details['valid_upto'])->subDay(30)->format('Y-m-d');;
+            $details['expiry_date'] = $details['valid_upto'];
+            $warning_date = carbon::parse($details['valid_upto'])->subDay(30)->format('Y-m-d');;
             $details['warning_date'] = $warning_date;
             $current_date = date('Y-m-d');
             if ($current_date < $warning_date) {
@@ -78,7 +81,7 @@ class AdvAgency extends Model
      * | Get Application Approve List by Role Ids
      */
     public function listApproved($citizenId, $userType)
-    { 
+    {
         return $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
@@ -104,8 +107,6 @@ class AdvAgency extends Model
             ->orderByDesc('id')
             ->get();
     }
-
-
 
     /**
      * | Get Application Details FOr Payments
@@ -151,10 +152,12 @@ class AdvAgency extends Model
         return $details;
     }
 
-
+    /**
+     * | Get payment details
+     */
     public function getPaymentDetails($paymentId)
     {
-         $details = AdvAgency::select(
+        $details = AdvAgency::select(
             'adv_agencies.payment_amount',
             'adv_agencies.payment_id',
             'adv_agencies.payment_date',
@@ -162,50 +165,60 @@ class AdvAgency extends Model
             'adv_agencies.entity_name',
             'adv_agencies.payment_details',
             'ulb_masters.ulb_name as ulbName'
-            )
-        ->leftjoin('ulb_masters','adv_agencies.ulb_id','=','ulb_masters.id')
-        ->where('adv_agencies.payment_id', $paymentId)
-        ->first();
-        $details->payment_details=json_decode($details->payment_details);
-        $details->towards="Agency Payments";
-        $details->payment_date=Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d-m-Y');
+        )
+            ->leftjoin('ulb_masters', 'adv_agencies.ulb_id', '=', 'ulb_masters.id')
+            ->where('adv_agencies.payment_id', $paymentId)
+            ->first();
+        $details->payment_details = json_decode($details->payment_details);
+        $details->towards = "Agency Payments";
+        $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d-m-Y');
         return $details;
     }
 
-
-    public function searchByNameorMobile($req){
-       $list=AdvAgency::select('adv_agencies.*','et.string_parameter as entityType','adv_agencies.entity_type as entity_type_id',
-                DB::raw("'Agency' as workflow_name" ))
-             ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type');
-        if($req->filterBy=='mobileNo'){
-            $filterList=$list->where('adv_agencies.mobile_no',$req->parameter);
+    /**
+     * | Search application by name or mobile no
+     */
+    public function searchByNameorMobile($req)
+    {
+        $list = AdvAgency::select(
+            'adv_agencies.*',
+            'et.string_parameter as entityType',
+            'adv_agencies.entity_type as entity_type_id',
+            DB::raw("'Agency' as workflow_name")
+        )
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type');
+        if ($req->filterBy == 'mobileNo') {
+            $filterList = $list->where('adv_agencies.mobile_no', $req->parameter);
         }
-        if($req->filterBy=='entityName'){
-            $filterList=$list->where('adv_agencies.entity_name',$req->parameter);
+        if ($req->filterBy == 'entityName') {
+            $filterList = $list->where('adv_agencies.entity_name', $req->parameter);
         }
         return $filterList->get();
     }
 
-     
-    public function paymentByCash($req){
+    /**
+     * | Payment via Cash
+     */
+    public function paymentByCash($req)
+    {
 
         if ($req->status == '1') {
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $mAdvAgency->payment_status = $req->status;
-            $mAdvAgency->payment_mode= "Cash";
-            $pay_id=$mAdvAgency->payment_id = "Cash-$req->applicationId-".time();
+            $mAdvAgency->payment_mode = "Cash";
+            $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
-            
-            $payDetails=array('paymentMode'=>'Cash','id'=>$req->applicationId,'amount'=>$mAdvAgency->payment_amount,'workflowId'=>$mAdvAgency->workflow_id,'userId'=>$mAdvAgency->citizen_id,'ulbId'=>$mAdvAgency->ulb_id,'transDate'=>Carbon::now(),'paymentId'=>$pay_id);
+
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvAgency->payment_details = json_encode($payDetails);
-            if($mAdvAgency->renew_no==NULL){
+            if ($mAdvAgency->renew_no == NULL) {
                 $mAdvAgency->valid_from = Carbon::now();
                 $mAdvAgency->valid_upto = Carbon::now()->addYears(5)->subDay(1);
-            }else{
-                $previousApplication=$this->findPreviousApplication($mAdvAgency->license_no);
+            } else {
+                $previousApplication = $this->findPreviousApplication($mAdvAgency->license_no);
                 $mAdvAgency->valid_from = $previousApplication->valid_upto;
                 $mAdvAgency->valid_upto = Carbon::createFromFormat('Y-m-d', $previousApplication->valid_upto)->addYears(5)->subDay(1);
             }
@@ -222,35 +235,38 @@ class AdvAgency extends Model
             $mAdvAgencyRenewal->valid_from = $mAdvAgency->valid_from;
             $mAdvAgencyRenewal->valid_upto = $mAdvAgency->valid_upto;
             $mAdvAgencyRenewal->payment_details = json_encode($payDetails);
-            $ret['status']=$mAdvAgencyRenewal->save();
-            $ret['paymentId']=$pay_id;
+            $ret['status'] = $mAdvAgencyRenewal->save();
+            $ret['paymentId'] = $pay_id;
             return  $ret;
         }
     }
 
-    
+
     // Find Previous Application Valid Date
-    public function findPreviousApplication($license_no){
-        return $details=AdvAgencyRenewal::select('valid_upto')
-                                    ->where('license_no',$license_no)
-                                    ->orderByDesc('id')
-                                    ->skip(1)->first();
+    public function findPreviousApplication($license_no)
+    {
+        return $details = AdvAgencyRenewal::select('valid_upto')
+            ->where('license_no', $license_no)
+            ->orderByDesc('id')
+            ->skip(1)->first();
     }
 
-     
-        /**
+
+    /**
      * | Get Reciept Details 
      */
-    public function getApprovalLetter($applicationId){
-        $recieptDetails = AdvAgency::select('adv_agencies.approve_date',
-                                                'adv_agencies.entity_name as applicant_name',
-                                                'adv_agencies.application_no',
-                                                'adv_agencies.license_no',
-                                                'adv_agencies.payment_date as license_start_date',
-                                                DB::raw('CONCAT(application_date,id) AS reciept_no')
-                                                )
-                                                ->where('adv_agencies.id',$applicationId)
-                                                ->first();
+    public function getApprovalLetter($applicationId)
+    {
+        $recieptDetails = AdvAgency::select(
+            'adv_agencies.approve_date',
+            'adv_agencies.entity_name as applicant_name',
+            'adv_agencies.application_no',
+            'adv_agencies.license_no',
+            'adv_agencies.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('adv_agencies.id', $applicationId)
+            ->first();
         // $recieptDetails->payment_details=json_decode($recieptDetails->payment_details);
         return $recieptDetails;
     }
@@ -258,7 +274,8 @@ class AdvAgency extends Model
     /**
      * | Approve List For Report
      */
-    public function approveListForReport(){
-        return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type','ulb_id', DB::raw("'Approve' as application_status"));
+    public function approveListForReport()
+    {
+        return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
 }

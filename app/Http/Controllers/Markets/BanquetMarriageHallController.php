@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Validator;
  * | Created on - 06-02-2023
  * | Created By - Bikash Kumar
  * | Banquet Marriage Hall operations
- * | Status - Closed, by Bikash - 24 Apr 2023, Total API - 34, Total Function - 36, Total No of Lines - 1679
+ * | Status - Closed, by Bikash - 24 Apr 2023, Total API - 34, Total Function - 36, Total No of Lines - 1713
  */
 class BanquetMarriageHallController extends Controller
 {
@@ -112,8 +112,6 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
-
     /**
      * | Inbox List
      * | @param Request $req
@@ -141,8 +139,6 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050802", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Outbox List

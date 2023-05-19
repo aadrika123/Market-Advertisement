@@ -26,7 +26,10 @@ class MarActiveBanquteHall extends Model
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
     }
-
+    
+    /**
+     * | Make meta request for renew and store
+     */
     public function metaReqs($req)
     {
         return [
@@ -69,6 +72,9 @@ class MarActiveBanquteHall extends Model
         ];
     }
 
+    /**
+     * | Make Update Metarequest
+     */
     public function updateMetaReqs($req)
     {
         return [
@@ -203,6 +209,9 @@ class MarActiveBanquteHall extends Model
         });
     }
 
+    /**
+     * | Get application Details By Id
+     */
     public function getApplicationDtls($appId)
     {
 
@@ -355,8 +364,6 @@ class MarActiveBanquteHall extends Model
         return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 
-
-
     /**
      * | Get Citizen Applied applications
      * | @param citizenId
@@ -387,7 +394,9 @@ class MarActiveBanquteHall extends Model
             ->first();
     }
 
-
+    /**
+     * | Get Banquet Marriage hall List ULB wise
+     */
     public function getBanquetMarriageHallList($ulbId)
     {
         return MarActiveBanquteHall::select('*')
@@ -424,7 +433,9 @@ class MarActiveBanquteHall extends Model
         return $docDetails['active_id'];
     }
 
-
+    /**
+     * | Get Application Details For Edit or Update
+     */
     public function getApplicationDetailsForEdit($appId)
     {
         $details = MarActiveBanquteHall::select(

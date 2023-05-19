@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Dharamshala Operations
- * | Status - Closed , By Bikash - 24 Apr 2023, Total Function - 35, Total API - 33,  Total no. of lines - 1640
+ * | Status - Closed , By Bikash - 24 Apr 2023, Total Function - 35, Total API - 33,  Total no. of lines - 1666
  */
 class DharamshalaController extends Controller
 {
@@ -107,7 +107,6 @@ class DharamshalaController extends Controller
         }
     }
 
-
     /**
      * | Inbox List
      * | @param Request $req
@@ -172,7 +171,6 @@ class DharamshalaController extends Controller
      * | Function - 04
      * | API - 04
      */
-
     public function getDetailsById(Request $req)
     {
         try {
@@ -235,6 +233,7 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "051004", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
+
     /**
      * | Get Application Role Details
      * | Function - 05
@@ -707,7 +706,6 @@ class DharamshalaController extends Controller
         }
     }
 
-
     /**
      * Rejected Application List
      * @param Request $req
@@ -948,8 +946,6 @@ class DharamshalaController extends Controller
             return 0;
         }
     }
-
-
 
 
     /**

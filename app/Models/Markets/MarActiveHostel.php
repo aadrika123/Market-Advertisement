@@ -25,6 +25,10 @@ class MarActiveHostel extends Model
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
     }
+
+    /**
+     * | Make metarequest for store function
+     */
     public function metaReqs($req)
     {
         return [
@@ -70,6 +74,7 @@ class MarActiveHostel extends Model
             // 'govt_type'=>$req->govtType,
         ];
     }
+
     // Store Application Foe Hostel(1)
     public function addNew($req)
     {
@@ -142,6 +147,7 @@ class MarActiveHostel extends Model
 
         return $mRenewNo['renew_no'];;
     }
+
     /**
      * upload Document By Citizen At the time of Registration
      * @param Request $req
@@ -174,7 +180,9 @@ class MarActiveHostel extends Model
         });
     }
 
-
+    /**
+     * | Get application details by Id
+     */
     public function getApplicationDtls($appId)
     {
 
@@ -225,8 +233,6 @@ class MarActiveHostel extends Model
             ->get();
         return $outbox;
     }
-
-
 
     /**
      * | Get Application Details by id
@@ -355,7 +361,9 @@ class MarActiveHostel extends Model
             ->get();
     }
 
-
+    /**
+     * | Get a particular application details by application Id
+     */
     public function getHostelDetails($appId)
     {
         return MarActiveHostel::select('*')
@@ -363,7 +371,9 @@ class MarActiveHostel extends Model
             ->first();
     }
 
-
+    /**
+     * | Get All application ULB wise
+     */
     public function getHostelList($ulbId)
     {
         return MarActiveHostel::select('*')
@@ -449,6 +459,9 @@ class MarActiveHostel extends Model
             ->where('mar_active_hostels.id', $appId)->first();
     }
 
+    /**
+     * | Update or edit application 
+     */
     public function updateApplication($req)
     {
         $MarActiveHostel = MarActiveHostel::findorfail($req->applicationId);
@@ -479,7 +492,7 @@ class MarActiveHostel extends Model
     {
         return MarActiveHostel::all();
     }
-    
+
     /**
      * | Pending List For Report
      */

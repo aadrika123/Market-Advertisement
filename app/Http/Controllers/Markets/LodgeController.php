@@ -425,7 +425,6 @@ class LodgeController extends Controller
     }
 
 
-
     /**
      * Post Independent Comment
      * @param Request $request
@@ -709,8 +708,6 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050714", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * Rejected Application List

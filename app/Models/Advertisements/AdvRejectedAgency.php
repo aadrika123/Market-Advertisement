@@ -72,4 +72,5 @@ class AdvRejectedAgency extends Model
     {
         return AdvRejectedAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Reject' as application_status"));
     }
+    
 }

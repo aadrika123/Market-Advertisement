@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Redis;
  * | Created By- Anshu Kumar
  * | Changes By- Bikash Kumar
  * | Agency Operations
- * | Status - Closed, By - Bikash kumar 24 Apr 2023, Total API - 34, Total Function - 38, Total no. of Lines - 1592
+ * | Status - Closed, By - Bikash kumar 24 Apr 2023, Total API - 34, Total Function - 38, Total no. of Lines - 1624
  */
 class AgencyController extends Controller
 {
@@ -895,7 +895,6 @@ class AgencyController extends Controller
      * | Function - 22
      * | API - 20
      */
-
     public function generatePaymentOrderId(Request $req)
     {
         $req->validate([

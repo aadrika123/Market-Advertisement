@@ -9,6 +9,9 @@ class BdBazar extends Model
 {
     use HasFactory;
 
+    /**
+     * | Get Bazar List
+     */
     public function listBazar($ulbId)
     {
         return BdBazar::select('id', 'bazar_name')

@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Validator;
 /**
  * | Created By- Bikash Kumar 
  * | Created for the Hostel Operations
- * | Status - Closed (24 Apr 2023), Total Function - 35, Total API - 33,  Total no. of lines - 1622
+ * | Status - Closed (24 Apr 2023), Total Function - 35, Total API - 33,  Total no. of lines - 1665
  */
 class HostelController extends Controller
 {
@@ -1324,6 +1324,7 @@ class HostelController extends Controller
             return responseMsgs(false, "Application Not Featched !!!", "", "050927", 1.0, "271ms", "POST", "", "");
         }
     }
+
     /**
      * | Application Updation
      * | Function - 31

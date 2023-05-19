@@ -30,7 +30,6 @@ class MarRejectedDharamshala extends Model
             ->get();
     }    
     
-    
     /**
     * | Get All Application Reject List
     */

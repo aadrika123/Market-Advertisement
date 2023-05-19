@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 class AdvVehicle extends Model
 {
     use HasFactory;
-
-
+    
+    /**
+     * | Get all approve application list
+     */
     public function allApproveList()
     {
         return AdvVehicle::select(
@@ -110,14 +112,11 @@ class AdvVehicle extends Model
             ->first();
     }
 
-
-
     /**
      * | Get Payment Details
      */
     public function getPaymentDetails($paymentId)
     {
-        // $details = AdvVehicle::select('payment_amount','payment_id','payment_date','permanent_address as address','entity_name','payment_details')
         $details = AdvVehicle::select(
             'adv_vehicles.payment_amount',
             'adv_vehicles.payment_id',
@@ -136,7 +135,9 @@ class AdvVehicle extends Model
         return $details;
     }
 
-
+    /**
+     * | Payment By Cash
+     */
     public function paymentByCash($req)
     {
 
@@ -189,7 +190,9 @@ class AdvVehicle extends Model
             ->skip(1)->first();
     }
 
-
+    /**
+     * | Get Application Details for Renew application
+     */
     public function applicationDetailsForRenew($appId)
     {
         $details = AdvVehicle::select(

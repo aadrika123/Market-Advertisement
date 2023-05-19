@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 class AdvActiveHoarding extends Model
 {
     use HasFactory;
-    
+
     use WorkflowTrait;
     protected $guarded = [];
     protected $_applicationDate;
@@ -24,22 +24,23 @@ class AdvActiveHoarding extends Model
     public function __construct()
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
-        // $this->_workflowId=Config::get('workflow-constants.AGENCY_HORDING');
     }
 
-
+    /**
+     * | Store request for Hoarding application
+     */
     public function MetaReqs($req)
     {
-        $metaReqs = [   
+        $metaReqs = [
             'zone_id' => $req->zoneId,
-            'license_year' => $req->licenseYear, 
-            'application_no' => $req->application_no,  
+            'license_year' => $req->licenseYear,
+            'application_no' => $req->application_no,
             'typology' => $req->HordingType,               // Hording Type is Convert Into typology
-            'display_location' => $req->displayLocation, 
+            'display_location' => $req->displayLocation,
             'width' => $req->width,
-            'length' => $req->length,  
+            'length' => $req->length,
             'display_area' => $req->displayArea,
-            'longitude' => $req->longitude,   
+            'longitude' => $req->longitude,
             'latitude' => $req->latitude,
             'material' => $req->material,
             'illumination' => $req->illumination,
@@ -52,23 +53,26 @@ class AdvActiveHoarding extends Model
             'property_owner_whatsapp_no' => $req->propertyOwnerWhatsappNo,
             'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
             'user_id' => $req->userId,
-            
+
 
         ];
         return $metaReqs;
-    } 
-    
+    }
+
+    /**
+     * | Renewal Request For Hoarding Application
+     */
     public function RenewMetaReqs($req)
     {
-        $metaReqs = [      
+        $metaReqs = [
             'zone_id' => $req->zoneId,
-            'license_year' => $req->licenseYear,  
+            'license_year' => $req->licenseYear,
             'typology' => $req->HordingType,               // Hording Type is Convert Into typology
-            'display_location' => $req->displayLocation, 
+            'display_location' => $req->displayLocation,
             'width' => $req->width,
-            'length' => $req->length,  
+            'length' => $req->length,
             'display_area' => $req->displayArea,
-            'longitude' => $req->longitude,   
+            'longitude' => $req->longitude,
             'latitude' => $req->latitude,
             'material' => $req->material,
             'illumination' => $req->illumination,
@@ -109,7 +113,7 @@ class AdvActiveHoarding extends Model
 
         // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
 
-       $LicencesMetaReqs = array_merge(
+        $LicencesMetaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
@@ -122,7 +126,7 @@ class AdvActiveHoarding extends Model
         );
 
 
-        $licenceId=AdvActiveHoarding::create($LicencesMetaReqs)->id;
+        $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
 
         $mDocuments = $req->documents;
         $this->uploadDocument($licenceId, $mDocuments);
@@ -130,8 +134,6 @@ class AdvActiveHoarding extends Model
         return $req->application_no;
     }
 
-
-    
     /**
      * | Store function to Licence apply
      * | @param request 
@@ -145,8 +147,8 @@ class AdvActiveHoarding extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
-        $details=AdvHoarding::find($req->applicationId);                              // Find Previous Application No
-        $mLicenseNo=['license_no'=>$details->license_no];
+        $details = AdvHoarding::find($req->applicationId);                              // Find Previous Application No
+        $mLicenseNo = ['license_no' => $details->license_no];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -155,7 +157,7 @@ class AdvActiveHoarding extends Model
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
         ];
 
-       $LicencesMetaReqs = array_merge(
+        $LicencesMetaReqs = array_merge(
             [
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
@@ -169,15 +171,13 @@ class AdvActiveHoarding extends Model
             $ulbWorkflowReqs
         );
 
-       $licenceId=AdvActiveHoarding::create($LicencesMetaReqs)->id;
+        $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
         $mDocuments = $req->documents;
         $this->uploadDocument($licenceId, $mDocuments);
         return $mRenewNo['renew_no'];
     }
 
-   
-
-        /** 
+    /** 
      * upload Document
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -209,7 +209,9 @@ class AdvActiveHoarding extends Model
         });
     }
 
-
+    /**
+     * | Get Hoarding Details By ID
+     */
     public function getHoardingDetails($appId)
     {
         return AdvActiveHoarding::select('*')
@@ -221,10 +223,10 @@ class AdvActiveHoarding extends Model
      * | Get Application License Details by id
      * | @param Hoarding id
      */
-    public function getDetailsById($id,$type)
+    public function getDetailsById($id, $type)
     {
         $details = array();
-        if ($type == "Active" || $type==NULL) {
+        if ($type == "Active" || $type == NULL) {
             $details = DB::table('adv_active_hoardings')
                 ->select(
                     'adv_active_hoardings.*',
@@ -233,8 +235,7 @@ class AdvActiveHoarding extends Model
                 ->where('adv_active_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_hoardings.ulb_id')
                 ->first();
-
-        }elseif ($type == "Reject") {
+        } elseif ($type == "Reject") {
             $details = DB::table('adv_rejected_hoardings')
                 ->select(
                     'adv_rejected_hoardings.*',
@@ -243,8 +244,7 @@ class AdvActiveHoarding extends Model
                 ->where('adv_rejected_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_hoardings.ulb_id')
                 ->first();
-
-        }elseif ($type == "Approve") {
+        } elseif ($type == "Approve") {
             $details = DB::table('adv_hoardings')
                 ->select(
                     'adv_hoardings.*',
@@ -253,14 +253,13 @@ class AdvActiveHoarding extends Model
                 ->where('adv_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_hoardings.ulb_id')
                 ->first();
-
         }
         $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
         return $details;
     }
 
 
-        /**
+    /**
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
@@ -285,7 +284,7 @@ class AdvActiveHoarding extends Model
         return $inbox;
     }
 
-    
+
     /**
      * | Get Citizen Applied applications
      * | @param citizenId
@@ -311,7 +310,7 @@ class AdvActiveHoarding extends Model
             ->get();
     }
 
-    
+
     /**
      * | Get Application Outbox List by Role Ids
      */
@@ -336,23 +335,8 @@ class AdvActiveHoarding extends Model
         return $outbox;
     }
 
-    // public function viewUploadedDocuments($id,$workflowId){
-    //     $documents = DB::table('adv_active_selfadvetdocuments')
-    //     ->select(
-    //         'adv_active_selfadvetdocuments.*',
-    //         'd.document_name as doc_type',
-    //         DB::raw("CONCAT(adv_active_selfadvetdocuments.relative_path,'/',adv_active_selfadvetdocuments.doc_name) as doc_path")
-    //     )
-    //     ->leftJoin('ref_adv_document_mstrs as d', 'd.id', '=', 'adv_active_selfadvetdocuments.document_id')
-    //     ->where(array('adv_active_selfadvetdocuments.temp_id'=> $id,'adv_active_selfadvetdocuments.workflow_id'=>$workflowId))
-    //     ->get();
-    // $details['documents'] = remove_null($documents->toArray());
-    // return $details;
-    // }
 
-    
-    
-      /**
+    /**
      * | Get Jsk Applied License  applications
      * | @param userId
      */
@@ -368,7 +352,9 @@ class AdvActiveHoarding extends Model
             ->get();
     }
 
-    
+    /**
+     * | Get Hoarding application Details By application Id
+     */
     public function getHoardingNo($appId)
     {
         return AdvActiveHoarding::select('*')
@@ -377,19 +363,22 @@ class AdvActiveHoarding extends Model
     }
 
 
-    
+    /**
+     * | Get All Hoarding List ulbwise
+     */
     public function getHoardingList($ulbId)
     {
         return AdvActiveHoarding::select('*')
             ->where('adv_active_Hoardings.ulb_id', $ulbId);
     }
 
-     /**
+    /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req){
+    public function reuploadDocument($req)
+    {
         $docUpload = new DocumentUpload;
-        $docDetails=WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
@@ -406,15 +395,15 @@ class AdvActiveHoarding extends Model
         $metaReqs['docCode'] = $docDetails['doc_code'];
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
-        $mWfActiveDocument=new WfActiveDocument();
+        $mWfActiveDocument = new WfActiveDocument();
         $mWfActiveDocument->postDocuments($a);
-        $docDetails->current_status='0';
+        $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
     }
 
-    
-         /**
+
+    /**
      * | Get Pending applications
      * | @param citizenId
      */
@@ -426,8 +415,8 @@ class AdvActiveHoarding extends Model
     /**
      * | Pending List For Report
      */
-    public function pendingListForReport(){
-        return AdvActiveVehicle::select('id', 'application_no', 'application_date', 'application_type', 'license_year','ulb_id',DB::raw("'Active' as application_status"));
+    public function pendingListForReport()
+    {
+        return AdvActiveVehicle::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
     }
-
 }

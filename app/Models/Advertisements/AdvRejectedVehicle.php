@@ -10,7 +10,6 @@ class AdvRejectedVehicle extends Model
 {
     use HasFactory;
 
-
     /**
      * | Get Application Reject List by Role Ids
      */

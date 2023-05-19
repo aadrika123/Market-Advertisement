@@ -41,7 +41,7 @@ class VehicleAdvetController extends Controller
      * | Created By- Anshu Kumar 
      * | Changes By- Bikash Kumar 
      * | Created for the Movable Vehicles Operations
-     * | Status - Closed, By Bikash on 24 Apr 2023,  Total no. of lines - 1475, Total Function - 35, Total API - 32
+     * | Status - Closed, By Bikash on 24 Apr 2023,  Total no. of lines - 1512, Total Function - 35, Total API - 32
      */
 
 

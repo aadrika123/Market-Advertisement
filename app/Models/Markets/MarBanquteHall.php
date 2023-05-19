@@ -96,6 +96,9 @@ class MarBanquteHall extends Model
             ->first();
     }
 
+    /**
+     * | Paymment Via Cash
+     */
     public function paymentByCash($req)
     {
 

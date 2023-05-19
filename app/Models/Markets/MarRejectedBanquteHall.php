@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\DB;
 class MarRejectedBanquteHall extends Model
 {
     use HasFactory;
-
-       
+ 
      /**
      * | Get Application Reject List by Role Ids
      */
@@ -30,7 +29,9 @@ class MarRejectedBanquteHall extends Model
             ->get();
     }
 
-    
+    /**
+     * | Get Rejected application list
+     */
     public function rejectedApplication()
     {
         return MarRejectedBanquteHall::select(

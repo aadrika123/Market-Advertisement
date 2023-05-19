@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class BdMaster extends Model
 {
     use HasFactory;
-
+    
+    /**
+     * | Get Bandobastee list
+     */
     public function listMaster()
     {
         return BdMaster::select('id', 'bandobastee_name')

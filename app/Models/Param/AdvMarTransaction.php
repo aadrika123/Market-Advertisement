@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 class AdvMarTransaction extends Model
 {
     use HasFactory;
-
+    /**
+     * | Add every transaction in transaction table
+     */
     public function addTransaction($req, $moduleId, $moduleType, $paymentMode)
     {
         $addData = new AdvMarTransaction();

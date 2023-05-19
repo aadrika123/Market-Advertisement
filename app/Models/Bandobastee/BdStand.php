@@ -19,6 +19,9 @@ class BdStand extends Model
         $this->_applicationDate = Carbon::now()->format('Y-m-d H:i:s');
     }
 
+    /**
+     * | Get standlist by category and ULB wise
+     */
     public function listStands($categoryId, $ulb)
     {
         return BdStand::select('id', 'stand_name')
@@ -27,6 +30,9 @@ class BdStand extends Model
             ->get();
     }
 
+    /**
+     * | Get Master data for bandobastee
+     */
     public function masters($ulbId)
     {
         return DB::table('bd_stands')

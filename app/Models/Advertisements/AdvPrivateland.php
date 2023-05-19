@@ -130,7 +130,9 @@ class AdvPrivateland extends Model
         return $details;
     }
 
-
+    /**
+     * | Paid Payment by cash
+     */
     public function paymentByCash($req)
     {
 
@@ -184,6 +186,9 @@ class AdvPrivateland extends Model
             ->skip(1)->first();
     }
 
+    /**
+     * | Get Application details for renew
+     */
     public function applicationDetailsForRenew($appId)
     {
         $details = AdvPrivateland::select(

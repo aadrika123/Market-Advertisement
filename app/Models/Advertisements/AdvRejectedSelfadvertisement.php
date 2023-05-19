@@ -50,7 +50,6 @@ class AdvRejectedSelfadvertisement extends Model
             ->get();
     }
 
-
     /**
      * | Get Application Reject List by Role Ids
      */

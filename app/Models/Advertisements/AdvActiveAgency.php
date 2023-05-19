@@ -53,9 +53,6 @@ class AdvActiveAgency extends Model
         return $metaReqs;
     }
 
-
-
-
     /**
      * | Renewal Data Uses to Store data in DB
      */
@@ -136,7 +133,9 @@ class AdvActiveAgency extends Model
         return $req->application_no;
     }
 
-
+    /**
+     * | Upload document after application is submit
+     */
     public function uploadDocument($tempId, $documents)
     {
         collect($documents)->map(function ($doc) use ($tempId) {
@@ -164,6 +163,9 @@ class AdvActiveAgency extends Model
         });
     }
 
+    /**
+     * | Get Agency Details by application id
+     */
     public function getAgencyDetails($appId)
     {
         return AdvActiveAgency::select('*')
@@ -344,6 +346,9 @@ class AdvActiveAgency extends Model
         return $outbox;
     }
 
+    /**
+     * | Get uploaded documents
+     */
     public function viewUploadedDocuments($id, $workflowId)
     {
         $documents = DB::table('adv_active_selfadvetdocuments')
@@ -375,10 +380,6 @@ class AdvActiveAgency extends Model
             ->orderByDesc('id')
             ->get();
     }
-
-
-
-
 
     /**
      * | Agency Renewals
@@ -439,6 +440,10 @@ class AdvActiveAgency extends Model
         // return $req->applicationNo;
     }
 
+
+    /**
+     * | Get Agency Details By application Id
+     */
     public function getAgencyNo($appId)
     {
         return AdvActiveAgency::select('*')
@@ -447,7 +452,9 @@ class AdvActiveAgency extends Model
     }
 
 
-
+    /**
+     * | Get Agency list ULB Wise
+     */
     public function getAgencyList($ulbId)
     {
         return AdvActiveAgency::select('*')
@@ -483,7 +490,6 @@ class AdvActiveAgency extends Model
         $docDetails->save();
         return $docDetails['active_id'];
     }
-
 
     /**
      * | Get Pending applications
