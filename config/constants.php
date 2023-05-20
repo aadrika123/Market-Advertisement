@@ -63,7 +63,7 @@ return [
         "SI" => "9",
         "EO" => "10",
         // "Engineer" => "109",
-        "Assistant Engineer" => "55",
-        "Commitee Member" => "110"
+        "Assistant Engineer" => "14",
+        "Commitee Member" => "32"
     ],
 ];
