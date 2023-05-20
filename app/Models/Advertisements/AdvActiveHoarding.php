@@ -279,6 +279,7 @@ class AdvActiveHoarding extends Model
                 // 'total_charge'
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
             ->whereIn('current_role_id', $roleIds)
             ->get();
         return $inbox;
@@ -330,6 +331,7 @@ class AdvActiveHoarding extends Model
                 // 'total_charge'
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
             ->whereNotIn('current_role_id', $roleIds)
             ->get();
         return $outbox;

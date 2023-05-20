@@ -285,6 +285,7 @@ class AdvActivePrivateland extends Model
                 'application_type',
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
             ->whereIn('current_role_id', $roleIds)
             ->get();
         return $inbox;
@@ -306,6 +307,7 @@ class AdvActivePrivateland extends Model
                 'application_type',
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
             ->whereNotIn('current_role_id', $roleIds)
             ->get();
         return $outbox;
