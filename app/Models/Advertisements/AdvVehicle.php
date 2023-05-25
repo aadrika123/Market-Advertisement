@@ -122,16 +122,32 @@ class AdvVehicle extends Model
             'adv_vehicles.payment_id',
             'adv_vehicles.payment_date',
             'adv_vehicles.permanent_address as address',
-            'adv_vehicles.applicant as entity_name',
+            'adv_vehicles.applicant',
             'adv_vehicles.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'adv_vehicles.payment_mode',
+            'adv_vehicles.application_no',
+            'adv_vehicles.license_no',
+            'adv_vehicles.license_from as valid_from',
+            'adv_vehicles.license_to as valid_upto',
+            'adv_vehicles.vehicle_name',
+            'adv_vehicles.vehicle_no',
+            'adv_vehicles.trade_license_no',
+            'adv_vehicles.application_date as applyDate',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            'wn.ward_name as wardNo',
+            DB::raw("'Advertisement' as module"),
         )
             ->leftjoin('ulb_masters', 'adv_vehicles.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ulb_ward_masters as wn', DB::raw('adv_vehicles.ward_id::int'), '=', 'wn.id')
             ->where('adv_vehicles.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Movable Vehicle Advertisement Payments";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
+        $details->valid_to = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
 

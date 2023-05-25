@@ -337,14 +337,28 @@ class AdvHoarding extends Model
                         else 'N/A' end as address"),
             'adv_hoardings.property_owner_name as entity_name',
             'adv_hoardings.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'adv_hoardings.payment_mode',
+            'adv_hoardings.valid_from',
+            'adv_hoardings.valid_upto',
+            'adv_hoardings.application_no',
+            'adv_hoardings.license_no',
+            'adv_hoardings.display_area',
+            'adv_hoardings.application_date as applyDate',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            'ly.string_parameter as licenseYear',
+            DB::raw("'Advertisement' as module"),
         )
             ->leftjoin('ulb_masters', 'adv_hoardings.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ref_adv_paramstrings as ly', 'adv_hoardings.license_year', '=', 'ly.id')
             ->where('adv_hoardings.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Hoarding Payments";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
 

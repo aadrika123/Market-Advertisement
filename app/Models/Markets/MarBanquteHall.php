@@ -200,22 +200,43 @@ class MarBanquteHall extends Model
      */
     public function getPaymentDetails($paymentId)
     {
-        //    $details = MarBanquteHall::select('payment_amount', 'payment_id', 'payment_date', 'permanent_address as address', 'entity_name','payment_details')
-        $details = MarBanquteHall::select(
+         $details = MarBanquteHall::select(
             'mar_banqute_halls.payment_amount',
             'mar_banqute_halls.payment_id',
             'mar_banqute_halls.payment_date',
             'mar_banqute_halls.permanent_address as address',
-            'mar_banqute_halls.applicant as entity_name',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.entity_name',
             'mar_banqute_halls.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'mar_banqute_halls.payment_mode',
+            'mar_banqute_halls.holding_no',
+            'mar_banqute_halls.trade_license_no',
+            'mar_banqute_halls.floor_area',
+            'mar_banqute_halls.application_date as applyDate',
+            'mar_banqute_halls.valid_from',
+            'mar_banqute_halls.valid_upto',
+            'mar_banqute_halls.license_no',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.rule',
+            'ly.string_parameter as licenseYear',
+            'ht.string_parameter as HallType',
+            'wn.ward_name as wardNo',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            DB::raw("'Market' as module"),
         )
             ->leftjoin('ulb_masters', 'mar_banqute_halls.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ulb_ward_masters as wn', 'mar_banqute_halls.entity_ward_id', '=', 'wn.id')
+            ->leftjoin('ref_adv_paramstrings as ly', DB::raw('mar_banqute_halls.license_year::int'), '=', 'ly.id')
+            ->leftjoin('ref_adv_paramstrings as ht', DB::raw('mar_banqute_halls.hall_type::int'), '=', 'ht.id')
             ->where('mar_banqute_halls.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
-        $details->towards = "Banquet/Marriage Hall Payments";
+        $details->towards = "Banquet/Marriage Hall";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d', $details->applyDate)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
         return $details;
     }
 

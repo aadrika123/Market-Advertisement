@@ -163,8 +163,6 @@ class ParamController extends Controller
         return $documentList;
     }
 
-
-
     /**
      * | Get Document Masters from our localstorage db
      */

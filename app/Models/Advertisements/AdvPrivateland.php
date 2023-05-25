@@ -117,16 +117,31 @@ class AdvPrivateland extends Model
             'adv_privatelands.payment_id',
             'adv_privatelands.payment_date',
             'adv_privatelands.entity_address as address',
-            'adv_privatelands.applicant as entity_name',
+            'adv_privatelands.applicant',
             'adv_privatelands.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'adv_privatelands.application_no',
+            'adv_privatelands.license_no',
+            'adv_privatelands.license_from as valid_from',
+            'adv_privatelands.license_to as valid_upto',
+            'adv_privatelands.holding_no',
+            'adv_privatelands.payment_mode',
+            'adv_privatelands.application_date as applyDate',
+            'adv_privatelands.trade_license_no',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            'wn.ward_name as wardNo',
+            DB::raw("'Advertisement' as module"),
         )
-            ->leftjoin('ulb_masters', 'adv_privatelands.ulb_id', '=', 'ulb_masters.id')
+        ->leftjoin('ulb_masters', 'adv_privatelands.ulb_id', '=', 'ulb_masters.id')
+        ->leftjoin('ulb_ward_masters as wn', DB::raw('adv_privatelands.entity_ward_id::int'), '=', 'wn.id')
             ->where('adv_privatelands.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Private Land Payments";
         $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s', $details->payment_date)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
 

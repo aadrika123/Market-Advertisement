@@ -163,15 +163,28 @@ class AdvAgency extends Model
             'adv_agencies.payment_date',
             'adv_agencies.address',
             'adv_agencies.entity_name',
+            'adv_agencies.application_no',
+            'adv_agencies.license_no',
             'adv_agencies.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'adv_agencies.payment_mode',
+            'adv_agencies.valid_from',
+            'adv_agencies.valid_upto',
+            'et.string_parameter as entityType',
+            'adv_agencies.application_date as applyDate',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            DB::raw("'Advertisement' as module")
         )
             ->leftjoin('ulb_masters', 'adv_agencies.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ref_adv_paramstrings as et', 'adv_agencies.entity_type', '=', 'et.id')
             ->where('adv_agencies.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Agency Payments";
-        $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d-m-Y');
+        $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
 

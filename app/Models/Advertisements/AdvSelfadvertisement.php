@@ -129,17 +129,34 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.payment_amount',
             'adv_selfadvertisements.payment_id',
             'adv_selfadvertisements.payment_date',
+            'adv_selfadvertisements.license_no',
+            'adv_selfadvertisements.application_no',
             'adv_selfadvertisements.entity_address as address',
-            'adv_selfadvertisements.applicant as entity_name',
+            'adv_selfadvertisements.applicant',
             'adv_selfadvertisements.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'adv_selfadvertisements.valid_from',
+            'adv_selfadvertisements.valid_upto',
+            'adv_selfadvertisements.payment_mode',
+            'adv_selfadvertisements.holding_no',
+            'adv_selfadvertisements.application_date as applyDate',
+            'adv_selfadvertisements.trade_license_no',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            'ly.string_parameter as licenseYear',
+            'wn.ward_name as wardNo',
+            DB::raw("'Advertisement' as module"),
         )
-            ->leftjoin('ulb_masters', 'adv_selfadvertisements.ulb_id', '=', 'ulb_masters.id')
+        ->leftjoin('ulb_masters', 'adv_selfadvertisements.ulb_id', '=', 'ulb_masters.id')
+        ->leftjoin('ref_adv_paramstrings as ly', 'adv_selfadvertisements.license_year', '=', 'ly.id')
+        ->leftjoin('ulb_ward_masters as wn', 'adv_selfadvertisements.ward_id', '=', 'wn.id')
             ->where('adv_selfadvertisements.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
-        $details->towards = "Self Advertisement Payments";
+        $details->towards = "Self Advertisement";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
     /**

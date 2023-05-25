@@ -202,17 +202,40 @@ class MarLodge extends Model
             'mar_lodges.payment_amount',
             'mar_lodges.payment_id',
             'mar_lodges.payment_date',
+            'mar_lodges.payment_mode',
             'mar_lodges.permanent_address as address',
-            'mar_lodges.applicant as entity_name',
+            'mar_lodges.applicant',
+            'mar_lodges.entity_name',
             'mar_lodges.payment_details',
-            'ulb_masters.ulb_name as ulbName'
+            'mar_lodges.holding_no',
+            'mar_lodges.trade_license_no',
+            'mar_lodges.no_of_rooms',
+            'mar_lodges.no_of_beds',
+            'mar_lodges.application_no',
+            'mar_lodges.application_date as applyDate',
+            'mar_lodges.license_no',
+            'mar_lodges.rule',
+            'mar_lodges.valid_from',
+            'mar_lodges.valid_upto',
+            'ulb_masters.ulb_name as ulbName',
+            'ulb_masters.logo as ulbLogo',
+            'ly.string_parameter as licenseYear',
+            'lt.string_parameter as lodgeType',
+            'wn.ward_name as wardNo',
+            DB::raw("'Market' as module"),
         )
             ->leftjoin('ulb_masters', 'mar_lodges.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ulb_ward_masters as wn', 'mar_lodges.entity_ward_id', '=', 'wn.id')
+            ->leftjoin('ref_adv_paramstrings as ly', DB::raw('mar_lodges.license_year::int'), '=', 'ly.id')
+            ->leftjoin('ref_adv_paramstrings as lt', DB::raw('mar_lodges.lodge_type::int'), '=', 'lt.id')
             ->where('mar_lodges.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Lodge Payments";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d', $details->applyDate)->format('d/m/Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
         return $details;
     }
 
