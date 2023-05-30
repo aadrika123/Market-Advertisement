@@ -1263,6 +1263,9 @@ class BanquetMarriageHallController extends Controller
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
+
             DB::beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();

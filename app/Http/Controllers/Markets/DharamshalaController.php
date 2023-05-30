@@ -1275,6 +1275,9 @@ class DharamshalaController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
+            
+            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
+            $req->request->add($WfMasterId);
 
             DB::beginTransaction();
             $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
