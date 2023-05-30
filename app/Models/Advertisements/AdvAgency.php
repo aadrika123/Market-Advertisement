@@ -82,7 +82,7 @@ class AdvAgency extends Model
      */
     public function listApproved($citizenId, $userType)
     {
-        return $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList();
         if ($userType == 'Citizen') {
             return collect($allApproveList)->where('citizen_id', $citizenId)->values();
         } else {
