@@ -390,7 +390,7 @@ class ParamController extends Controller
                     $mMarBanquteHall->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 } else {
                     $details = MarBanquteHallRenewal::select('valid_upto')
-                        ->where('application_no', $mMarBanquteHall->application_no)
+                        ->where('license_no', $mMarBanquteHall->license_no)
                         ->orderByDesc('id')
                         ->skip(1)->first();
                     $mMarBanquteHall->valid_from = $details->valid_upto;
@@ -425,7 +425,7 @@ class ParamController extends Controller
                     $mMarHostel->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 } else {
                     $details = MarHostelRenewal::select('valid_upto')
-                        ->where('application_no', $mMarHostel->application_no)
+                        ->where('license_no', $mMarHostel->license_no)
                         ->orderByDesc('id')
                         ->skip(1)->first();
                     $mMarHostel->valid_from = $details->valid_upto;
@@ -458,12 +458,12 @@ class ParamController extends Controller
                     $mMarLodge->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 } else {
                     $details = MarLodgeRenewal::select('valid_upto')
-                        ->where('application_no', $mMarLodge->application_no)
+                        ->where('license_no', $mMarLodge->license_no)
                         ->orderByDesc('id')
                         ->skip(1)->first();
                     $mMarLodge->valid_from = $details->valid_upto;
                     $mMarLodge->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
-                    $mMarLodge = $mMarLodge->valid_upto;
+                    // $mMarLodge = $mMarLodge->valid_upto;
                 }
                 $mMarLodge->save();
 
@@ -491,7 +491,7 @@ class ParamController extends Controller
                     $mMarDharamshala->valid_upto = Carbon::now()->addYears(1)->subDay(1);
                 } else {
                     $details = MarDharamshalaRenewal::select('valid_upto')
-                        ->where('application_no', $mMarDharamshala->application_no)
+                        ->where('license_no', $mMarDharamshala->license_no)
                         ->orderByDesc('id')
                         ->skip(1)->first();
                     $mMarDharamshala->valid_from = $details->valid_upto;
