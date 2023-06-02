@@ -283,7 +283,7 @@ class VehicleAdvetController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['created_at'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d H:i:s',  $data['created_at'])->format('d/m/Y');
             $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {

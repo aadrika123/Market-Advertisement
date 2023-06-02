@@ -278,22 +278,22 @@ class AdvActiveVehicle extends Model
                 ->select(
                     'adv_active_vehicles.*',
                     'u.ulb_name',
-                    // 'p.string_parameter as m_license_year',
+                    't.descriptions as typology',
                     'w.ward_name as ward_no',
                     'pw.ward_name as permanent_ward_no',
-                    'ew.ward_name as entity_ward_no',
+                    'ew.ward_name as ward_no',
                     'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
+                    'vt.string_parameter as vehicleType',
                     'r.role_name as m_current_role'
                 )
                 ->where('adv_active_vehicles.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_vehicles.ulb_id')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_vehicles.license_year')
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_vehicles.ward_id')
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_vehicles.permanent_ward_id')
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_vehicles.ward_id')
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_vehicles.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_vehicles.installation_location')
+                ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', 'adv_active_vehicles.vehicle_type')
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_active_vehicles.typology')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_vehicles.current_roles')
                 ->first();
         } elseif ($type == 'Reject') {
@@ -301,46 +301,46 @@ class AdvActiveVehicle extends Model
                 ->select(
                     'adv_rejected_vehicles.*',
                     'u.ulb_name',
-                    // 'p.string_parameter as m_license_year',
                     'w.ward_name as ward_no',
                     'pw.ward_name as permanent_ward_no',
                     'ew.ward_name as entity_ward_no',
                     'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    'r.role_name as m_current_role'
+                    'r.role_name as m_current_role',
+                    't.descriptions as typology',
+                    'vt.string_parameter as vehicleType',
                 )
                 ->where('adv_rejected_vehicles.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_vehicles.ulb_id')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_vehicles.license_year')
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_vehicles.ward_id')
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_vehicles.permanent_ward_id')
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_vehicles.ward_id')
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_vehicles.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_vehicles.installation_location')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_vehicles.current_roles')
+                ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', 'adv_rejected_vehicles.vehicle_type')
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_rejected_vehicles.typology')
                 ->first();
         } elseif ($type == "Approve") {
             $details = DB::table('adv_vehicles')
                 ->select(
                     'adv_vehicles.*',
                     'u.ulb_name',
-                    // 'p.string_parameter as m_license_year',
                     'w.ward_name as ward_no',
                     'pw.ward_name as permanent_ward_no',
                     'ew.ward_name as entity_ward_no',
                     'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    'r.role_name as m_current_role'
+                    'r.role_name as m_current_role',
+                    't.descriptions as typology',
+                    'vt.string_parameter as vehicleType',
                 )
                 ->where('adv_vehicles.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_vehicles.ulb_id')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_vehicles.license_year')
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_vehicles.ward_id')
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_vehicles.permanent_ward_id')
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_vehicles.ward_id')
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_vehicles.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_vehicles.installation_location')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_vehicles.current_roles')
+                ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', 'adv_vehicles.vehicle_type')
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_vehicles.typology')
                 ->first();
         }
 

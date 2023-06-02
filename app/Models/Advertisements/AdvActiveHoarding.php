@@ -231,27 +231,39 @@ class AdvActiveHoarding extends Model
                 ->select(
                     'adv_active_hoardings.*',
                     'u.ulb_name',
+                    'tm.type_inner as hoardingCategory',
+                    'p.string_parameter as licenseYear',
                 )
                 ->where('adv_active_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_hoardings.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_hoardings.license_year')
+                ->leftJoin('adv_typology_mstrs as tm', 'tm.id', '=', DB::raw('adv_active_hoardings.typology::int'))
                 ->first();
         } elseif ($type == "Reject") {
             $details = DB::table('adv_rejected_hoardings')
                 ->select(
                     'adv_rejected_hoardings.*',
                     'u.ulb_name',
+                    'tm.type_inner as hoardingCategory',
+                    'p.string_parameter as licenseYear',
                 )
                 ->where('adv_rejected_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_hoardings.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_hoardings.license_year')
+                ->leftJoin('adv_typology_mstrs as tm', 'tm.id', '=', DB::raw('adv_rejected_hoardings.typology::int'))
                 ->first();
         } elseif ($type == "Approve") {
             $details = DB::table('adv_hoardings')
                 ->select(
                     'adv_hoardings.*',
                     'u.ulb_name',
+                    'tm.type_inner as hoardingCategory',
+                    'p.string_parameter as licenseYear',
                 )
                 ->where('adv_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_hoardings.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_hoardings.license_year')
+                ->leftJoin('adv_typology_mstrs as tm', 'tm.id', '=', DB::raw('adv_hoardings.typology::int'))
                 ->first();
         }
         $details = json_decode(json_encode($details), true);            // Convert Std Class to Array

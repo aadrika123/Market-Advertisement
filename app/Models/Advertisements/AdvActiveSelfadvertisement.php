@@ -233,7 +233,8 @@ class AdvActiveSelfadvertisement extends Model
                     'ew.ward_name as entity_ward_no',
                     'dp.string_parameter as m_display_type',
                     'il.string_parameter as m_installation_location',
-                    'r.role_name as m_current_role'
+                    'r.role_name as m_current_role',
+                    'cat.type',
                 )
                 ->where('adv_active_selfadvertisements.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
@@ -244,6 +245,7 @@ class AdvActiveSelfadvertisement extends Model
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
                 ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_active_selfadvertisements.advt_category')
                 ->first();
         } elseif ($type == 'Reject') {
             $details = DB::table('adv_rejected_selfadvertisements')
@@ -256,7 +258,8 @@ class AdvActiveSelfadvertisement extends Model
                     'ew.ward_name as entity_ward_no',
                     'dp.string_parameter as m_display_type',
                     'il.string_parameter as m_installation_location',
-                    'r.role_name as m_current_role'
+                    'r.role_name as m_current_role',
+                    'cat.type',
                 )
                 ->where('adv_rejected_selfadvertisements.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
@@ -267,6 +270,7 @@ class AdvActiveSelfadvertisement extends Model
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_selfadvertisements.display_type')
                 ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_selfadvertisements.installation_location')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_rejected_selfadvertisements.advt_category')
                 ->first();
         } elseif ($type == 'Approve') {
             $details = DB::table('adv_selfadvertisements')
@@ -279,7 +283,8 @@ class AdvActiveSelfadvertisement extends Model
                     'ew.ward_name as entity_ward_no',
                     'dp.string_parameter as m_display_type',
                     'il.string_parameter as m_installation_location',
-                    'r.role_name as m_current_role'
+                    'r.role_name as m_current_role',
+                    'cat.type',
                 )
                 ->where('adv_selfadvertisements.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
@@ -290,6 +295,7 @@ class AdvActiveSelfadvertisement extends Model
                 ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
                 ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
                 ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_selfadvertisements.advt_category')
                 ->first();
         }
         return json_decode(json_encode($details), true);            // Convert Std Class to Array

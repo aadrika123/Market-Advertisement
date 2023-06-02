@@ -240,27 +240,63 @@ class AdvActivePrivateland extends Model
                 ->select(
                     'adv_active_privatelands.*',
                     'u.ulb_name',
+                    'w.ward_name as resident_ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    't.descriptions as typology',
+                    'dp.string_parameter as dispayType',
+                    'il.string_parameter as installationLocation',
                 )
                 ->where('adv_active_privatelands.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_privatelands.ulb_id')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_active_privatelands.ward_id::int'))
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_active_privatelands.permanent_ward_id::int'))
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_active_privatelands.entity_ward_id::int'))
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_active_privatelands.typology')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', DB::raw('adv_active_privatelands.display_type::int'))
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_active_privatelands.installation_location::int'))
                 ->first();
         } elseif ($type == "Reject") {
             $details = DB::table('adv_rejected_privatelands')
                 ->select(
                     'adv_rejected_privatelands.*',
                     'u.ulb_name',
+                    'w.ward_name as resident_ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    't.descriptions as typology',
+                    'dp.string_parameter as dispayType',
+                    'il.string_parameter as installationLocation',
                 )
                 ->where('adv_rejected_privatelands.id', $id)
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_privatelands.ulb_id')
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_privatelands.ulb_id')  
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_rejected_privatelands.ward_id::int'))
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_rejected_privatelands.permanent_ward_id::int'))
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_rejected_privatelands.entity_ward_id::int'))
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_rejected_privatelands.typology')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', DB::raw('adv_rejected_privatelands.display_type::int'))
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_rejected_privatelands.installation_location::int'))
                 ->first();
         } elseif ($type == 'Approve') {
             $details = DB::table('adv_privatelands')
                 ->select(
                     'adv_privatelands.*',
                     'u.ulb_name',
+                    'w.ward_name as resident_ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    't.descriptions as typology',
+                    'dp.string_parameter as dispayType',
+                    'il.string_parameter as installationLocation',
                 )
                 ->where('adv_privatelands.id', $id)
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')  
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_privatelands.ward_id::int'))
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_privatelands.permanent_ward_id::int'))
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_privatelands.entity_ward_id::int'))
+                ->leftJoin('adv_typology_mstrs as t', 't.id', '=', 'adv_privatelands.typology')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', DB::raw('adv_privatelands.display_type::int'))
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_privatelands.installation_location::int'))
                 ->first();
         }
 

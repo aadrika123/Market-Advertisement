@@ -94,7 +94,7 @@ trait MarDetailsTraits
             ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['waterSupplyType']],
             ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricityType']],
             ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securityType']],
-            ['displayString' => 'License Type', 'key' => 'licenseNo', 'value' => $data['license_no']],
+            ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Approved By Govt', 'key' => 'isApproveByGovt', 'value' => $data['is_approve_by_govt']==true?'Yes':'No'],
             ['displayString' => 'No of CCTV', 'key' => 'noOfCCTV', 'value' => $data['cctv_camera']],
             ['displayString' => 'No of Fire Extinguisher', 'key' => 'NoOfFireExtinguisher', 'value' => $data['fire_extinguisher']],

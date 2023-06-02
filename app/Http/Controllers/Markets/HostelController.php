@@ -222,7 +222,7 @@ class HostelController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
 

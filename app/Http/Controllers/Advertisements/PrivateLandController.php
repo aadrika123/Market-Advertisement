@@ -259,7 +259,7 @@ class PrivateLandController extends Controller
             }
 
             if ($req->applicationId) {
-                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
+               $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -296,7 +296,7 @@ class PrivateLandController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {

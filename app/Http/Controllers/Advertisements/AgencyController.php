@@ -162,7 +162,7 @@ class AgencyController extends Controller
      * | Function - 03
      * | API - 03
      */
-    public function listInbox(Request $req)
+    public function listInbox_old(Request $req)
     {
         try {
             // Variable initialization
@@ -170,6 +170,30 @@ class AgencyController extends Controller
 
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
+                return $workflowRole['wf_role_id'];
+            });
+            $inboxList = $mAdvActiveAgency->listInbox($roleIds);                        // <----- Get Inbox List
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    
+    public function listInbox(Request $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            $mAdvActiveAgency = $this->_modelObj;
+            $bearerToken = $req->token;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -272,7 +296,7 @@ class AgencyController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];

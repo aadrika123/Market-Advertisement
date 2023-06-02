@@ -187,24 +187,10 @@ class AdvActiveAgency extends Model
                     'adv_active_agencies.*',
                     'u.ulb_name',
                     'et.string_parameter as entityType',
-                    // 'p.string_parameter as m_license_year',
-                    // 'w.ward_name as ward_no',
-                    // 'pw.ward_name as permanent_ward_no',
-                    // 'ew.ward_name as entity_ward_no',
-                    // 'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    // 'r.role_name as m_current_role'
                 )
                 ->where('adv_active_agencies.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_agencies.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_active_agencies.entity_type')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_agencies.license_year')
-                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_agencies.ward_id')
-                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_agencies.permanent_ward_id')
-                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_agencies.entity_ward_id')
-                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_agencies.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_agencies.installation_location')
-                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_agencies.current_role_id')
                 ->first();
         } elseif ($type == "Reject") {
             $details = DB::table('adv_rejected_agencies')
@@ -212,24 +198,10 @@ class AdvActiveAgency extends Model
                     'adv_rejected_agencies.*',
                     'u.ulb_name',
                     'et.string_parameter as entityType',
-                    // 'p.string_parameter as m_license_year',
-                    // 'w.ward_name as ward_no',
-                    // 'pw.ward_name as permanent_ward_no',
-                    // 'ew.ward_name as entity_ward_no',
-                    // 'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    // 'r.role_name as m_current_role'
                 )
                 ->where('adv_rejected_agencies.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_agencies.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_rejected_agencies.entity_type')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_agencies.license_year')
-                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_agencies.ward_id')
-                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_agencies.permanent_ward_id')
-                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_agencies.entity_ward_id')
-                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_agencies.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_agencies.installation_location')
-                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_agencies.current_role_id')
                 ->first();
         } elseif ($type == "Approve") {
             $details = DB::table('adv_agencies')
@@ -237,24 +209,10 @@ class AdvActiveAgency extends Model
                     'adv_agencies.*',
                     'u.ulb_name',
                     'et.string_parameter as entityType',
-                    // 'p.string_parameter as m_license_year',
-                    // 'w.ward_name as ward_no',
-                    // 'pw.ward_name as permanent_ward_no',
-                    // 'ew.ward_name as entity_ward_no',
-                    // 'dp.string_parameter as m_display_type',
-                    // 'il.string_parameter as m_installation_location',
-                    // 'r.role_name as m_current_role'
                 )
                 ->where('adv_agencies.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_agencies.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
-                // ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_agencies.license_year')
-                // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_agencies.ward_id')
-                // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_agencies.permanent_ward_id')
-                // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_agencies.entity_ward_id')
-                // ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_agencies.display_type')
-                // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_agencies.installation_location')
-                // ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_agencies.current_role_id')
                 ->first();
         }
 
