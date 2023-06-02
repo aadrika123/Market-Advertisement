@@ -31,6 +31,21 @@ class ApiAuthentication
             return $next($request);
         }
 
+        // dd(hash('sha256',$token));
+        // if ($token = DB::table('personal_access_tokens')->where('token',hash('sha256',$token))->first())
+        // {
+        //     if ($user = ActiveCitizen::find($token->tokenable_id))
+        //     {
+        //         Auth::login($user);
+        //         return $next($request);
+        //     }
+
+        //     if ($user = User::find($token->tokenable_id))
+        //     {
+        //         Auth::login($user);
+        //         return $next($request);
+        //     }
+        // }
         abort(response()->json(['error' => 'Unauthenticated.'], 401));
     }
 }

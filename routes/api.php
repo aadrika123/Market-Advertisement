@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
 
-Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerToken']], function () {
+Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
     // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
     /**
      * | Self Advertisements
