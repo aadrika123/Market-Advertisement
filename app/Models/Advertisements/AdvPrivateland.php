@@ -137,7 +137,7 @@ class AdvPrivateland extends Model
             ->where('adv_privatelands.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
-        $details->towards = "Private Land Payments";
+        $details->towards = "Private Land";
         $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s', $details->payment_date)->format('d/m/Y');
         $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
         $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');

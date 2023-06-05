@@ -143,10 +143,10 @@ class AdvVehicle extends Model
             ->where('adv_vehicles.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
-        $details->towards = "Movable Vehicle Advertisement Payments";
+        $details->towards = "Movable Vehicle";
         $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
         $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
-        $details->valid_to = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
         $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
         return $details;
     }
