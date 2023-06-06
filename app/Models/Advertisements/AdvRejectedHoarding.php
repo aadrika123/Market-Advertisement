@@ -27,7 +27,6 @@ class AdvRejectedHoarding extends Model
             ->get();
     }
 
-    
     /**
      * | Get Application Reject List by Login JSK
      */
