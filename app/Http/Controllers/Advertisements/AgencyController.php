@@ -162,7 +162,7 @@ class AgencyController extends Controller
      * | Function - 03
      * | API - 03
      */
-    public function listInbox_old(Request $req)
+    public function listInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -186,7 +186,7 @@ class AgencyController extends Controller
     }
 
     
-    public function listInbox(Request $req)
+    public function listInbox_new(Request $req)
     {
         try {
             // Variable initialization
