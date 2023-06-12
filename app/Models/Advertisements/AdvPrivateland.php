@@ -95,6 +95,7 @@ class AdvPrivateland extends Model
         return AdvPrivateland::where('id', $id)
             ->select(
                 'id',
+                'applicant',
                 'application_no',
                 'application_date',
                 'entity_name',
