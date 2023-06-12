@@ -80,6 +80,7 @@ class MarLodge extends Model
         return MarLodge::where('id', $id)
             ->select(
                 'id',
+                'applicant',
                 'application_no',
                 'application_date',
                 'entity_name',
