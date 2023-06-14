@@ -19,7 +19,7 @@ class TollsController extends Controller
         $validator = Validator::make($req->all(), [
             "tollId" => "required|integer",
             "dateUpto" => "required|date|date_format:Y-m-d",
-            "dateFrom" => "required|date|date_format:Y-m-d|before:$req->dateUpto",
+            "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
         ]);
 
         if ($validator->fails())
