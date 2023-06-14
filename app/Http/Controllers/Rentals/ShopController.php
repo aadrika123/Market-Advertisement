@@ -38,7 +38,7 @@ class ShopController extends Controller
         });
 
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
+            return responseMsgs(false, $validator->errors(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
 
         // Business Logics
         try {
