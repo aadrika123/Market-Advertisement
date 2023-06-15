@@ -2,7 +2,6 @@
 
 namespace App\BLL\Market;
 
-use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopPayment;
 use Carbon\Carbon;
 use Exception;
