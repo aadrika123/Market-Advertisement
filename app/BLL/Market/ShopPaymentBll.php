@@ -62,6 +62,7 @@ class ShopPaymentBll
             'months' => $totalMonths,
             'payment_date' => Carbon::now(),
             'user_id' => $req->auth->id ?? 0,
+            'ulb_id' => $this->_shopDetails->ulb_id,
             'remarks' => $req->remarks
         ];
         DB::beginTransaction();
