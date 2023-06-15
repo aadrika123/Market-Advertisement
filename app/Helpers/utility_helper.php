@@ -171,7 +171,7 @@ if (!function_exists('getIndianCurrency')) {
         $Rupees = implode('', array_reverse($str));
         $paise = implode('', array_reverse($str2));
         $paise = ($decimal_part > 0) ? $paise . ' Paise' : '';
-        return ucfirst(($Rupees ? 'Rupee '.$Rupees : '')) . $paise;
+        return ucfirst(($Rupees ? 'Rupee ' . $Rupees : '')) . $paise;
     }
 }
 
@@ -223,5 +223,17 @@ if (!function_exists('getClientIpAddress')) {
         }
 
         return $_SERVER['REMOTE_ADDR'];
+    }
+
+    /**
+     * | Api Response time for the the apis
+     */
+
+    if (!function_exists("responseTime")) {
+        function responseTime()
+        {
+            $responseTime = (microtime(true) - LARAVEL_START) * 1000;
+            return round($responseTime, 2);
+        }
     }
 }
