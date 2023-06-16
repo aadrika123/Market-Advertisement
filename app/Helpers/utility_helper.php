@@ -239,4 +239,15 @@ if (!function_exists('getClientIpAddress')) {
             return $flip;
         }
     }
+    /**
+     * | Api Response time for the the apis
+     */
+
+    if (!function_exists("responseTime")) {
+        function responseTime()
+        {
+            $responseTime = (microtime(true) - LARAVEL_START) * 1000;
+            return round($responseTime, 2);
+        }
+    }
 }
