@@ -38,6 +38,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
         | Status : Open
      */
     Route::controller(PetRegistrationController::class)->group(function () {
+        Route::post('get-master-data', 'getAllMasters');                                                        // Admin/ Citizen        
         Route::post('application/apply-pet-registration', 'applyPetRegistration');                              // Citizen
     });
 });
