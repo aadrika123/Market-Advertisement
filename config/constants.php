@@ -4,13 +4,9 @@
  * | Relative path and name of Document Uploads
  */
 return [
-    // "BASE_URL" => 'http://192.168.0.202:3000/',
-    // "AUTH_URL" => 'http://192.168.0.21:8005/',
-    // "PAYMENT_URL" => 'http://192.168.0.202:3000/',
-    
-    "BASE_URL" => 'http://192.168.0.16:8000/',
-    "PAYMENT_URL" => 'http://192.168.0.16:8000/',
-
+    "BASE_URL" => 'http://192.168.0.202:3000/',
+    "AUTH_URL" => 'http://192.168.0.21:8005/',
+    "PAYMENT_URL" => 'http://192.168.0.202:3000/',
     // "BASE_URL" => 'http://203.129.217.246:8000/',
     // "PAYMENT_URL" => 'http://203.129.217.246:8000/',
     "AADHAR_RELATIVE_NAME" => "AADHAR",
