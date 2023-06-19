@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class WfWorkflow extends Model
 {
     use HasFactory;
-    
+
     /**
      * |---------------------------- Get workflow id by workflowId and ulbId -----------------------|
      * | @param workflowID
@@ -17,7 +17,7 @@ class WfWorkflow extends Model
      */
     public function getulbWorkflowId($wfMstId, $ulbId)
     {
-        return  WfWorkflow::where('wf_master_id', $wfMstId)
+        return WfWorkflow::where('wf_master_id', $wfMstId)
             ->where('ulb_id', $ulbId)
             ->where('is_suspended', false)
             ->first();

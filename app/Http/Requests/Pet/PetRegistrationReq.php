@@ -28,44 +28,38 @@ class PetRegistrationReq extends FormRequest
     {
         $rules = [
             'address'               => 'required|',
-            'applyThrough'          => 'required|in:1,2',
+            'applyThrough'          => 'required|int|in:1,2',
             'breed'                 => 'required|',
-            'categoryApplication'   => 'required|in:1,0',
-            'color'                 => 'required|alpha_num',
-            'dateOfLepVaccine'      => 'required|date',
-            'dateOfRabies'          => 'required|date',
-            'doctorName'            => 'required|alpha_num',
+            'ownerCategory'         => 'required|in:1,2',
+            'color'                 => 'required|',
+            'dateOfLepVaccine'      => 'required|date|date_format:Y-m-d',
+            'dateOfRabies'          => 'required|date|date_format:Y-m-d',
+            'doctorName'            => 'required|',
             'doctorRegNo'           => 'required|',
-            'petBirthDate'          => 'required|date',
-            'petFrom'               => 'required|int|',
-            'petGender'             => 'required|in:1,2',
-            'petIdentity'           => 'required|alpha_num',
-            'petName'               => 'required|alpha_num',
-            'petType'               => 'required|alpha_num',
+            'petBirthDate'          => 'required|date|date_format:Y-m-d',
+            'petFrom'               => 'required|',
+            'petGender'             => 'required|int|in:1,2',
+            'petIdentity'           => 'required|',
+            'petName'               => 'required|',
+            'petType'               => 'required|',
             'ulb'                   => 'required|int',
             'ward'                  => 'required|int',
-            'tenant'                => 'sometimes|required|array',
-            'owner'                 => 'sometimes|required|array'
+            'owner'                 => 'nullable|array'
         ];
-        if (isset($this->tenant) && $this->tenant) {
-            $rules = $this->getApplicantRules();
-        }
         if (isset($this->owner) && $this->owner) {
-            $rules = $this->getApplicantRules();
+            $rules["owner.*.applicantName"]    = "required|";
+            $rules["owner.*.mobileNo"]         = "required|digits:10|regex:/[0-9]{10}/";
+            $rules["owner.*.email"]            = "nullable|email";
+            $rules["owner.*.panNo"]            = "required|";
+            $rules["owner.*.telephone"]        = "nullable|int|regex:/[0-9]{10}/";
         }
         if (isset($this->applyThrough) && $this->applyThrough) {
             $rules['propertyNo'] = 'required|';
         }
-        return $rules;
-    }
-    public function getApplicantRules()
-    {
-        $rules = [
-            "tenant.*.applicantName"    => "required|alpha_num",
-            "tenant.*.mobileNo"         => "required|digits:10|regex:/[0-9]{10}/",
-            "tenant.*.email"            => "nullable|email",
-            "tenant.*.panNo"            => "required|",
-        ];
+        if (isset($this->isRenewal) && $this->isRenewal) {
+            $rules['registrationId'] = 'required|int';
+            $rules['isRenewal'] = 'int|in:1,0';
+        }
         return $rules;
     }
     public function failedValidation(Validator $validator)

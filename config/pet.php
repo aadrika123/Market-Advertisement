@@ -35,4 +35,23 @@ return [
         1 =>  "SELF_OCCUPIED",
         2 =>  "TENANTED",
     ],
+    "WORKFLOW_MASTER_ID" => 31,
+    "ROLE_LABEL" => [
+        "BO" => 11,
+        "DA" => 6,
+        "SI" => 9
+    ],
+    "APPLY_MODE" =>
+    [
+        "ONLINE"    => 1,
+        "JSK"       => 2,
+    ],
+    "REF_USER_TYPE" => [
+        "1" => "Citizen",
+        "2" => "JSK",
+        "3" => "TC",
+        "4" => "Pseudo",
+        "5" => "Employee"
+    ],
+    "PARAM_ID" => 34,
 ];
