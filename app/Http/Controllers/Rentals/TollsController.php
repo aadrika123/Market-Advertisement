@@ -155,7 +155,7 @@ class TollsController extends Controller
                 $refImageName = 'Toll-Photo-1'. '-'.$request->vendorName ;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName1Absolute = $refImageName . $absolutePath;
+                $imageName1Absolute = $absolutePath . '-' . $imageName1;
                 }
 
             if (isset($request->photograph2)) {
@@ -163,7 +163,7 @@ class TollsController extends Controller
                 $refImageName = 'Toll-Photo-2'. '-'.$request->vendorName ;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName2Absolute = $refImageName . $absolutePath;
+                $imageName2Absolute = $absolutePath . '-' . $imageName2;
                 }
             $marToll = [
                 'area_name' => $request->areaName,
@@ -258,7 +258,7 @@ class TollsController extends Controller
     {
 
         $validator = validator::make($request->all(), [
-            'status' => 'required|boolean'
+            'status' => 'required|bool'
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
@@ -272,7 +272,7 @@ class TollsController extends Controller
             }
             $marToll = $this->_mToll::findOrFail($request->id);
             $marToll->update($metaReqs);
-            return responseMsgs(true, "", $marToll, 55108, "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(true, "Status Updated Successfully", [], 55108, "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055107, "1.0", responseTime(), "POST", $request->deviceId);
         }

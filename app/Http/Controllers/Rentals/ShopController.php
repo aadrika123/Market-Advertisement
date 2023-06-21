@@ -70,7 +70,7 @@ class ShopController extends Controller
                 $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName1Absolute = $absolutePath . $refImageName;
+                $imageName1Absolute = $absolutePath . '-' . $imageName1;
             }
 
 
@@ -80,7 +80,7 @@ class ShopController extends Controller
                 $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName2Absolute = $absolutePath . $refImageName;
+                $imageName2Absolute = $absolutePath . '-' . $imageName2;
             }
 
 
@@ -96,7 +96,7 @@ class ShopController extends Controller
                 'allotted_breadth' => $req->allottedBreadth,
                 'allotted_height' => $req->allottedHeight,
                 'area' => $req->area,
-                'present_length' => $req->presentHength,
+                'present_length' => $req->presentLength,
                 'present_breadth' => $req->presentBreadth,
                 'present_height' => $req->presentHeight,
                 'no_of_floors' => $req->noOfFloors,
@@ -148,7 +148,7 @@ class ShopController extends Controller
                 $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName1Absolute = $absolutePath . $refImageName;
+                $imageName1Absolute = $absolutePath . '-' . $imageName1;
             }
 
 
@@ -158,7 +158,7 @@ class ShopController extends Controller
                 $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
                 $absolutePath = public_path($relativePath);
-                $imageName2Absolute = $absolutePath . $refImageName;
+                $imageName2Absolute = $absolutePath . '-' . $imageName2;
             }
 
             $metaReqs = [
@@ -194,8 +194,12 @@ class ShopController extends Controller
                 'last_tran_id' => $req->lastTranId,
                 'user_id' => $req->userId,
                 'ulb_id' => $req->ulbId,
-                'status' => $req->has('status') ? ($req->status ? 1 : 0) : null 
             ];
+
+            if (isset($request->status)) {                  // In Case of Deactivation or Activation
+                $status = $req->status == false ? 0 : 1;
+                $metaReqs=array_merge($metaReqs,['status',$status]);
+            }
 
             $Shops = $this->_mShops::findOrFail($req->id);
 
