@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 class PetActiveRegistration extends Model
 {
@@ -36,6 +37,7 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->occurrence_type_id     = $req->petFrom;
         $mPetActiveRegistration->apply_through          = $req->applyThrough;                       // holding or saf
         $mPetActiveRegistration->owner_type             = $req->ownerCategory;
+        $mPetActiveRegistration->pet_type               = $req->petType;
 
         $mPetActiveRegistration->created_at             = Carbon::now();
         $mPetActiveRegistration->application_apply_date = Carbon::now();
@@ -56,7 +58,57 @@ class PetActiveRegistration extends Model
         }
         $mPetActiveRegistration->save();
         return [
-            "id" => $mPetActiveRegistration->id
+            "id" => $mPetActiveRegistration->id,
+            "applicationNo" => $req->applicationNo
         ];
+    }
+
+    /**
+     * | Get Application by applicationId
+     */
+    public function getPetApplicationById($applicationId)
+    {
+        return PetActiveRegistration::select(
+            'pet_active_registrations.id as ref_application_id',
+            'pet_active_registrations.*',
+            'pet_active_details.*',
+            'pet_active_applicants.*'
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+            ->where('pet_active_registrations.id', $applicationId)
+            ->where('pet_active_registrations.status', 1);
+    }
+
+    /**
+     * | Deactivate the doc Upload Status 
+     */
+    public function updateUploadStatus($applicationId, $status)
+    {
+        PetActiveRegistration::where('id', $applicationId)
+            ->where('status', 1)
+            ->update([
+                "doc_upload_status" => $status
+            ]);
+    }
+
+    /**
+     * | Get all details according to key 
+     */
+    public function getAllApplicationDetails($value, $key)
+    {
+        return DB::table('pet_active_registrations')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+            ->where('pet_active_registrations.' . $key, $value)
+            ->where('pet_active_registrations.status', 1);
+    }
+
+    /**
+     * | Delete the application before the payment 
+     */
+    public function deleteApplication($application)
+    {
+        $application->delete();
     }
 }

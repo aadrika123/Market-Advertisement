@@ -42,7 +42,7 @@ class PetRegistrationReq extends FormRequest
             'petIdentity'           => 'required|',
             'petName'               => 'required|',
             'petType'               => 'required|',
-            'ulb'                   => 'required|int',
+            'ulbId'                 => 'required|int',
             'ward'                  => 'required|int',
             'owner'                 => 'nullable|array'
         ];

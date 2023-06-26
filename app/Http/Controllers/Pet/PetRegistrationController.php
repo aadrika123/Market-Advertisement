@@ -4,27 +4,37 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetRegistrationReq;
+use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Advertisements\RefRequiredDocument;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\ApiMaster;
+use App\Models\Pet\MPetFee;
 use App\Models\Pet\MPetOccurrenceType;
 use App\Models\Pet\PetActiveApplicant;
 use App\Models\Pet\PetActiveDetail;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetApprovedRegistration;
+use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetRenewalApplicant;
 use App\Models\Pet\PetRenewalDetail;
 use App\Models\Pet\PetRenewalRegistration;
+use App\Models\Pet\PetTran;
 use App\Models\Property\PropActiveSaf;
 use App\Models\Property\PropActiveSafsFloor;
 use App\Models\Property\PropFloor;
 use App\Models\Property\PropProperty;
 use App\Models\Workflows\WfWorkflow;
+use App\Models\Workflows\WorkflowTrack;
 use App\Traits\Workflow\Workflow;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use PhpParser\Node\Expr\Empty_;
 
@@ -42,21 +52,39 @@ class PetRegistrationController extends Controller
     private $_occupancyType;
     private $_workflowMasterId;
     private $_petParamId;
-    // Class constructer 
+    private $_petModuleId;
+    private $_userType;
+    private $_petWfRoles;
+    private $_docReqCatagory;
+    private $_dbKey;
+    private $_fee;
+    private $_applicationType;
+    private $_applyMode;
+    private $_tranType;
+    # Class constructer 
     public function __construct()
     {
-        $this->_masterDetails = Config::get("pet.MASTER_DATA");
-        $this->_propertyType = Config::get("pet.PROP_TYPE");
-        $this->_occupancyType = Config::get("pet.PROP_OCCUPANCY_TYPE");
-        $this->_workflowMasterId = Config::get("pet.WORKFLOW_MASTER_ID");
-        $this->_petParamId = Config::get("pet.PARAM_ID");
+        $this->_masterDetails       = Config::get("pet.MASTER_DATA");
+        $this->_propertyType        = Config::get("pet.PROP_TYPE");
+        $this->_occupancyType       = Config::get("pet.PROP_OCCUPANCY_TYPE");
+        $this->_workflowMasterId    = Config::get("pet.WORKFLOW_MASTER_ID");
+        $this->_petParamId          = Config::get("pet.PARAM_ID");
+        $this->_petModuleId         = Config::get('pet.PET_MODULE_ID');
+        $this->_userType            = Config::get("pet.REF_USER_TYPE");
+        $this->_petWfRoles          = Config::get("pet.ROLE_LABEL");
+        $this->_docReqCatagory      = Config::get("pet.DOC_REQ_CATAGORY");
+        $this->_dbKey               = Config::get("pet.DB_KEYS");
+        $this->_fee                 = Config::get("pet.FEE_CHARGES");
+        $this->_applicationType     = Config::get("pet.APPLICATION_TYPE");
+        $this->_applyMode           = Config::get("pet.APPLY_MODE");
+        $this->_tranType            = Config::get("pet.TRANSACTION_TYPE");
     }
 
     /**
      * | Get all master data
      * | Collect the master data related pet module
         | Serial No : 0
-        | Under Construction
+        | Working
      */
     public function getAllMasters(Request $req)
     {
@@ -112,7 +140,8 @@ class PetRegistrationController extends Controller
      * | Save form data 
      * | @param req
         | Serial No : 0
-        | Under Construction
+        | Need Modifications in saving charges
+        | Working 
      */
     public function applyPetRegistration(PetRegistrationReq $req)
     {
@@ -122,15 +151,23 @@ class PetRegistrationController extends Controller
             $mPetActiveApplicant        = new PetActiveApplicant();
             $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mWfWorkflow                = new WfWorkflow();
+            $mMPetFee                   = new MPetFee();
+            $mPetRegistrationCharge     = new PetRegistrationCharge();
             $user                       = authUser();
             $ulbId                      = $req->ulbId ?? 2;
             $workflowMasterId           = $this->_workflowMasterId;
             $petParamId                 = $this->_petParamId;
+            $feeId                      = $this->_fee;
+            $confApplicationType        = $this->_applicationType;
 
             # Get iniciater and finisher for the workflow 
             $ulbWorkflowId = $mWfWorkflow->getulbWorkflowId($workflowMasterId, $ulbId);
             if (!$ulbWorkflowId) {
                 throw new Exception("Respective Ulb is not maped to 'Pet Registration' Workflow!");
+            }
+            $registrationCharges = $mMPetFee->getFeeById($feeId['REGISTRATION']);
+            if (!$registrationCharges) {
+                throw new Exception("Currently charges are not available!");
             }
             $refInitiatorRoleId = $this->getInitiatorId($ulbWorkflowId->id);
             $refFinisherRoleId  = $this->getFinisherId($ulbWorkflowId->id);
@@ -156,14 +193,16 @@ class PetRegistrationController extends Controller
                     throw new Exception("Registration No is Not Req for new Pet Registraton!");
                 }
                 $refData = [
-                    "applicationType" => "New_Apply"
+                    "applicationType" => "New_Apply",
+                    "applicationTypeId" => $confApplicationType['NEW_APPLY']
                 ];
                 $req->merge($refData);
             }
             if ($req->isRenewal == 1) {
                 $refData = [
                     "applicationType" => "Renewal",
-                    "registrationId"  => $req->registrationId
+                    "registrationId"  => $req->registrationId,
+                    "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
                 $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
@@ -172,7 +211,22 @@ class PetRegistrationController extends Controller
             $applicationDetails = $mPetActiveRegistration->saveRegistration($req, $user);
             $mPetActiveApplicant->saveApplicants($req, $applicationDetails['id']);
             $mPetActiveDetail->savePetDetails($req, $applicationDetails['id']);
+
+            # Save registration charges
+            $metaRequest = new Request([
+                "applicationId"     => $applicationDetails['id'],
+                "applicationType"   => $req->applicationType,
+                "amount"            => $registrationCharges->amount,
+                "registrationFee"   => $registrationCharges->amount,
+                "applicationTypeId" => $req->applicationTypeId
+            ]);
+            $mPetRegistrationCharge->saveRegisterCharges($metaRequest);
             DB::commit();
+            $returnData = [
+                "id" => $applicationDetails['id'],
+                "applicationNo" => $applicationDetails['applicationNo'],
+            ];
+            return responseMsgs(true, "Pet Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
@@ -192,7 +246,7 @@ class PetRegistrationController extends Controller
                     ->withToken('19013|TpteWXV08A7wYKVNwLrVpdaOO1oC1tyJDxE7LVwN')                       // Static
                     ->post("$refApi->end_point", $transfer);
         | Serial No : 0
-        | Under Construction
+        | Working
      */
     public function checkParamForRegister($req)
     {
@@ -265,4 +319,749 @@ class PetRegistrationController extends Controller
         }
         return false;                                   // Static
     }
+
+
+    /**
+     * |---------------------------- Get Document Lists To Upload ----------------------------|
+     * | Doc Upload for the Workflow
+        | Serial No : 0
+        | Working
+     */
+    public function getDocToUpload(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|numeric'
+        ]);
+        try {
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $petApplicationId           = $req->applicationId;
+
+            $refPetApplication = $mPetActiveRegistration->getPetApplicationById($petApplicationId)->first();                      // Get Pet Details
+            if (is_null($refPetApplication)) {
+                throw new Exception("Application Not Found for respective ($petApplicationId) id!");
+            }
+            // check if the respective is working on the front end
+            // $this->checkAutheriseUser($req);
+            $documentList = $this->getPetDocLists($refPetApplication);
+            $waterTypeDocs['listDocs'] = collect($documentList)->map(function ($value) use ($refPetApplication) {
+                return $this->filterDocument($value, $refPetApplication)->first();
+            });
+            $totalDocLists = collect($waterTypeDocs);
+            $totalDocLists['docUploadStatus'] = $refPetApplication->doc_upload_status;
+            $totalDocLists['docVerifyStatus'] = $refPetApplication->doc_verify_status;
+            return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
+
+
+    /**
+     * |---------------------------- Filter The Document For Viewing ----------------------------|
+     * | @param documentList
+     * | @param refWaterApplication
+     * | @param ownerId
+     * | @var mWfActiveDocument
+     * | @var applicationId
+     * | @var workflowId
+     * | @var moduleId
+     * | @var uploadedDocs
+     * | Calling Function 
+        | Serial No : 
+        | Working
+     */
+    public function filterDocument($documentList, $refPetApplication, $ownerId = null)
+    {
+        $mWfActiveDocument  = new WfActiveDocument();
+        $applicationId      = $refPetApplication->ref_application_id;
+        $workflowId         = $refPetApplication->workflow_id;
+        $moduleId           = $this->_petModuleId;
+        $confDocReqCatagory = $this->_docReqCatagory;
+        $uploadedDocs       = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
+
+        $explodeDocs = collect(explode('#', $documentList->requirements));
+        $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $ownerId, $confDocReqCatagory) {
+
+            # var defining
+            $document   = explode(',', $explodeDoc);
+            $key        = array_shift($document);
+            $label      = array_shift($document);
+            $documents  = collect();
+
+            collect($document)->map(function ($item) use ($uploadedDocs, $documents, $ownerId) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $item)
+                    ->where('owner_dtl_id', $ownerId)
+                    ->first();
+                if ($uploadedDoc) {
+                    $path = $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                    $response = [
+                        "uploadedDocId" => $uploadedDoc->id ?? "",
+                        "documentCode"  => $item,
+                        "ownerId"       => $uploadedDoc->owner_dtl_id ?? "",
+                        "docPath"       => $fullDocPath ?? "",
+                        "verifyStatus"  => $uploadedDoc->verify_status ?? "",
+                        "remarks"       => $uploadedDoc->remarks ?? "",
+                    ];
+                    $documents->push($response);
+                }
+            });
+            $reqDoc['docType']      = $key;
+            $reqDoc['uploadedDoc']  = $documents->last();
+            $reqDoc['docName']      = substr($label, 1, -1);
+            switch ($key) {
+                case ($confDocReqCatagory['1']):
+                    $reqDoc['isMandatory'] = 1;                                                 // Static
+                    break;
+                case ($confDocReqCatagory['2']):
+                    $reqDoc['isMandatory'] = 1;                                                 // Static
+                    break;
+                case ($confDocReqCatagory['3']):
+                    $reqDoc['isMandatory'] = 0;                                                 // Static
+                    break;
+            }
+
+            $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
+                $strLower = strtolower($doc);
+                $strReplace = str_replace('_', ' ', $strLower);
+                if (isset($uploadedDoc)) {
+                    $path =  $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                }
+                $arr = [
+                    "documentCode"  => $doc,
+                    "docVal"        => ucwords($strReplace),
+                    "uploadedDoc"   => $fullDocPath ?? "",
+                    "uploadedDocId" => $uploadedDoc->id ?? "",
+                    "verifyStatus'" => $uploadedDoc->verify_status ?? "",
+                    "remarks"       => $uploadedDoc->remarks ?? "",
+                ];
+                return $arr;
+            });
+            return $reqDoc;
+        });
+        return $filteredDocs;
+    }
+
+    /**
+     * | List of the doc to upload 
+     * | Calling function
+        | Serial No :  
+        | Working
+     */
+    public function getPetDocLists($application)
+    {
+        $mRefRequiredDocument   = new RefRequiredDocument();
+        $confPetModuleId        = $this->_petModuleId;
+        $confOwnerType          = $this->_masterDetails['OWNER_TYPE_MST'];
+
+        $type = ["PET_VACCINATION", "ADDRESS PROOF", "LEPTOSPIROSIS_VACCINATION"];
+        if ($application->owner_type == $confOwnerType['Tenant'])         // Holding No, SAF No // Static
+        {
+            $type = ["TENANTED", "NOC"];
+        }
+        return $mRefRequiredDocument->getCollectiveDocByCode($confPetModuleId, $type);
+    }
+
+    /**
+     * | Read the server url 
+        | Common function
+        | Serial No : 
+        | Working
+     */
+    public function readDocumentPath($path)
+    {
+        $path = (config('app.url') . "/" . $path);
+        return $path;
+    }
+
+
+    /**
+     * | Upload Application Documents 
+     * | @param req
+        | Serial No :
+        | Working 
+        | Look on the concept of deactivation of the rejected documents 
+        | Put the static "verify status" 2 in config  
+     */
+    public function uploadPetDoc(Request $req)
+    {
+        $req->validate([
+            "applicationId" => "required|numeric",
+            "document"      => "required|mimes:pdf,jpeg,png,jpg|max:2048",
+            "docCode"       => "required",
+            "docCategory"   => "required",                                  // Recheck in case of undefined
+        ]);
+
+        try {
+            $user                       = authUser();
+            $metaReqs                   = array();
+            $applicationId              = $req->applicationId;
+            $document                   = $req->document;
+            $refDocUpload               = new DocumentUpload;
+            $mWfActiveDocument          = new WfActiveDocument();
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $relativePath               = Config::get('pet.PET_RELATIVE_PATH');
+            $refmoduleId                = $this->_petModuleId;
+            $confUserType               = $this->_userType;
+
+            $getPetDetails  = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $refImageName   = $req->docCode;
+            $refImageName   = $getPetDetails->ref_application_id . '-' . str_replace(' ', '_', $refImageName);
+            $imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['REGISTRATION']);
+
+            $metaReqs = [
+                'moduleId'      => $refmoduleId,
+                'activeId'      => $getPetDetails->ref_application_id,
+                'workflowId'    => $getPetDetails->workflow_id,
+                'ulbId'         => $getPetDetails->ulb_id,
+                'relativePath'  => $relativePath['REGISTRATION'],
+                'document'      => $imageName,
+                'docCode'       => $req->docCode,
+                'ownerDtlId'    => $req->ownerId ?? null,
+                'docCategory'   => $req->docCategory
+            ];
+
+            if ($user->user_type == $confUserType['1']) {
+                $isCitizen = true;
+                $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+            } else {
+                $isCitizen = false;
+                $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+            }
+
+            DB::beginTransaction();
+            $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
+            $metaReqs = new Request($metaReqs);
+            if (collect($ifDocExist)->isEmpty()) {
+                $mWfActiveDocument->postPetDocuments($metaReqs);
+            }
+            if ($ifDocExist) {
+                $mWfActiveDocument->editDocuments($ifDocExist, $metaReqs);
+            }
+
+            #check full doc upload
+            $refCheckDocument = $this->checkFullDocUpload($req);
+            # Update the Doc Upload Satus in Application Table
+            if ($refCheckDocument->contains(false) && $getPetDetails->doc_upload_status == true) {
+                $mPetActiveRegistration->updateUploadStatus($applicationId, false);
+            }
+            if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
+                $mPetActiveRegistration->updateUploadStatus($req->applicationId, true);
+            }
+            # if the application is parked and btc 
+            // if ($getPetDetails->parked == true) {
+            //     $mWfActiveDocument->deactivateRejectedDoc($metaReqs);
+            //     $refReq = new Request([
+            //         'applicationId' => $applicationId
+            //     ]);
+            //     $documentList = $this->getUploadDocuments($refReq);
+            //     $DocList = collect($documentList)['original']['data'];
+            //     $refVerifyStatus = $DocList->where('doc_category', '!=', $req->docCategory)->pluck('verify_status');
+            //     if (!in_array(2, $refVerifyStatus->toArray())) {                                                        // Static "2" for rejected doc
+            //         $status = false;
+            //         $getPetDetails->updateParkedstatus($status, $applicationId);
+            //     }
+            // }
+            DB::commit();
+            return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    /**
+     * | Check if the params for document upload
+     * | @param isCitizen
+     * | @param applicantDetals
+     * | @param user
+        | Serial No :
+        | Working 
+     */
+    public function checkParamForDocUpload($isCitizen, $applicantDetals, $user)
+    {
+        $refWorkFlowMaster = Config::get('workflow-constants.WATER_MASTER_ID');
+        switch ($isCitizen) {
+            case (true): # For citizen 
+                if (!is_null($applicantDetals->current_role) && $applicantDetals->parked == true) {
+                    return true;
+                }
+                if (!is_null($applicantDetals->current_role)) {
+                    throw new Exception("You aren't allowed to upload document!");
+                }
+                break;
+            case (false): # For user
+                $userId = $user->id;
+                $ulbId = $applicantDetals->ulb_id;
+                $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
+                if (is_null($role)) {
+                    throw new Exception("You dont have any role!");
+                }
+                if ($role->can_upload_document != true) {
+                    throw new Exception("You dont have permission to upload Document!");
+                }
+                break;
+        }
+    }
+
+
+
+    /**
+     * | Caheck the Document if Fully Upload or not
+     * | @param req
+        | Working
+        | Serial No :
+     */
+    public function checkFullDocUpload($req)
+    {
+        # Check the Document upload Status
+        $confDocReqCatagory = $this->_docReqCatagory;
+        $documentList = $this->getDocToUpload($req);
+        $refDoc = collect($documentList)['original']['data']['listDocs'];
+        $checkDocument = collect($refDoc)->map(function ($value)
+        use ($confDocReqCatagory) {
+            if ($value['docType'] == $confDocReqCatagory['1'] || $value['docType'] == $confDocReqCatagory['2']) {
+                $doc = collect($value['uploadedDoc'])->first();
+                if (is_null($doc)) {
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        });
+        return $checkDocument;
+    }
+
+
+    /**
+     * | Get the upoaded docunment
+        | Serial No : 
+        | Working
+     */
+    public function getUploadDocuments(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|numeric'
+        ]);
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $moduleId               = $this->_petModuleId;
+
+            $petDetails = $mPetActiveRegistration->getPetApplicationById($req->applicationId)->first();
+            if (is_null($petDetails))
+                throw new Exception("Application Not Found for this ($req->applicationId) application Id!");
+
+            $workflowId = $petDetails->workflow_id;
+            $documents = $mWfActiveDocument->getWaterDocsByAppNo($req->applicationId, $workflowId, $moduleId)
+                ->where('d.status', '!=', 0)
+                ->get();
+            $returnData = collect($documents)->map(function ($value) {
+                $path =  $this->readDocumentPath($value->ref_doc_path);
+                $value->doc_path = !empty(trim($value->ref_doc_path)) ? $path : null;
+                return $value;
+            });
+            return responseMsgs(true, "Uploaded Documents", remove_null($returnData), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Get Application list for the respective user 
+     * | List the application filled by the user 
+        | Serial No :
+        | Working
+     */
+    public function getApplicationList(Request $req)
+    {
+        try {
+            $user                   = authUser();
+            $confUserType           = $this->_userType;
+            $confDbKey              = $this->_dbKey;
+            $mPetActiveRegistration = new PetActiveRegistration();
+
+            if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
+                throw new Exception("You are not an autherised Citizen!");
+            }
+            # Collect querry Exceptions 
+            try {
+                $refAppDetails = $mPetActiveRegistration->getAllApplicationDetails($user->id, $confDbKey['1'])
+                    ->select(
+                        DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_active_registrations.*",
+                        "pet_active_applicants.applicant_name",
+                    )
+                    ->get();
+            } catch (QueryException $q) {
+                return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
+            }
+            return responseMsgs(true, "list of active registration!", remove_null($refAppDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    //BEGIN///////////////////////////////////////////////////////////////////////////////
+    /**
+     * | Get Application details for workflow view 
+     * | @param request
+     * | @var ownerDetails
+     * | @var applicantDetails
+     * | @var applicationDetails
+     * | @var returnDetails
+     * | @return returnDetails : list of individual applications
+        | Serial No : 08
+        | Workinig 
+     */
+    public function getApplicationsDetails(Request $request)
+    {
+        $request->validate([
+            'applicationId' => 'required'
+        ]);
+        try {
+            # object assigning
+            $waterObj               = new WaterApplication();
+            $ownerObj               = new WaterApplicant();
+            $forwardBackward        = new WorkflowMap;
+            $mWorkflowTracks        = new WorkflowTrack();
+            $mCustomDetails         = new CustomDetail();
+            $mUlbNewWardmap         = new UlbWardMaster();
+
+            # application details
+            $applicationDetails = $waterObj->fullWaterDetails($request)->get();
+            if (collect($applicationDetails)->first() == null) {
+                throw new Exception("Application data according to $request->applicationId not found");
+            }
+
+            # Ward Name
+            $refApplication = collect($applicationDetails)->first();
+            $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
+            # owner Details
+            $ownerDetails = $ownerObj->ownerByApplication($request)->get();
+            $ownerDetail = collect($ownerDetails)->map(function ($value, $key) {
+                return $value;
+            });
+            $aplictionList = [
+                'application_no'    => collect($applicationDetails)->first()->application_no,
+                'apply_date'        => collect($applicationDetails)->first()->apply_date
+            ];
+
+            # DataArray
+            $basicDetails       = $this->getBasicDetails($applicationDetails, $wardDetails);
+            $propertyDetails    = $this->getpropertyDetails($applicationDetails, $wardDetails);
+            $petDetails         = $this->getPetDetails($applicationDetails);
+
+            $firstView = [
+                'headerTitle'   => 'Basic Details',
+                'data'          => $basicDetails
+            ];
+            $secondView = [
+                'headerTitle'   => 'Applicant Property Details',
+                'data'          => $propertyDetails
+            ];
+            $thirdView = [
+                'headerTitle'   => 'Pet Details',
+                'data'          => $petDetails
+            ];
+            $fullDetailsData['fullDetailsData']['dataArray'] = new collection([$firstView, $secondView, $thirdView]);
+
+            # CardArray
+            $cardDetails = $this->getCardDetails($applicationDetails, $ownerDetails, $wardDetails);
+            $cardData = [
+                'headerTitle' => 'Water Connection',
+                'data' => $cardDetails
+            ];
+            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardData);
+
+            # TableArray
+            $ownerList = $this->getOwnerDetails($ownerDetail);
+            $ownerView = [
+                'headerTitle' => 'Owner Details',
+                'tableHead' => ["#", "Owner Name", "Guardian Name", "Mobile No", "Email", "City", "District"],
+                'tableData' => $ownerList
+            ];
+            $fullDetailsData['fullDetailsData']['tableArray'] = new Collection([$ownerView]);
+
+            # Level comment
+            $mtableId = $applicationDetails->first()->id;
+            $mRefTable = "water_applications.id";
+            $levelComment['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $applicationDetails->first()->user_id;
+            $citizenComment['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
+            # Role Details
+            $data = json_decode(json_encode($applicationDetails->first()), true);
+            $metaReqs = [
+                'customFor'     => 'Water',
+                'wfRoleId'      => $data['current_role'],
+                'workflowId'    => $data['workflow_id'],
+                'lastRoleId'    => $data['last_role_id']
+            ];
+            $request->request->add($metaReqs);
+            $forwardBackward = $forwardBackward->getRoleDetails($request);
+            $roleDetails['roleDetails'] = collect($forwardBackward)['original']['data'];
+
+            # Timeline Data
+            $timelineData['timelineData'] = collect($request);
+
+            # Departmental Post
+            $custom = $mCustomDetails->getCustomDetails($request);
+            $departmentPost['departmentalPost'] = collect($custom)['original']['data'];
+
+            # Payments Details
+            $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $citizenComment, $roleDetails, $timelineData, $departmentPost);
+            return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "02", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+
+    /**
+     * |------------------ Basic Details ------------------|
+     * | @param applicationDetails
+     * | @var collectionApplications
+        | Serial No : 08.01
+        | Workinig 
+     */
+    public function getBasicDetails($applicationDetails, $wardDetails)
+    {
+        $collectionApplications = collect($applicationDetails)->first();
+        return new Collection([
+            ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $wardDetails->ward_name],
+            ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
+            ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
+            ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
+            ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
+        ]);
+    }
+
+    /**
+     * |------------------ Property Details ------------------|
+     * | @param applicationDetails
+     * | @var propertyDetails
+     * | @var collectionApplications
+        | Serial No : 08.02
+        | Workinig 
+     */
+    public function getpropertyDetails($applicationDetails, $wardDetails)
+    {
+        $propertyDetails = array();
+        $collectionApplications = collect($applicationDetails)->first();
+        if (!is_null($collectionApplications->holding_no)) {
+            array_push($propertyDetails, ['displayString' => 'Holding No',    'key' => 'AppliedBy',  'value' => $collectionApplications->holding_no]);
+        }
+        if (!is_null($collectionApplications->saf_no)) {
+            array_push($propertyDetails, ['displayString' => 'Saf No',        'key' => 'AppliedBy',   'value' => $collectionApplications->saf_no]);
+        }
+        array_push($propertyDetails, ['displayString' => 'Ward No',       'key' => 'WardNo',      'value' => $wardDetails->ward_name]);
+        array_push($propertyDetails, ['displayString' => 'Address',       'key' => 'Address',     'value' => $collectionApplications->address]);
+        array_push($propertyDetails, ['displayString' => 'Owner Type',    'key' => 'OwnerType',   'value' => $collectionApplications->pin]);
+
+        return $propertyDetails;
+    }
+
+    /**
+     * |------------------ Owner details ------------------|
+     * | @param ownerDetails
+        | Serial No : 08.04
+        | Workinig 
+     */
+    public function getPetDetails($applicationDetails)
+    {
+        $collectionApplications = collect($applicationDetails)->first();
+        return new Collection([
+            ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $collectionApplications->ward_name],
+            ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
+            ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
+            ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
+            ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
+        ]);
+    }
+
+    /**
+     * |------------------ Owner details ------------------|
+     * | @param ownerDetails
+        | Serial No : 08.04
+        | Workinig 
+     */
+    public function getOwnerDetails($ownerDetails)
+    {
+        return collect($ownerDetails)->map(function ($value, $key) {
+            return [
+                $key + 1,
+                $value['owner_name'],
+                $value['guardian_name'],
+                $value['mobile_no'],
+                $value['email'],
+                $value['city'],
+                $value['district']
+            ];
+        });
+    }
+
+    /**
+     * |------------------ Get Card Details ------------------|
+     * | @param applicationDetails
+     * | @param ownerDetails
+     * | @var ownerDetail
+     * | @var collectionApplications
+        | Serial No : 08.05
+        | Workinig 
+     */
+    public function getCardDetails($applicationDetails, $ownerDetails, $wardDetails)
+    {
+        $ownerName = collect($ownerDetails)->map(function ($value) {
+            return $value['owner_name'];
+        });
+        $ownerDetail = $ownerName->implode(',');
+        $collectionApplications = collect($applicationDetails)->first();
+        return new Collection([
+            ['displayString' => 'Ward No.',             'key' => 'WardNo.',           'value' => $wardDetails->ward_name],
+            ['displayString' => 'Application No.',      'key' => 'ApplicationNo.',    'value' => $collectionApplications->application_no],
+            ['displayString' => 'Owner Name',           'key' => 'OwnerName',         'value' => $ownerDetail],
+            ['displayString' => 'Property Type',        'key' => 'PropertyType',      'value' => $collectionApplications->property_type],
+            ['displayString' => 'Connection Type',      'key' => 'ConnectionType',    'value' => $collectionApplications->connection_type],
+            ['displayString' => 'Connection Through',   'key' => 'ConnectionThrough', 'value' => $collectionApplications->connection_through],
+            ['displayString' => 'Apply-Date',           'key' => 'ApplyDate',         'value' => $collectionApplications->apply_date],
+            ['displayString' => 'Total Area (sqt)',     'key' => 'TotalArea',         'value' => $collectionApplications->area_sqft]
+        ]);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////END
+
+    /**
+     * | Get application details by application id
+     * | collective data with registration charges
+        | Serial No :
+        | Under construction
+     */
+    public function getApplicationDetails(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|numeric'
+        ]);
+        try {
+            $applicationId          = $req->applicationId;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetRegistrationCharge = new PetRegistrationCharge();
+
+            $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+            if (is_null($applicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationDetails->ref_application_id)
+                ->select(
+                    'id AS chargeId',
+                    'amount',
+                    'registration_fee',
+                    'paid_status',
+                    'charge_category',
+                    'charge_category_name'
+                )
+                ->first();
+            if (is_null($chargeDetails)) {
+                throw new Exception("Chearges for respective application not found!");
+            }
+            $applicationDetails['charges'] = $chargeDetails;
+            return responseMsgs(true, "Listed application details!", remove_null($applicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Delete the Application before payment 
+        | Serial No : 
+        | Caution 
+        | Working
+        | Cross Check
+     */
+    public function deletePetApplication(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|integer'
+        ]);
+        try {
+            $user                       = authUser();
+            $applicationId              = $req->applicationId;
+            $confPetModuleId            = $this->_petModuleId;
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $mWfActiveDocument          = new WfActiveDocument();
+            $mPetRegistrationCharge     = new PetRegistrationCharge();
+
+            $applicantDetals = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $this->checkParamsForDelete($applicantDetals, $user);
+
+            DB::beginTransaction();
+            $mPetActiveRegistration->deleteApplication($applicantDetals);
+            $mWfActiveDocument->deleteDocuments($applicationId, $applicantDetals->workflow_id, $confPetModuleId);
+            $mPetRegistrationCharge->deleteCharges($applicationId);
+            DB::commit();
+            return responseMsgs(true, "Application Successfully Deleted", "", "", "1.0", "", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Check the parameter for deleting Application 
+     * | @param applicationDetails
+     * | @param user
+        | Serial No :
+        | Working
+     */
+    public function checkParamsForDelete($applicationDetails, $user)
+    {
+        $applyMode              = $this->_applyMode;
+        $trantype               = $this->_tranType;
+        $applyMode              = collect($applyMode)->flip();
+        $mPetTran               = new PetTran();
+        $mPetRegistrationCharge = new PetRegistrationCharge();
+        $applicationId          = $applicationDetails->ref_application_id;
+
+        if (is_null($applicationDetails)) {
+            throw new Exception("Relted Data or Owner not found!");
+        }
+        if ($applicationDetails->payment_status == 1) {
+            throw new Exception("Your paymnet is done application Cannot be Deleted!");
+        }
+        if (!is_null($applicationDetails->current_role)) {
+            throw new Exception("application is under process can't be deleted!");
+        }
+        if ($applicationDetails->apply_mode == $applyMode['1']) {
+            if ($applicationDetails->citizen_id != $user->id) {
+                throw new Exception("You'r not the user of this form!");
+            }
+        } else {
+            if ($applicationDetails->user_id != $user->id) {
+                throw new Exception("You'r not the user of this form!");
+            }
+        }
+
+        if ($applicationDetails->renewal == 0) {
+            $tranTypeId = $trantype['New_Apply'];
+        }
+        if ($applicationDetails->renewal == 1) {
+            $tranTypeId = $trantype['Renewal'];
+        }
+        $transactionDetails = $mPetTran->getTranDetails($applicationId, $tranTypeId)->first();
+        if (!is_null($transactionDetails)) {
+            throw new Exception("invalid operation Transaction details exist for application!");
+        }
+        $chargePayment = $mPetRegistrationCharge->getChargesbyId($applicationId)->where('paid_status', 1)->first();
+        if (!is_null($chargePayment)) {
+            throw new Exception("Payment for Respective charges exist!");
+        }
+    }
+
 }

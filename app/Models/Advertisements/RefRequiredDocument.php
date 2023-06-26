@@ -17,11 +17,24 @@ class RefRequiredDocument extends Model
             ->first();
     }
 
-    public function listDocument($advtModuleId){
-        return RefRequiredDocument::select('requirements','module_id','code')
-        ->where('module_id', $advtModuleId)
-        ->get();
-
+    public function listDocument($advtModuleId)
+    {
+        return RefRequiredDocument::select('requirements', 'module_id', 'code')
+            ->where('module_id', $advtModuleId)
+            ->get();
     }
 
+    /**
+     * | Get  All Document Collictively For Array Of DocCode
+     */
+    public function getCollectiveDocByCode($moduldId, $docCodes)
+    {
+        return RefRequiredDocument::select(
+            'requirements',
+            'code'
+        )
+            ->where('module_id', $moduldId)
+            ->whereIn('code', $docCodes)
+            ->get();
+    }
 }

@@ -36,6 +36,7 @@ return [
         2 =>  "TENANTED",
     ],
     "WORKFLOW_MASTER_ID" => 31,
+    "PET_MODULE_ID" => 9,
     "ROLE_LABEL" => [
         "BO" => 11,
         "DA" => 6,
@@ -54,4 +55,37 @@ return [
         "5" => "Employee"
     ],
     "PARAM_ID" => 34,
+    "PET_RELATIVE_PATH" => [
+        "REGISTRATION" => 'Uploads/Pet/Application',
+    ],
+    "DOC_REQ_CATAGORY" => [
+        "1" => "R",
+        "2" => "OR",
+        "3" => "O"
+    ],
+    "DB_KEYS" => [
+        "1" => "citizen_id",
+    ],
+    "FEE_CHARGES" => [
+        "REGISTRATION" => 1
+    ],
+    "APPLICATION_TYPE" =>
+    [
+        "NEW_APPLY" => 1,
+        "RENEWAL" => 2
+    ],
+
+    'PAYMENT_MODE' => [
+        '1' => 'ONLINE',
+        '2' => 'NETBANKING',
+        '3' => 'CASH',
+        '4' => 'CHEQUE',
+        '5' => 'DD',
+        '6' => 'NEFT'
+    ],
+
+    "TRANSACTION_TYPE" => [
+        "New_Apply" => 1,
+        "Renewal" => 2
+    ],
 ];
