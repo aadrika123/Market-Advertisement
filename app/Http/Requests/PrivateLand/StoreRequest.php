@@ -51,7 +51,7 @@ class StoreRequest extends FormRequest
             'noOfHoardings' => 'required|integer',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
-            'installationLocation' => 'required',
+            'installationLocation' => 'required|integer',
             'ulbId' => 'required|integer',
             'typology' => 'required|integer',
 
