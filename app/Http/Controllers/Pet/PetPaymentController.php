@@ -7,6 +7,7 @@ use App\Http\Requests\Pet\PetPaymentReq;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetTran;
+use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -59,8 +60,14 @@ class PetPaymentController extends Controller
             $mPetRegistrationCharge = new PetRegistrationCharge();
             $mPetTran = new PetTran();
 
-            return  $payRelatedDetails = $this->checkParamForPayment($req);
+            $payRelatedDetails = $this->checkParamForPayment($req);
+
+            DB::beginTransaction();
+            $idGeneration = new PrefixIdGenerator($petParamId, $ulbId);
+            $petApplicationNo = $idGeneration->generate();
+            DB::commit();
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -75,11 +82,13 @@ class PetPaymentController extends Controller
      */
     public function checkParamForPayment($req)
     {
-        $confApplicationType    = $this->_applicationType;
         $applicationId          = $req->applicationId;
+        $confApplicationType    = $this->_applicationType;
         $mPetActiveRegistration = new PetActiveRegistration();
         $mPetRegistrationCharge = new PetRegistrationCharge();
+        $mPetTran               = new PetTran();
 
+        # Application details 
         $applicationDetail = $mPetActiveRegistration->getPetApplicationById($applicationId)
             ->where('pet_active_details.status', 1)
             ->where('pet_active_applicants.status', 1)
@@ -99,6 +108,7 @@ class PetPaymentController extends Controller
                 break;
         }
 
+        # Charges for the application
         $regisCharges = $mPetRegistrationCharge->getChargesbyId($applicationId)
             ->where('charge_category', $chargeCategory)
             ->where('paid_status', 0)
@@ -113,6 +123,16 @@ class PetPaymentController extends Controller
         if (in_array($regisCharges->paid_status, [1, 2])) {
             throw new Exception("Payment has been done!");
         }
-        // if()
+
+        # Transaction details
+        $transDetails = $mPetTran->getTranDetails($applicationId, $chargeCategory)->first();
+        if ($transDetails) {
+            throw new Exception("Transaction has been Done!");
+        }
+
+        return [
+            "applicationDetails" => $applicationDetail,
+            "PetCharges" => $regisCharges
+        ];
     }
 }

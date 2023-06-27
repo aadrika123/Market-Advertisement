@@ -69,8 +69,7 @@ return [
     "FEE_CHARGES" => [
         "REGISTRATION" => 1
     ],
-    "APPLICATION_TYPE" =>
-    [
+    "APPLICATION_TYPE" => [                                       // related to TRANSACTION_TYPE
         "NEW_APPLY" => 1,
         "RENEWAL" => 2
     ],
@@ -84,7 +83,7 @@ return [
         '6' => 'NEFT'
     ],
 
-    "TRANSACTION_TYPE" => [
+    "TRANSACTION_TYPE" => [                                     // Realted to APPLICATION_TYPE                          
         "New_Apply" => 1,
         "Renewal" => 2
     ],

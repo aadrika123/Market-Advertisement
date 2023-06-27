@@ -358,7 +358,7 @@ class PetRegistrationController extends Controller
             $totalDocLists = collect($waterTypeDocs);
             $totalDocLists['docUploadStatus']   = $refPetApplication->doc_upload_status;
             $totalDocLists['docVerifyStatus']   = $refPetApplication->doc_verify_status;
-            $totalDocLists['ApplicationId']     = $petApplicationId;
+            $totalDocLists['ApplicationNo']     = $refPetApplication->application_no;
             return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
