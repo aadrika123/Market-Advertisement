@@ -40,7 +40,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
             ['displayString' => 'Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
             ['displayString' => 'Installation Location', 'key' => 'mInstallationLocation', 'value' => $data['m_installation_location']],
-            ['displayString' => 'ssType', 'key' => 'type', 'value' => $data['type']]
+            ['displayString' => 'Type', 'key' => 'type', 'value' => $data['type']]
         ]);
     }
 
