@@ -41,18 +41,18 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
     Route::controller(PetRegistrationController::class)->group(function () {
         Route::post('get-master-data', 'getAllMasters');                                                        // Admin/ Citizen        
         Route::post('application/apply-pet-registration', 'applyPetRegistration');                              // Citizen
-        Route::post('application/get-doc-to-upload', 'getDocToUpload');
-        Route::post('application/upload-docs', 'uploadPetDoc');
-        Route::post('application/get-uploaded-docs', 'getUploadDocuments');
-        Route::post('application/get-registration-list', 'getApplicationList');
-        Route::post('application/get-details', 'getApplicationDetails');
-        Route::post('application/delete', 'deletePetApplication');
+        Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
+        Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
+        Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
+        Route::post('application/get-registration-list', 'getApplicationList');                                 // Citizen
+        Route::post('application/get-details', 'getApplicationDetails');                                        // Citizen
+        Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
     });
 
     /**
      * | Pet Module payment Operations
      */
     Route::controller(PetPaymentController::class)->group(function () {
-        Route::post("application/offline-payment", "offlinePayment");
+        Route::post("application/offline-payment", "offlinePayment");                                           // Admin
     });
 });

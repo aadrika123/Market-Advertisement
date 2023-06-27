@@ -32,6 +32,7 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->finisher_role_id       = $req->finisherRoleId;
         $mPetActiveRegistration->ip_address             = $req->ip();
         $mPetActiveRegistration->ulb_id                 = $req->ulbId;
+        $mPetActiveRegistration->ward_id                = $req->ward;
 
         $mPetActiveRegistration->application_type       = $req->applicationType;                    // type new or renewal
         $mPetActiveRegistration->occurrence_type_id     = $req->petFrom;
@@ -70,10 +71,19 @@ class PetActiveRegistration extends Model
     {
         return PetActiveRegistration::select(
             'pet_active_registrations.id as ref_application_id',
+            'pet_active_details.id as ref_pet_id',
+            'pet_active_applicants.id as ref_applicant_id',
             'pet_active_registrations.*',
             'pet_active_details.*',
-            'pet_active_applicants.*'
+            'pet_active_applicants.*',
+            'pet_active_registrations.status as registrationStatus',
+            'pet_active_details.status as petStatus',
+            'pet_active_applicants.status as applicantsStatus',
+            'ulb_ward_masters.ward_name',
+            'ulb_masters.ulb_name'
         )
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.id', $applicationId)
@@ -107,8 +117,10 @@ class PetActiveRegistration extends Model
     /**
      * | Delete the application before the payment 
      */
-    public function deleteApplication($application)
+    public function deleteApplication($applicationId)
     {
-        $application->delete();
+        PetActiveRegistration::where('pet_active_registrations.id', $applicationId)
+            ->where('pet_active_registrations.status', 1)
+            ->delete();
     }
 }

@@ -88,4 +88,9 @@ return [
         "New_Apply" => 1,
         "Renewal" => 2
     ],
+
+    "PET_TYPE" => [
+        "DOG" => 1,
+        "CAT" => 2
+    ]
 ];

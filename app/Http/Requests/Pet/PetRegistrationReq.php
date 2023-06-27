@@ -44,15 +44,13 @@ class PetRegistrationReq extends FormRequest
             'petType'               => 'required|',
             'ulbId'                 => 'required|int',
             'ward'                  => 'required|int',
-            'owner'                 => 'nullable|array'
+            'applicantName'         => "required|",
+            'mobileNo'              => "required|digits:10|regex:/[0-9]{10}/",
+            'email'                 => "nullable|email",
+            'panNo'                 => "required|min:10|max:10|alpha_num|",
+            'telephone'             => "nullable|int|regex:/[0-9]{10}/",
         ];
-        if (isset($this->owner) && $this->owner) {
-            $rules["owner.*.applicantName"]    = "required|";
-            $rules["owner.*.mobileNo"]         = "required|digits:10|regex:/[0-9]{10}/";
-            $rules["owner.*.email"]            = "nullable|email";
-            $rules["owner.*.panNo"]            = "required|";
-            $rules["owner.*.telephone"]        = "nullable|int|regex:/[0-9]{10}/";
-        }
+
         if (isset($this->applyThrough) && $this->applyThrough) {
             $rules['propertyNo'] = 'required|';
         }

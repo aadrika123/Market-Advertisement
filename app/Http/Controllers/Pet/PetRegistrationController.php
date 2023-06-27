@@ -159,6 +159,7 @@ class PetRegistrationController extends Controller
             $petParamId                 = $this->_petParamId;
             $feeId                      = $this->_fee;
             $confApplicationType        = $this->_applicationType;
+            $confApplyThrough           = $this->_masterDetails['REGISTRATION_THROUGH'];
 
             # Get iniciater and finisher for the workflow 
             $ulbWorkflowId = $mWfWorkflow->getulbWorkflowId($workflowMasterId, $ulbId);
@@ -175,19 +176,26 @@ class PetRegistrationController extends Controller
             $initiatorRoleId    = collect(DB::select($refInitiatorRoleId))->first()->role_id;
 
             $refValidatedDetails = $this->checkParamForRegister($req);
+
+            # Data Base interaction 
             DB::beginTransaction();
             $idGeneration = new PrefixIdGenerator($petParamId, $ulbId);
             $petApplicationNo = $idGeneration->generate();
             $refData = [
                 "finisherRoleId"    => $finisherRoleId,
                 "initiatorRoleId"   => $initiatorRoleId,
-                "holdingNo"         => collect($refValidatedDetails['propDetails'])['holding_no'] ?? null,
-                "safNo"             => collect($refValidatedDetails['propDetails'])['saf_no'] ?? null,
                 "workflowId"        => $ulbWorkflowId->id,
                 "applicationNo"     => $petApplicationNo,
             ];
+            if ($req->applyThrough == $confApplyThrough['Holding']) {
+                $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
+            }
+            if ($req->applyThrough == $confApplyThrough['Saf']) {
+                $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
+            }
             $req->merge($refData);
 
+            # Renewal and the New Registration
             if ($req->isRenewal == 0 || !isset($req->isRenewal)) {
                 if (isset($req->registrationId)) {
                     throw new Exception("Registration No is Not Req for new Pet Registraton!");
@@ -222,6 +230,7 @@ class PetRegistrationController extends Controller
             ]);
             $mPetRegistrationCharge->saveRegisterCharges($metaRequest);
             DB::commit();
+
             $returnData = [
                 "id" => $applicationDetails['id'],
                 "applicationNo" => $applicationDetails['applicationNo'],
@@ -347,8 +356,9 @@ class PetRegistrationController extends Controller
                 return $this->filterDocument($value, $refPetApplication)->first();
             });
             $totalDocLists = collect($waterTypeDocs);
-            $totalDocLists['docUploadStatus'] = $refPetApplication->doc_upload_status;
-            $totalDocLists['docVerifyStatus'] = $refPetApplication->doc_verify_status;
+            $totalDocLists['docUploadStatus']   = $refPetApplication->doc_upload_status;
+            $totalDocLists['docVerifyStatus']   = $refPetApplication->doc_verify_status;
+            $totalDocLists['ApplicationId']     = $petApplicationId;
             return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
@@ -696,6 +706,7 @@ class PetRegistrationController extends Controller
                         "pet_active_registrations.*",
                         "pet_active_applicants.applicant_name",
                     )
+                    ->orderByDesc('pet_active_registrations.id')
                     ->get();
             } catch (QueryException $q) {
                 return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
@@ -969,8 +980,9 @@ class PetRegistrationController extends Controller
                 )
                 ->first();
             if (is_null($chargeDetails)) {
-                throw new Exception("Chearges for respective application not found!");
+                throw new Exception("Charges for respective application not found!");
             }
+            $chargeDetails['roundAmount'] = round($chargeDetails['amount']);
             $applicationDetails['charges'] = $chargeDetails;
             return responseMsgs(true, "Listed application details!", remove_null($applicationDetails), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1002,7 +1014,7 @@ class PetRegistrationController extends Controller
             $this->checkParamsForDelete($applicantDetals, $user);
 
             DB::beginTransaction();
-            $mPetActiveRegistration->deleteApplication($applicantDetals);
+            $mPetActiveRegistration->deleteApplication($applicationId);
             $mWfActiveDocument->deleteDocuments($applicationId, $applicantDetals->workflow_id, $confPetModuleId);
             $mPetRegistrationCharge->deleteCharges($applicationId);
             DB::commit();
@@ -1038,6 +1050,9 @@ class PetRegistrationController extends Controller
         if (!is_null($applicationDetails->current_role)) {
             throw new Exception("application is under process can't be deleted!");
         }
+        if ($applicationDetails->registrationStatus == 0) {                                             // Static
+            throw new Exception("application is allready deactivated!");
+        }
         if ($applicationDetails->apply_mode == $applyMode['1']) {
             if ($applicationDetails->citizen_id != $user->id) {
                 throw new Exception("You'r not the user of this form!");
@@ -1063,5 +1078,4 @@ class PetRegistrationController extends Controller
             throw new Exception("Payment for Respective charges exist!");
         }
     }
-
 }

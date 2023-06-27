@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetPaymentReq;
+use App\Models\Pet\PetActiveRegistration;
+use App\Models\Pet\PetRegistrationCharge;
+use App\Models\Pet\PetTran;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -21,6 +24,7 @@ class PetPaymentController extends Controller
     private $_docReqCatagory;
     private $_dbKey;
     private $_fee;
+    private $_applicationType;
     # Class constructer 
     public function __construct()
     {
@@ -35,6 +39,7 @@ class PetPaymentController extends Controller
         $this->_docReqCatagory      = Config::get("pet.DOC_REQ_CATAGORY");
         $this->_dbKey               = Config::get("pet.DB_KEYS");
         $this->_fee                 = Config::get("pet.FEE_CHARGES");
+        $this->_applicationType     = Config::get("pet.APPLICATION_TYPE");
     }
 
     /**
@@ -45,13 +50,69 @@ class PetPaymentController extends Controller
     public function offlinePayment(PetPaymentReq $req)
     {
         $req->validate([
-            'amount' => 'required|int',
+            'amount' => 'required|numeric|min:0',
             'remarks' => 'sometimes'
         ]);
         try {
-            $m = 
+            $user = authUser();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetRegistrationCharge = new PetRegistrationCharge();
+            $mPetTran = new PetTran();
+
+            return  $payRelatedDetails = $this->checkParamForPayment($req);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
+    }
+
+
+    /**
+     * | Check the details and the function for the payment 
+     * | return details for payment process
+     * | @param req
+        | Serial No: 
+        | Under Construction
+     */
+    public function checkParamForPayment($req)
+    {
+        $confApplicationType    = $this->_applicationType;
+        $applicationId          = $req->applicationId;
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $mPetRegistrationCharge = new PetRegistrationCharge();
+
+        $applicationDetail = $mPetActiveRegistration->getPetApplicationById($applicationId)
+            ->where('pet_active_details.status', 1)
+            ->where('pet_active_applicants.status', 1)
+            ->first();
+        if (is_null($applicationDetail)) {
+            throw new Exception("Application details not found for ID:$applicationId!");
+        }
+
+        # Application type hence the charge type
+        switch ($applicationDetail->renewal) {
+            case (0):
+                $chargeCategory = $confApplicationType['NEW_APPLY'];
+                break;
+
+            case (1):
+                $chargeCategory = $confApplicationType['RENEWAL'];
+                break;
+        }
+
+        $regisCharges = $mPetRegistrationCharge->getChargesbyId($applicationId)
+            ->where('charge_category', $chargeCategory)
+            ->where('paid_status', 0)
+            ->first();
+
+        if (is_null($regisCharges)) {
+            throw new Exception("Charges not found!");
+        }
+        if (round($regisCharges->amount) != $req->amount) {
+            throw new Exception("Amount Not matched!");
+        }
+        if (in_array($regisCharges->paid_status, [1, 2])) {
+            throw new Exception("Payment has been done!");
+        }
+        // if()
     }
 }
