@@ -54,7 +54,7 @@ class AdvTypologyMstr extends Model
     /**
      * | Get Typology List for application form
      */
-    public function listTypology1()
+    public function listTypology1($ulbId)
     {
         $typology = AdvTypologyMstr::where('status', '1')
             ->select(
@@ -63,6 +63,7 @@ class AdvTypologyMstr extends Model
                 'type_inner as subtype',
                 'descriptions'
             )
+            ->where('ulb_id',$ulbId)
             ->orderBy('type_inner')
             ->get();
 
