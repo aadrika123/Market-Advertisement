@@ -61,6 +61,7 @@ class AdvRejectedSelfadvertisement extends Model
             'application_date',
             'applicant',
             'entity_name',
+            'ulb_id',
             'entity_address',
             'payment_status',
             'rejected_date',

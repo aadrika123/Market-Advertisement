@@ -195,12 +195,13 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
             $mAdvActivePrivateland = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mAdvActivePrivateland->listInbox($roleIds);                   // <----- Get Inbox List From Model
+            $inboxList = $mAdvActivePrivateland->listInbox($roleIds,$ulbId);                   // <----- Get Inbox List From Model
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -223,12 +224,13 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
             $mPrivateLand = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mPrivateLand->listOutbox($roleIds);                            // <----- Get Outbox List From Model
+            $outboxList = $mPrivateLand->listOutbox($roleIds,$ulbId);                            // <----- Get Outbox List From Model
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -675,7 +677,8 @@ class PrivateLandController extends Controller
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                    $approvedPrivateland->payment_amount = $req->payment_amount;
+                    $approvedPrivateland->payment_amount = round($req->payment_amount);
+                    $approvedPrivateland->demand_amount = $req->payment_amount;
                     $approvedPrivateland->license_no =  $generatedId;
                     $approvedPrivateland->approve_date = Carbon::now();
                     $approvedPrivateland->zone = $zone;
@@ -706,7 +709,8 @@ class PrivateLandController extends Controller
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                    $approvedPrivateland->payment_amount = $req->payment_amount;
+                    $approvedPrivateland->payment_amount = round($req->payment_amount);
+                    $approvedPrivateland->demand_amount = $req->payment_amount;
                     $approvedPrivateland->payment_status = $req->payment_status;
                     $approvedPrivateland->approve_date = Carbon::now();
                     $approvedPrivateland->save();

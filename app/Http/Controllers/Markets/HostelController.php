@@ -124,11 +124,12 @@ class HostelController extends Controller
 
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveHostel->listInbox($roleIds);                       // <----- Get Inbox List
+            $inboxList = $mMarActiveHostel->listInbox($roleIds, $ulbId);                       // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -153,11 +154,12 @@ class HostelController extends Controller
 
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveHostel->listOutbox($roleIds);                      // <----- Get Outbox List
+            $outboxList = $mMarActiveHostel->listOutbox($roleIds,$ulbId);                      // <----- Get Outbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

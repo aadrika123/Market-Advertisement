@@ -34,6 +34,7 @@ class AdvPrivateland extends Model
             'approve_date',
             'citizen_id',
             'user_id',
+            'ulb_id',
             'workflow_id',
             'license_no',
             DB::raw("'privateLand' as type")
@@ -162,7 +163,7 @@ class AdvPrivateland extends Model
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount,'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvPrivateland->payment_details = json_encode($payDetails);
             if ($mAdvPrivateland->renew_no == NULL) {

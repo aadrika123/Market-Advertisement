@@ -31,6 +31,7 @@ class MarLodge extends Model
             'payment_status',
             'approve_date',
             'citizen_id',
+            'ulb_id',
             'valid_upto',
             'workflow_id',
             'license_no',
@@ -246,5 +247,24 @@ class MarLodge extends Model
     public function approveListForReport()
     {
         return MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approve' as application_status"));
+    }
+
+    /**
+     * | Get Reciept Details 
+     * | Created On : 23/6/2023
+     */
+    public function getApprovalLetter($applicationId)
+    {
+        $recieptDetails = MarLodge::select(
+            'mar_lodges.approve_date',
+            'mar_lodges.applicant as applicant_name',
+            'mar_lodges.application_no',
+            'mar_lodges.license_no',
+            'mar_lodges.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('mar_lodges.id', $applicationId)
+            ->first();
+        return $recieptDetails;
     }
 }

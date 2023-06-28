@@ -63,6 +63,7 @@ class AdvRejectedVehicle extends Model
             'application_date',
             'applicant',
             'entity_name',
+            'ulb_id',
             'rejected_date',
         )
             ->orderByDesc('id')

@@ -33,6 +33,7 @@ class AdvVehicle extends Model
             'valid_upto',
             'valid_from',
             'user_id',
+            'ulb_id',
             'workflow_id',
             DB::raw("'movableVehicle' as type")
         )
@@ -167,7 +168,7 @@ class AdvVehicle extends Model
             $mAdvVehicle->payment_date = Carbon::now();
 
             // Payment Details
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount,'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvVehicle->payment_details =  json_encode($payDetails);
             if ($mAdvVehicle->renew_no == NULL) {

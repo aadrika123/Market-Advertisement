@@ -31,6 +31,7 @@ class MarDharamshala extends Model
             'approve_date',
             'payment_status',
             'citizen_id',
+            'ulb_id',
             'valid_upto',
             'workflow_id',
             'license_no',
@@ -239,5 +240,24 @@ class MarDharamshala extends Model
     public function approveListForReport()
     {
         return MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"));
+    }
+
+    /**
+     * | Get Reciept Details 
+     * | Created On : 23/6/2023
+     */
+    public function getApprovalLetter($applicationId)
+    {
+        $recieptDetails = MarDharamshala::select(
+            'mar_dharamshalas.approve_date',
+            'mar_dharamshalas.applicant as applicant_name',
+            'mar_dharamshalas.application_no',
+            'mar_dharamshalas.license_no',
+            'mar_dharamshalas.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('mar_dharamshalas.id', $applicationId)
+            ->first();
+        return $recieptDetails;
     }
 }

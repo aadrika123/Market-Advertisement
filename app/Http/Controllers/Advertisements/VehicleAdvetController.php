@@ -192,11 +192,12 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mvehicleAdvets->listInbox($roleIds);                          // <----- get Inbox list
+            $inboxList = $mvehicleAdvets->listInbox($roleIds,$ulbId);                          // <----- get Inbox list
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -218,11 +219,12 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mvehicleAdvets->listOutbox($roleIds);                       // <----- Get Outbox list
+            $outboxList = $mvehicleAdvets->listOutbox($roleIds,$ulbId);                       // <----- Get Outbox list
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050305", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -658,7 +660,8 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->setTable('adv_vehicles');
                     $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
-                    $approvedVehicle->payment_amount = $req->payment_amount;
+                    $approvedVehicle->payment_amount = round($req->payment_amount);
+                    $approvedVehicle->demand_amount = $req->payment_amount;
                     $approvedVehicle->license_no = $generatedId;
                     $approvedVehicle->approve_date = Carbon::now();
                     $approvedVehicle->zone = $zone;
@@ -692,7 +695,8 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->setTable('adv_vehicles');
                     $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
-                    $approvedVehicle->payment_amount = $req->payment_amount;
+                    $approvedVehicle->payment_amount = round($req->payment_amount);
+                    $approvedVehicle->demand_amount = $req->payment_amount;
                     $approvedVehicle->approve_date = Carbon::now();
                     $approvedVehicle->save();
 

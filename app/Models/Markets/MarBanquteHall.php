@@ -33,6 +33,7 @@ class MarBanquteHall extends Model
             'approve_date',
             'citizen_id',
             'user_id',
+            'ulb_id',
             'application_type',
             'valid_upto',
             'workflow_id',
@@ -246,5 +247,25 @@ class MarBanquteHall extends Model
     public function  approveListForReport()
     {
         return MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approve' as application_status"));
+    }
+
+
+    /**
+     * | Get Reciept Details 
+     * | Created On : 23/6/2023
+     */
+    public function getApprovalLetter($applicationId)
+    {
+        $recieptDetails = MarBanquteHall::select(
+            'mar_banqute_halls.approve_date',
+            'mar_banqute_halls.applicant as applicant_name',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.license_no',
+            'mar_banqute_halls.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('mar_banqute_halls.id', $applicationId)
+            ->first();
+        return $recieptDetails;
     }
 }

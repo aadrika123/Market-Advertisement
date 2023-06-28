@@ -164,7 +164,6 @@ class AdvSelfadvertisement extends Model
      */
     public function paymentByCash($req)
     {
-
         if ($req->status == '1') {
             // Self Advertisement Table Update
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
@@ -173,7 +172,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_mode = "Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount,'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
             if ($mAdvSelfadvertisement->renew_no == NULL) {                             // Fresh Application Time 

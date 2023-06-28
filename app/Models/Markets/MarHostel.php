@@ -32,6 +32,7 @@ class MarHostel extends Model
             'payment_amount',
             'approve_date',
             'citizen_id',
+            'ulb_id',
             'valid_upto',
             'workflow_id',
             'license_no',
@@ -252,5 +253,24 @@ class MarHostel extends Model
     public function approveListForReport()
     {
         return MarHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"));
+    }
+
+    /**
+     * | Get Reciept Details 
+     * | Created On : 23/6/2023
+     */
+    public function getApprovalLetter($applicationId)
+    {
+        $recieptDetails = MarHostel::select(
+            'mar_hostels.approve_date',
+            'mar_hostels.applicant as applicant_name',
+            'mar_hostels.application_no',
+            'mar_hostels.license_no',
+            'mar_hostels.payment_date as license_start_date',
+            DB::raw('CONCAT(application_date,id) AS reciept_no')
+        )
+            ->where('mar_hostels.id', $applicationId)
+            ->first();
+        return $recieptDetails;
     }
 }

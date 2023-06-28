@@ -68,6 +68,7 @@ class AdvAgency extends Model
             'valid_from',
             'citizen_id',
             'user_id',
+            'ulb_id',
             'workflow_id',
             'license_no',
             DB::raw("'agency' as type"),
@@ -224,7 +225,7 @@ class AdvAgency extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount,'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvAgency->payment_details = json_encode($payDetails);
             if ($mAdvAgency->renew_no == NULL) {
@@ -241,7 +242,8 @@ class AdvAgency extends Model
             // Renewal Table Updation
             $mAdvAgencyRenewal = AdvAgencyRenewal::find($renewal_id);
             $mAdvAgencyRenewal->payment_status = 1;
-            $mAdvAgencyRenewal->payment_amount =  $mAdvAgency->amount;
+            $mAdvAgencyRenewal->payment_amount =  $mAdvAgency->payment_amount;
+            $mAdvAgencyRenewal->demand_amount =  $mAdvAgency->demand_amount;
             $mAdvAgencyRenewal->payment_id =  $pay_id;
             $mAdvAgencyRenewal->payment_date = Carbon::now();
             $mAdvAgencyRenewal->payment_mode = "Cash";

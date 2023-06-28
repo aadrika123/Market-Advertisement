@@ -25,6 +25,9 @@ class AdvMarTransaction extends Model
         $addData->transaction_no    = "$req->id-" . time();
         $addData->transaction_date  = $req->payment_date;
         $addData->amount            = $req->payment_amount;
+        if (isset($req->demand_amount)) {
+            $addData->demand_amount     = $req->demand_amount;
+        }
         $addData->payment_details   = $req->payment_details;
         $addData->payment_mode      = $paymentMode;
         if (isset($req->entity_ward_id)) {

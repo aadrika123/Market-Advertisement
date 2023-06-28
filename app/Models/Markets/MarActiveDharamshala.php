@@ -190,7 +190,7 @@ class MarActiveDharamshala extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds)
+    public function listInbox($roleIds,$ulbId)
     {
         $inbox = DB::table('mar_active_dharamshalas')
             ->select(
@@ -204,6 +204,7 @@ class MarActiveDharamshala extends Model
             )
             ->orderByDesc('id')
             ->where('parked',NULL)
+            ->where('ulb_id',$ulbId)
             ->whereIn('current_role_id', $roleIds)
             ->get();
         return $inbox;
@@ -212,7 +213,7 @@ class MarActiveDharamshala extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds)
+    public function listOutbox($roleIds,$ulbId)
     {
         $outbox = DB::table('mar_active_dharamshalas')
             ->select(
@@ -226,6 +227,7 @@ class MarActiveDharamshala extends Model
             )
             ->orderByDesc('id')
             ->where('parked',NULL)
+            ->where('ulb_id',$ulbId)
             ->whereNotIn('current_role_id', $roleIds)
             ->get();
         return $outbox;

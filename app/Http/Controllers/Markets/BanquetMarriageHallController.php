@@ -125,12 +125,13 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds);                   // <----- Get Inbox List 
+            $inboxList = $mMarActiveBanquteHall->listInbox($roleIds, $ulbId);                   // <----- Get Inbox List 
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -152,12 +153,13 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds);                 // <----- Get Outbox List
+            $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds, $ulbId);                 // <----- Get Outbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -223,7 +225,7 @@ class BanquetMarriageHallController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
-            $fullDetailsData['apply_date'] =Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
 
             $endTime = microtime(true);

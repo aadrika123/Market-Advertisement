@@ -225,12 +225,13 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId= authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds);             // <------ Get List From Model
+            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds,$ulbId);             // <------ Get List From Model
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -253,12 +254,13 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId= authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds);           // <------ Get List From Model
+            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds,$ulbId);           // <------ Get List From Model
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -754,13 +756,16 @@ class SelfAdvetController extends Controller
                 $mCalculateRate = new CalculateRate;
                 $data['payment_amount'] = ['payment_amount' => 0];
                 $data['payment_status'] = ['payment_status' => 1];
+                $data['demand_amount'] = ['demand_amount' => 0];
                 if ($mAdvActiveSelfadvertisement->advt_category > 10) {
                     $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area, $mAdvActiveSelfadvertisement->ulb_id);   // Calculate Price
                     $data['payment_status'] = ['payment_status' => 0];
-                    $data['payment_amount'] = ['payment_amount' => $payment_amount];
+                    $data['payment_amount'] = ['payment_amount' => round($payment_amount)];
+                    $data['demand_amount'] = ['demand_amount' => $payment_amount];
                 }
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
+                $req->request->add($data['demand_amount']);
 
                 $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
 
@@ -771,6 +776,7 @@ class SelfAdvetController extends Controller
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
+                    $approvedSelfadvertisement->demand_amount = $req->demand_amount;
                     $approvedSelfadvertisement->license_no = $generatedId;
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->save();
@@ -801,6 +807,7 @@ class SelfAdvetController extends Controller
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                     $approvedSelfadvertisement->payment_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
+                    $approvedSelfadvertisement->demand_amount = $req->demand_amount;
                     $approvedSelfadvertisement->approve_date = Carbon::now();
                     $approvedSelfadvertisement->save();
 
