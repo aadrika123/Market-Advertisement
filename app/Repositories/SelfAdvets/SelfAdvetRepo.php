@@ -30,8 +30,8 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 'workflow_id',
                 'ward_id'
             )
-            ->orderByDesc('id')
-            ->where('workflow_id', $workflowIds);
+            ->orderByDesc('id');
+            // ->where('workflow_id', $workflowIds);
         return $specialInbox;
     }
 
