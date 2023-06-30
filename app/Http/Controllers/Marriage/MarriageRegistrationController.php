@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Marriage;
 
 use App\Http\Controllers\Controller;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Workflows\WfWorkflow;
 use App\Traits\Workflow\Workflow;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,10 +17,10 @@ class MarriageRegistrationController extends Controller
     use Workflow;
 
     private $_workflowMasterId;
-    private $_petParamId;
-    private $_petModuleId;
+    private $_marriageParamId;
+    private $_marriageModuleId;
     private $_userType;
-    private $_petWfRoles;
+    private $_marriageWfRoles;
     private $_docReqCatagory;
     private $_dbKey;
     private $_fee;
@@ -28,69 +30,59 @@ class MarriageRegistrationController extends Controller
     # Class constructer 
     public function __construct()
     {
-        $this->_workflowMasterId    = Config::get("pet.WORKFLOW_MASTER_ID");
-        $this->_petParamId          = Config::get("pet.PARAM_ID");
-        $this->_petModuleId         = Config::get('pet.PET_MODULE_ID');
-        $this->_userType            = Config::get("pet.REF_USER_TYPE");
-        $this->_petWfRoles          = Config::get("pet.ROLE_LABEL");
-        $this->_docReqCatagory      = Config::get("pet.DOC_REQ_CATAGORY");
-        $this->_dbKey               = Config::get("pet.DB_KEYS");
-        $this->_fee                 = Config::get("pet.FEE_CHARGES");
-        $this->_applicationType     = Config::get("pet.APPLICATION_TYPE");
-        $this->_applyMode           = Config::get("pet.APPLY_MODE");
-        $this->_tranType            = Config::get("pet.TRANSACTION_TYPE");
+        $this->_workflowMasterId    = Config::get("marriage.WORKFLOW_MASTER_ID");
+        $this->_marriageParamId     = Config::get("marriage.PARAM_ID");
+        $this->_marriageModuleId    = Config::get('marriage.MODULE_ID');
+        $this->_userType            = Config::get("marriage.REF_USER_TYPE");
+        $this->_marriageWfRoles     = Config::get("marriage.ROLE_LABEL");
+        $this->_docReqCatagory      = Config::get("marriage.DOC_REQ_CATAGORY");
+        $this->_dbKey               = Config::get("marriage.DB_KEYS");
+        $this->_fee                 = Config::get("marriage.FEE_CHARGES");
+        $this->_applicationType     = Config::get("marriage.APPLICATION_TYPE");
+        $this->_applyMode           = Config::get("marriage.APPLY_MODE");
+        $this->_tranType            = Config::get("marriage.TRANSACTION_TYPE");
     }
     /**
      * | Apply for marriage registration
      */
-    public function apply(Request $request)
+    public function apply(Request $req)
     {
         try {
-            return  $user                       = authUser();
-            $ulbId                      = $req->ulbId;
+            $mWfWorkflow = new WfWorkflow();
+            $user                       = authUser();
+            $ulbId                      = $user->ulb_id ?? $req->ulbId;
             $workflowMasterId           = $this->_workflowMasterId;
-            $petParamId                 = $this->_petParamId;
+            $marriageParamId            = $this->_marriageParamId;
             $feeId                      = $this->_fee;
             $confApplicationType        = $this->_applicationType;
 
             # Get iniciater and finisher for the workflow 
             $ulbWorkflowId = $mWfWorkflow->getulbWorkflowId($workflowMasterId, $ulbId);
             if (!$ulbWorkflowId) {
-                throw new Exception("Respective Ulb is not maped to 'Pet Registration' Workflow!");
+                throw new Exception("Respective Ulb is not maped to 'marriage Registration' Workflow!");
             }
-            $registrationCharges = $mMPetFee->getFeeById($feeId['REGISTRATION']);
-            if (!$registrationCharges) {
-                throw new Exception("Currently charges are not available!");
-            }
+            $registrationCharges = 100;
             $refInitiatorRoleId = $this->getInitiatorId($ulbWorkflowId->id);
             $refFinisherRoleId  = $this->getFinisherId($ulbWorkflowId->id);
             $finisherRoleId     = collect(DB::select($refFinisherRoleId))->first()->role_id;
             $initiatorRoleId    = collect(DB::select($refInitiatorRoleId))->first()->role_id;
 
-            $refValidatedDetails = $this->checkParamForRegister($req);
-
             # Data Base interaction 
             DB::beginTransaction();
-            $idGeneration = new PrefixIdGenerator($petParamId, $ulbId);
-            $petApplicationNo = $idGeneration->generate();
+            $idGeneration = new PrefixIdGenerator($marriageParamId, $ulbId);
+            $marriageApplicationNo = $idGeneration->generate();
             $refData = [
                 "finisherRoleId"    => $finisherRoleId,
                 "initiatorRoleId"   => $initiatorRoleId,
                 "workflowId"        => $ulbWorkflowId->id,
-                "applicationNo"     => $petApplicationNo,
+                "applicationNo"     => $marriageApplicationNo,
             ];
-            if ($req->applyThrough == $confApplyThrough['Holding']) {
-                $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
-            }
-            if ($req->applyThrough == $confApplyThrough['Saf']) {
-                $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
-            }
-            $req->merge($refData);
+            return $req->merge($refData);
 
             # Renewal and the New Registration
             if ($req->isRenewal == 0 || !isset($req->isRenewal)) {
                 if (isset($req->registrationId)) {
-                    throw new Exception("Registration No is Not Req for new Pet Registraton!");
+                    throw new Exception("Registration No is Not Req for new marriage Registraton!");
                 }
                 $refData = [
                     "applicationType" => "New_Apply",
@@ -105,12 +97,12 @@ class MarriageRegistrationController extends Controller
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
-                $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
+                $mmarriageApprovedRegistration->deactivateOldRegistration($req->registrationId);
             }
             # Save active details 
-            $applicationDetails = $mPetActiveRegistration->saveRegistration($req, $user);
-            $mPetActiveApplicant->saveApplicants($req, $applicationDetails['id']);
-            $mPetActiveDetail->savePetDetails($req, $applicationDetails['id']);
+            $applicationDetails = $mmarriageActiveRegistration->saveRegistration($req, $user);
+            $mmarriageActiveApplicant->saveApplicants($req, $applicationDetails['id']);
+            $mmarriageActiveDetail->savemarriageDetails($req, $applicationDetails['id']);
 
             # Save registration charges
             $metaRequest = new Request([
@@ -120,14 +112,14 @@ class MarriageRegistrationController extends Controller
                 "registrationFee"   => $registrationCharges->amount,
                 "applicationTypeId" => $req->applicationTypeId
             ]);
-            $mPetRegistrationCharge->saveRegisterCharges($metaRequest);
+            $mmarriageRegistrationCharge->saveRegisterCharges($metaRequest);
             DB::commit();
 
             $returnData = [
                 "id" => $applicationDetails['id'],
                 "applicationNo" => $applicationDetails['applicationNo'],
             ];
-            return responseMsgs(true, "Pet Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(true, "marriage Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
