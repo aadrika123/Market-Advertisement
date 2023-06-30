@@ -186,7 +186,7 @@ class AdvActiveVehicle extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds)
+    public function listOutbox($roleIds,$ulbId)
     {
         $outbox = DB::table('adv_active_vehicles')
             ->select(
@@ -198,6 +198,8 @@ class AdvActiveVehicle extends Model
                 'application_type',
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_roles', $roleIds)
             ->get();
         return $outbox;
@@ -248,7 +250,7 @@ class AdvActiveVehicle extends Model
     /**
      * | Inbox List
      */
-    public function listInbox($roleIds)
+    public function listInbox($roleIds,$ulbId)
     {
         $inbox = DB::table('adv_active_vehicles')
             ->select(
@@ -262,6 +264,8 @@ class AdvActiveVehicle extends Model
                 'application_type',
             )
             ->orderByDesc('id')
+            ->where('parked',NULL)
+            ->where('ulb_id',$ulbId)
             ->whereIn('current_roles', $roleIds)
             ->get();
         return $inbox;

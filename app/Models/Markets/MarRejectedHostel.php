@@ -48,6 +48,7 @@ class MarRejectedHostel extends Model
                 'applicant',
                 'rejected_date',
                 'citizen_id',
+                'ulb_id',
             )
             ->orderByDesc('id')
             ->get();

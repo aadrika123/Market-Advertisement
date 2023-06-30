@@ -121,11 +121,12 @@ class DharamshalaController extends Controller
 
             $mMarActiveDharamshala = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveDharamshala->listInbox($roleIds);                   // <----- Get Inbox List
+            $inboxList = $mMarActiveDharamshala->listInbox($roleIds, $ulbId);                   // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -150,11 +151,12 @@ class DharamshalaController extends Controller
 
             $mMarActiveDharamshala = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveDharamshala->listOutbox($roleIds);                // <----- Get Outbox List
+            $outboxList = $mMarActiveDharamshala->listOutbox($roleIds, $ulbId);                // <----- Get Outbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -221,7 +223,7 @@ class DharamshalaController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = $data['application_date'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d', $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
 
@@ -468,7 +470,7 @@ class DharamshalaController extends Controller
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "051009", "1.0", " $executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "051009", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "051009", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -1275,7 +1277,7 @@ class DharamshalaController extends Controller
             $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
-            
+
             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             $req->request->add($WfMasterId);
 

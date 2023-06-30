@@ -194,11 +194,12 @@ class AgencyController extends Controller
 
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->token;
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveAgency->listInbox($roleIds);                        // <----- Get Inbox List
+            $inboxList = $mAdvActiveAgency->listInbox($roleIds, $ulbId);                        // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -220,14 +221,14 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId=authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveAgency->listOutbox($roleIds);                      // <----- Get Outbox List
+            $outboxList = $mAdvActiveAgency->listOutbox($roleIds, $ulbId);                      // <----- Get Outbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -675,7 +676,8 @@ class AgencyController extends Controller
                     $approvedAgency->setTable('adv_agencies');
                     $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
                     $approvedAgency->license_no =  $generatedId;
-                    $approvedAgency->payment_amount = $req->payment_amount;
+                    $approvedAgency->payment_amount = round($req->payment_amount);
+                    $approvedAgency->demand_amount = $req->payment_amount;
                     $approvedAgency->approve_date = Carbon::now();
                     $approvedAgency->save();
 
@@ -704,6 +706,7 @@ class AgencyController extends Controller
                     $approvedAgency->setTable('adv_agencies');
                     $temp_id = $approvedAgency->id = $mAdvActiveAgency->id;
                     $approvedAgency->payment_amount = $req->payment_amount;
+                    $approvedAgency->demand_amount = round($req->payment_amount);
                     $approvedAgency->payment_status = $req->payment_status;
                     $approvedAgency->approve_date = Carbon::now();
                     $approvedAgency->save();

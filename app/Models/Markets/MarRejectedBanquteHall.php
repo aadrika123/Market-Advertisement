@@ -39,6 +39,7 @@ class MarRejectedBanquteHall extends Model
                 'application_no',
                 'application_date',
                 'rejected_date',
+                'ulb_id',
             )
             ->orderByDesc('id')
             ->get();

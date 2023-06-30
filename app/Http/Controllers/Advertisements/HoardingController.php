@@ -98,11 +98,17 @@ class HoardingController extends Controller
      */
     public function listTypology(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            "ulbId" => "required|integer",
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
             $startTime = microtime(true);
             $mAdvTypologyMstr = new AdvTypologyMstr();
-            $typologyList = $mAdvTypologyMstr->listTypology1();
+            $typologyList = $mAdvTypologyMstr->listTypology1($req->ulbId);
             $typologyList = $typologyList->groupBy('type');
             foreach ($typologyList as $key => $data) {
                 $type = [
@@ -179,11 +185,12 @@ class HoardingController extends Controller
 
             $mAdvActiveHoarding = new AdvActiveHoarding();
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveHoarding->listInbox($roleIds);                      // <----- Get Inbox List
+            $inboxList = $mAdvActiveHoarding->listInbox($roleIds, $ulbId);                      // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -204,14 +211,14 @@ class HoardingController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
             $mAdvActiveHoarding = new AdvActiveHoarding();
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveHoarding->listOutbox($roleIds);                    // <----- Get Inbox List
+            $outboxList = $mAdvActiveHoarding->listOutbox($roleIds,$ulbId);                    // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -628,7 +635,8 @@ class HoardingController extends Controller
                     $approvedHoarding->setTable('adv_hoardings');
                     $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
                     $approvedHoarding->license_no = $generatedId;
-                    $approvedHoarding->payment_amount = $req->payment_amount;
+                    $approvedHoarding->payment_amount = round($req->payment_amount);
+                    $approvedHoarding->demand_amount = $req->payment_amount;
                     $approvedHoarding->approve_date = Carbon::now();
                     $approvedHoarding->save();
 
@@ -659,7 +667,8 @@ class HoardingController extends Controller
                     $approvedHoarding = $mAdvActiveHoarding->replicate();
                     $approvedHoarding->setTable('adv_hoardings');
                     $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
-                    $approvedHoarding->payment_amount = $req->payment_amount;
+                    $approvedHoarding->payment_amount = round($req->payment_amount);
+                    $approvedHoarding->demand_amount = $req->payment_amount;
                     $approvedHoarding->payment_status = $req->payment_status;
                     $approvedHoarding->license_no = $license_no;
                     $approvedHoarding->approve_date = Carbon::now();

@@ -59,6 +59,7 @@ class AdvRejectedAgency extends Model
             'application_no',
             'application_date',
             'entity_name',
+            'ulb_id',
             'rejected_date',
         )
             ->orderByDesc('id')

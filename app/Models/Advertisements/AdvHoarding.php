@@ -29,6 +29,7 @@ class AdvHoarding extends Model
             'property_owner_mobile_no as mobile_no',
             'property_owner_name as owner_name',
             'user_id',
+            'ulb_id',
             'valid_upto',
             'valid_from',
             'is_archived',
@@ -377,7 +378,7 @@ class AdvHoarding extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvHoarding->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount,'demand_amount' => $mAdvHoarding->demand_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvHoarding->payment_details = json_encode($payDetails);
             if ($mAdvHoarding->renew_no == NULL) {

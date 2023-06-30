@@ -55,6 +55,7 @@ class AdvRejectedHoarding extends Model
             'license_no',
             'application_date',
             'rejected_date',
+            'ulb_id',
         )
             ->orderByDesc('id')
             ->get();

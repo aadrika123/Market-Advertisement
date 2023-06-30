@@ -161,7 +161,7 @@ class AdvChequeDtl extends Model
                 // update on SelfAdvertiesment Table
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($applicationId);
 
-                $payDetails = array('paymentMode' => 'CHEQUE/DD', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $payment_id);
+                $payDetails = array('paymentMode' => 'CHEQUE/DD', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $payment_id);
 
                 if ($mAdvSelfadvertisement->renew_no == NULL) {
                     $valid_from = Carbon::now();

@@ -230,6 +230,7 @@ class ParamController extends Controller
                 $mAdvSelfadvertisement->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mAdvSelfadvertisement->demand_amount;
                 $updateData['valid_from'] = $mAdvSelfadvertisement->valid_from;
                 $updateData['valid_upto'] = $mAdvSelfadvertisement->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -299,6 +300,7 @@ class ParamController extends Controller
                 $mAdvAgency->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mAdvAgency->demand_amount;
                 $updateData['valid_from'] = $mAdvAgency->valid_from;
                 $updateData['valid_upto'] = $mAdvAgency->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -333,6 +335,7 @@ class ParamController extends Controller
                 $mAdvPrivateland->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mAdvPrivateland->demand_amount;
                 $updateData['valid_from'] = $mAdvPrivateland->valid_from;
                 $updateData['valid_upto'] = $mAdvPrivateland->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -366,6 +369,7 @@ class ParamController extends Controller
                 $mAdvHoarding->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mAdvHoarding->demand_amount;
                 $updateData['valid_from'] = $mAdvHoarding->valid_from;
                 $updateData['valid_upto'] = $mAdvHoarding->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -611,43 +615,43 @@ class ParamController extends Controller
             $startTime = microtime(true);
 
             $madvSelfAdvertisement = new AdvSelfadvertisement();
-            $approveList = $madvSelfAdvertisement->allApproveList();              // Find Self Advertisement Approve Applications
+            $approveList = $madvSelfAdvertisement->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();              // Find Self Advertisement Approve Applications
             $advert['selfApprovedApplications'] = $approveList;
 
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication();  // Find Self Advertisement Rejected Applications
+            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();  // Find Self Advertisement Rejected Applications
             $advert['selfRejectedApplications'] = $rejectList;
 
             $mAdvPrivateland = new AdvPrivateland();
-            $pvtapproveList = $mAdvPrivateland->allApproveList();                 // Find Pvt Land Approve Applications
+            $pvtapproveList = $mAdvPrivateland->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                 // Find Pvt Land Approve Applications
             $advert['pvtLandApprovedApplications'] = $pvtapproveList;
 
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication();     // Find Pvt Land Rejected Applications
+            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();     // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = $pvtRejectList;
 
             $mAdvVehicle = new AdvVehicle();
-            $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
+            $vehicleApproveList = $mAdvVehicle->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                // Find Vehicle Approve Applications
             $advert['vehicleApprovedApplications'] = $vehicleApproveList;
 
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication();    // Find Vehicle Rejected Applications
+            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();    // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = $vehicleRejectList;
 
             $mAdvAgency = new AdvAgency();
-            $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
+            $agencyApproveList = $mAdvAgency->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Agency Approve Applications
             $advert['agencyApprovedApplications'] = $agencyApproveList;
 
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication();      // Find Agency Rejected Applications
+            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();      // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = $agencyRejectList;
 
             $mAdvHoarding = new AdvHoarding();
-            $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
+            $hoardingApproveList = $mAdvHoarding->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();              // Find Hoarding Approve Applications
             $advert['hoardingApprovedApplications'] = $hoardingApproveList;
 
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
-            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication();  // Find Hoarding Rejected Applications
+            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
             $endTime = microtime(true);
@@ -669,35 +673,35 @@ class ParamController extends Controller
             $startTime = microtime(true);
 
             $mMarBanquteHall = new MarBanquteHall();
-            $approveList = $mMarBanquteHall->allApproveList();                              // Find Banquet Hall Approve Applications
+            $approveList = $mMarBanquteHall->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                              // Find Banquet Hall Approve Applications
             $market['banquetApprovedApplications'] = $approveList;
 
             $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $rejectList = $mMarRejectedBanquteHall->rejectedApplication();                  // Find Banquet Hall Rejected Applications
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Banquet Hall Rejected Applications
             $market['banquetRejectedApplications'] = $rejectList;
 
             $mMarHostel = new MarHostel();
-            $hostelapproveList = $mMarHostel->allApproveList();                             // Find Hostel Approve Applications
+            $hostelapproveList = $mMarHostel->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                             // Find Hostel Approve Applications
             $market['hostelApprovedApplications'] = $hostelapproveList;
 
             $mMarRejectedHostel = new MarRejectedHostel();
-            $hostelRejectList = $mMarRejectedHostel->rejectedApplication();                 // Find Hostel Rejected Applications
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                 // Find Hostel Rejected Applications
             $market['hostelRejectedApplications'] = $hostelRejectList;
 
             $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList();                               // Find Lodge Approve Applications
+            $lodgeApproveList = $mMarLodge->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                               // Find Lodge Approve Applications
             $market['lodgeApprovedApplications'] = $lodgeApproveList;
 
             $mMarRejectedLodge = new MarRejectedLodge();
-            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication();                   // Find Lodge Rejected Applications
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                   // Find Lodge Rejected Applications
             $market['lodgeRejectedApplications'] = $lodgeRejectList;
 
             $mMarDharamshala = new MarDharamshala();
-            $dharamshalaApproveList = $mMarDharamshala->allApproveList();                  // Find Dharamshala Approve Applications
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Dharamshala Approve Applications
             $market['dharamshalaApprovedApplications'] = $dharamshalaApproveList;
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication();      // Find Dharamshala Rejected Applications
+            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();      // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
             $endTime = microtime(true);
@@ -820,6 +824,27 @@ class ParamController extends Controller
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }
+
+              //Created On : 23/6/2023,  Changes By - Anchal
+              elseif ($wfworkflowMasterId == $this->_banquetHall) {
+                $mMarBanquteHall = new MarBanquteHall();
+                $recieptDetails = $mMarBanquteHall->getApprovalLetter($req->applicationId);
+            }
+            elseif ($wfworkflowMasterId == $this->_dharamshala) {
+                $mMarDharamshala = new MarDharamshala();
+                $recieptDetails = $mMarDharamshala->getApprovalLetter($req->applicationId);
+            }
+            elseif ($wfworkflowMasterId == $this->_hostel) {
+                $mMarHostel = new MarHostel();
+                $recieptDetails = $mMarHostel->getApprovalLetter($req->applicationId);
+            }
+            elseif ($wfworkflowMasterId == $this->_lodge) {
+                $mMarLodge = new MarLodge();
+                $recieptDetails = $mMarLodge->getApprovalLetter($req->applicationId);
+            }
+
+
+
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

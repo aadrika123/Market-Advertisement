@@ -61,6 +61,7 @@ class AdvRejectedPrivateland extends Model
             // 'old_application_no',
             // 'payment_status',
             'rejected_date',
+            'ulb_id',
         )
             ->orderByDesc('id')
             ->get();

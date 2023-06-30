@@ -126,11 +126,12 @@ class LodgeController extends Controller
 
             $mMarActiveLodge = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mMarActiveLodge->listInbox($roleIds);                         // <----- Get Inbox List
+            $inboxList = $mMarActiveLodge->listInbox($roleIds, $ulbId);                         // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -152,14 +153,14 @@ class LodgeController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
             $mMarActiveLodge = $this->_modelObj;
             $bearerToken = $req->bearerToken();
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveLodge->listOutbox($roleIds);                      // <----- Get Outbox List
+            $outboxList = $mMarActiveLodge->listOutbox($roleIds, $ulbId);                      // <----- Get Outbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
