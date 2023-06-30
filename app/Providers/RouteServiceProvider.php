@@ -41,10 +41,17 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api/market')
                 ->group(base_path('routes/rentals.php'));
 
+            //Pet Registration
             Route::prefix('api/pet')
                 ->middleware('api')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/petregistration.php'));
+
+            //Marriage Registration
+            Route::prefix('api/marriage')
+                ->middleware('api')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/marriage.php'));
         });
     }
 
