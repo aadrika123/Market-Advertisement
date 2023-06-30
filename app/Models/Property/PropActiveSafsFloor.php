@@ -9,12 +9,34 @@ class PropActiveSafsFloor extends Model
 {
     use HasFactory;
 
-       /**
+    /**
      * | Get Safs Floors By Saf Id
      */
     public function getSafFloors($safId)
     {
         return PropActiveSafsFloor::where('saf_id', $safId)
             ->where('status', 1);
+    }
+
+
+    /**
+     * | Get occupancy type according to Saf id
+     */
+    public function getOccupancyType($safId, $refTenanted)
+    {
+        $occupency = PropActiveSafsFloor::where('saf_id', $safId)
+            ->where('occupancy_type_mstr_id', $refTenanted)
+            ->get();
+        $check = collect($occupency)->first();
+        if ($check) {
+            $metaData = [
+                'tenanted' => true
+            ];
+            return $metaData;
+        }
+        return  $metaData = [
+            'tenanted' => false
+        ];
+        return $metaData;
     }
 }

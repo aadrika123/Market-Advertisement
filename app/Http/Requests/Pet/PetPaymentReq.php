@@ -28,8 +28,8 @@ class PetPaymentReq extends FormRequest
         $refDate = Carbon::now()->format('Y-m-d');
         $offlinePaymentModes = Config::get('pet.PAYMENT_MODE');
 
-        $rules['applicationId'] = 'required';
-        $rules['paymentMode'] = 'required|in:ONLINE,NETBANKING,CASH,CHEQUE,DD,NEFT';
+        $rules['id'] = 'required';
+        $rules['paymentMode'] = 'required|in:ONLINE,CASH,CHEQUE,DD,NEFT';
         if (isset($this['paymentMode']) &&  in_array($this['paymentMode'], $offlinePaymentModes) && $this['paymentMode'] != $offlinePaymentModes['3']) {
             $rules['chequeDate']    = "required|date|date_format:Y-m-d";
             $rules['bankName']      = "required";
