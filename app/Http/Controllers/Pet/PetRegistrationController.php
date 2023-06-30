@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetRegistrationReq;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\ActiveCitizenUndercare;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\ApiMaster;
@@ -26,6 +27,7 @@ use App\Models\Property\PropActiveSafsOwner;
 use App\Models\Property\PropFloor;
 use App\Models\Property\PropOwner;
 use App\Models\Property\PropProperty;
+use App\Models\Property\PropSaf;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WorkflowTrack;
 use App\Traits\Workflow\Workflow;
@@ -1138,6 +1140,53 @@ class PetRegistrationController extends Controller
             }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Logged in citizen Holding & Saf
+     */
+    public function citizenHoldingSaf(Request $req)
+    {
+        $req->validate([
+            'type' => 'required|In:holding,saf,ptn',
+            'ulbId' => 'required|numeric'
+        ]);
+        try {
+            $citizenId                  = authUser()->id;
+            $ulbId                      = $req->ulbId;
+            $type                       = $req->type;
+            $mPropActiveSafs            = new PropActiveSaf();
+            $mPropProperty              = new PropProperty();
+            $mActiveCitizenUndercare    = new ActiveCitizenUndercare();
+            $caretakerProperty          =  $mActiveCitizenUndercare->getTaggedPropsByCitizenId($citizenId);
+
+            if ($type == 'saf') {
+                $data = $mPropActiveSafs->getCitizenSafs($citizenId, $ulbId);
+                $msg = 'Citizen Safs';
+            }
+
+            if ($type == 'holding') {
+                $data = $mPropProperty->getCitizenHoldings($citizenId, $ulbId);
+                if ($caretakerProperty->isNotEmpty()) {
+                    $propertyId = collect($caretakerProperty)->pluck('property_id');
+                    $data2 = $mPropProperty->getNewholding($propertyId);
+                    $data = $data->merge($data2);
+                }
+                $data = collect($data)->map(function ($value) {
+                    if (isset($value['new_holding_no'])) {
+                        return $value;
+                    }
+                })->filter()->values();
+                $msg = 'Citizen Holdings';
+            }
+            if ($data->isEmpty())
+                throw new Exception('No Data Found');
+
+            return responseMsgs(true, $msg, remove_null($data), '010801', '01', '623ms', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
 }

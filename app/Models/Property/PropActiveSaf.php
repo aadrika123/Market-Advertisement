@@ -61,4 +61,16 @@ class PropActiveSaf extends Model
             ->where('s.status', 1)
             ->first();
     }
+
+    /**
+     * | Get citizen safs
+     */
+    public function getCitizenSafs($citizenId, $ulbId)
+    {
+        return PropActiveSaf::select('id', 'saf_no', 'citizen_id')
+            ->where('citizen_id', $citizenId)
+            ->where('ulb_id', $ulbId)
+            ->orderByDesc('id')
+            ->get();
+    }
 }
