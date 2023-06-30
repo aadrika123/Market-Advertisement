@@ -22,7 +22,9 @@ use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Pet\PetTran;
 use App\Models\Property\PropActiveSaf;
 use App\Models\Property\PropActiveSafsFloor;
+use App\Models\Property\PropActiveSafsOwner;
 use App\Models\Property\PropFloor;
+use App\Models\Property\PropOwner;
 use App\Models\Property\PropProperty;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WorkflowTrack;
@@ -179,7 +181,7 @@ class PetRegistrationController extends Controller
 
             # Data Base interaction 
             DB::beginTransaction();
-            $idGeneration = new PrefixIdGenerator($petParamId, $ulbId);
+            $idGeneration = new PrefixIdGenerator($petParamId['REGISTRATION'], $ulbId);
             $petApplicationNo = $idGeneration->generate();
             $refData = [
                 "finisherRoleId"    => $finisherRoleId,
@@ -718,233 +720,233 @@ class PetRegistrationController extends Controller
     }
 
     //BEGIN///////////////////////////////////////////////////////////////////////////////
-    /**
-     * | Get Application details for workflow view 
-     * | @param request
-     * | @var ownerDetails
-     * | @var applicantDetails
-     * | @var applicationDetails
-     * | @var returnDetails
-     * | @return returnDetails : list of individual applications
-        | Serial No : 08
-        | Workinig 
-     */
-    public function getApplicationsDetails(Request $request)
-    {
-        $request->validate([
-            'applicationId' => 'required'
-        ]);
-        try {
-            # object assigning
-            $waterObj               = new WaterApplication();
-            $ownerObj               = new WaterApplicant();
-            $forwardBackward        = new WorkflowMap;
-            $mWorkflowTracks        = new WorkflowTrack();
-            $mCustomDetails         = new CustomDetail();
-            $mUlbNewWardmap         = new UlbWardMaster();
+    // /**
+    //  * | Get Application details for workflow view 
+    //  * | @param request
+    //  * | @var ownerDetails
+    //  * | @var applicantDetails
+    //  * | @var applicationDetails
+    //  * | @var returnDetails
+    //  * | @return returnDetails : list of individual applications
+    //     | Serial No : 08
+    //     | Workinig 
+    //  */
+    // public function getApplicationsDetails(Request $request)
+    // {
+    //     $request->validate([
+    //         'applicationId' => 'required'
+    //     ]);
+    //     try {
+    //         # object assigning
+    //         $waterObj               = new WaterApplication();
+    //         $ownerObj               = new WaterApplicant();
+    //         $forwardBackward        = new WorkflowMap;
+    //         $mWorkflowTracks        = new WorkflowTrack();
+    //         $mCustomDetails         = new CustomDetail();
+    //         $mUlbNewWardmap         = new UlbWardMaster();
 
-            # application details
-            $applicationDetails = $waterObj->fullWaterDetails($request)->get();
-            if (collect($applicationDetails)->first() == null) {
-                throw new Exception("Application data according to $request->applicationId not found");
-            }
+    //         # application details
+    //         $applicationDetails = $waterObj->fullWaterDetails($request)->get();
+    //         if (collect($applicationDetails)->first() == null) {
+    //             throw new Exception("Application data according to $request->applicationId not found");
+    //         }
 
-            # Ward Name
-            $refApplication = collect($applicationDetails)->first();
-            $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
-            # owner Details
-            $ownerDetails = $ownerObj->ownerByApplication($request)->get();
-            $ownerDetail = collect($ownerDetails)->map(function ($value, $key) {
-                return $value;
-            });
-            $aplictionList = [
-                'application_no'    => collect($applicationDetails)->first()->application_no,
-                'apply_date'        => collect($applicationDetails)->first()->apply_date
-            ];
+    //         # Ward Name
+    //         $refApplication = collect($applicationDetails)->first();
+    //         $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
+    //         # owner Details
+    //         $ownerDetails = $ownerObj->ownerByApplication($request)->get();
+    //         $ownerDetail = collect($ownerDetails)->map(function ($value, $key) {
+    //             return $value;
+    //         });
+    //         $aplictionList = [
+    //             'application_no'    => collect($applicationDetails)->first()->application_no,
+    //             'apply_date'        => collect($applicationDetails)->first()->apply_date
+    //         ];
 
-            # DataArray
-            $basicDetails       = $this->getBasicDetails($applicationDetails, $wardDetails);
-            $propertyDetails    = $this->getpropertyDetails($applicationDetails, $wardDetails);
-            $petDetails         = $this->getPetDetails($applicationDetails);
+    //         # DataArray
+    //         $basicDetails       = $this->getBasicDetails($applicationDetails, $wardDetails);
+    //         $propertyDetails    = $this->getpropertyDetails($applicationDetails, $wardDetails);
+    //         $petDetails         = $this->getPetDetails($applicationDetails);
 
-            $firstView = [
-                'headerTitle'   => 'Basic Details',
-                'data'          => $basicDetails
-            ];
-            $secondView = [
-                'headerTitle'   => 'Applicant Property Details',
-                'data'          => $propertyDetails
-            ];
-            $thirdView = [
-                'headerTitle'   => 'Pet Details',
-                'data'          => $petDetails
-            ];
-            $fullDetailsData['fullDetailsData']['dataArray'] = new collection([$firstView, $secondView, $thirdView]);
+    //         $firstView = [
+    //             'headerTitle'   => 'Basic Details',
+    //             'data'          => $basicDetails
+    //         ];
+    //         $secondView = [
+    //             'headerTitle'   => 'Applicant Property Details',
+    //             'data'          => $propertyDetails
+    //         ];
+    //         $thirdView = [
+    //             'headerTitle'   => 'Pet Details',
+    //             'data'          => $petDetails
+    //         ];
+    //         $fullDetailsData['fullDetailsData']['dataArray'] = new collection([$firstView, $secondView, $thirdView]);
 
-            # CardArray
-            $cardDetails = $this->getCardDetails($applicationDetails, $ownerDetails, $wardDetails);
-            $cardData = [
-                'headerTitle' => 'Water Connection',
-                'data' => $cardDetails
-            ];
-            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardData);
+    //         # CardArray
+    //         $cardDetails = $this->getCardDetails($applicationDetails, $ownerDetails, $wardDetails);
+    //         $cardData = [
+    //             'headerTitle' => 'Water Connection',
+    //             'data' => $cardDetails
+    //         ];
+    //         $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardData);
 
-            # TableArray
-            $ownerList = $this->getOwnerDetails($ownerDetail);
-            $ownerView = [
-                'headerTitle' => 'Owner Details',
-                'tableHead' => ["#", "Owner Name", "Guardian Name", "Mobile No", "Email", "City", "District"],
-                'tableData' => $ownerList
-            ];
-            $fullDetailsData['fullDetailsData']['tableArray'] = new Collection([$ownerView]);
+    //         # TableArray
+    //         $ownerList = $this->getOwnerDetails($ownerDetail);
+    //         $ownerView = [
+    //             'headerTitle' => 'Owner Details',
+    //             'tableHead' => ["#", "Owner Name", "Guardian Name", "Mobile No", "Email", "City", "District"],
+    //             'tableData' => $ownerList
+    //         ];
+    //         $fullDetailsData['fullDetailsData']['tableArray'] = new Collection([$ownerView]);
 
-            # Level comment
-            $mtableId = $applicationDetails->first()->id;
-            $mRefTable = "water_applications.id";
-            $levelComment['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+    //         # Level comment
+    //         $mtableId = $applicationDetails->first()->id;
+    //         $mRefTable = "water_applications.id";
+    //         $levelComment['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
 
-            #citizen comment
-            $refCitizenId = $applicationDetails->first()->user_id;
-            $citizenComment['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+    //         #citizen comment
+    //         $refCitizenId = $applicationDetails->first()->user_id;
+    //         $citizenComment['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
-            # Role Details
-            $data = json_decode(json_encode($applicationDetails->first()), true);
-            $metaReqs = [
-                'customFor'     => 'Water',
-                'wfRoleId'      => $data['current_role'],
-                'workflowId'    => $data['workflow_id'],
-                'lastRoleId'    => $data['last_role_id']
-            ];
-            $request->request->add($metaReqs);
-            $forwardBackward = $forwardBackward->getRoleDetails($request);
-            $roleDetails['roleDetails'] = collect($forwardBackward)['original']['data'];
+    //         # Role Details
+    //         $data = json_decode(json_encode($applicationDetails->first()), true);
+    //         $metaReqs = [
+    //             'customFor'     => 'Water',
+    //             'wfRoleId'      => $data['current_role'],
+    //             'workflowId'    => $data['workflow_id'],
+    //             'lastRoleId'    => $data['last_role_id']
+    //         ];
+    //         $request->request->add($metaReqs);
+    //         $forwardBackward = $forwardBackward->getRoleDetails($request);
+    //         $roleDetails['roleDetails'] = collect($forwardBackward)['original']['data'];
 
-            # Timeline Data
-            $timelineData['timelineData'] = collect($request);
+    //         # Timeline Data
+    //         $timelineData['timelineData'] = collect($request);
 
-            # Departmental Post
-            $custom = $mCustomDetails->getCustomDetails($request);
-            $departmentPost['departmentalPost'] = collect($custom)['original']['data'];
+    //         # Departmental Post
+    //         $custom = $mCustomDetails->getCustomDetails($request);
+    //         $departmentPost['departmentalPost'] = collect($custom)['original']['data'];
 
-            # Payments Details
-            $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $citizenComment, $roleDetails, $timelineData, $departmentPost);
-            return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", $request->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "02", ".ms", "POST", $request->deviceId);
-        }
-    }
+    //         # Payments Details
+    //         $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $citizenComment, $roleDetails, $timelineData, $departmentPost);
+    //         return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", $request->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "", "02", ".ms", "POST", $request->deviceId);
+    //     }
+    // }
 
 
-    /**
-     * |------------------ Basic Details ------------------|
-     * | @param applicationDetails
-     * | @var collectionApplications
-        | Serial No : 08.01
-        | Workinig 
-     */
-    public function getBasicDetails($applicationDetails, $wardDetails)
-    {
-        $collectionApplications = collect($applicationDetails)->first();
-        return new Collection([
-            ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $wardDetails->ward_name],
-            ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
-            ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
-            ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
-            ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
-        ]);
-    }
+    // /**
+    //  * |------------------ Basic Details ------------------|
+    //  * | @param applicationDetails
+    //  * | @var collectionApplications
+    //     | Serial No : 08.01
+    //     | Workinig 
+    //  */
+    // public function getBasicDetails($applicationDetails, $wardDetails)
+    // {
+    //     $collectionApplications = collect($applicationDetails)->first();
+    //     return new Collection([
+    //         ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $wardDetails->ward_name],
+    //         ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
+    //         ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
+    //         ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
+    //         ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
+    //     ]);
+    // }
 
-    /**
-     * |------------------ Property Details ------------------|
-     * | @param applicationDetails
-     * | @var propertyDetails
-     * | @var collectionApplications
-        | Serial No : 08.02
-        | Workinig 
-     */
-    public function getpropertyDetails($applicationDetails, $wardDetails)
-    {
-        $propertyDetails = array();
-        $collectionApplications = collect($applicationDetails)->first();
-        if (!is_null($collectionApplications->holding_no)) {
-            array_push($propertyDetails, ['displayString' => 'Holding No',    'key' => 'AppliedBy',  'value' => $collectionApplications->holding_no]);
-        }
-        if (!is_null($collectionApplications->saf_no)) {
-            array_push($propertyDetails, ['displayString' => 'Saf No',        'key' => 'AppliedBy',   'value' => $collectionApplications->saf_no]);
-        }
-        array_push($propertyDetails, ['displayString' => 'Ward No',       'key' => 'WardNo',      'value' => $wardDetails->ward_name]);
-        array_push($propertyDetails, ['displayString' => 'Address',       'key' => 'Address',     'value' => $collectionApplications->address]);
-        array_push($propertyDetails, ['displayString' => 'Owner Type',    'key' => 'OwnerType',   'value' => $collectionApplications->pin]);
+    // /**
+    //  * |------------------ Property Details ------------------|
+    //  * | @param applicationDetails
+    //  * | @var propertyDetails
+    //  * | @var collectionApplications
+    //     | Serial No : 08.02
+    //     | Workinig 
+    //  */
+    // public function getpropertyDetails($applicationDetails, $wardDetails)
+    // {
+    //     $propertyDetails = array();
+    //     $collectionApplications = collect($applicationDetails)->first();
+    //     if (!is_null($collectionApplications->holding_no)) {
+    //         array_push($propertyDetails, ['displayString' => 'Holding No',    'key' => 'AppliedBy',  'value' => $collectionApplications->holding_no]);
+    //     }
+    //     if (!is_null($collectionApplications->saf_no)) {
+    //         array_push($propertyDetails, ['displayString' => 'Saf No',        'key' => 'AppliedBy',   'value' => $collectionApplications->saf_no]);
+    //     }
+    //     array_push($propertyDetails, ['displayString' => 'Ward No',       'key' => 'WardNo',      'value' => $wardDetails->ward_name]);
+    //     array_push($propertyDetails, ['displayString' => 'Address',       'key' => 'Address',     'value' => $collectionApplications->address]);
+    //     array_push($propertyDetails, ['displayString' => 'Owner Type',    'key' => 'OwnerType',   'value' => $collectionApplications->pin]);
 
-        return $propertyDetails;
-    }
+    //     return $propertyDetails;
+    // }
 
-    /**
-     * |------------------ Owner details ------------------|
-     * | @param ownerDetails
-        | Serial No : 08.04
-        | Workinig 
-     */
-    public function getPetDetails($applicationDetails)
-    {
-        $collectionApplications = collect($applicationDetails)->first();
-        return new Collection([
-            ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $collectionApplications->ward_name],
-            ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
-            ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
-            ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
-            ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
-        ]);
-    }
+    // /**
+    //  * |------------------ Owner details ------------------|
+    //  * | @param ownerDetails
+    //     | Serial No : 08.04
+    //     | Workinig 
+    //  */
+    // public function getPetDetails($applicationDetails)
+    // {
+    //     $collectionApplications = collect($applicationDetails)->first();
+    //     return new Collection([
+    //         ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $collectionApplications->ward_name],
+    //         ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
+    //         ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
+    //         ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
+    //         ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
+    //     ]);
+    // }
 
-    /**
-     * |------------------ Owner details ------------------|
-     * | @param ownerDetails
-        | Serial No : 08.04
-        | Workinig 
-     */
-    public function getOwnerDetails($ownerDetails)
-    {
-        return collect($ownerDetails)->map(function ($value, $key) {
-            return [
-                $key + 1,
-                $value['owner_name'],
-                $value['guardian_name'],
-                $value['mobile_no'],
-                $value['email'],
-                $value['city'],
-                $value['district']
-            ];
-        });
-    }
+    // /**
+    //  * |------------------ Owner details ------------------|
+    //  * | @param ownerDetails
+    //     | Serial No : 08.04
+    //     | Workinig 
+    //  */
+    // public function getOwnerDetails($ownerDetails)
+    // {
+    //     return collect($ownerDetails)->map(function ($value, $key) {
+    //         return [
+    //             $key + 1,
+    //             $value['owner_name'],
+    //             $value['guardian_name'],
+    //             $value['mobile_no'],
+    //             $value['email'],
+    //             $value['city'],
+    //             $value['district']
+    //         ];
+    //     });
+    // }
 
-    /**
-     * |------------------ Get Card Details ------------------|
-     * | @param applicationDetails
-     * | @param ownerDetails
-     * | @var ownerDetail
-     * | @var collectionApplications
-        | Serial No : 08.05
-        | Workinig 
-     */
-    public function getCardDetails($applicationDetails, $ownerDetails, $wardDetails)
-    {
-        $ownerName = collect($ownerDetails)->map(function ($value) {
-            return $value['owner_name'];
-        });
-        $ownerDetail = $ownerName->implode(',');
-        $collectionApplications = collect($applicationDetails)->first();
-        return new Collection([
-            ['displayString' => 'Ward No.',             'key' => 'WardNo.',           'value' => $wardDetails->ward_name],
-            ['displayString' => 'Application No.',      'key' => 'ApplicationNo.',    'value' => $collectionApplications->application_no],
-            ['displayString' => 'Owner Name',           'key' => 'OwnerName',         'value' => $ownerDetail],
-            ['displayString' => 'Property Type',        'key' => 'PropertyType',      'value' => $collectionApplications->property_type],
-            ['displayString' => 'Connection Type',      'key' => 'ConnectionType',    'value' => $collectionApplications->connection_type],
-            ['displayString' => 'Connection Through',   'key' => 'ConnectionThrough', 'value' => $collectionApplications->connection_through],
-            ['displayString' => 'Apply-Date',           'key' => 'ApplyDate',         'value' => $collectionApplications->apply_date],
-            ['displayString' => 'Total Area (sqt)',     'key' => 'TotalArea',         'value' => $collectionApplications->area_sqft]
-        ]);
-    }
+    // /**
+    //  * |------------------ Get Card Details ------------------|
+    //  * | @param applicationDetails
+    //  * | @param ownerDetails
+    //  * | @var ownerDetail
+    //  * | @var collectionApplications
+    //     | Serial No : 08.05
+    //     | Workinig 
+    //  */
+    // public function getCardDetails($applicationDetails, $ownerDetails, $wardDetails)
+    // {
+    //     $ownerName = collect($ownerDetails)->map(function ($value) {
+    //         return $value['owner_name'];
+    //     });
+    //     $ownerDetail = $ownerName->implode(',');
+    //     $collectionApplications = collect($applicationDetails)->first();
+    //     return new Collection([
+    //         ['displayString' => 'Ward No.',             'key' => 'WardNo.',           'value' => $wardDetails->ward_name],
+    //         ['displayString' => 'Application No.',      'key' => 'ApplicationNo.',    'value' => $collectionApplications->application_no],
+    //         ['displayString' => 'Owner Name',           'key' => 'OwnerName',         'value' => $ownerDetail],
+    //         ['displayString' => 'Property Type',        'key' => 'PropertyType',      'value' => $collectionApplications->property_type],
+    //         ['displayString' => 'Connection Type',      'key' => 'ConnectionType',    'value' => $collectionApplications->connection_type],
+    //         ['displayString' => 'Connection Through',   'key' => 'ConnectionThrough', 'value' => $collectionApplications->connection_through],
+    //         ['displayString' => 'Apply-Date',           'key' => 'ApplyDate',         'value' => $collectionApplications->apply_date],
+    //         ['displayString' => 'Total Area (sqt)',     'key' => 'TotalArea',         'value' => $collectionApplications->area_sqft]
+    //     ]);
+    // }
 
 
     ///////////////////////////////////////////////////////////////////////////////END
@@ -1076,6 +1078,66 @@ class PetRegistrationController extends Controller
         $chargePayment = $mPetRegistrationCharge->getChargesbyId($applicationId)->where('paid_status', 1)->first();
         if (!is_null($chargePayment)) {
             throw new Exception("Payment for Respective charges exist!");
+        }
+    }
+
+    /**
+     * | Serch the holding and the saf details
+     * | Serch the property details for filling the water Application Form
+     * | @param request
+     * | 01
+        | Serial No : 
+     */
+    public function getSafHoldingDetails(Request $request)
+    {
+        $request->validate([
+            'connectionThrough' => 'required|int|in:1,2',
+            'id'                => 'required|',
+            'ulbId'             => 'required|'
+        ]);
+        try {
+            $mPropProperty          = new PropProperty();
+            $mPropOwner             = new PropOwner();
+            $mPropFloor             = new PropFloor();
+            $mPropActiveSafOwners   = new PropActiveSafsOwner();
+            $mPropActiveSafsFloor   = new PropActiveSafsFloor();
+            $mPropActiveSaf         = new PropActiveSaf();
+            $key                    = $request->connectionThrough;
+            $refTenanted            = Config::get('property.OCCUPANCY_TYPE.TENANTED');
+
+            switch ($key) {
+                case (1):
+                    $application = collect($mPropProperty->getPropByHolding($request->id, $request->ulbId));
+                    $checkExist = collect($application)->first();
+                    if (!$checkExist) {
+                        throw new Exception("Data According to Holding Not Found!");
+                    }
+                    # collecting all data of owner and occupency
+                    $occupancyOwnerType = collect($mPropFloor->getOccupancyType($application['id'], $refTenanted));
+                    $owners['owners'] = collect($mPropOwner->getOwnerByPropId($application['id']));
+
+                    # merge all data for return 
+                    $details = $application->merge($owners)->merge($occupancyOwnerType);
+                    return responseMsgs(true, "related Details!", $details, "", "", "", "POST", "");
+                    break;
+
+                case (2):
+                    $application = collect($mPropActiveSaf->getSafDtlBySafUlbNo($request->id, $request->ulbId));
+                    $checkExist = collect($application)->first();
+                    if (!$checkExist) {
+                        throw new Exception("Data According to SAF Not Found!");
+                    }
+                    # collecting all data 
+                    $occupancyOwnerType         = collect($mPropActiveSafsFloor->getOccupancyType($application['id'], $refTenanted));
+                    $owners['owners']           = collect($mPropActiveSafOwners->getOwnerDtlsBySafId($application['id']));
+
+                    # merge all data for return 
+                    $details = $application->merge($owners)->merge($occupancyOwnerType);
+                    return responseMsgs(true, "related Details!", $details, "", "", "", "POST", "");
+                    break;
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
     }
 }

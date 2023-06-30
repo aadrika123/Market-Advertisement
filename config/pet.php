@@ -54,7 +54,10 @@ return [
         "4" => "Pseudo",
         "5" => "Employee"
     ],
-    "PARAM_ID" => 34,
+    "PARAM_ID" => [
+        "REGISTRATION" => 34,
+        "TRANSACTION" => 37
+    ],
     "PET_RELATIVE_PATH" => [
         "REGISTRATION" => 'Uploads/Pet/Application',
     ],
@@ -76,7 +79,6 @@ return [
 
     'PAYMENT_MODE' => [
         '1' => 'ONLINE',
-        '2' => 'NETBANKING',
         '3' => 'CASH',
         '4' => 'CHEQUE',
         '5' => 'DD',
@@ -91,5 +93,16 @@ return [
     "PET_TYPE" => [
         "DOG" => 1,
         "CAT" => 2
-    ]
+    ],
+    "VERIFICATION_PAYMENT_MODES" => [           // The Verification payment modes which needs the verification
+        "CHEQUE",
+        "DD",
+        "NEFT"
+    ],
+    "OFFLINE_PAYMENT_MODE" => [
+        "CHEQUE",
+        "DD",
+        "NEFT",
+        "CASH"
+    ],
 ];

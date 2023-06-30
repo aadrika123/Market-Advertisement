@@ -47,6 +47,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
         Route::post('application/get-registration-list', 'getApplicationList');                                 // Citizen
         Route::post('application/get-details', 'getApplicationDetails');                                        // Citizen
         Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
+        Route::post('application/get-prop-details', 'getSafHoldingDetails');
     });
 
     /**
