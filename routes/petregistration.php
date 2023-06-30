@@ -48,12 +48,20 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
         Route::post('application/get-details', 'getApplicationDetails');                                        // Citizen
         Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
         Route::post('application/get-prop-details', 'getSafHoldingDetails');
+
+        # property data 
+        Route::post('citizen-holding-saf', 'citizenHoldingSaf');
     });
 
     /**
      * | Pet Module payment Operations
      */
     Route::controller(PetPaymentController::class)->group(function () {
-        Route::post("application/offline-payment", "offlinePayment");                                           // Admin
+        Route::post("application/offline-payment", "offlinePayment");
+        Route::post("application/online-payment", "onlinePayment");                                           // Admin
     });
+
+    /**
+     * | pet Work
+     */
 });

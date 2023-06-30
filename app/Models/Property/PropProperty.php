@@ -39,7 +39,7 @@ class PropProperty extends Model
     }
 
 
-        /**
+    /**
      * | Get Proprty Details By Holding No
      */
     public function getPropByHolding($holdingNo, $ulbId)
@@ -101,5 +101,29 @@ class PropProperty extends Model
             ->where('prop_properties.ulb_id', $ulbId)
             ->first();
         return $newHolding;
+    }
+
+
+    /**
+     * | Get citizen holdings
+     */
+    public function getCitizenHoldings($citizenId, $ulbId)
+    {
+        return PropProperty::select('id', 'new_holding_no', 'citizen_id')
+            ->where('ulb_id', $ulbId)
+            ->where('citizen_id', $citizenId)
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
+     * | get New Holding
+     */
+    public function getNewholding($propertyId)
+    {
+        return PropProperty::select('id', 'new_holding_no', 'citizen_id')
+            ->whereIn('id', $propertyId)
+            ->orderByDesc('id')
+            ->get();
     }
 }
