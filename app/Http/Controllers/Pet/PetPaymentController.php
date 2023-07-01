@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetPaymentReq;
+use App\Http\Requests\Pet\PetRegistrationReq;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Payment\TempTransaction;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetChequeDtl;
+use App\Models\Pet\PetRazorPayRequest;
 use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetTran;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Config;
 
 class PetPaymentController extends Controller
@@ -33,6 +37,7 @@ class PetPaymentController extends Controller
     private $_offlineVerificationModes;
     private $_paymentMode;
     private $_offlineMode;
+    private $_PaymentUrl;
     # Class constructer 
     public function __construct()
     {
@@ -51,6 +56,7 @@ class PetPaymentController extends Controller
         $this->_offlineVerificationModes = Config::get("pet.VERIFICATION_PAYMENT_MODES");
         $this->_paymentMode             = Config::get("pet.PAYMENT_MODE");
         $this->_offlineMode             = Config::get("pet.OFFLINE_PAYMENT_MODE");
+        $this->_PaymentUrl              = Config::get('constants.PAYMENT_URL');
     }
 
     /**
@@ -62,7 +68,8 @@ class PetPaymentController extends Controller
     {
         $req->validate([
             'amount' => 'required|numeric|min:0',
-            'remarks' => 'sometimes'
+            'remarks' => 'sometimes',
+            'paymentMode' => 'required'
         ]);
         try {
             $user = authUser();
@@ -73,7 +80,7 @@ class PetPaymentController extends Controller
             $mPetRegistrationCharge = new PetRegistrationCharge();
             $mPetTran = new PetTran();
 
-            $payRelatedDetails = $this->checkParamForPayment($req);
+            $payRelatedDetails = $this->checkParamForPayment($req, $req->paymentMode);
             $ulbId = $payRelatedDetails['applicationDetails']['ulb_id'];
             $wardId = $payRelatedDetails['applicationDetails']['ward_id'];
             $tranType = $payRelatedDetails['applicationDetails']['application_type'];
@@ -129,9 +136,10 @@ class PetPaymentController extends Controller
         | Serial No: 
         | Under Construction
      */
-    public function checkParamForPayment($req)
+    public function checkParamForPayment($req, $paymentMode)
     {
         $applicationId          = $req->id;
+        $confPaymentMode        = $this->_paymentMode;
         $confApplicationType    = $this->_applicationType;
         $mPetActiveRegistration = new PetActiveRegistration();
         $mPetRegistrationCharge = new PetRegistrationCharge();
@@ -144,6 +152,10 @@ class PetPaymentController extends Controller
             ->first();
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
+        }
+        if($applicationDetail->payment_status != 0)
+        {
+            throw new Exception("payment is updated for application");
         }
 
         # Application type hence the charge type
@@ -166,11 +178,18 @@ class PetPaymentController extends Controller
         if (is_null($regisCharges)) {
             throw new Exception("Charges not found!");
         }
-        if (round($regisCharges->amount) != $req->amount) {
-            throw new Exception("Amount Not matched!");
+        if ($paymentMode != $confPaymentMode['1']) {
+            if (round($regisCharges->amount) != $req->amount) {
+                throw new Exception("Amount Not matched!");
+            }
         }
         if (in_array($regisCharges->paid_status, [1, 2])) {
             throw new Exception("Payment has been done!");
+        }
+        if ($paymentMode == $confPaymentMode['1']) {
+            if ($applicationDetail->citizen_id != authUser()->id) {
+                throw new Exception("You are not he Autherized User!");
+            }
         }
 
         # Transaction details
@@ -182,7 +201,9 @@ class PetPaymentController extends Controller
         return [
             "applicationDetails"    => $applicationDetail,
             "PetCharges"            => $regisCharges,
-            "chargeCategory"        => $chargeCategory
+            "chargeCategory"        => $chargeCategory,
+            "chargeId"              => $regisCharges->id,
+            "regAmount"             => $regisCharges->amount
         ];
     }
 
@@ -231,5 +252,73 @@ class PetPaymentController extends Controller
             'ward_no'           => $req['ref_ward_id']
         ];
         $mTempTransaction->tempTransaction($tranReqs);
+    }
+
+
+    /**
+     * | Ineciate online payment
+        | Serail No : 
+     */
+    public function handelOnlinePayment(Request $request)
+    {
+        // $rules = [
+        //     'id' => 'required|digits_between:1,9223372036854775807',
+        // ];
+        // $validator = Validator::make($request->all(), $rules,);
+        // if ($validator->fails()) {
+        //     return responseMsgs(false, $validator->errors(), $request->all());
+        // }
+        $request->validate([
+            'id' => 'required|digits_between:1,9223372036854775807',
+        ]);
+
+        try {
+            $refUser            = Auth()->user();
+            $confModuleId       = $this->_petModuleId;
+            $applicationId      = $request->id;
+            $paymentMode        = $this->_paymentMode;
+            $paymentDetails     = $this->checkParamForPayment($request, $paymentMode['1']);
+            $myRequest = [
+                'amount'          => $paymentDetails['regAmount'],
+                'workflowId'      => $paymentDetails['applicationDetails']['workflow_id'],
+                'id'              => $applicationId,
+                'departmentId'    => $confModuleId
+            ];
+
+            DB::beginTransaction();
+            # Api Calling for OrderId
+            $paymentUrl = $this->_PaymentUrl;
+            $refResponse = Http::withHeaders([
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"                             // Static
+            ])
+                ->withToken($request->bearerToken())
+                ->post($paymentUrl . 'api/payment/generate-orderid', $myRequest);               // Static
+
+            return $data = json_decode($refResponse);
+
+            $RazorPayRequest = new PetRazorPayRequest();
+            $RazorPayRequest->related_id        = $applicationId;
+            $RazorPayRequest->payment_from      = $paymentDetails['chargeCategory'];
+            $RazorPayRequest->amount            = $paymentDetails['regAmount'];
+            $RazorPayRequest->demand_id         = $paymentDetails["chargeId"];
+            $RazorPayRequest->ip_address        = $request->ip();
+            // $RazorPayRequest->order_id          = $temp["orderId"];
+            $RazorPayRequest->department_id     = $confModuleId;
+            $RazorPayRequest->save();
+
+            #--------------------water Consumer----------------------
+            DB::commit();
+            $returnData = [
+                'name'               => $refUser->user_name,
+                'mobile'             => $refUser->mobile,
+                'email'              => $refUser->email,
+                'userId'             => $refUser->id,
+                'ulbId'              => $refUser->ulb_id,
+            ];
+            return responseMsgs(true, "Order Id generated successfully", $returnData);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
     }
 }
