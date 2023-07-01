@@ -45,6 +45,7 @@ class AdvTypologyMstr extends Model
                 'type_inner as subtype',
                 'descriptions'
             )
+            ->where('ulb_id',2)
             ->orderBy('type_inner')
             ->get();
 

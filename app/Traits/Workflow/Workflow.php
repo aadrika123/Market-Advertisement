@@ -3,6 +3,8 @@
 namespace App\Traits\Workflow;
 
 use App\Models\Workflows\WfRole;
+use App\Models\Workflows\WfRoleusermap;
+use App\Models\Workflows\WfWardUser;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -98,5 +100,33 @@ trait Workflow
         } catch (Exception $e) {
             echo $e->getMessage();
         }
+    }
+
+    /**
+     * | get Ward By Logged in User Id
+     * -------------------------------------------
+     * | @param userId > Current Logged In User Id
+     */
+    public function getWardByUserId($userId)
+    {
+        $occupiedWard = WfWardUser::select('id', 'ward_id')
+            ->where('user_id', $userId)
+            ->get();
+        return $occupiedWard;
+    }
+
+
+    /**
+     * | get workflow role Id by logged in User Id
+     * -------------------------------------------
+     * @param userId > current Logged in User
+     */
+    public function getRoleIdByUserId($userId)
+    {
+        $roles = WfRoleusermap::select('id', 'wf_role_id', 'user_id')
+            ->where('user_id', $userId)
+            ->where('is_suspended', false)
+            ->get();
+        return $roles;
     }
 }

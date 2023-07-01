@@ -1160,7 +1160,7 @@ class PetRegistrationController extends Controller
             $mPropActiveSafs            = new PropActiveSaf();
             $mPropProperty              = new PropProperty();
             $mActiveCitizenUndercare    = new ActiveCitizenUndercare();
-            $caretakerProperty          =  $mActiveCitizenUndercare->getTaggedPropsByCitizenId($citizenId);
+            $caretakerProperty          = $mActiveCitizenUndercare->getTaggedPropsByCitizenId($citizenId);
 
             if ($type == 'saf') {
                 $data = $mPropActiveSafs->getCitizenSafs($citizenId, $ulbId);
@@ -1175,7 +1175,7 @@ class PetRegistrationController extends Controller
                     $data = $data->merge($data2);
                 }
                 $data = collect($data)->map(function ($value) {
-                    if (isset($value['new_holding_no'])) {
+                    if (!is_null($value['new_holding_no']) || !is_null($value['holding_no'])) {
                         return $value;
                     }
                 })->filter()->values();

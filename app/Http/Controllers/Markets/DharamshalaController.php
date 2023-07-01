@@ -1031,10 +1031,10 @@ class DharamshalaController extends Controller
 
             $mMarActiveDharamshala = new MarActiveDharamshala();
             $btcList = $mMarActiveDharamshala->getDharamshalaList($ulbId)
-                ->whereIn('mar_active_lodges.current_role_id', $roleId)
+                ->whereIn('mar_active_dharamshalas.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('mar_active_lodges.id')
+                ->orderByDesc('mar_active_dharamshalas.id')
                 ->get();
 
             $endTime = microtime(true);

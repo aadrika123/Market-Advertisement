@@ -50,10 +50,6 @@ class PropProperty extends Model
             'prop_properties.new_holding_no',
             'prop_properties.ward_mstr_id',
             'prop_properties.new_ward_mstr_id',
-            'prop_properties.elect_consumer_no',
-            'prop_properties.elect_acc_no',
-            'prop_properties.elect_bind_book_no',
-            'prop_properties.elect_cons_category',
             'prop_properties.prop_pin_code',
             'prop_properties.corr_pin_code',
             'prop_properties.prop_address',
@@ -109,7 +105,7 @@ class PropProperty extends Model
      */
     public function getCitizenHoldings($citizenId, $ulbId)
     {
-        return PropProperty::select('id', 'new_holding_no', 'citizen_id')
+        return PropProperty::select('id', 'new_holding_no', 'citizen_id','holding_no')
             ->where('ulb_id', $ulbId)
             ->where('citizen_id', $citizenId)
             ->orderByDesc('id')
