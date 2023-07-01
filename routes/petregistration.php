@@ -78,3 +78,10 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
 
     });
 });
+
+/**
+ * | Pet Module payment Operations
+ */
+Route::controller(PetPaymentController::class)->group(function () {
+    Route::post("webhook/end-online-payment", "endOnlinePayment");                                   // Admin
+});

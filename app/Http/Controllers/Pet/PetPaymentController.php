@@ -19,6 +19,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 
 class PetPaymentController extends Controller
 {
@@ -153,8 +154,7 @@ class PetPaymentController extends Controller
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
         }
-        if($applicationDetail->payment_status != 0)
-        {
+        if ($applicationDetail->payment_status != 0) {
             throw new Exception("payment is updated for application");
         }
 
@@ -261,13 +261,6 @@ class PetPaymentController extends Controller
      */
     public function handelOnlinePayment(Request $request)
     {
-        // $rules = [
-        //     'id' => 'required|digits_between:1,9223372036854775807',
-        // ];
-        // $validator = Validator::make($request->all(), $rules,);
-        // if ($validator->fails()) {
-        //     return responseMsgs(false, $validator->errors(), $request->all());
-        // }
         $request->validate([
             'id' => 'required|digits_between:1,9223372036854775807',
         ]);
@@ -277,6 +270,7 @@ class PetPaymentController extends Controller
             $confModuleId       = $this->_petModuleId;
             $applicationId      = $request->id;
             $paymentMode        = $this->_paymentMode;
+            $paymentUrl         = $this->_PaymentUrl;
             $paymentDetails     = $this->checkParamForPayment($request, $paymentMode['1']);
             $myRequest = [
                 'amount'          => $paymentDetails['regAmount'],
@@ -287,23 +281,24 @@ class PetPaymentController extends Controller
 
             DB::beginTransaction();
             # Api Calling for OrderId
-            $paymentUrl = $this->_PaymentUrl;
             $refResponse = Http::withHeaders([
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"                             // Static
             ])
                 ->withToken($request->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $myRequest);               // Static
 
-            return $data = json_decode($refResponse);
+            $orderData = json_decode($refResponse);
+            $jsonIncodedData = json_encode($orderData);
 
             $RazorPayRequest = new PetRazorPayRequest();
             $RazorPayRequest->related_id        = $applicationId;
             $RazorPayRequest->payment_from      = $paymentDetails['chargeCategory'];
-            $RazorPayRequest->amount            = $paymentDetails['regAmount'];
+            $RazorPayRequest->amount            = $orderData->amount;
             $RazorPayRequest->demand_id         = $paymentDetails["chargeId"];
             $RazorPayRequest->ip_address        = $request->ip();
-            // $RazorPayRequest->order_id          = $temp["orderId"];
-            $RazorPayRequest->department_id     = $confModuleId;
+            $RazorPayRequest->order_id          = $orderData->orderId;
+            $RazorPayRequest->department_id     = $orderData->departmentId;
+            $RazorPayRequest->note              = $jsonIncodedData;
             $RazorPayRequest->save();
 
             #--------------------water Consumer----------------------
@@ -316,6 +311,52 @@ class PetPaymentController extends Controller
                 'ulbId'              => $refUser->ulb_id,
             ];
             return responseMsgs(true, "Order Id generated successfully", $returnData);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Handel online payment form razorpay Webohook
+        | Serial No :
+     */
+    public function endOnlinePayment(Request $req)
+    {
+        $currentDateTime = Carbon::now();
+        $epoch = strtotime($currentDateTime);
+        return $epoch;
+        try {
+            $today          = Carbon::now();
+            $refUserId      = $req->userId;
+            $refUlbId       = $req->ulbId;
+            $applicationId  = $req->id;
+            $mDemands       = (array)null;
+
+            $mPetTran               = new PetTran();
+            $mPetRazorPayRequest    = new PetRazorPayRequest();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetRegistrationCharge = new PetRegistrationCharge();
+
+            $RazorPayRequest = $mPetRazorPayRequest->getRazorpayRequest($req);
+            if (!$RazorPayRequest) {
+                throw new Exception("Data Not Found");
+            }
+
+            $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+            if (!$applicationDetails) {
+                $currentDateTime = Carbon::now();
+                $epoch = strtotime($currentDateTime);
+                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            }
+
+            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationId)
+                ->where('charge_category', $RazorPayRequest->payment_from)
+                ->where('paid_status', 0)
+                ->first();
+            
+
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);

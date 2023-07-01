@@ -105,7 +105,7 @@ class PropProperty extends Model
      */
     public function getCitizenHoldings($citizenId, $ulbId)
     {
-        return PropProperty::select('id', 'new_holding_no', 'citizen_id')
+        return PropProperty::select('id', 'new_holding_no', 'citizen_id','holding_no')
             ->where('ulb_id', $ulbId)
             ->where('citizen_id', $citizenId)
             ->orderByDesc('id')
