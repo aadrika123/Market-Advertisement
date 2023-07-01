@@ -310,6 +310,7 @@ class PetPaymentController extends Controller
                 'userId'             => $refUser->id,
                 'ulbId'              => $refUser->ulb_id,
             ];
+            $returnData = collect($returnData)->merge($orderData);
             return responseMsgs(true, "Order Id generated successfully", $returnData);
         } catch (Exception $e) {
             DB::rollBack();
@@ -328,11 +329,12 @@ class PetPaymentController extends Controller
         $epoch = strtotime($currentDateTime);
         return $epoch;
         try {
-            $today          = Carbon::now();
-            $refUserId      = $req->userId;
-            $refUlbId       = $req->ulbId;
-            $applicationId  = $req->id;
-            $mDemands       = (array)null;
+            $today              = Carbon::now();
+            $refUserId          = $req->userId;
+            $refUlbId           = $req->ulbId;
+            $applicationId      = $req->id;
+            $currentDateTime    = Carbon::now();
+            $epoch              = strtotime($currentDateTime);
 
             $mPetTran               = new PetTran();
             $mPetRazorPayRequest    = new PetRazorPayRequest();
@@ -346,17 +348,18 @@ class PetPaymentController extends Controller
 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$applicationDetails) {
-                $currentDateTime = Carbon::now();
-                $epoch = strtotime($currentDateTime);
                 Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+                throw new Exception("Application Not found!");
             }
 
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationId)
                 ->where('charge_category', $RazorPayRequest->payment_from)
                 ->where('paid_status', 0)
                 ->first();
-            
-
+            if (!$chargeDetails) {
+                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+                throw new Exception("Demand Not found!");
+            }
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
