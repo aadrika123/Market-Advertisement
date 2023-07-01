@@ -10,6 +10,7 @@ use App\Models\Payment\TempTransaction;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetChequeDtl;
 use App\Models\Pet\PetRazorPayRequest;
+use App\Models\Pet\PetRazorPayResponse;
 use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetTran;
 use Illuminate\Support\Facades\Http;
@@ -325,11 +326,7 @@ class PetPaymentController extends Controller
      */
     public function endOnlinePayment(Request $req)
     {
-        $currentDateTime = Carbon::now();
-        $epoch = strtotime($currentDateTime);
-        return $epoch;
         try {
-            $today              = Carbon::now();
             $refUserId          = $req->userId;
             $refUlbId           = $req->ulbId;
             $applicationId      = $req->id;
@@ -338,6 +335,7 @@ class PetPaymentController extends Controller
 
             $mPetTran               = new PetTran();
             $mPetRazorPayRequest    = new PetRazorPayRequest();
+            $mPetRazorPayResponse   = new PetRazorPayResponse();
             $mPetActiveRegistration = new PetActiveRegistration();
             $mPetRegistrationCharge = new PetRegistrationCharge();
 
@@ -346,12 +344,12 @@ class PetPaymentController extends Controller
                 throw new Exception("Data Not Found");
             }
 
+            # Handel the fake data or error data 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$applicationDetails) {
                 Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
                 throw new Exception("Application Not found!");
             }
-
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationId)
                 ->where('charge_category', $RazorPayRequest->payment_from)
                 ->where('paid_status', 0)
@@ -360,9 +358,58 @@ class PetPaymentController extends Controller
                 Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
                 throw new Exception("Demand Not found!");
             }
+            if ($chargeDetails->amount != $req->amount) {
+                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+                throw new Exception("amount Not found!");
+            }
+            if ($req->amount != $RazorPayRequest->amount) {
+                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+                throw new Exception("Amount Not Match from request!");
+            }
+
+            DB::beginTransaction();
+            # save razorpay webhook response
+            $paymentResponseId = $mPetRazorPayResponse->savePaymentResponse($RazorPayRequest, $req);
+            # save the razorpay request status as 1
+            $RazorPayRequest->status = 1;                                       // Static
+            $RazorPayRequest->update();
+
+            # save the transaction details 
+            $tranReq = [
+                "id"                => $applicationId,
+                'amount'            => $req->amount,
+                'todayDate'         => $currentDateTime,
+                'tranNo'            => $req->transactionNo,
+                'paymentMode'       => "ONLINE",                                // Static
+                'citId'             => $refUserId,
+                'userType'          => "Citizen",                               // Check here // Static
+                'ulbId'             => $refUlbId,
+                'pgResponseId'      => $paymentResponseId['razorpayResponseId'],
+                'pgId'              => $req->gatewayType,
+                'wardId'            => $applicationDetails->ward_id,
+                'tranTypeId'        => $RazorPayRequest->payment_from,
+                'isJsk'             => FALSE,
+                'roundAmount'       => $RazorPayRequest->amount
+            ];
+            $mPetTran->saveTranDetails($tranReq);
+
+            # Save charges payment status
+            PetRegistrationCharge::where('id', $chargeDetails->id)
+                ->update([
+                    "paid_status" => 1                                                  // Static
+                ]);
+
+            # Save application payment status  
+            PetActiveRegistration::where('id', $applicationId)
+                ->update([
+                    "payment_status" => 1                                                   // Static
+                ]);
+
+            DB::commit();
+            return responseMsgs(true, "Online Payment Success!", []);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
 }

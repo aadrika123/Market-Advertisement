@@ -70,12 +70,12 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
         Route::post('post-next-level', 'postNextLevel');                                                // Workflow
-        Route::post('workflow/application/get-by-id', 'getApplicationsDetails');                        // Workflow
+        // Route::post('workflow/application/get-by-id', 'getApplicationsDetails');                        // Workflow
         // Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
         // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
-        Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
+        // Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
         Route::post('doc-verify-reject', 'docVerifyRejects');                                           // Workflow
-
+        Route::post('final-verify-reject', 'finalVerificationRejection');
     });
 });
 

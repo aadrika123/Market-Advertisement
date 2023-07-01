@@ -182,11 +182,11 @@ class PetWorkflowController extends Controller
                 $this->checkPostCondition($req->senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
                 $metaReqs['verificationStatus'] = 1;
                 $metaReqs['receiverRoleId']     = $forwardBackwardIds->forward_role_id;
-                $petApplication->current_role   = $forwardBackwardIds->forward_role_id;
+                $petApplication->current_role_id   = $forwardBackwardIds->forward_role_id;
                 $petApplication->last_role_id   =  $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
             }
             if ($req->action == 'backward') {
-                $petApplication->current_role   = $forwardBackwardIds->backward_role_id;
+                $petApplication->current_role_id   = $forwardBackwardIds->backward_role_id;
                 $metaReqs['verificationStatus'] = 0;
                 $metaReqs['receiverRoleId']     = $forwardBackwardIds->backward_role_id;
             }
@@ -204,18 +204,18 @@ class PetWorkflowController extends Controller
 
             # check in all the cases the data if entered in the track table 
             // Updation of Received Date
-            $preWorkflowReq = [
-                'workflowId'        => $petApplication->workflow_id,
-                'refTableDotId'     => "water_applications.id",
-                'refTableIdValue'   => $req->applicationId,
-                'receiverRoleId'    => $senderRoleId
-            ];
+            // $preWorkflowReq = [
+            //     'workflowId'        => $petApplication->workflow_id,
+            //     'refTableDotId'     => "pet_active_registrations.id",
+            //     'refTableIdValue'   => $req->applicationId,
+            //     'receiverRoleId'    => $senderRoleId
+            // ];
 
-            $previousWorkflowTrack = $waterTrack->getWfTrackByRefId($preWorkflowReq);
-            $previousWorkflowTrack->update([
-                'forward_date' => $current->format('Y-m-d'),
-                'forward_time' => $current->format('H:i:s')
-            ]);
+            // $previousWorkflowTrack = $waterTrack->getWfTrackByRefId($preWorkflowReq);
+            // $previousWorkflowTrack->update([
+            //     'forward_date' => $current->format('Y-m-d'),
+            //     'forward_time' => $current->format('H:i:s')
+            // ]);
             DB::commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
         } catch (Exception $e) {
@@ -245,4 +245,11 @@ class PetWorkflowController extends Controller
                 break;
         }
     }
+
+
+    /**
+     * | Verify, Reject document 
+     */
+    // public function 
+    
 }
