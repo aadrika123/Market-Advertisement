@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Marriage;
 
 use App\Http\Controllers\Controller;
+use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Advertisements\RefRequiredDocument;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Marriage\MarriageActiveRegistration;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWorkflow;
@@ -107,6 +110,168 @@ class MarriageRegistrationController extends Controller
             return responseMsgs(true, "Marriage Registration Application Submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get Doc List
+     */
+    public function getDocList(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|numeric'
+        ]);
+        try {
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $applicationId               = $req->applicationId;
+
+            $refMarriageApplication = $mMarriageActiveRegistration->getApplicationById($applicationId);                      // Get Marriage Details
+            if (is_null($refMarriageApplication)) {
+                throw new Exception("Application Not Found for respective ($applicationId) id!");
+            }
+
+            $filterDocs = $this->getMarriageDocLists($refMarriageApplication);
+            if (!empty($filterDocs))
+                $totalDocLists['listDocs'] = $this->filterDocument($filterDocs, $refMarriageApplication);                                     // function(1.2)
+            else
+                $totalDocLists['listDocs'] = [];
+            // $totalDocLists = collect($document);
+            // $totalDocLists['docUploadStatus']   = $refMarriageApplication->doc_upload_status;
+            // $totalDocLists['docVerifyStatus']   = $refMarriageApplication->doc_verify_status;
+            // $totalDocLists['ApplicationNo']     = $refMarriageApplication->application_no;
+            return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
+
+    /**
+     *  | Filtering
+     */
+    public function filterDocument($documentList, $refSafs, $ownerId = null)
+    {
+        $mWfActiveDocument = new WfActiveDocument();
+        $safId = $refSafs->id;
+        $workflowId = $refSafs->workflow_id;
+        $moduleId = 10;
+        $uploadedDocs = $mWfActiveDocument->getDocByRefIds($safId, $workflowId, $moduleId);
+        $explodeDocs = collect(explode('#', $documentList));
+
+        $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $ownerId, $refSafs) {
+            $document = explode(',', $explodeDoc);
+            $key = array_shift($document);
+            $label = array_shift($document);
+            $documents = collect();
+
+            collect($document)->map(function ($item) use ($uploadedDocs, $documents, $ownerId, $refSafs) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $item)
+                    ->where('owner_dtl_id', $ownerId)
+                    ->first();
+
+                if ($uploadedDoc) {
+                    $response = [
+                        "uploadedDocId" => $uploadedDoc->id ?? "",
+                        "documentCode" => $item,
+                        "ownerId" => $uploadedDoc->owner_dtl_id ?? "",
+                        "docPath" => $uploadedDoc->doc_path ?? "",
+                        "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc->verify_status ?? "") : 0,
+                        "remarks" => $uploadedDoc->remarks ?? "",
+                    ];
+                    $documents->push($response);
+                }
+            });
+            $reqDoc['docType'] = $key;
+            $reqDoc['docName'] = substr($label, 1, -1);
+
+            // Check back to citizen status
+            $uploadedDocument = $documents->sortByDesc('uploadedDocId')->first();                           // Get Last Uploaded Document
+
+            if (collect($uploadedDocument)->isNotEmpty() && $uploadedDocument['verifyStatus'] == 2) {
+                $reqDoc['btcStatus'] = true;
+            } else
+                $reqDoc['btcStatus'] = false;
+            $reqDoc['uploadedDoc'] = $documents->sortByDesc('uploadedDocId')->first();                      // Get Last Uploaded Document
+
+            $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs, $refSafs) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
+                $strLower = strtolower($doc);
+                $strReplace = str_replace('_', ' ', $strLower);
+                $arr = [
+                    "documentCode" => $doc,
+                    "docVal" => ucwords($strReplace),
+                    "uploadedDoc" => $uploadedDoc->doc_path ?? "",
+                    "uploadedDocId" => $uploadedDoc->id ?? "",
+                    "verifyStatus'" => $refSafs->payment_status == 1 ? ($uploadedDoc->verify_status ?? "") : 0,
+                    "remarks" => $uploadedDoc->remarks ?? "",
+                ];
+                return $arr;
+            });
+            return $reqDoc;
+        });
+        return $filteredDocs;
+    }
+
+    /**
+     * | Get Doc List
+     */
+    public function getMarriageDocLists($refApplication)
+    {
+        $mRefReqDocs = new RefRequiredDocument();
+        $moduleId = 10;
+        return $documentList = $mRefReqDocs->getDocsByDocCode($moduleId, "MARRIAGE_REQUIRED_DOC")->requirements;
+    }
+
+    /**
+     * | Doc Upload
+     */
+    public function uploadDocument(Request $req)
+    {
+        $req->validate([
+            "applicationId" => "required|numeric",
+            "document" => "required|mimes:pdf,jpeg,png,jpg",
+            "docCode" => "required",
+            "ownerId" => "nullable|numeric"
+        ]);
+        $extention = $req->document->getClientOriginalExtension();
+        $req->validate([
+            'document' => $extention == 'pdf' ? 'max:10240' : 'max:1024',
+        ]);
+
+        try {
+            $metaReqs = array();
+            $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $relativePath = Config::get('marriage.RELATIVE_PATH');
+            $marriageRegitrationDtl = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $refImageName = $req->docCode;
+            $refImageName = $marriageRegitrationDtl->id . '-' . $refImageName;
+            $document = $req->document;
+            $imageName = $docUpload->upload($refImageName, $document, $relativePath);
+
+            $metaReqs['moduleId']   = 10;
+            $metaReqs['activeId']   = $marriageRegitrationDtl->id;
+            $metaReqs['workflowId'] = $marriageRegitrationDtl->workflow_id;
+            $metaReqs['ulbId']      = $marriageRegitrationDtl->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document']     = $imageName;
+            $metaReqs['docCode']      = $req->docCode;
+            $metaReqs['ownerDtlId']   = $marriageRegitrationDtl->prop_owner_id;
+
+            $metaReqs = new Request($metaReqs);
+            $mWfActiveDocument->postDocuments($metaReqs);
+
+            // $docUploadStatus = $this->checkFullDocUpload($req->applicationId);
+            // if ($docUploadStatus == 1) {                                        // Doc Upload Status Update
+            //     $marriageRegitrationDtl->doc_upload_status = 1;
+            //     if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
+            //         $marriageRegitrationDtl->parked = false;
+
+            //     $marriageRegitrationDtl->save();
+            // }
+            return responseMsgs(true, "Document Uploadation Successful", "", "010201", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 

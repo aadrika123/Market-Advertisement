@@ -15,7 +15,7 @@ class MarriageActiveRegistration extends Model
     use HasFactory;
 
     /**
-     * | 
+     * |
      */
     public function saveRegistration($request, $user)
     {
@@ -56,7 +56,6 @@ class MarriageActiveRegistration extends Model
         $mMarriageActiveRegistration->groom_guardian_aadhar_no      = $request->groomGuardianAadharNo;
         $mMarriageActiveRegistration->marriage_date                 = $request->marriageDate;
         $mMarriageActiveRegistration->marriage_place                = $request->marriagePlace;
-        // $mMarriageActiveRegistration->marriage_type                 = $request->marriageType;
         $mMarriageActiveRegistration->witness1_name                 = $request->witness1Name;
         $mMarriageActiveRegistration->witness1_mobile_no            = $request->witness1MobileNo;
         $mMarriageActiveRegistration->witness1_residential_address  = $request->witness1ResidentialAddress;
@@ -68,12 +67,13 @@ class MarriageActiveRegistration extends Model
         $mMarriageActiveRegistration->witness3_residential_address  = $request->witness3ResidentialAddress;
         $mMarriageActiveRegistration->appointment_date              = $request->appointmentDate;
         $mMarriageActiveRegistration->marriage_registration_date    = $request->marriageRegistrationDate;
-        $mMarriageActiveRegistration->registrar_id                   = $request->registrarId;
+        $mMarriageActiveRegistration->registrar_id                  = $request->registrarId;
         $mMarriageActiveRegistration->user_id                       = $request->userId;
         $mMarriageActiveRegistration->citizen_id                    = $request->citizenId;
         $mMarriageActiveRegistration->application_no                = $request->applicationNo;
-        $mMarriageActiveRegistration->application_no                = $request->applicationNo;
-        $mMarriageActiveRegistration->application_no                = $request->applicationNo;
+        $mMarriageActiveRegistration->bpl                           = $request->bpl;
+        // $mMarriageActiveRegistration->initiator_role_id             = $request->initiatorRoleId;
+        // $mMarriageActiveRegistration->finisher_role_id              = $request->finisherRoleId;
         // $mMarriageActiveRegistration->doc_upload_status             = $request->docUploadStatus;
         // $mMarriageActiveRegistration->payment_status                = $request->paymentStatus;
         // $mMarriageActiveRegistration->payment_amount                = $request->paymentAmount;
@@ -86,5 +86,13 @@ class MarriageActiveRegistration extends Model
             "id" => $mMarriageActiveRegistration->id,
             "applicationNo" => $request->applicationNo
         ];
+    }
+
+    /**
+     * | 
+     */
+    public function getApplicationById($id)
+    {
+        return MarriageActiveRegistration::find($id);
     }
 }

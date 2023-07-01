@@ -12,8 +12,9 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
 
     Route::controller(MarriageRegistrationController::class)->group(function () {
         Route::post('apply', 'apply');
-        Route::post('upload-documents', 'docUpload');
-        Route::post('list-documents', 'documentList');
+        Route::post('get-doc-list', 'getDocList');
+        Route::post('upload-document', 'uploadDocument');
+        Route::post('uploaded-document', 'uploadedDocument');
         Route::post('offline-payment', 'offlinePayment');
     });
 });
