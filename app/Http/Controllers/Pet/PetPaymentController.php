@@ -394,12 +394,15 @@ class PetPaymentController extends Controller
             $mPetTran->saveTranDetails($tranReq);
 
             # Save charges payment status
-            $chargeDetails->paid_status = 1;                                        // Static
-            $chargeDetails->update();
+            $chargeDetails->update([
+                    "paid_status" => 1                                                  // Static
+                ]);
 
             # Save application payment status  
-            $applicationDetails->payment_status = 1;                                // Static
-            $applicationDetails->update();
+            $applicationDetails->update([
+                "payment_status" => 1                                                   // Static
+            ]);
+            
             DB::commit();
             return responseMsgs(true, "Online Payment Success!", []);
         } catch (Exception $e) {
@@ -407,6 +410,4 @@ class PetPaymentController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
-
-    
 }
