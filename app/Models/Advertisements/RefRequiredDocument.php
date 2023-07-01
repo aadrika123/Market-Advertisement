@@ -17,10 +17,10 @@ class RefRequiredDocument extends Model
             ->first();
     }
 
-    public function listDocument($advtModuleId)
+    public function listDocument($moduleId)
     {
         return RefRequiredDocument::select('requirements', 'module_id', 'code')
-            ->where('module_id', $advtModuleId)
+            ->where('module_id', $moduleId)
             ->get();
     }
 
