@@ -394,15 +394,17 @@ class PetPaymentController extends Controller
             $mPetTran->saveTranDetails($tranReq);
 
             # Save charges payment status
-            $chargeDetails->update([
+            PetRegistrationCharge::where('id', $chargeDetails->id)
+                ->update([
                     "paid_status" => 1                                                  // Static
                 ]);
 
             # Save application payment status  
-            $applicationDetails->update([
-                "payment_status" => 1                                                   // Static
-            ]);
-            
+            PetActiveRegistration::where('id', $applicationId)
+                ->update([
+                    "payment_status" => 1                                                   // Static
+                ]);
+
             DB::commit();
             return responseMsgs(true, "Online Payment Success!", []);
         } catch (Exception $e) {
