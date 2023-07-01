@@ -356,13 +356,14 @@ class PetRegistrationController extends Controller
             // check if the respective is working on the front end
             // $this->checkAutheriseUser($req);
             $documentList = $this->getPetDocLists($refPetApplication);
-            $waterTypeDocs['listDocs'] = collect($documentList)->map(function ($value) use ($refPetApplication) {
+            $petTypeDocs['listDocs'] = collect($documentList)->map(function ($value) use ($refPetApplication) {
                 return $this->filterDocument($value, $refPetApplication)->first();
             });
-            $totalDocLists = collect($waterTypeDocs);
+            $totalDocLists = collect($petTypeDocs);
             $totalDocLists['docUploadStatus']   = $refPetApplication->doc_upload_status;
             $totalDocLists['docVerifyStatus']   = $refPetApplication->doc_verify_status;
             $totalDocLists['ApplicationNo']     = $refPetApplication->application_no;
+            $totalDocLists['paymentStatus']     = $refPetApplication->payment_status;
             return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");

@@ -156,8 +156,8 @@ class PetWorkflowController extends Controller
         $wfLevels = $this->_petWfRoles;
         $req->validate([
             'applicationId'     => 'required',
-            'senderRoleId'      => 'required',
-            'receiverRoleId'    => 'required',
+            'senderRoleId'      => 'nullable',
+            'receiverRoleId'    => 'nullable',
             'action'            => 'required|In:forward,backward',
             'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
         ]);
@@ -180,10 +180,10 @@ class PetWorkflowController extends Controller
             DB::beginTransaction();
             if ($req->action == 'forward') {
                 $this->checkPostCondition($req->senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
-                $metaReqs['verificationStatus'] = 1;
-                $metaReqs['receiverRoleId']     = $forwardBackwardIds->forward_role_id;
-                $petApplication->current_role_id   = $forwardBackwardIds->forward_role_id;
-                $petApplication->last_role_id   =  $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
+                $metaReqs['verificationStatus']     = 1;
+                $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
+                $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
+                $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
             }
             if ($req->action == 'backward') {
                 $petApplication->current_role_id   = $forwardBackwardIds->backward_role_id;
@@ -250,6 +250,81 @@ class PetWorkflowController extends Controller
     /**
      * | Verify, Reject document 
      */
-    // public function 
-    
+    // public function docVerifyRejects(Request $req)
+    // {
+    //     $req->validate([
+    //         'id'            => 'required|digits_between:1,9223372036854775807',
+    //         'applicationId' => 'required|digits_between:1,9223372036854775807',
+    //         'docRemarks'    =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+    //         'docStatus'     => 'required|in:Verified,Rejected'
+    //     ]);
+
+    //     try {
+    //         # Variable Assignments
+    //         $mWfDocument        = new WfActiveDocument();
+    //         $mWaterApplication  = new WaterApplication();
+    //         $mWfRoleusermap     = new WfRoleusermap();
+    //         $wfDocId            = $req->id;
+    //         $applicationId      = $req->applicationId;
+    //         $userId             = authUser()->id;
+    //         $wfLevel            = Config::get('waterConstaint.ROLE-LABEL');
+
+    //         # validating application
+    //         $waterApplicationDtl = $mWaterApplication->getApplicationById($applicationId)
+    //             ->firstOrFail();
+    //         if (!$waterApplicationDtl || collect($waterApplicationDtl)->isEmpty())
+    //             throw new Exception("Application Details Not Found");
+
+    //         # validating roles
+    //         $waterReq = new Request([
+    //             'userId'        => $userId,
+    //             'workflowId'    => $waterApplicationDtl['workflow_id']
+    //         ]);
+    //         $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($waterReq);
+    //         if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+    //             throw new Exception("Role Not Available");
+
+    //         # validating role for DA
+    //         $senderRoleId = $senderRoleDtls->wf_role_id;
+    //         if ($senderRoleId != $wfLevel['DA'])                                    // Authorization for Dealing Assistant Only
+    //             throw new Exception("You are not Authorized");
+
+    //         # validating if full documet is uploaded
+    //         $ifFullDocVerified = $this->ifFullDocVerified($applicationId);          // (Current Object Derivative Function 0.1)
+    //         if ($ifFullDocVerified == 1)
+    //             throw new Exception("Document Fully Verified");
+
+    //         DB::beginTransaction();
+    //         if ($req->docStatus == "Verified") {
+    //             $status = 1;
+    //         }
+    //         if ($req->docStatus == "Rejected") {
+    //             # For Rejection Doc Upload Status and Verify Status will disabled 
+    //             $status = 2;
+    //             // $waterApplicationDtl->doc_upload_status = 0;
+    //             $waterApplicationDtl->doc_status = 0;
+    //             $waterApplicationDtl->save();
+    //         }
+    //         $reqs = [
+    //             'remarks'           => $req->docRemarks,
+    //             'verify_status'     => $status,
+    //             'action_taken_by'   => $userId
+    //         ];
+    //         $mWfDocument->docVerifyReject($wfDocId, $reqs);
+    //         if ($req->docStatus == 'Verified')
+    //             $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+    //         else
+    //             $ifFullDocVerifiedV1 = 0;
+
+    //         if ($ifFullDocVerifiedV1 == 1) {                                        // If The Document Fully Verified Update Verify Status
+    //             $mWaterApplication->updateAppliVerifyStatus($applicationId);
+    //         }
+    //         DB::commit();
+    //         return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    // }
+
 }
