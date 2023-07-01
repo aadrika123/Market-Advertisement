@@ -113,10 +113,10 @@ class ParamController extends Controller
                 $strings = $mParamString->masters();
                 $data['paramCategories'] = remove_null($strings->groupBy('param_category')->toArray());
 
-                $mAdvTypologyMstr = new AdvTypologyMstr();
-                $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List
+                // $mAdvTypologyMstr = new AdvTypologyMstr();
+                // $typologyList = $mAdvTypologyMstr->listTypology();                  // Get Topology List
 
-                $data['paramCategories']['typology'] = $typologyList;
+                // $data['paramCategories']['typology'] = $typologyList;
 
                 $redis->set('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
             }
@@ -818,9 +818,6 @@ class ParamController extends Controller
                 $mAdvAgency = new AdvAgency();
                 $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
             } elseif ($wfworkflowMasterId == $this->_hording) {
-                $mAdvHoarding = new AdvHoarding();
-                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
-            } elseif ($wfworkflowMasterId == $this->_banquetHall) {
                 $mAdvHoarding = new AdvHoarding();
                 $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
             }
