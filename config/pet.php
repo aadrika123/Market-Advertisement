@@ -105,4 +105,5 @@ return [
         "NEFT",
         "CASH"
     ],
+    "API_KEY_PAYMENT" => "eff41ef6-d430-4887-aa55-9fcf46c72c99",
 ];

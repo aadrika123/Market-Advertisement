@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Pet\PetPaymentController;
 use App\Http\Controllers\Pet\PetRegistrationController;
+use App\Http\Controllers\Pet\PetWorkflowController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -32,7 +33,7 @@ Route::post('/pet-connection', function () {
 /**
  * | Grouped Route for middleware
  */
-Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
+Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerToken']], function () {
     /**
      * | Pet Registration Operation and more fundamental oprations
         | Serial No : 01
@@ -58,10 +59,22 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
      */
     Route::controller(PetPaymentController::class)->group(function () {
         Route::post("application/offline-payment", "offlinePayment");
-        Route::post("application/online-payment", "onlinePayment");                                           // Admin
+        Route::post("application/initiate-online-payment", "handelOnlinePayment");                                           // Admin
     });
 
     /**
-     * | pet Work
+     * | Pet Workflow 
      */
+    Route::controller(PetWorkflowController::class)->group(function () {
+
+        Route::post('inbox', 'inbox');                                                                          // Workflow
+        Route::post('outbox', 'outbox');                                                                        // Workflow
+        Route::post('post-next-level', 'postNextLevel');                                                // Workflow
+        Route::post('workflow/application/get-by-id', 'getApplicationsDetails');                        // Workflow
+        // Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
+        // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
+        Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
+        Route::post('doc-verify-reject', 'docVerifyRejects');                                           // Workflow
+
+    });
 });
