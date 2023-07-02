@@ -490,7 +490,7 @@ class PetRegistrationController extends Controller
      */
     public function readDocumentPath($path)
     {
-        $path = (config('app.url') . "/" . $path);
+        $path = (config('app.url') . ":8001" . "/" . $path);
         return $path;
     }
 
@@ -1214,6 +1214,4 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
-
-
 }
