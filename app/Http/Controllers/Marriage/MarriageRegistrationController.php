@@ -282,18 +282,77 @@ class MarriageRegistrationController extends Controller
             $metaReqs = new Request($metaReqs);
             $mWfActiveDocument->postDocuments($metaReqs);
 
-            // $docUploadStatus = $this->checkFullDocUpload($req->applicationId);
-            // if ($docUploadStatus == 1) {                                        // Doc Upload Status Update
-            //     $marriageRegitrationDtl->doc_upload_status = 1;
-            //     if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
-            //         $marriageRegitrationDtl->parked = false;
+            $docUploadStatus = $this->checkFullDocUpload($req->applicationId);
+            if ($docUploadStatus == 1) {                                        // Doc Upload Status Update
+                $marriageRegitrationDtl->doc_upload_status = 1;
+                // if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
+                //     $marriageRegitrationDtl->parked = false;
 
-            //     $marriageRegitrationDtl->save();
-            // }
+                $marriageRegitrationDtl->save();
+            }
             return responseMsgs(true, "Document Uploadation Successful", "", "010201", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+
+    /**
+     * | Check Full Upload Doc Status
+     */
+    public function checkFullDocUpload($applicationId)
+    {
+        $mMarriageActiveRegistration = new MarriageActiveRegistration();
+        $mWfActiveDocument = new WfActiveDocument();
+        $marriageRegitrationDtl = $mMarriageActiveRegistration->getApplicationById($applicationId);
+        // Get Saf Details
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $marriageRegitrationDtl->workflow_id,
+            'moduleId' => 10
+        ];
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        return $this->isAllDocs($applicationId, $refDocList, $marriageRegitrationDtl);
+    }
+
+    public function isAllDocs($applicationId, $refDocList, $marriageRegitrationDtl)
+    {
+        $docList = array();
+        $verifiedDocList = array();
+        // $mSafsOwners = new PropActiveSafsOwner();
+        // $refSafOwners = $mSafsOwners->getOwnersBySafId($applicationId);
+        $marriageDocs = $this->getMarriageDocLists($marriageRegitrationDtl);
+        $docList['marriageDocs'] = explode('#', $marriageDocs);
+
+        $verifiedDocList['marriageDocs'] = $refDocList->where('owner_dtl_id', '!=', null)->values();
+        $collectUploadDocList = collect();
+        collect($verifiedDocList['marriageDocs'])->map(function ($item) use ($collectUploadDocList) {
+            return $collectUploadDocList->push($item['doc_code']);
+        });
+
+        $marriageDocs = collect();
+        // Property List Documents
+        $flag = 1;
+        foreach ($marriageDocs as $item) {
+            $explodeDocs = explode(',', $item);
+            array_shift($explodeDocs);
+            foreach ($explodeDocs as $explodeDoc) {
+                $changeStatus = 0;
+                if (in_array($explodeDoc, $collectUploadDocList->toArray())) {
+                    $changeStatus = 1;
+                    break;
+                }
+            }
+            if ($changeStatus == 0) {
+                $flag = 0;
+                break;
+            }
+        }
+
+        if ($flag == 0)
+            return 0;
+        else
+            return 1;
     }
 
     /**
@@ -476,8 +535,8 @@ class MarriageRegistrationController extends Controller
     //         $mWfWorkflows = new WfWorkflow();
     //         $mWfRoleMaps = new WfWorkflowrolemap();
     //         $marriageeDtl = MarriageActiveRegistration::find($req->applicationId);
-    //         $senderRoleId = $concession->current_role;
-    //         $ulbWorkflowId = $concession->workflow_id;
+    //         $senderRoleId = $marriage->current_role;
+    //         $ulbWorkflowId = $marriage->workflow_id;
     //         $req->validate([
     //             'comment' => $senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
     //         ]);
@@ -491,22 +550,22 @@ class MarriageRegistrationController extends Controller
 
     //         DB::beginTransaction();
     //         if ($req->action == 'forward') {
-    //             $this->checkPostCondition($senderRoleId, $wfLevels, $concession);          // Check Post Next level condition
-    //             $concession->current_role = $forwardBackwardIds->forward_role_id;
-    //             $concession->last_role_id =  $forwardBackwardIds->forward_role_id;         // Update Last Role Id
+    //             $this->checkPostCondition($senderRoleId, $wfLevels, $marriage);          // Check Post Next level condition
+    //             $marriage->current_role = $forwardBackwardIds->forward_role_id;
+    //             $marriage->last_role_id =  $forwardBackwardIds->forward_role_id;         // Update Last Role Id
     //             $metaReqs['verificationStatus'] = 1;
     //             $metaReqs['receiverRoleId'] = $forwardBackwardIds->forward_role_id;
     //         }
 
     //         if ($req->action == 'backward') {
-    //             $concession->current_role = $forwardBackwardIds->backward_role_id;
+    //             $marriage->current_role = $forwardBackwardIds->backward_role_id;
     //             $metaReqs['verificationStatus'] = 0;
     //             $metaReqs['receiverRoleId'] = $forwardBackwardIds->backward_role_id;
     //         }
-    //         $concession->save();
+    //         $marriage->save();
 
     //         $metaReqs['moduleId'] = Config::get('module-constants.PROPERTY_MODULE_ID');
-    //         $metaReqs['workflowId'] = $concession->workflow_id;
+    //         $metaReqs['workflowId'] = $marriage->workflow_id;
     //         $metaReqs['refTableDotId'] = 'prop_active_concessions.id';
     //         $metaReqs['refTableIdValue'] = $req->applicationId;
     //         $metaReqs['senderRoleId'] = $senderRoleId;
@@ -517,7 +576,7 @@ class MarriageRegistrationController extends Controller
 
     //         // Updation of Received Date
     //         $preWorkflowReq = [
-    //             'workflowId' => $concession->workflow_id,
+    //             'workflowId' => $marriage->workflow_id,
     //             'refTableDotId' => 'prop_active_concessions.id',
     //             'refTableIdValue' => $req->applicationId,
     //             'receiverRoleId' => $senderRoleId
