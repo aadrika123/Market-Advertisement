@@ -752,29 +752,22 @@ class PetRegistrationController extends Controller
     //         $mWorkflowTracks        = new WorkflowTrack();
     //         $mCustomDetails         = new CustomDetail();
     //         $mUlbNewWardmap         = new UlbWardMaster();
+    //         $applicationId          = $request->applicationId;
 
     //         # application details
-    //         $applicationDetails = $waterObj->fullWaterDetails($request)->get();
-    //         if (collect($applicationDetails)->first() == null) {
+    //         return $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+    //         if (!$applicationDetails) {
     //             throw new Exception("Application data according to $request->applicationId not found");
     //         }
-
-    //         # Ward Name
-    //         $refApplication = collect($applicationDetails)->first();
-    //         $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
     //         # owner Details
-    //         $ownerDetails = $ownerObj->ownerByApplication($request)->get();
-    //         $ownerDetail = collect($ownerDetails)->map(function ($value, $key) {
-    //             return $value;
-    //         });
     //         $aplictionList = [
     //             'application_no'    => collect($applicationDetails)->first()->application_no,
     //             'apply_date'        => collect($applicationDetails)->first()->apply_date
     //         ];
 
     //         # DataArray
-    //         $basicDetails       = $this->getBasicDetails($applicationDetails, $wardDetails);
-    //         $propertyDetails    = $this->getpropertyDetails($applicationDetails, $wardDetails);
+    //         $basicDetails       = $this->getBasicDetails($applicationDetails);
+    //         $propertyDetails    = $this->getpropertyDetails($applicationDetails);
     //         $petDetails         = $this->getPetDetails($applicationDetails);
 
     //         $firstView = [
@@ -845,22 +838,21 @@ class PetRegistrationController extends Controller
     // }
 
 
-    // /**
-    //  * |------------------ Basic Details ------------------|
-    //  * | @param applicationDetails
-    //  * | @var collectionApplications
-    //     | Serial No : 08.01
-    //     | Workinig 
-    //  */
-    // public function getBasicDetails($applicationDetails, $wardDetails)
+    /**
+     * |------------------ Basic Details ------------------|
+     * | @param applicationDetails
+     * | @var collectionApplications
+        | Serial No : 08.01
+        | Workinig 
+     */
+    // public function getBasicDetails($applicationDetails)
     // {
-    //     $collectionApplications = collect($applicationDetails)->first();
     //     return new Collection([
-    //         ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $wardDetails->ward_name],
-    //         ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $collectionApplications->connection_type],
-    //         ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $collectionApplications->connection_through],
-    //         ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $collectionApplications->apply_from],
-    //         ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $collectionApplications->apply_date]
+    //         ['displayString' => 'Ward No',            'key' => 'WardNo',              'value' => $applicationDetails->ward_name],
+    //         ['displayString' => 'Type of Connection', 'key' => 'TypeOfConnection',    'value' => $applicationDetails->connection_type],
+    //         ['displayString' => 'Connection Through', 'key' => 'ConnectionThrough',   'value' => $applicationDetails->connection_through],
+    //         ['displayString' => 'Apply From',         'key' => 'ApplyFrom',           'value' => $applicationDetails->apply_from],
+    //         ['displayString' => 'Apply Date',         'key' => 'ApplyDate',           'value' => $applicationDetails->apply_date]
     //     ]);
     // }
 

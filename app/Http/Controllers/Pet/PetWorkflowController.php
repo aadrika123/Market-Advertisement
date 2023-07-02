@@ -76,7 +76,7 @@ class PetWorkflowController extends Controller
             $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
             $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
-            return $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
+            $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereIn('pet_active_registrations.current_role_id', $roleId)
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', false)
