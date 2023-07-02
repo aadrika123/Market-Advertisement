@@ -19,11 +19,21 @@ class PetActiveApplicant extends Model
         $mPetActiveApplicant->email             = $req->email;
         $mPetActiveApplicant->pan_no            = $req->panNo;
         $mPetActiveApplicant->applicant_name    = $req->applicantName;
-        $mPetActiveApplicant->uid               = $req->uid ?? null ;
+        $mPetActiveApplicant->uid               = $req->uid ?? null;
         $mPetActiveApplicant->telephone         = $req->telephone;
         $mPetActiveApplicant->voters_card_no    = $req->voterCard;
         $mPetActiveApplicant->owner_type        = $req->ownerCategory;
         $mPetActiveApplicant->application_id    = $applicaionId;
         $mPetActiveApplicant->save();
+    }
+
+    /**
+     * | Get Details of owner by ApplicationId
+     */
+    public function getApplicationDetails($applicationId)
+    {
+        return PetActiveApplicant::where('application_id', $applicationId)
+            ->where('status', 1)
+            ->orderByDesc('id');
     }
 }

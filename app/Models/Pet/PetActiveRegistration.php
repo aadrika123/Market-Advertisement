@@ -80,8 +80,10 @@ class PetActiveRegistration extends Model
             'pet_active_details.status as petStatus',
             'pet_active_applicants.status as applicantsStatus',
             'ulb_ward_masters.ward_name',
-            'ulb_masters.ulb_name'
+            'ulb_masters.ulb_name',
+            'm_pet_occurrence_types.occurrence_types'
         )
+            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
             ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')

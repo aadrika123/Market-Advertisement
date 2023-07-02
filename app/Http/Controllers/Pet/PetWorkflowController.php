@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Pet\PetActiveRegistration;
+use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -74,7 +76,7 @@ class PetWorkflowController extends Controller
             $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
             $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
-            return $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
+            $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereIn('pet_active_registrations.current_role_id', $roleId)
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', false)
@@ -156,8 +158,8 @@ class PetWorkflowController extends Controller
         $wfLevels = $this->_petWfRoles;
         $req->validate([
             'applicationId'     => 'required',
-            'senderRoleId'      => 'required',
-            'receiverRoleId'    => 'required',
+            'senderRoleId'      => 'nullable',
+            'receiverRoleId'    => 'nullable',
             'action'            => 'required|In:forward,backward',
             'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
         ]);
@@ -180,10 +182,10 @@ class PetWorkflowController extends Controller
             DB::beginTransaction();
             if ($req->action == 'forward') {
                 $this->checkPostCondition($req->senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
-                $metaReqs['verificationStatus'] = 1;
-                $metaReqs['receiverRoleId']     = $forwardBackwardIds->forward_role_id;
-                $petApplication->current_role_id   = $forwardBackwardIds->forward_role_id;
-                $petApplication->last_role_id   =  $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
+                $metaReqs['verificationStatus']     = 1;
+                $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
+                $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
+                $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
             }
             if ($req->action == 'backward') {
                 $petApplication->current_role_id   = $forwardBackwardIds->backward_role_id;
@@ -250,6 +252,172 @@ class PetWorkflowController extends Controller
     /**
      * | Verify, Reject document 
      */
-    // public function 
-    
+    public function docVerifyRejects(Request $req)
+    {
+        $req->validate([
+            'id'            => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks'    =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus'     => 'required|in:Verified,Rejected'
+        ]);
+
+        try {
+            # Variable Assignments
+            $mWfDocument                = new WfActiveDocument();
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $mWfRoleusermap             = new WfRoleusermap();
+            $wfDocId                    = $req->id;
+            $applicationId              = $req->applicationId;
+            $userId                     = authUser()->id;
+            $wfLevel                    = $this->_petWfRoles;
+
+            # validating application
+            $petApplicationDtl = $mPetActiveRegistration->getPetApplicationById($applicationId)
+                ->first();
+            if (!$petApplicationDtl || collect($petApplicationDtl)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            # validating roles
+            $waterReq = new Request([
+                'userId'        => $userId,
+                'workflowId'    => $petApplicationDtl['workflow_id']
+            ]);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfAndId($waterReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            # validating role for DA
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+            if ($senderRoleId != $wfLevel['DA'])                                    // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
+
+            # validating if full documet is uploaded
+            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);          // (Current Object Derivative Function 0.1)
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                # For Rejection Doc Upload Status and Verify Status will disabled 
+                $status = 2;
+                $petApplicationDtl->doc_upload_status = 0;
+                $petApplicationDtl->save();
+            }
+            $reqs = [
+                'remarks'           => $req->docRemarks,
+                'verify_status'     => $status,
+                'action_taken_by'   => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            if ($req->docStatus == 'Verified')
+                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+            else
+                $ifFullDocVerifiedV1 = 0;
+
+            if ($ifFullDocVerifiedV1 == 1) {                                        // If The Document Fully Verified Update Verify Status
+                PetActiveRegistration::where('id', $applicationId)
+                    ->update([
+                        'doc_upload_status' => true,
+                        'doc_verify_status' => true
+                    ]);
+            }
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    /**
+     * | Check if the Document is Fully Verified or Not (0.1) | up
+     * | @param
+     * | @var 
+     * | @return
+        | Serial No :  
+        | Working 
+     */
+    public function ifFullDocVerified($applicationId)
+    {
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $mWfActiveDocument      = new WfActiveDocument();
+        $refapplication = $mPetActiveRegistration->getPetApplicationById($applicationId)
+            ->firstOrFail();
+
+        $refReq = [
+            'activeId'      => $applicationId,
+            'workflowId'    => $refapplication['workflow_id'],
+            'moduleId'      => $this->_petModuleId,
+        ];
+
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $ifPropDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifPropDocUnverified == true)
+            return 0;
+        else
+            return 1;
+    }
+
+
+    /**
+     * | default final applroval 
+        | remove
+     */
+    public function finalVerificationRejection(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'status' => 'required'
+        ]);
+        try {
+            $userId = authUser()->id;
+            $applicationId          = $req->applicationId;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mWfRoleUsermap         = new WfRoleusermap();
+            $currentDateTime        = Carbon::now();
+
+            $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $workflowId = $application->workflow_id;
+            $getRoleReq = new Request([                                                 // make request to get role id of the user
+                'userId' => $userId,
+                'workflowId' => $workflowId
+            ]);
+            $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
+            $roleId = $readRoleDtls->wf_role_id;
+            if ($roleId != $application->finisher_role_id) {
+                throw new Exception("You are not the Finisher!");
+            }
+            if ($application->doc_upload_status == false || $application->payment_status != 1)
+                throw new Exception("Document Not Fully Uploaded or Payment in not Done!");                                                                      // DA Condition
+            if ($application->doc_verify_status == false)
+                throw new Exception("Document Not Fully Verified!");
+
+            if ($req->status == 1) {
+                $regNo = "PET" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+                PetActiveRegistration::where('id', $applicationId)
+                    ->update([
+                        "status" => 2,
+                        "registration_no" => $regNo
+                    ]);
+                $returnData = [
+                    "applicationId" => $application->application_no,
+                    "registration_no" => $regNo
+                ];
+                return responseMsgs(true, 'Pet registration Application Approved!', $returnData);
+            } else {
+                PetActiveRegistration::where('id', $applicationId)
+                    ->update([
+                        "status" => 0,
+                    ]);
+                return responseMsgs(true, 'Pet registration Application Rejected!', $application->application_no);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }

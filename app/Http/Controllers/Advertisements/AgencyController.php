@@ -167,14 +167,14 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-
+            $ulbId = authUser()->ulb_id;
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mAdvActiveAgency->listInbox($roleIds);                        // <----- Get Inbox List
+            $inboxList = $mAdvActiveAgency->listInbox($roleIds, $ulbId);                        // <----- Get Inbox List
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -185,7 +185,7 @@ class AgencyController extends Controller
         }
     }
 
-    
+
     public function listInbox_new(Request $req)
     {
         try {
@@ -194,7 +194,7 @@ class AgencyController extends Controller
 
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->token;
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -223,7 +223,7 @@ class AgencyController extends Controller
             $startTime = microtime(true);
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];

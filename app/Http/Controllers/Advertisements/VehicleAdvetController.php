@@ -192,7 +192,7 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser();
+            $ulbId=authUser()->id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];

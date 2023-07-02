@@ -332,6 +332,7 @@ class PetPaymentController extends Controller
             $applicationId      = $req->id;
             $currentDateTime    = Carbon::now();
             $epoch              = strtotime($currentDateTime);
+            $petRoles           = $this->_petWfRoles;
 
             $mPetTran               = new PetTran();
             $mPetRazorPayRequest    = new PetRazorPayRequest();
@@ -396,13 +397,16 @@ class PetPaymentController extends Controller
             # Save charges payment status
             PetRegistrationCharge::where('id', $chargeDetails->id)
                 ->update([
-                    "paid_status" => 1                                                  // Static
+                    "paid_status" => 1,                                                  // Static
+
                 ]);
 
             # Save application payment status  
             PetActiveRegistration::where('id', $applicationId)
                 ->update([
-                    "payment_status" => 1                                                   // Static
+                    "payment_status" => 1,                                                  // Static
+                    "current_role_id" => $petRoles['DA'],
+                    "last_role_id" => $petRoles['DA']
                 ]);
 
             DB::commit();

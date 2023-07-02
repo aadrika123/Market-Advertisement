@@ -25,6 +25,7 @@ class PetActiveDetail extends Model
         $mPetActiveDetail->rabies_vac_date          = $req->dateOfRabies;
         $mPetActiveDetail->leptospirosis_vac_date   = $req->dateOfLepVaccine;
         $mPetActiveDetail->dob                      = $req->petBirthDate;
+        $mPetActiveDetail->pet_name                 = $req->petName;
         $mPetActiveDetail->save();
     }
 }
