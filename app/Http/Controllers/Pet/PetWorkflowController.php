@@ -372,6 +372,7 @@ class PetWorkflowController extends Controller
     {
         $req->validate([
             'id' => 'required|digits_between:1,9223372036854775807',
+            'status' => 'required'
         ]);
         try {
             $userId = authUser()->id;
@@ -388,7 +389,7 @@ class PetWorkflowController extends Controller
             ]);
             $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
             $roleId = $readRoleDtls->wf_role_id;
-            if ($roleId != $application->finisher) {
+            if ($roleId != $application->finisher_role_id) {
                 throw new Exception("You are not the Finisher!");
             }
             if ($application->doc_upload_status == false || $application->payment_status != 1)
@@ -396,17 +397,25 @@ class PetWorkflowController extends Controller
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
 
-            $regNo = Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
-            PetActiveRegistration::where('id', $applicationId)
-                ->update([
-                    "status" => 2,
+            if ($req->status == 1) {
+                $regNo = "PET" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+                PetActiveRegistration::where('id', $applicationId)
+                    ->update([
+                        "status" => 2,
+                        "registration_no" => $regNo
+                    ]);
+                $returnData = [
+                    "applicationId" => $application->application_no,
                     "registration_no" => $regNo
-                ]);
-            $returnData = [
-                "applicationId" => $application->application_no,
-                "registration_no" => $regNo
-            ];
-            return responseMsgs(true, 'Pet registration Application Approved!', $returnData);
+                ];
+                return responseMsgs(true, 'Pet registration Application Approved!', $returnData);
+            } else {
+                PetActiveRegistration::where('id', $applicationId)
+                    ->update([
+                        "status" => 0,
+                    ]);
+                return responseMsgs(true, 'Pet registration Application Rejected!', $application->application_no);
+            }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
