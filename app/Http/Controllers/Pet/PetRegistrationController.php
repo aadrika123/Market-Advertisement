@@ -28,7 +28,10 @@ use App\Models\Property\PropFloor;
 use App\Models\Property\PropOwner;
 use App\Models\Property\PropProperty;
 use App\Models\Property\PropSaf;
+use App\Models\Workflows\CustomDetail;
+use App\Models\Workflows\UlbWardMaster;
 use App\Models\Workflows\WfWorkflow;
+use App\Models\Workflows\WorkflowMap;
 use App\Models\Workflows\WorkflowTrack;
 use App\Traits\Workflow\Workflow;
 use Carbon\Carbon;
@@ -723,17 +726,17 @@ class PetRegistrationController extends Controller
     }
 
     //BEGIN///////////////////////////////////////////////////////////////////////////////
-    // /**
-    //  * | Get Application details for workflow view 
-    //  * | @param request
-    //  * | @var ownerDetails
-    //  * | @var applicantDetails
-    //  * | @var applicationDetails
-    //  * | @var returnDetails
-    //  * | @return returnDetails : list of individual applications
-    //     | Serial No : 08
-    //     | Workinig 
-    //  */
+    /**
+     * | Get Application details for workflow view 
+     * | @param request
+     * | @var ownerDetails
+     * | @var applicantDetails
+     * | @var applicationDetails
+     * | @var returnDetails
+     * | @return returnDetails : list of individual applications
+        | Serial No : 08
+        | Workinig 
+     */
     // public function getApplicationsDetails(Request $request)
     // {
     //     $request->validate([
@@ -741,9 +744,11 @@ class PetRegistrationController extends Controller
     //     ]);
     //     try {
     //         # object assigning
-    //         $waterObj               = new WaterApplication();
-    //         $ownerObj               = new WaterApplicant();
-    //         $forwardBackward        = new WorkflowMap;
+    //         // $waterObj               
+    //         $mPetActiveRegistration = new PetActiveRegistration();
+    //         // $ownerObj               
+    //         $mPetActiveApplicant    = new PetActiveApplicant();
+    //         $mWorkflowMap           = new WorkflowMap();
     //         $mWorkflowTracks        = new WorkflowTrack();
     //         $mCustomDetails         = new CustomDetail();
     //         $mUlbNewWardmap         = new UlbWardMaster();
