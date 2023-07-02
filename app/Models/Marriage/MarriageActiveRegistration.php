@@ -72,7 +72,7 @@ class MarriageActiveRegistration extends Model
         $mMarriageActiveRegistration->citizen_id                    = $request->citizenId;
         $mMarriageActiveRegistration->application_no                = $request->applicationNo;
         $mMarriageActiveRegistration->is_bpl                        = $request->bpl;
-        $mMarriageActiveRegistration->initiator_role_id             = $request->initiatorRoleId;
+        $mMarriageActiveRegistration->initiator_role_id             = $request->initiatorRoleId[0];
         $mMarriageActiveRegistration->finisher_role_id              = $request->finisherRoleId;
         $mMarriageActiveRegistration->workflow_id                   = $request->workflowId;
         // $mMarriageActiveRegistration->doc_upload_status             = $request->docUploadStatus;
