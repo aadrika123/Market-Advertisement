@@ -320,7 +320,8 @@ class PetWorkflowController extends Controller
             if ($ifFullDocVerifiedV1 == 1) {                                        // If The Document Fully Verified Update Verify Status
                 PetActiveRegistration::where('id', $applicationId)
                     ->update([
-                        'doc_upload_status' => true
+                        'doc_upload_status' => true,
+                        'doc_verify_status' => true
                     ]);
             }
             DB::commit();
