@@ -371,12 +371,12 @@ class PetWorkflowController extends Controller
     public function finalVerificationRejection(Request $req)
     {
         $req->validate([
-            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
             'status' => 'required'
         ]);
         try {
             $userId = authUser()->id;
-            $applicationId          = $req->id;
+            $applicationId          = $req->applicationId;
             $mPetActiveRegistration = new PetActiveRegistration();
             $mWfRoleUsermap         = new WfRoleusermap();
             $currentDateTime        = Carbon::now();
