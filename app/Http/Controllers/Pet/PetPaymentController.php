@@ -405,7 +405,8 @@ class PetPaymentController extends Controller
             PetActiveRegistration::where('id', $applicationId)
                 ->update([
                     "payment_status" => 1,                                                  // Static
-                    "current_role_id" => $petRoles['DA']
+                    "current_role_id" => $petRoles['DA'],
+                    "last_role_id" => $petRoles['DA']
                 ]);
 
             DB::commit();

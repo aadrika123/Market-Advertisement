@@ -361,4 +361,53 @@ class PetWorkflowController extends Controller
         else
             return 1;
     }
+
+
+    /**
+     * | default final applroval 
+        | remove
+     */
+    public function finalVerificationRejection(Request $req)
+    {
+        $req->validate([
+            'id' => 'required|digits_between:1,9223372036854775807',
+        ]);
+        try {
+            $userId = authUser()->id;
+            $applicationId          = $req->id;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mWfRoleUsermap         = new WfRoleusermap();
+            $currentDateTime        = Carbon::now();
+
+            $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $workflowId = $application->workflow_id;
+            $getRoleReq = new Request([                                                 // make request to get role id of the user
+                'userId' => $userId,
+                'workflowId' => $workflowId
+            ]);
+            $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
+            $roleId = $readRoleDtls->wf_role_id;
+            if ($roleId != $application->finisher) {
+                throw new Exception("You are not the Finisher!");
+            }
+            if ($application->doc_upload_status == false || $application->payment_status != 1)
+                throw new Exception("Document Not Fully Uploaded or Payment in not Done!");                                                                      // DA Condition
+            if ($application->doc_verify_status == false)
+                throw new Exception("Document Not Fully Verified!");
+
+            $regNo = Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+            PetActiveRegistration::where('id', $applicationId)
+                ->update([
+                    "status" => 2,
+                    "registration_no" => $regNo
+                ]);
+            $returnData = [
+                "applicationId" => $application->application_no,
+                "registration_no" => $regNo
+            ];
+            return responseMsgs(true, 'Pet registration Application Approved!', $returnData);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }
