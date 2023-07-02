@@ -661,4 +661,29 @@ class MarriageRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", responseTime(), 'POST', "");
         }
     }
+
+    /**
+     *  get uploaded documents
+     */
+    public function getUploadedDocuments(Request $req)
+    {
+        $req->validate([
+            'applicationId' => 'required|numeric'
+        ]);
+        try {
+            $mWfActiveDocument = new WfActiveDocument();
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $moduleId = 10;
+
+            $marriageDetails = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            if (!$marriageDetails)
+                throw new Exception("Application Not Found for this application Id");
+
+            $workflowId = $marriageDetails->workflow_id;
+            $documents = $mWfActiveDocument->getDocsByAppId($req->applicationId, $workflowId, $moduleId);
+            return responseMsgs(true, "Uploaded Documents", remove_null($documents), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }

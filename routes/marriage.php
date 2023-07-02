@@ -21,6 +21,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
         Route::post('details', 'details');
         Route::post('set-appiontment-date', 'appointmentDate');
         Route::post('final-approval-rejection', 'postNextLevel');
+        Route::post('get-uploaded-document', 'getUploadedDocuments');
         Route::post('offline-payment', 'offlinePayment');
     });
 });
