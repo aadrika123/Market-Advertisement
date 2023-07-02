@@ -71,12 +71,13 @@ class MarriageActiveRegistration extends Model
         $mMarriageActiveRegistration->user_id                       = $request->userId;
         $mMarriageActiveRegistration->citizen_id                    = $request->citizenId;
         $mMarriageActiveRegistration->application_no                = $request->applicationNo;
-        $mMarriageActiveRegistration->bpl                           = $request->bpl;
-        // $mMarriageActiveRegistration->initiator_role_id             = $request->initiatorRoleId;
-        // $mMarriageActiveRegistration->finisher_role_id              = $request->finisherRoleId;
+        $mMarriageActiveRegistration->is_bpl                        = $request->bpl;
+        $mMarriageActiveRegistration->initiator_role_id             = $request->initiatorRoleId;
+        $mMarriageActiveRegistration->finisher_role_id              = $request->finisherRoleId;
+        $mMarriageActiveRegistration->workflow_id                   = $request->workflowId;
         // $mMarriageActiveRegistration->doc_upload_status             = $request->docUploadStatus;
         // $mMarriageActiveRegistration->payment_status                = $request->paymentStatus;
-        // $mMarriageActiveRegistration->payment_amount                = $request->paymentAmount;
+        $mMarriageActiveRegistration->payment_amount                = 100;
         // $mMarriageActiveRegistration->penalty_amount                = $request->penaltyAmount;
         // $mMarriageActiveRegistration->parked                        = $request->parked;
         // $mMarriageActiveRegistration->status                        = $request->status;
