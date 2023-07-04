@@ -1214,4 +1214,42 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
+
+
+    /**
+     * | Show approved appliction 
+        | Demo Remove
+     */
+    public function getApproveRegistration(Request $req)
+    {
+        try{
+            $user                   = authUser();
+            $confUserType           = $this->_userType;
+            $confDbKey              = $this->_dbKey;
+            $mPetActiveRegistration = new PetActiveRegistration();
+
+            if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
+                throw new Exception("You are not an autherised Citizen!");
+            }
+            # Collect querry Exceptions 
+            try {
+                $refAppDetails = $mPetActiveRegistration->dummyApplicationDetails($user->id, $confDbKey['1'])
+                    ->select(
+                        DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_active_registrations.*",
+                        "pet_active_applicants.applicant_name",
+                    )
+                    ->orderByDesc('pet_active_registrations.id')
+                    ->get();
+            } catch (QueryException $q) {
+                return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
+            }
+            return responseMsgs(true, "list of active registration!", remove_null($refAppDetails), "", "01", ".ms", "POST", $req->deviceId);
+        }
+        catch(Exception $e)
+        {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
 }
