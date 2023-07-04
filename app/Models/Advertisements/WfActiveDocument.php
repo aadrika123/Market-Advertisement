@@ -259,4 +259,26 @@ class WfActiveDocument extends Model
             ->where('module_id', $moduleId)
             ->delete();
     }
+
+    /**
+     * | Get Application Details by Application No
+     */
+    public function getDocsByAppId($applicationId, $workflowId, $moduleId)
+    {
+        return DB::table('wf_active_documents as d')
+            ->select(
+                'd.id',
+                'd.document',
+                DB::raw("concat(relative_path,'/',document) as doc_path"),
+                'd.remarks',
+                'd.verify_status',
+                'd.doc_code',
+                'o.owner_name'
+            )
+            ->leftJoin('prop_active_safs_owners as o', 'o.id', '=', 'd.owner_dtl_id')
+            ->where('d.active_id', $applicationId)
+            ->where('d.workflow_id', $workflowId)
+            ->where('d.module_id', $moduleId)
+            ->get();
+    }
 }
