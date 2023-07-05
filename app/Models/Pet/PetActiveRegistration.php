@@ -38,7 +38,6 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->occurrence_type_id     = $req->petFrom;
         $mPetActiveRegistration->apply_through          = $req->applyThrough;                       // holding or saf
         $mPetActiveRegistration->owner_type             = $req->ownerCategory;
-        $mPetActiveRegistration->pet_type               = $req->petType;
 
         $mPetActiveRegistration->created_at             = Carbon::now();
         $mPetActiveRegistration->application_apply_date = Carbon::now();

@@ -15,7 +15,7 @@ class PetAudit extends Model
     public function saveAuditData($req, $tableName)
     {
         $mPetAudit = new PetAudit();
-        $mPetAudit->data = $req;
+        $mPetAudit->json_data = $req;
         $mPetAudit->table_name = $tableName;
         $mPetAudit->save();
     }

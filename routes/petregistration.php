@@ -42,20 +42,19 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
     Route::controller(PetRegistrationController::class)->group(function () {
         Route::post('get-master-data', 'getAllMasters');                                                        // Admin/ Citizen        
         Route::post('application/apply-pet-registration', 'applyPetRegistration');                              // Citizen
-        Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
-        Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
-        Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
         Route::post('application/get-registration-list', 'getApplicationList');                                 // Citizen
         Route::post('application/get-details', 'getApplicationDetails');                                        // Citizen
         Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
         Route::post('application/get-prop-details', 'getSafHoldingDetails');
-        Route::post('application/get-wf-detials', 'getApplicationsDetails');                                // Workflow
-        Route::post('apllication/edit-pet-details', 'editPetDetails');
-
-        # Approved application list 
-        Route::post('approved-registrations', 'getApproveRegistration');
-        # property data 
+        Route::post('application/get-wf-detials', 'getApplicationsDetails');                                    // Workflow
+        Route::post('application/edit-pet-details', 'editPetDetails');
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
+        # Document Api
+        Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
+        Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
+        Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
+        # Approved application list  // Caution remove
+        Route::post('approved-registrations', 'getApproveRegistration');
     });
 
     /**
@@ -73,8 +72,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
 
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
-        Route::post('post-next-level', 'postNextLevel');                                                // Workflow
-        // Workflow
+        Route::post('post-next-level', 'postNextLevel'); 
         // Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
         // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
         // Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
