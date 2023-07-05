@@ -227,6 +227,7 @@ class BanquetMarriageHallController extends Controller
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
+            $fullDetailsData['workflowId']=$data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -290,9 +291,9 @@ class BanquetMarriageHallController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($totalApplication == 0) {
-                $data1['data'] = null;
-            }
+            // if ($totalApplication == 0) {
+            //     $data1['data'] = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Applied Applications", $data1, "050805", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -694,9 +695,9 @@ class BanquetMarriageHallController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 

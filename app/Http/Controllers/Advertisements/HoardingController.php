@@ -293,6 +293,7 @@ class HoardingController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['workflowId']=$data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -737,9 +738,9 @@ class HoardingController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;

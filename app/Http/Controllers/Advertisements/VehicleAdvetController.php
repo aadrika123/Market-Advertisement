@@ -292,6 +292,7 @@ class VehicleAdvetController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['workflowId']=$data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
