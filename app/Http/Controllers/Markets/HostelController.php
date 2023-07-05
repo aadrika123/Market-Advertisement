@@ -130,11 +130,14 @@ class HostelController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $inboxList = $mMarActiveHostel->listInbox($roleIds, $ulbId);                       // <----- Get Inbox List
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050902", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050902", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050902", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -154,17 +157,20 @@ class HostelController extends Controller
 
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mMarActiveHostel->listOutbox($roleIds,$ulbId);                      // <----- Get Outbox List
+            $outboxList = $mMarActiveHostel->listOutbox($roleIds, $ulbId);                      // <----- Get Outbox List
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050903", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists",  $list, "050903", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050903", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -227,7 +233,7 @@ class HostelController extends Controller
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -359,14 +365,16 @@ class HostelController extends Controller
 
             $advData = $this->_repository->specialInboxHostel($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
-                ->where('mar_active_hostels.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
-
+                ->where('mar_active_hostels.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050907", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050907", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050907", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -612,7 +620,8 @@ class HostelController extends Controller
                     $approvedhostel = $mMarActiveHostel->replicate();
                     $approvedhostel->setTable('mar_hostels');
                     $temp_id = $approvedhostel->id = $mMarActiveHostel->id;
-                    $approvedhostel->payment_amount = $req->payment_amount;
+                    $approvedhostel->payment_amount = round($req->payment_amount);
+                    $approvedhostel->demand_amount = $req->payment_amount;
                     $approvedhostel->license_no = $generatedId;
                     $approvedhostel->approve_date = Carbon::now();
                     $approvedhostel->save();
@@ -642,7 +651,8 @@ class HostelController extends Controller
                     $approvedHostel = $mMarActiveHostel->replicate();
                     $approvedHostel->setTable('mar_hostels');
                     $temp_id = $approvedHostel->id = $mMarActiveHostel->id;
-                    $approvedHostel->payment_amount = $req->payment_amount;
+                    $approvedHostel->payment_amount = round($req->payment_amount);
+                    $approvedHostel->demand_amount = $req->payment_amount;
                     $approvedHostel->payment_status = $req->payment_status;
                     $approvedHostel->approve_date = Carbon::now();
                     $approvedHostel->save();
@@ -1017,7 +1027,7 @@ class HostelController extends Controller
      * | Function - 22
      * | API - 20
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1043,13 +1053,16 @@ class HostelController extends Controller
                 ->whereIn('mar_active_hostels.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('mar_active_hostels.id')
-                ->get();
+                ->orderByDesc('mar_active_hostels.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050920", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050920", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050920", 1.0, "271ms", "POST", "", "");
         }

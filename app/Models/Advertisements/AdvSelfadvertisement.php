@@ -16,7 +16,7 @@ class AdvSelfadvertisement extends Model
         return AdvSelfadvertisement::select(
             'id',
             'application_no',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
             'applicant',
             'applicant as owner_name',
             'entity_name',

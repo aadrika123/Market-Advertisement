@@ -225,19 +225,23 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId= authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds,$ulbId);             // <------ Get List From Model
+            $inboxList = $mAdvActiveSelfadvertisement->listInbox($roleIds, $ulbId);             // <------ Get List From Model
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
+            // dd(DB::getQueryLog());
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            dd($e->getFile(),$e->getLine(),$e->getMessage());
+            dd($e->getFile(), $e->getLine(), $e->getMessage());
             return responseMsgs(false, $e->getMessage(), "", "050105", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -254,17 +258,20 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId= authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds,$ulbId);           // <------ Get List From Model
+            $outboxList = $mAdvActiveSelfadvertisement->listOutbox($roleIds, $ulbId);           // <------ Get List From Model 
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -328,7 +335,7 @@ class SelfAdvetController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", "$executionTime Sec", "POST", $req->deviceId);
@@ -451,11 +458,14 @@ class SelfAdvetController extends Controller
             $advData = $this->_repository->specialInbox($workflowId)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
                 ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
-                ->whereIn('ward_id', $wardId)
-                ->get();
+                ->whereIn('ward_id', $wardId);
+
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050110", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched",  $list, "050110", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050110", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -775,7 +785,8 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                    $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                    $approvedSelfadvertisement->payment_amount = round($req->payment_amount);
+                    $approvedSelfadvertisement->demand_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
                     $approvedSelfadvertisement->demand_amount = $req->demand_amount;
                     $approvedSelfadvertisement->license_no = $generatedId;
@@ -806,7 +817,8 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                    $approvedSelfadvertisement->payment_amount = $req->payment_amount;
+                    $approvedSelfadvertisement->payment_amount = round($req->payment_amount);
+                    $approvedSelfadvertisement->demand_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
                     $approvedSelfadvertisement->demand_amount = $req->demand_amount;
                     $approvedSelfadvertisement->approve_date = Carbon::now();
@@ -868,9 +880,9 @@ class SelfAdvetController extends Controller
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
-            if ($totalApplication == 0) {
-                $applications = NULL;
-            }
+            // if ($totalApplication == 0) {
+            //     $applications = NULL;
+            // }
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
@@ -1374,7 +1386,7 @@ class SelfAdvetController extends Controller
      * | Function - 34
      * | API - 32
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1399,13 +1411,16 @@ class SelfAdvetController extends Controller
                 // ->whereIn('adv_active_selfadvertisements.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', '1')
-                ->orderByDesc('adv_active_selfadvertisements.id')
-                ->get();
+                ->orderByDesc('adv_active_selfadvertisements.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
 
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050132", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050132", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050132", 1.0, "271ms", "POST", "", "");
         }

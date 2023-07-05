@@ -191,11 +191,13 @@ class HoardingController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $inboxList = $mAdvActiveHoarding->listInbox($roleIds, $ulbId);                      // <----- Get Inbox List
-
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050604", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications",  $list, "050604", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050604", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -218,12 +220,14 @@ class HoardingController extends Controller
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mAdvActiveHoarding->listOutbox($roleIds,$ulbId);                    // <----- Get Inbox List
-
+            $outboxList = $mAdvActiveHoarding->listOutbox($roleIds, $ulbId);                    // <----- Get Inbox List
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050605", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050605", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050605", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -293,7 +297,7 @@ class HoardingController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -393,14 +397,16 @@ class HoardingController extends Controller
 
             $advData = $this->Repository->specialAgencyLicenseInbox($workflowId)   // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_active_hoardings.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
-
+                ->where('adv_active_hoardings.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050609", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched",  $list, "050609", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050609", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1339,7 +1345,7 @@ class HoardingController extends Controller
      * | Function - 31
      * | API - 31
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1365,13 +1371,17 @@ class HoardingController extends Controller
                 ->whereIn('adv_active_hoardings.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_hoardings.id')
-                ->get();
+                ->orderByDesc('adv_active_hoardings.id');
+            // ->get();
+
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050631", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050631", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "",  "050631", 1.0, "271ms", "POST", "", "");
         }

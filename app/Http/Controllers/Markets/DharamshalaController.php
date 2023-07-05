@@ -127,11 +127,13 @@ class DharamshalaController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $inboxList = $mMarActiveDharamshala->listInbox($roleIds, $ulbId);                   // <----- Get Inbox List
-
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "051002", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "051002", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051002", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -151,17 +153,19 @@ class DharamshalaController extends Controller
 
             $mMarActiveDharamshala = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
             $outboxList = $mMarActiveDharamshala->listOutbox($roleIds, $ulbId);                // <----- Get Outbox List
-
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "051003", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists",  $list, "051003", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051003", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -226,7 +230,7 @@ class DharamshalaController extends Controller
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d', $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -358,14 +362,17 @@ class DharamshalaController extends Controller
 
             $advData = $this->_repository->specialInboxmDharamshala($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
-                ->where('mar_active_dharamshalas.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
+                ->where('mar_active_dharamshalas.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "051007", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "051007", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051007", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -601,7 +608,8 @@ class DharamshalaController extends Controller
                     $approveddharamshala = $mMarActiveDharamshala->replicate();
                     $approveddharamshala->setTable('mar_dharamshalas');
                     $temp_id = $approveddharamshala->id = $mMarActiveDharamshala->id;
-                    $approveddharamshala->payment_amount = $req->payment_amount;
+                    $approveddharamshala->payment_amount = round($req->payment_amount);
+                    $approveddharamshala->demand_amount = $req->payment_amount;
                     $approveddharamshala->license_no = $generatedId;
                     $approveddharamshala->approve_date = Carbon::now();
                     $approveddharamshala->save();
@@ -631,7 +639,8 @@ class DharamshalaController extends Controller
                     $approvedDharamshala = $mMarActiveDharamshala->replicate();
                     $approvedDharamshala->setTable('mar_dharamshalas');
                     $temp_id = $approvedDharamshala->id = $mMarActiveDharamshala->id;
-                    $approvedDharamshala->payment_amount = $req->payment_amount;
+                    $approvedDharamshala->payment_amount = round($req->payment_amount);
+                    $approvedDharamshala->demand_amount = $req->payment_amount;
                     $approvedDharamshala->payment_status = $req->payment_status;
                     $approvedDharamshala->approve_date = Carbon::now();
                     $approvedDharamshala->save();
@@ -1009,7 +1018,7 @@ class DharamshalaController extends Controller
      * | Function - 22
      * | API - 20
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1035,13 +1044,17 @@ class DharamshalaController extends Controller
                 ->whereIn('mar_active_dharamshalas.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('mar_active_dharamshalas.id')
-                ->get();
+                ->orderByDesc('mar_active_dharamshalas.id');
+            // ->get();
+
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "051020", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "051020", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051020", 1.0, "271ms", "POST", "", "");
         }

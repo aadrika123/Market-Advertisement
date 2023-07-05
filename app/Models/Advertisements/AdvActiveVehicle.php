@@ -200,8 +200,8 @@ class AdvActiveVehicle extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id', $ulbId)
-            ->whereNotIn('current_roles', $roleIds)
-            ->get();
+            ->whereNotIn('current_roles', $roleIds);
+            // ->get();
         return $outbox;
     }
 
@@ -266,8 +266,8 @@ class AdvActiveVehicle extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereIn('current_roles', $roleIds)
-            ->get();
+            ->whereIn('current_roles', $roleIds);
+            // ->get();
         return $inbox;
     }
 
@@ -360,20 +360,23 @@ class AdvActiveVehicle extends Model
     {
         return AdvActiveVehicle::where('citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'father',
-                'residence_address',
-                'entity_name',
-                'vehicle_no',
-                'vehicle_name',
-                'application_type',
-                'parked',
-                'doc_upload_status'
+                'adv_active_vehicles.id',
+                'adv_active_vehicles.application_no',
+                'adv_active_vehicles.application_date',
+                'adv_active_vehicles.applicant',
+                'adv_active_vehicles.father',
+                'adv_active_vehicles.residence_address',
+                'adv_active_vehicles.entity_name',
+                'adv_active_vehicles.vehicle_no',
+                'adv_active_vehicles.vehicle_name',
+                'adv_active_vehicles.application_type',
+                'adv_active_vehicles.parked',
+                'adv_active_vehicles.doc_upload_status',
+                DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD/MM/YYYY') as application_date"),
+                'wr.role_name',
             )
-            ->orderByDesc('id')
+            ->join('wf_roles as wr','wr.id','=','adv_active_vehicles.current_roles')
+            ->orderByDesc('adv_active_vehicles.id')
             ->get();
     }
 

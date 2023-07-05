@@ -16,12 +16,13 @@ use Exception;
 
 class SelfAdvetRepo implements iSelfAdvetRepo
 {
-    public function specialInbox($workflowIds){
+    public function specialInbox($workflowIds)
+    {
         $specialInbox = DB::table('adv_active_selfadvertisements')
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -31,69 +32,73 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 'ward_id'
             )
             ->orderByDesc('id');
-            // ->where('workflow_id', $workflowIds);
+        // ->where('workflow_id', $workflowIds);
         return $specialInbox;
     }
 
-    public function specialVehicleInbox($workflowIds){
+    public function specialVehicleInbox($workflowIds)
+    {
         $specialInbox = DB::table('adv_active_vehicles')
-        ->select(
-            'id',
-            'application_no',
-            'application_date',
-            'applicant',
-            'entity_name',
-            'application_type',
-        )
-        ->orderByDesc('id');
+            ->select(
+                'id',
+                'application_no',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                'applicant',
+                'entity_name',
+                'application_type',
+            )
+            ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
-    return $specialInbox;
+        return $specialInbox;
     }
 
-    
-    public function specialAgencyInbox($workflowIds){
+
+    public function specialAgencyInbox($workflowIds)
+    {
         $specialInbox = DB::table('adv_active_agencies')
-        ->select(
-            'id',
-            'application_no',
-            'application_date',
-            'entity_name',
-            'application_type',
-        )
-        ->orderByDesc('id');
+            ->select(
+                'id',
+                'application_no',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                'entity_name',
+                'application_type',
+            )
+            ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
-    return $specialInbox;
+        return $specialInbox;
     }
 
-    public function specialPrivateLandInbox($workflowIds){
+    public function specialPrivateLandInbox($workflowIds)
+    {
         $specialInbox = DB::table('adv_active_privatelands')
-        ->select(
-            'id',
-            'application_no',
-            'application_date',
-            'entity_name',
-            'application_type',
-        )
-        ->orderByDesc('id');
+            ->select(
+                'id',
+                'application_no',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                'entity_name',
+                'application_type',
+            )
+            ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
-    return $specialInbox;
+        return $specialInbox;
     }
 
-    public function specialAgencyLicenseInbox($workflowIds){
+    public function specialAgencyLicenseInbox($workflowIds)
+    {
         $specialInbox = DB::table('adv_active_agency_licenses')
-        ->select(
-            'id',
-            'application_no',
-            'license_no',
-            'application_date',
-            'license_no',
-            'bank_name',
-            'account_no',
-            'ifsc_code',
-            'total_charge'
-        )
-        ->orderByDesc('id');
+            ->select(
+                'id',
+                'application_no',
+                'license_no',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                'license_no',
+                'bank_name',
+                'account_no',
+                'ifsc_code',
+                'total_charge'
+            )
+            ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
-    return $specialInbox;
+        return $specialInbox;
     }
 }

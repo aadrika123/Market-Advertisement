@@ -9,6 +9,7 @@
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 
 /**
  * | Response Msg Version2 with apiMetaData
@@ -171,7 +172,7 @@ if (!function_exists('getIndianCurrency')) {
         $Rupees = implode('', array_reverse($str));
         $paise = implode('', array_reverse($str2));
         $paise = ($decimal_part > 0) ? $paise . ' Paise' : '';
-        return ucfirst(($Rupees ? $Rupees.' Rupees' : '')) . $paise;
+        return ucfirst(($Rupees ? $Rupees . ' Rupees' : '')) . $paise;
     }
 }
 
@@ -248,6 +249,43 @@ if (!function_exists('getClientIpAddress')) {
         {
             $responseTime = (microtime(true) - LARAVEL_START) * 1000;
             return round($responseTime, 2);
+        }
+    }
+
+    /**
+     * | Api Response time for the the apis
+     */
+
+    if (!function_exists("paginator")) {
+        function paginator($orm, $req)
+        {
+            $perPage = $req->perPage ? $req->perPage :  10;
+            $paginator = $orm->paginate($perPage);
+            return [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+            ];
+        }
+    }
+
+
+    /**
+     * | Api Response time for the the apis
+     */
+
+    if (!function_exists("searchFilter")) {
+        function searchFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                $query->orwhere('application_no', 'ILIKE', '%' . $key . '%')                    
+                    ->orwhere("applicant", 'ILIKE', '%' . $key . '%')
+                    // ->orwhere(DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY')"), 'ILIKE', '%' . $key . '%')
+                    ->orwhere("entity_name", 'ILIKE', '%' . $key . '%');
+                    
+            });
         }
     }
 }
