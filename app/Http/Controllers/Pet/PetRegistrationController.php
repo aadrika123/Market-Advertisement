@@ -1145,6 +1145,17 @@ class PetRegistrationController extends Controller
                     if (!$checkExist) {
                         throw new Exception("Data According to Holding Not Found!");
                     }
+                    if (is_null($application['new_ward_mstr_id']) && is_null($application['new_ward_no'])) {
+                        $owners['wardDetails'] = [
+                            "wardId" => $application['ward_mstr_id'],
+                            "wardNo" => $application['old_ward_no']
+                        ];
+                    } else {
+                        $owners['wardDetails'] = [
+                            "wardId" => $application['new_ward_mstr_id'],
+                            "wardNo" => $application['new_ward_no']
+                        ];
+                    }
                     # collecting all data of owner and occupency
                     $occupancyOwnerType = collect($mPropFloor->getOccupancyType($application['id'], $refTenanted));
                     $owners['owners'] = collect($mPropOwner->getOwnerByPropId($application['id']));
@@ -1159,6 +1170,17 @@ class PetRegistrationController extends Controller
                     $checkExist = collect($application)->first();
                     if (!$checkExist) {
                         throw new Exception("Data According to SAF Not Found!");
+                    }
+                    if (is_null($application['new_ward_mstr_id']) && is_null($application['new_ward_no'])) {
+                        $owners['wardDetails'] = [
+                            "wardId" => $application['ward_mstr_id'],
+                            "wardNo" => $application['old_ward_no']
+                        ];
+                    } else {
+                        $owners['wardDetails'] = [
+                            "wardId" => $application['new_ward_mstr_id'],
+                            "wardNo" => $application['new_ward_no']
+                        ];
                     }
                     # collecting all data 
                     $occupancyOwnerType         = collect($mPropActiveSafsFloor->getOccupancyType($application['id'], $refTenanted));

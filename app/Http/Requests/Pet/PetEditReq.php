@@ -23,7 +23,18 @@ class PetEditReq extends FormRequest
      */
     public function rules()
     {
-        $rules['id'] = 'required|int';
+        $rules['id']                    = 'required|int';
+        $rules['breed']                 = 'required|';
+        $rules['color']                 = 'required|';
+        $rules['dateOfLepVaccine']      = 'required|date|date_format:Y-m-d';
+        $rules['dateOfRabies']          = 'required|date|date_format:Y-m-d';
+        $rules['doctorName']            = 'required|';
+        $rules['doctorRegNo']           = 'required|';
+        $rules['petBirthDate']          = 'required|date|date_format:Y-m-d';
+        $rules['petFrom']               = 'required|';
+        $rules['petGender']             = 'required|int|in:1,2';
+        $rules['petIdentity']           = 'required|';
+        $rules['petName']               = 'required|';
         return $rules;
     }
 }

@@ -26,6 +26,7 @@ class PetActiveDetail extends Model
         $mPetActiveDetail->leptospirosis_vac_date   = $req->dateOfLepVaccine;
         $mPetActiveDetail->dob                      = $req->petBirthDate;
         $mPetActiveDetail->pet_name                 = $req->petName;
+        $mPetActiveDetail->pet_type                 = $req->petType;
         $mPetActiveDetail->save();
     }
 
@@ -64,7 +65,8 @@ class PetActiveDetail extends Model
             "rabies_vac_date"           => $req->dateOfRabies,
             "leptospirosis_vac_date"    => $req->dateOfLepVaccine,
             "dob"                       => $req->petBirthDate,
-            "pet_name"                  => $req->petName
+            "pet_name"                  => $req->petName,
+            "pet_type"                  => $req->petType
         ];
     }
 }
