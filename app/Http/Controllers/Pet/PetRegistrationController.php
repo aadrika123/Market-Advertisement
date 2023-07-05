@@ -1300,7 +1300,7 @@ class PetRegistrationController extends Controller
             $petDetails = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
             $oldPetDetails = json_encode($petDetails);
             $mPetAudit->saveAuditData($oldPetDetails, $confTableName['1']);
-            $mPetActiveDetail->updatePetDetails($petDetails);
+            $mPetActiveDetail->updatePetDetails($req, $petDetails);
             DB::commit();
 
             return responseMsgs(true, "Pet Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
