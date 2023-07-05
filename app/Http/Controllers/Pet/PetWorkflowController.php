@@ -151,7 +151,9 @@ class PetWorkflowController extends Controller
 
 
     /**
-     * | Post next level 
+     * | Post next level in workflow 
+        | Serial No :
+        | Check for forward date and backward date
      */
     public function postNextLevel(Request $req)
     {
@@ -204,8 +206,8 @@ class PetWorkflowController extends Controller
             $waterTrack = new WorkflowTrack();
             $waterTrack->saveTrack($req);
 
-            # check in all the cases the data if entered in the track table 
-            // Updation of Received Date
+            # Check in all the cases the data if entered in the track table 
+            # Updation of Received Date
             // $preWorkflowReq = [
             //     'workflowId'        => $petApplication->workflow_id,
             //     'refTableDotId'     => "pet_active_registrations.id",
@@ -318,11 +320,8 @@ class PetWorkflowController extends Controller
                 $ifFullDocVerifiedV1 = 0;
 
             if ($ifFullDocVerifiedV1 == 1) {                                        // If The Document Fully Verified Update Verify Status
-                PetActiveRegistration::where('id', $applicationId)
-                    ->update([
-                        'doc_upload_status' => true,
-                        'doc_verify_status' => true
-                    ]);
+                $status = true;
+                $mPetActiveRegistration->updateDocStatus($applicationId, $status);
             }
             DB::commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
@@ -397,6 +396,7 @@ class PetWorkflowController extends Controller
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
 
+                # Change the concept 
             if ($req->status == 1) {
                 $regNo = "PET" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
                 PetActiveRegistration::where('id', $applicationId)

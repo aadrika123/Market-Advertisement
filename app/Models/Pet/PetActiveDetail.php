@@ -28,4 +28,43 @@ class PetActiveDetail extends Model
         $mPetActiveDetail->pet_name                 = $req->petName;
         $mPetActiveDetail->save();
     }
+
+
+    /**
+     * | Get Pet details by applicationId
+     */
+    public function getPetDetailsByApplicationId($applicationId)
+    {
+        return PetActiveDetail::where('application_id', $applicationId)
+            ->where('status', 1)
+            ->orderByDesc('id');
+    }
+
+    /**
+     * | Update the pet details according to id
+     */
+    public function updatePetDetails($req)
+    {
+        $refRequest = $this->metaReq($req);
+        $req->update($refRequest);
+    }
+
+    /**
+     * | Make a meta request
+     */
+    public function metaReq($req)
+    {
+        return [
+            "sex"                       => $req->petGender,
+            "identification_mark"       => $req->petIdentity,
+            "breed"                     => $req->breed,
+            "color"                     => $req->color,
+            "vet_doctor_name"           => $req->doctorName,
+            "doctor_registration_no"    => $req->doctorRegNo,
+            "rabies_vac_date"           => $req->dateOfRabies,
+            "leptospirosis_vac_date"    => $req->dateOfLepVaccine,
+            "dob"                       => $req->petBirthDate,
+            "pet_name"                  => $req->petName
+        ];
+    }
 }

@@ -49,7 +49,7 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->user_type              = $user->user_type;
         switch ($user->user_type) {
             case ($userType['1']):
-                $mPetActiveRegistration->apply_mode = "ONLINE";
+                $mPetActiveRegistration->apply_mode = "ONLINE";                                     // Static
                 $mPetActiveRegistration->citizen_id = $user->id;
                 break;
             default:
@@ -139,5 +139,17 @@ class PetActiveRegistration extends Model
         PetActiveRegistration::where('pet_active_registrations.id', $applicationId)
             ->where('pet_active_registrations.status', 1)
             ->delete();
+    }
+
+    /** 
+     * | Update the Doc related status in active table 
+     */
+    public function updateDocStatus($applicationId, $status)
+    {
+        PetActiveRegistration::where('id', $applicationId)
+            ->update([
+                // 'doc_upload_status' => true,
+                'doc_verify_status' => $status
+            ]);
     }
 }

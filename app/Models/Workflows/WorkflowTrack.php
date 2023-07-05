@@ -103,4 +103,17 @@ class WorkflowTrack extends Model
             ->leftJoin('users as u', 'u.id', '=', 'workflow_tracks.citizen_id')
             ->get();
     }
+
+    /**
+     * | Get Workflow Track by Ref Table, Workflow, and ref table Value and Receiver RoleId
+     */
+    public function getWfTrackByRefId(array $req)
+    {
+        return WorkflowTrack::where('workflow_id', $req['workflowId'])
+            ->where('ref_table_dot_id', $req['refTableDotId'])
+            ->where('ref_table_id_value', $req['refTableIdValue'])
+            ->where('receiver_role_id', $req['receiverRoleId'])
+            ->where('status', true)
+            ->firstOrFail();
+    }
 }

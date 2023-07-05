@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Pet\PetEditReq;
+use App\Http\Requests\Pet\PetEditRequests;
 use App\Http\Requests\Pet\PetRegistrationReq;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
@@ -16,6 +18,7 @@ use App\Models\Pet\PetActiveApplicant;
 use App\Models\Pet\PetActiveDetail;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetApprovedRegistration;
+use App\Models\Pet\PetAudit;
 use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetRenewalApplicant;
 use App\Models\Pet\PetRenewalDetail;
@@ -30,6 +33,7 @@ use App\Models\Property\PropProperty;
 use App\Models\Property\PropSaf;
 use App\Models\Workflows\CustomDetail;
 use App\Models\Workflows\UlbWardMaster;
+use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WorkflowMap;
 use App\Models\Workflows\WorkflowTrack;
@@ -68,6 +72,7 @@ class PetRegistrationController extends Controller
     private $_applicationType;
     private $_applyMode;
     private $_tranType;
+    private $_tableName;
     # Class constructer 
     public function __construct()
     {
@@ -85,6 +90,7 @@ class PetRegistrationController extends Controller
         $this->_applicationType     = Config::get("pet.APPLICATION_TYPE");
         $this->_applyMode           = Config::get("pet.APPLY_MODE");
         $this->_tranType            = Config::get("pet.TRANSACTION_TYPE");
+        $this->_tableName           = Config::get("pet.TABLE_NAME");
     }
 
     /**
@@ -1222,7 +1228,7 @@ class PetRegistrationController extends Controller
      */
     public function getApproveRegistration(Request $req)
     {
-        try{
+        try {
             $user                   = authUser();
             $confUserType           = $this->_userType;
             $confDbKey              = $this->_dbKey;
@@ -1246,10 +1252,98 @@ class PetRegistrationController extends Controller
                 return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
             }
             return responseMsgs(true, "list of active registration!", remove_null($refAppDetails), "", "01", ".ms", "POST", $req->deviceId);
-        }
-        catch(Exception $e)
-        {
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
+    }
+
+
+    /**
+     * | Edit the application pet details
+        | Serial No :
+        | Create a log for the old record 
+        | Redesign the function 
+        | CAUTION
+     */
+    public function editPetDetails(PetEditReq $req)
+    {
+        try {
+            $applicationId      = $req->id;
+            $confTableName      = $this->_tableName;
+            $mPetActiveDetail   = new PetActiveDetail();
+            $mPetAudit          = new PetAudit();
+            $this->checkParamForPetUdate($req);
+
+            DB::beginTransaction();
+            $petDetails = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
+            $oldPetDetails = json_encode($petDetails);
+            $mPetAudit->saveAuditData($oldPetDetails, $confTableName['1']);
+            $mPetActiveDetail->updatePetDetails($petDetails);
+            DB::commit();
+
+            return responseMsgs(true, "Pet Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Check Param for update the pet Application details 
+        | Serial No : 
+     */
+    public function checkParamForPetUdate($req)
+    {
+        $user                   = authUser();
+        $applicationId          = $req->id;
+        $confRoles              = $this->_petWfRoles;
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $mWfRoleusermap         = new WfRoleusermap();
+        $mPetTran               = new PetTran();
+
+        $applicationdetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+        if (!$applicationdetails) {
+            throw new Exception("Application details not found!");
+        }
+        switch ($applicationdetails) {
+            case (is_null($applicationdetails->citizen_id) && !is_null($applicationdetails->user_id)):
+                $getRoleReq = new Request([                                                 // make request to get role id of the user
+                    'userId'        => $user->id,
+                    'workflowId'    => $applicationdetails->workflow_id
+                ]);
+                $readRoleDtls = $mWfRoleusermap->getRoleByUserWfId($getRoleReq);
+                if (!$readRoleDtls) {
+                    throw new Exception("User Dont have any role!");
+                }
+                $roleId = $readRoleDtls->wf_role_id;
+                if ($roleId != $confRoles['BO']) {
+                    throw new Exception("You are not Permited to edit the application!");
+                }
+                if ($user->id != $applicationdetails->user_id) {
+                    throw new Exception("You are not the right user who applied!");
+                }
+                if ($roleId != $applicationdetails->initiator_role_id) {
+                    throw new Exception("You are not the Initiator!");
+                }
+                break;
+
+            case (is_null($applicationdetails->user_id)):
+                if ($user->id != $applicationdetails->citizen_id) {
+                    throw new Exception("You are not the right user who applied!");
+                }
+                if ($applicationdetails->payment_status == 1) {
+                    throw new Exception("Payment is done applicationcannot be updated!");
+                }
+                $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
+                if ($transactionDetails) {
+                    throw new Exception("Transaction data exist application cannot be updated!");
+                }
+                break;
+        }
+
+
+        return [
+            "applicationDetails" => $applicationdetails,
+        ];
     }
 }

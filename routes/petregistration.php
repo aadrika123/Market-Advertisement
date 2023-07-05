@@ -50,6 +50,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
         Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
         Route::post('application/get-prop-details', 'getSafHoldingDetails');
         Route::post('application/get-wf-detials', 'getApplicationsDetails');                                // Workflow
+        Route::post('apllication/edit-pet-details', 'editPetDetails');
 
         # Approved application list 
         Route::post('approved-registrations', 'getApproveRegistration');

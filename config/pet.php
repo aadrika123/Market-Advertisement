@@ -106,4 +106,8 @@ return [
         "CASH"
     ],
     "API_KEY_PAYMENT" => "eff41ef6-d430-4887-aa55-9fcf46c72c99",
+
+    "TABLE_NAME" => [
+        "1" => "pet_active_details",
+    ],
 ];
