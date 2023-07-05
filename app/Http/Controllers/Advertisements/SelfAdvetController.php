@@ -328,6 +328,7 @@ class SelfAdvetController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['workflowId']=$data['workflow_id'];
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", "$executionTime Sec", "POST", $req->deviceId);

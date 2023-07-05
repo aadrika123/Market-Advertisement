@@ -304,6 +304,7 @@ class AgencyController extends Controller
             }
             $fullDetailsData['directors'] = $data['directors'];
             $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['workflowId']=$data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -364,9 +365,9 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -781,9 +782,9 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
