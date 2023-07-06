@@ -188,6 +188,8 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
             $mAdvVehicleRenewal->payment_mode = "Cash";
+            $mAdvVehicleRenewal->payment_amount = $mAdvVehicle->payment_amount;
+            $mAdvVehicleRenewal->demand_amount = $mAdvVehicle->demand_amount;
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
             $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;

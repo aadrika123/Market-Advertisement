@@ -184,6 +184,8 @@ class AdvPrivateland extends Model
             $mAdvPrivatelandRenewal->payment_mode = "Cash";
             $mAdvPrivatelandRenewal->payment_id =  $pay_id;
             $mAdvPrivatelandRenewal->payment_date = Carbon::now();
+            $mAdvPrivatelandRenewal->payment_amount = $mAdvPrivateland->payment_amount;
+            $mAdvPrivatelandRenewal->demand_amount = $mAdvPrivateland->demand_amount;
             $mAdvPrivatelandRenewal->valid_from =  $mAdvPrivateland->valid_from;
             $mAdvPrivatelandRenewal->valid_upto = $mAdvPrivateland->valid_upto;
             $mAdvPrivatelandRenewal->payment_details = json_encode($payDetails);

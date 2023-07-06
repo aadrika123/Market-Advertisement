@@ -111,7 +111,7 @@ class MarBanquteHall extends Model
             $pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarBanquteHall->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->citizen_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount,'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->citizen_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarBanquteHall->payment_details = json_encode($payDetails);
             if ($mMarBanquteHall->renew_no == NULL) {
@@ -130,6 +130,8 @@ class MarBanquteHall extends Model
             $mMarBanquteHallRenewal->payment_status = 1;
             $mMarBanquteHallRenewal->payment_mode = "Cash";
             $mMarBanquteHallRenewal->payment_id =  $pay_id;
+            $mMarBanquteHallRenewal->payment_amount =  $mMarBanquteHall->payment_amount;
+            $mMarBanquteHallRenewal->demand_amount =  $mMarBanquteHall->demand_amount;
             $mMarBanquteHallRenewal->payment_date = Carbon::now();
             $mMarBanquteHallRenewal->valid_from = $mMarBanquteHall->valid_from;
             $mMarBanquteHallRenewal->valid_upto = $mMarBanquteHall->valid_upto;

@@ -398,6 +398,8 @@ class AdvHoarding extends Model
             $mAdvHoardingRenewal->payment_mode = "Cash";
             $mAdvHoardingRenewal->payment_id =  $pay_id;
             $mAdvHoardingRenewal->payment_date = Carbon::now();
+            $mAdvHoardingRenewal->payment_amount = $mAdvHoarding->payment_amount;
+            $mAdvHoardingRenewal->demand_amount = $mAdvHoarding->demand_amount;
             $mAdvHoardingRenewal->valid_from = $mAdvHoarding->valid_from;
             $mAdvHoardingRenewal->valid_upto =  $mAdvHoarding->valid_upto;
             $mAdvHoardingRenewal->payment_details = json_encode($payDetails);;
