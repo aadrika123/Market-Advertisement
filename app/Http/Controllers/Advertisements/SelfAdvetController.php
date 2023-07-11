@@ -89,8 +89,10 @@ class SelfAdvetController extends Controller
      * | Function - 01
      * | API No. - 01
      */
-    public function addNew(StoreRequest $req)
+    public function addNew(Request $req)
     {
+        // dd($req->all());
+        return $req;
         try {
             // Variable initialization
             $startTime = microtime(true);
@@ -225,7 +227,8 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            // $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -241,7 +244,7 @@ class SelfAdvetController extends Controller
 
             return responseMsgs(true, "Inbox Applications", $list, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            dd($e->getFile(), $e->getLine(), $e->getMessage());
+            // dd($e->getFile(), $e->getLine(), $e->getMessage());
             return responseMsgs(false, $e->getMessage(), "", "050105", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -258,7 +261,8 @@ class SelfAdvetController extends Controller
             $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            // $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -350,7 +354,7 @@ class SelfAdvetController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
         ]);
@@ -385,7 +389,7 @@ class SelfAdvetController extends Controller
         try {
             // Variable Initialization
             $startTime = microtime(true);
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $selfAdvets = new AdvActiveSelfadvertisement();
 
             $applications = $selfAdvets->listAppliedApplications($citizenId);             //<-------  Get Applied Applications
@@ -417,7 +421,7 @@ class SelfAdvetController extends Controller
         try {
             // Variable Initialization
             $startTime = microtime(true);
-            $userId = auth()->user()->id;
+            $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
 
             $data = AdvActiveSelfadvertisement::find($applicationId);
@@ -444,8 +448,8 @@ class SelfAdvetController extends Controller
             // Variable Initialization
             $startTime = microtime(true);
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -525,7 +529,7 @@ class SelfAdvetController extends Controller
     /**
      * |  Post Independent Comment
      * |  Function - 13
-     * | API - 12
+     * |  API - 12
      */
     public function commentApplication(Request $request)
     {
@@ -875,8 +879,10 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            // $citizenId = authUser()->id;
+            // $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
@@ -905,7 +911,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $citizenId = authUser()->id;
+            // $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $applications = $mAdvRejectedSelfadvertisement->listRejected($citizenId);
 
@@ -935,7 +942,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $userId = authUser()->id;
+            // $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
 
             $applications = $mAdvActiveSelfadvertisement->getJSKApplications($userId);
@@ -963,7 +971,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
+            // $userId = authUser()->id;
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listJskApprovedApplication($userId);
 
@@ -991,7 +1000,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $startTime = microtime(true);
-            $userId = authUser()->id;
+            // $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication($userId);
 
@@ -1232,7 +1242,7 @@ class SelfAdvetController extends Controller
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.SELF-LABEL');
@@ -1583,10 +1593,10 @@ class SelfAdvetController extends Controller
      */
     public function getApplicationFinancialYearWise(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050136", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1637,10 +1647,10 @@ class SelfAdvetController extends Controller
      */
     public function getApplicationDisplayWise(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050137", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1700,10 +1710,10 @@ class SelfAdvetController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050138", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',

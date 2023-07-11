@@ -320,8 +320,8 @@ class AdvActiveHoarding extends Model
                 // 'total_charge',
                 'doc_upload_status',
             )
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+            // ->get();
     }
 
 

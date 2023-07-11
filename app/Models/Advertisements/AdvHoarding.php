@@ -3,6 +3,7 @@
 namespace App\Models\Advertisements;
 
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -43,29 +44,61 @@ class AdvHoarding extends Model
     }
 
     /**
+     * | All Approve liST
+     */
+    public function allApproveList1()
+    {
+        return AdvHoarding::select(
+            'id',
+            'application_no',
+            'license_no',
+            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'citizen_id',
+            'valid_upto',
+            'property_owner_mobile_no as mobile_no',
+            'property_owner_name as owner_name',
+            'user_id',
+            'ulb_id',
+            'valid_upto',
+            'valid_from',
+            'is_archived',
+            'is_blacklist',
+            'workflow_id',
+            DB::raw("'hoarding' as type"),
+            DB::raw("'' as entity_name")
+        )
+            ->orderByDesc('id');
+        // ->get();
+    }
+
+    /**
      * | Get Application Approve List by Role Ids
      */
     public function listApproved($citizenId, $usertype)
-    {
-        $allApproveList = $this->allApproveList();
-        foreach ($allApproveList as $key => $list) {
-            $current_date = Carbon::now()->format('Y-m-d');
-            $notify_date = carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
-            if ($current_date >= $notify_date) {
-                $allApproveList[$key]['renew_option'] = '1';     // Renew option Show
-            }
-            if ($current_date < $notify_date) {
-                $allApproveList[$key]['renew_option'] = '0';      // Renew option Not Show
-            }
-            if ($list['valid_upto'] < $current_date) {
-                $allApproveList[$key]['renew_option'] = 'Expired';    // Renew Expired
-            }
-        }
+    { 
+       $allApproveList = $this->allApproveList1();
+        // foreach ($allApproveList as $key => $list) { 
+        //     $current_date = Carbon::now()->format('Y-m-d');
+        //     $notify_date = carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
+        //     if ($current_date >= $notify_date) {
+        //         $allApproveList[$key]['renew_option'] = '1';     // Renew option Show
+        //     }
+        //     if ($current_date < $notify_date) {
+        //         $allApproveList[$key]['renew_option'] = '0';      // Renew option Not Show
+        //     }
+        //     if ($list['valid_upto'] < $current_date) {
+        //         $allApproveList[$key]['renew_option'] = 'Expired';    // Renew Expired
+        //     }
+        // }
+        // echo $usertype; die;
         // return $allApproveList;
         if ($usertype == 'Citizen') {
-            return collect($allApproveList)->where('citizen_id', $citizenId)->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false)->values();
+            return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false);
         } else {
-            return collect($allApproveList)->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false)->values();
+            return $allApproveList->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false);
         }
     }
 
@@ -74,7 +107,7 @@ class AdvHoarding extends Model
      */
     public function getRenewActiveApplications($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList1();
         if ($usertype == 'Citizen') {
             foreach ($allApproveList as $key => $list) {
                 $current_date = carbon::now()->format('Y-m-d');
@@ -89,20 +122,24 @@ class AdvHoarding extends Model
                     $allApproveList[$key]['renew_option'] = 'Expired';    // Renew Expired
                 }
             }
-            $list = collect($allApproveList)->where('citizen_id', $citizenId)->where('payment_status', '1')->values();
+            $list = $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '1');
         } else {
-            $list = collect($allApproveList)->where('payment_status', '1')->values();
+            $list = $allApproveList->where('payment_status', '1');
         }
-        // return $list;
+        return $list;
         $renewList = array();
-        foreach ($list as $k => $val) {
-            $currentDate = carbon::now()->format('Y-m-d');
-            $notifyDate = carbon::parse($val['valid_upto'])->subDays(30)->format('Y-m-d');
-            if ($notifyDate <= $currentDate) {
-                $renewList[] = $val;
+        if (!empty($list['data'])) {
+            foreach ($list['data'] as $k => $val) {
+                $currentDate = carbon::now()->format('Y-m-d');
+                $notifyDate = carbon::parse($val['valid_upto'])->subDays(30)->format('Y-m-d');
+                if ($notifyDate <= $currentDate) {
+                    $renewList[] = $val;
+                }
             }
+            return $renewList;
+        } else {
+            return $list;
         }
-        return $renewList;
     }
 
     /**
@@ -110,11 +147,11 @@ class AdvHoarding extends Model
      */
     public function listUnpaid($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList1();
         if ($usertype == 'Citizen') {
-            return collect($allApproveList->where('citizen_id', $citizenId)->where('payment_status', '0'))->values();
+            return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '0');
         } else {
-            return collect($allApproveList->where('payment_status', 0))->values();
+            return $allApproveList->where('payment_status', 0);
         }
     }
 
@@ -159,11 +196,11 @@ class AdvHoarding extends Model
     /**
      * | Make Agency Dashboard
      */
-    public function agencyDashboard($citizenId)
+    public function agencyDashboard($citizenId, $licenseYear)
     {
         //Approved Application
         $data['approvedAppl'] = AdvHoarding::select('*')
-            ->where(['payment_status' => 1, 'citizen_id' => $citizenId, 'is_archived' => false, 'is_blacklist' => false])
+            ->where(['payment_status' => 1, 'citizen_id' => $citizenId, 'is_archived' => false, 'is_blacklist' => false,'license_year'=>$licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -177,7 +214,7 @@ class AdvHoarding extends Model
 
         // Unpaid Application
         $data['unpaideAppl'] = AdvHoarding::select('*')
-            ->where(['payment_status' => 0, 'citizen_id' => $citizenId])
+            ->where(['payment_status' => 0, 'citizen_id' => $citizenId,'license_year'=>$licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -207,7 +244,7 @@ class AdvHoarding extends Model
 
         // Rejected Application
         $data['rejectAppl'] = AdvRejectedHoarding::select('*')
-            ->where(['citizen_id' => $citizenId])
+            ->where(['citizen_id' => $citizenId,'license_year'=>$licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -219,8 +256,30 @@ class AdvHoarding extends Model
         });
         $data['countRejectAppl']['totalRejected'] = $allRejected->sum();
 
-        $data['ulb_id'] = AdvAgency::select('ulb_id')->where(['citizen_id' => $citizenId])->first()->ulb_id;
+        // $data['ulb_id'] = AdvAgency::select('ulb_id')->where(['citizen_id' => $citizenId])->first()->ulb_id;
         // $data['ulbId']=;
+
+        $data3['payment'] = AdvHoardingRenewal::select('payment_date', 'payment_amount', 'application_type')
+            ->where(['citizen_id' => $citizenId,'license_year'=>$licenseYear])
+            ->get();
+        // ->groupBy(function ($val) {
+        //     return Carbon::parse($val->payment_date)->format('M');
+        // });
+
+        $newPayment = collect();
+        $renewPayment = collect();
+        // return $data2;
+        $data1['payments'] = $data3['payment']->map(function ($item, $key) use ($newPayment, $renewPayment) {
+            if ($item['application_type'] == 'New Apply')
+                $newPayment->push($item->payment_amount);
+            else
+                $renewPayment->push($item->payment_amount);
+        });
+        $currentFYear = DB::table('ref_adv_paramstrings')->select('string_parameter')->where('id', $licenseYear)->first()->string_parameter;
+        $data['newPayment'] = $newPayment->sum();
+        $data['renewPayment'] = $renewPayment->sum();
+        $data['financialYear'] = $currentFYear;
+        $data['totalPayment'] = $newPayment->sum() + $renewPayment->sum();
         return $data;
     }
 
@@ -228,7 +287,13 @@ class AdvHoarding extends Model
      * | Make Agency Dashboard for Graph
      */
     public function agencyDashboardGraph($citizenId, $licenseYear)
-    {
+    { // get from and throung date
+        $from_date = Carbon::parse(date('Y-m-d', strtotime(date('Y-04-01'))));
+        $through_date = Carbon::parse(date('Y-m-d'));
+
+        // get total number of minutes between from and throung date
+        $shift_difference = floor($from_date->diffInDays($through_date) / 30);
+
         // Approved Application
         $data['approvedAppl'] = AdvHoarding::select('*')
             ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
@@ -286,7 +351,8 @@ class AdvHoarding extends Model
 
         $finalData = array();
         for ($i = 0; $i < 12; $i++) {
-            $x = strtotime("$i month");
+            $m = $i -  $shift_difference;
+            $x = strtotime("$m month");
             $finalData[$i]['month'] = date('M', $x);
             if (isset($data1['countPendindAppl'][date('M', $x)])) {
                 $finalData[$i]['pending'] = $data1['countPendindAppl'][date('M', $x)];
@@ -307,7 +373,8 @@ class AdvHoarding extends Model
         }
         $paymentData = array();
         for ($i = 0; $i < 12; $i++) {
-            $x = strtotime("$i month");
+            $m = $i -  $shift_difference;
+            $x = strtotime("$m month");
             $paymentData[$i]['month'] = date('M', $x);
             if (isset($multiplied[date('M', $x)])) {
                 $paymentData[$i]['total'] = $multiplied[date('M', $x)];
@@ -378,7 +445,7 @@ class AdvHoarding extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvHoarding->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount,'demand_amount' => $mAdvHoarding->demand_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount, 'demand_amount' => $mAdvHoarding->demand_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvHoarding->payment_details = json_encode($payDetails);
             if ($mAdvHoarding->renew_no == NULL) {
@@ -473,12 +540,12 @@ class AdvHoarding extends Model
      */
     public function listExpiredHording($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList1();
         $current_date = carbon::now()->format('Y-m-d');
         if ($usertype == 'Citizen') {
-            return collect($allApproveList)->where('citizen_id', $citizenId)->where('payment_status', '1')->where('valid_upto', '<', $current_date)->values();
+            return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '1')->where('valid_upto', '<', $current_date);
         } else {
-            return collect($allApproveList)->where('payment_status', '1')->values();
+            return $allApproveList->where('payment_status', '1');
         }
     }
 
@@ -488,12 +555,12 @@ class AdvHoarding extends Model
      */
     public function listHordingArchived($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList();
+        $allApproveList = $this->allApproveList1();
 
         if ($usertype == 'Citizen') {
-            return collect($allApproveList)->where('citizen_id', $citizenId)->where('payment_status', '1')->where('is_archived', true)->values();
+            return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '1')->where('is_archived', true);
         } else {
-            return collect($allApproveList)->where('payment_status', '1')->where('is_archived', true)->values();
+            return $allApproveList->where('payment_status', '1')->where('is_archived', true);
         }
     }
 

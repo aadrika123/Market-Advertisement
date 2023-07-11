@@ -129,18 +129,18 @@ class AgencyController extends Controller
      */
     public function getAgencyDetails(Request $req)
     {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
+        // $validator = Validator::make($req->all(), [
+        //     'applicationId' => 'required|integer',
+        // ]);
+        // if ($validator->fails()) {
+        //     return ['status' => false, 'message' => $validator->errors()];
+        // }
         try {
             // Variable initialization
             $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
-            $agencydetails = $mAdvAgency->getagencyDetails($req->applicationId);
+            $agencydetails = $mAdvAgency->getagencyDetails($req->auth['id']);
             if (!$agencydetails) {
                 throw new Exception('You Have No Any Agency !!!');
             }
@@ -1525,7 +1525,7 @@ class AgencyController extends Controller
 
                 $citizenId = authUser()->id;
                 $mAdvHoarding = new AdvHoarding();
-                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId);
+                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId,119);
                 $endTime = microtime(true);
                 $executionTime = $endTime - $startTime;
                 if (empty($agencyDashboard)) {

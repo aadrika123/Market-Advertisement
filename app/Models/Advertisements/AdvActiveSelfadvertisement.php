@@ -208,10 +208,12 @@ class AdvActiveSelfadvertisement extends Model
                 'adv_active_selfadvertisements.application_type',
                 'adv_active_selfadvertisements.parked',
                 'adv_active_selfadvertisements.workflow_id',
-                DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
+                'um.ulb_name',
             )
             ->join('wf_roles as wr','wr.id','=','adv_active_selfadvertisements.current_role_id')
+            ->join('ulb_masters as um','um.id','=','adv_active_selfadvertisements.ulb_id')
             ->orderByDesc('adv_active_selfadvertisements.id')
             ->get();
         return $list;

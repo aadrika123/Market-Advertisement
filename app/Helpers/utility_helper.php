@@ -280,12 +280,28 @@ if (!function_exists('getClientIpAddress')) {
         {
             $key = trim($req->key);
             return $orm->where(function ($query) use ($key) {
-                $query->orwhere('application_no', 'ILIKE', '%' . $key . '%')                    
+                $query->orwhere('application_no', 'ILIKE', '%' . $key . '%')
                     ->orwhere("applicant", 'ILIKE', '%' . $key . '%')
                     // ->orwhere(DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY')"), 'ILIKE', '%' . $key . '%')
                     ->orwhere("entity_name", 'ILIKE', '%' . $key . '%');
-                    
             });
+        }
+    }
+    /**
+     * | Api Response time for the the apis
+     */
+
+     if (!function_exists('getFinancialYear')) {
+        function getFinancialYear($date)
+        {
+            $Year = date('Y', strtotime($date));
+            $year = date('y', strtotime($date));
+            $month = date('m', strtotime($date));
+            if ($month <= 3) {
+                return ($Year - 1) . '-' . $year;
+            } else {
+                return $Year . '-' . ($year + 1);
+            }
         }
     }
 }
