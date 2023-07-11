@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers\Master;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Master\MMarket;
+use Illuminate\Support\Facades\Validator;
+use Exception;
+
+class MarketController extends Controller
+{
+    private $_mMarket;
+
+    public function __construct()
+    {
+        $this->_mMarket = new MMarket();
+    }
+
+     // Add records
+     public function store(Request $req)
+     {
+        $validator = Validator::make($req->all(), [
+            'circleId' => 'required|numeric',
+            'marketName' => 'required|string'
+        ]);
+        if($validator->fails()) 
+        return responseMsgs(false, $validator->errors(), []);
+         try {
+             $metaReqs = [
+                'circle_id' => $req->circleId,
+                'market_name' => $req->marketName
+             ];
+ 
+             $this->_mMarket->create($metaReqs);
+ 
+             return responseMsgs(true, "Successfully Saved", [$metaReqs], [], "1.0", responseTime(), "POST", $req->deviceId ?? "");
+         } catch (Exception $e) {
+ 
+             return responseMsgs(false, $e->getMessage(), [], [], "1.0", responseTime(), "POST", $req->deviceId ?? "");
+         }
+     }
+
+     //find by Circle Id
+    public function getMarketByCircleId(Request $req) {
+        $validator = Validator::make($req->all(), [
+            'circleId' => 'required|numeric'
+        ]);
+        if ($validator->fails()) 
+        return responseMsgs(false, $validator->errors(), []);
+        try {
+            $Market = $this->_mMarket->getGroupById($req->circleId);
+             if (collect($Market)->isEmpty())
+                throw new Exception("Market Does Not Exist");
+            return responseMsgs(true, "", $Market, [], "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], [], "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+}
