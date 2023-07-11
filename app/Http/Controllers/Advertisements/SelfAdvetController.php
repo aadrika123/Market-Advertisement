@@ -89,9 +89,8 @@ class SelfAdvetController extends Controller
      * | Function - 01
      * | API No. - 01
      */
-    public function addNew(Request $req)
+    public function addNew(StoreRequest $req)
     {
-        // dd($req->all());
         return $req;
         try {
             // Variable initialization
