@@ -27,7 +27,7 @@ class ShopRequest extends FormRequest
     public function rules()
     {
         return [
-            'circle'                   =>   'required|string|regex:/^[A-Za-z0-9 ]+$/',
+            'circleId'                 =>   'required|ineger',
             'market'                   =>   'required|string',
             'allottee'                 =>   'required|regex:/^[A-Za-z ]+$/',
             'shopNo'                   =>   'required|regex:/^[A-Za-z0-9 ]+$/',
@@ -69,6 +69,4 @@ class ShopRequest extends FormRequest
             'data'      => $validator->errors()
         ], 422),);
     }
-
-
 }

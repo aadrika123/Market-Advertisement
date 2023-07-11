@@ -85,7 +85,7 @@ class ShopController extends Controller
 
 
             $metaReqs = [
-                'circle' => $req->circle,
+                'circle_id' => $req->circleId,
                 'market' => $req->market,
                 'allottee' => $req->allottee,
                 'shop_no' => $req->shopNo,
@@ -133,10 +133,10 @@ class ShopController extends Controller
     public function edit(ShopRequest $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required|numeric',
+            'id' => 'required|integer',
             'status' => 'nullable|bool'
         ]);
-       
+
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
@@ -196,9 +196,9 @@ class ShopController extends Controller
                 'ulb_id' => $req->ulbId,
             ];
 
-            if (isset($request->status)) {                  // In Case of Deactivation or Activation
+            if (isset($req->status)) {                  // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
-                $metaReqs=array_merge($metaReqs,['status',$status]);
+                $metaReqs = array_merge($metaReqs, ['status', $status]);
             }
 
             $Shops = $this->_mShops::findOrFail($req->id);
@@ -215,7 +215,7 @@ class ShopController extends Controller
     public function show(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required|numeric'
+            'id' => 'required|integer'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);

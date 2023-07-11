@@ -22,7 +22,7 @@ class CircleController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'circleName' => 'required|string',
-            'ulbId' => 'required|numeric'
+            'ulbId' => 'required|integer'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
@@ -33,7 +33,6 @@ class CircleController extends Controller
             ];
 
             $this->_mCircle->create($metaReqs);
-
             return responseMsgs(true, "Successfully Saved", [$metaReqs], [], "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], [], "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -44,12 +43,12 @@ class CircleController extends Controller
     public function getCircleByUlb(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'ulbId' => 'required|numeric'
+            'ulbId' => 'required|integer'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $Circle = $this->_mCircle->getGroupById($req->ulbId);
+            $Circle = $this->_mCircle->getGroupById($req->auth->ulb_id);
             if (collect($Circle)->isEmpty())
                 throw new Exception("Circle Does Not Exist");
             return responseMsgs(true, "", $Circle, [], "1.0", responseTime(), "POST", $req->deviceId);
