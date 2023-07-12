@@ -128,7 +128,7 @@ class TollsController extends Controller
                 'longitude'               => $request->longitude,
                 'latitude'                => $request->latitude,
                 'user_id'                 => $request->userId,
-                'ulb_id'                  => $request->ulbId,
+                'ulb_id'                  => $request->auth['ulb_id'],
                 'last_tran_id'            => $request->lastTranId,
             ];
             $this->_mToll->create($marToll);
@@ -191,8 +191,8 @@ class TollsController extends Controller
                 'photo2_absolute_path' => $imageName2Absolute ?? null,
                 'longitude' => $request->longitude,
                 'latitude' => $request->latitude,
-                'user_id' => $request->userId,
-                'ulb_id' => $request->ulbId,
+                'user_id' => $request->auth['user_id'],
+                'ulb_id' => $request->auth['ulb_id'],
                 'last_tran_id' => $request->lastTranId,
             ];
             if (isset($request->status)) {                  // In Case of Deactivation or Activation

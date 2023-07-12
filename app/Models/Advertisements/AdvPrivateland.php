@@ -22,7 +22,7 @@ class AdvPrivateland extends Model
             'application_no',
             'applicant',
             'applicant as owner_name',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
             'application_type',
             'entity_name',
             'mobile_no',
@@ -184,6 +184,8 @@ class AdvPrivateland extends Model
             $mAdvPrivatelandRenewal->payment_mode = "Cash";
             $mAdvPrivatelandRenewal->payment_id =  $pay_id;
             $mAdvPrivatelandRenewal->payment_date = Carbon::now();
+            $mAdvPrivatelandRenewal->payment_amount = $mAdvPrivateland->payment_amount;
+            $mAdvPrivatelandRenewal->demand_amount = $mAdvPrivateland->demand_amount;
             $mAdvPrivatelandRenewal->valid_from =  $mAdvPrivateland->valid_from;
             $mAdvPrivatelandRenewal->valid_upto = $mAdvPrivateland->valid_upto;
             $mAdvPrivatelandRenewal->payment_details = json_encode($payDetails);

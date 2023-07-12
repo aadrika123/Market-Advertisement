@@ -36,8 +36,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 
 
-Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
-    // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
+// Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
+// Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
+Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Self Advertisements
      * | Controller-01
@@ -95,18 +96,18 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
      * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(ParamController::class)->group(function () {
-        Route::post('crud/param-strings', 'paramStrings');                              // 01 ( Get Param String List)
-        Route::post('advertisements/get-approval-letter', 'getApprovalLetter');         // 02 ( Get All Approval Letter )
-        Route::post('advertisements/crud/v1/list-document', 'listDocument');            // 03 ( Applied Document List )
+        Route::post('advert/crud/param-strings', 'paramStrings');                              // 01 ( Get Param String List)
+        Route::post('advert/get-approval-letter', 'getApprovalLetter');         // 02 ( Get All Approval Letter )
+        Route::post('advert/crud/v1/list-document', 'listDocument');            // 03 ( Applied Document List )
         // Route::post('crud/district-mstrs', 'districtMstrs');                            // 04
-        Route::post('advertisements/payment-success-failure', 'paymentSuccessFailure'); // 05 ( Update Payment Success or Failure )
-        Route::post('advertisements/dashboard', 'advertDashboard');                     // 06 ( Advertisement Dashboard )
-        Route::post('advertisements/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07 ( Search Application By Mobile or Name )
-        Route::post('markets/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
-        Route::post('advertisements/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
+        Route::post('advert/payment-success-failure', 'paymentSuccessFailure'); // 05 ( Update Payment Success or Failure )
+        Route::post('advert/dashboard', 'advertDashboard');                     // 06 ( Advertisement Dashboard )
+        Route::post('advert/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07 ( Search Application By Mobile or Name )
+        Route::post('market/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
+        Route::post('advert/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
-        Route::post('advertisements/application-reports', 'applicationReports');      // 11 ( Application Reports )
-        Route::post('advertisements/get-financial-year-master-data', 'getFinancialMasterData');      // 11 ( Get Financial Year For Search )
+        Route::post('advert/application-reports', 'applicationReports');      // 11 ( Application Reports )
+        Route::post('advert/get-financial-year-master-data', 'getFinancialMasterData');      // 11 ( Get Financial Year For Search )
     });
 
     /**
@@ -287,6 +288,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
         Route::post('advert/hording/get-application-between-date', 'getApplicationBetweenDate');          //40 ( Get Application Between two date )
         Route::post('advert/hording/get-application-financial-year-wise', 'getApplicationFinancialYearWise');          //41 ( Get Application Financial Year Wise )
         Route::post('advert/hording/payment-collection', 'paymentCollection');          //42 ( Get Application Financial Year Wise )
+        Route::post('advert/hoarding/get-agency-dashboard', 'getAgencyDashboard'); //32 (Get Agency Dashboard)
 
     });
 

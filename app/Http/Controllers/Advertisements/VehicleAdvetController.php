@@ -192,16 +192,18 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $inboxList = $mvehicleAdvets->listInbox($roleIds,$ulbId);                          // <----- get Inbox list
-
+            $inboxList = $mvehicleAdvets->listInbox($roleIds, $ulbId);                          // <----- get Inbox list
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050304", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050304", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050304", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -219,15 +221,18 @@ class VehicleAdvetController extends Controller
             $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
-            $outboxList = $mvehicleAdvets->listOutbox($roleIds,$ulbId);                       // <----- Get Outbox list
+            $outboxList = $mvehicleAdvets->listOutbox($roleIds, $ulbId);                       // <----- Get Outbox list
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050305", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050305", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050305", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -292,7 +297,7 @@ class VehicleAdvetController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -419,13 +424,16 @@ class VehicleAdvetController extends Controller
 
             $advData = $this->Repository->specialVehicleInbox($workflowId)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_active_vehicles.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
+                ->where('adv_active_vehicles.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050309", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050309", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050309", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1301,7 +1309,7 @@ class VehicleAdvetController extends Controller
      * | Function - 31
      * | API - 29
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable Initialization
@@ -1326,13 +1334,17 @@ class VehicleAdvetController extends Controller
                 ->whereIn('adv_active_vehicles.current_roles', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_vehicles.id')
-                ->get();
+                ->orderByDesc('adv_active_vehicles.id');
+            // ->get();
+
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050329", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050329", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050329", 1.0, "271ms", "POST", "", "");
         }

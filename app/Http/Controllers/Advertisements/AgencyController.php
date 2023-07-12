@@ -129,18 +129,18 @@ class AgencyController extends Controller
      */
     public function getAgencyDetails(Request $req)
     {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
+        // $validator = Validator::make($req->all(), [
+        //     'applicationId' => 'required|integer',
+        // ]);
+        // if ($validator->fails()) {
+        //     return ['status' => false, 'message' => $validator->errors()];
+        // }
         try {
             // Variable initialization
             $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
-            $agencydetails = $mAdvAgency->getagencyDetails($req->applicationId);
+            $agencydetails = $mAdvAgency->getagencyDetails($req->auth['id']);
             if (!$agencydetails) {
                 throw new Exception('You Have No Any Agency !!!');
             }
@@ -175,11 +175,13 @@ class AgencyController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $inboxList = $mAdvActiveAgency->listInbox($roleIds, $ulbId);                        // <----- Get Inbox List
-
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -201,10 +203,14 @@ class AgencyController extends Controller
             });
             $inboxList = $mAdvActiveAgency->listInbox($roleIds, $ulbId);                        // <----- Get Inbox List
 
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
+
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications",  $list, "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -229,11 +235,13 @@ class AgencyController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $outboxList = $mAdvActiveAgency->listOutbox($roleIds, $ulbId);                      // <----- Get Outbox List
-
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050504", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050504", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050504", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -304,7 +312,7 @@ class AgencyController extends Controller
             }
             $fullDetailsData['directors'] = $data['directors'];
             $fullDetailsData['timelineData'] = collect($req);
-            $fullDetailsData['workflowId']=$data['workflow_id'];
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -434,13 +442,16 @@ class AgencyController extends Controller
 
             $advData = $this->Repository->specialAgencyInbox($workflowId)                      // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_active_agencies.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
+                ->where('adv_active_agencies.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050508", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050508", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050508", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1334,7 +1345,7 @@ class AgencyController extends Controller
      * | Function - 31
      * | API - 28
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1360,13 +1371,16 @@ class AgencyController extends Controller
                 ->whereIn('adv_active_agencies.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_agencies.id')
-                ->get();
+                ->orderByDesc('adv_active_agencies.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050528", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050528", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050528", 1.0, "", "POST", "", "");
         }
@@ -1511,7 +1525,7 @@ class AgencyController extends Controller
 
                 $citizenId = authUser()->id;
                 $mAdvHoarding = new AdvHoarding();
-                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId);
+                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId,119);
                 $endTime = microtime(true);
                 $executionTime = $endTime - $startTime;
                 if (empty($agencyDashboard)) {

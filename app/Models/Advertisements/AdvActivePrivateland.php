@@ -323,8 +323,8 @@ class AdvActivePrivateland extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereIn('current_role_id', $roleIds)
-            ->get();
+            ->whereIn('current_role_id', $roleIds);
+            // ->get();
         return $inbox;
     }
 
@@ -346,8 +346,8 @@ class AdvActivePrivateland extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereNotIn('current_role_id', $roleIds)
-            ->get();
+            ->whereNotIn('current_role_id', $roleIds);
+            // ->get();
         return $outbox;
     }
 
@@ -358,17 +358,20 @@ class AdvActivePrivateland extends Model
     {
         return AdvActivePrivateland::where('citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                'application_date',
-                'application_type',
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'parked',
-                'doc_upload_status'
+                'adv_active_privatelands.id',
+                'adv_active_privatelands.application_no',
+                'adv_active_privatelands.application_date',
+                'adv_active_privatelands.application_type',
+                'adv_active_privatelands.applicant',
+                'adv_active_privatelands.entity_name',
+                'adv_active_privatelands.entity_address',
+                'adv_active_privatelands.parked',
+                'adv_active_privatelands.doc_upload_status',
+                DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD/MM/YYYY') as application_date"),
+                'wr.role_name',
             )
-            ->orderByDesc('id')
+            ->join('wf_roles as wr','wr.id','=','adv_active_privatelands.current_role_id')
+            ->orderByDesc('adv_active_privatelands.id')
             ->get();
     }
 

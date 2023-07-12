@@ -16,7 +16,7 @@ class AdvSelfadvertisement extends Model
         return AdvSelfadvertisement::select(
             'id',
             'application_no',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
             'applicant',
             'applicant as owner_name',
             'entity_name',
@@ -192,6 +192,8 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_id =  $pay_id;
             $mAdvSelfAdvertRenewal->payment_date = Carbon::now();
             $mAdvSelfAdvertRenewal->payment_mode = "Cash";
+            $mAdvSelfAdvertRenewal->payment_amount =  $mAdvSelfadvertisement->payment_amount;
+            $mAdvSelfAdvertRenewal->demand_amount =  $mAdvSelfadvertisement->demand_amount;
             $mAdvSelfAdvertRenewal->valid_from = $mAdvSelfadvertisement->valid_from;
             $mAdvSelfAdvertRenewal->valid_upto = $mAdvSelfadvertisement->valid_upto;
             $mAdvSelfAdvertRenewal->payment_details = json_encode($payDetails);
