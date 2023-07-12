@@ -48,8 +48,11 @@ Route::controller(TollsController::class)->group(function () {
  * | Author-Ashutosh Kumar
  */
 Route::controller(CircleController::class)->group(function () {
-    Route::post('v1/crud/circle/insert', 'store');                     //01
-    Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     //02
+    Route::post('v1/crud/circle/insert', 'store');                            //01
+    Route::post('v1/crud/circle/update', 'edit');                             //02
+    Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     //03
+    Route::post('v1/crud/circle/list-all-circle', 'retireveAll');             //04
+    Route::post('v1/crud/circle/delete', 'delete');                           //05
 });
 
 /**
@@ -57,6 +60,10 @@ Route::controller(CircleController::class)->group(function () {
  */
 
 Route::controller(MarketController::class)->group(function () {
-    Route::post('v1/crud/market/insert', 'store');                         //01
-    Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); //02
+    Route::post('v1/crud/market/insert', 'store');                                //01
+    Route::post('v1/crud/market/update', 'edit');                                 //02
+    Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); //03
+    Route::post('v1/crud/market/list-all-market', 'retireveAll');                 //04
+    Route::post('v1/crud/market/delete', 'delete');                               //05
+
 });

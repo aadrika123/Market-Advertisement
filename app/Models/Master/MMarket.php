@@ -11,9 +11,26 @@ class MMarket extends Model
     protected $guarded = [];
     protected $table = 'm_market';
 
-    public function getGroupById($circleId) {
+
+    public function getMarketNameByCircleId($marketName, $circleId)
+    {
         return MMarket::select('*')
-        ->where('circle_id', $circleId)
-        ->get();
+            ->where('circle_id', $circleId)
+            ->where('market_name', $marketName)
+            ->get();
+    }
+
+    public function getMarketByCircleId($circleId)
+    {
+        return MMarket::select('*')
+            ->where('circle_id', $circleId)
+            ->get();
+    }
+
+    public function getAllActive()
+    {
+        return MMarket::select('*')
+            ->where('is_active', 1)
+            ->get();
     }
 }

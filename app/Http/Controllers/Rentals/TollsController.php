@@ -127,7 +127,7 @@ class TollsController extends Controller
                 'photo2_absolute_path'    => $imageName2Absolute ?? null,
                 'longitude'               => $request->longitude,
                 'latitude'                => $request->latitude,
-                'user_id'                 => $request->userId,
+                'user_id'                 => $request->auth['id'],
                 'ulb_id'                  => $request->auth['ulb_id'],
                 'last_tran_id'            => $request->lastTranId,
             ];
@@ -191,7 +191,7 @@ class TollsController extends Controller
                 'photo2_absolute_path' => $imageName2Absolute ?? null,
                 'longitude' => $request->longitude,
                 'latitude' => $request->latitude,
-                'user_id' => $request->auth['user_id'],
+                'user_id' => $request->auth['id'],
                 'ulb_id' => $request->auth['ulb_id'],
                 'last_tran_id' => $request->lastTranId,
             ];
