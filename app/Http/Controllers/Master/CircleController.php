@@ -28,7 +28,7 @@ class CircleController extends Controller
         try {
             $metaReqs = [
                 'circle_name' => $req->circleName,
-                'ulb_id' => $req->auth->ulb_id
+                'ulb_id' => $req->auth['ulb_id']
             ];
 
             $this->_mCircle->create($metaReqs);
@@ -42,7 +42,7 @@ class CircleController extends Controller
     public function getCircleByUlb(Request $req)
     {
         try {
-            $Circle = $this->_mCircle->getGroupById($req->auth->ulb_id);
+            $Circle = $this->_mCircle->getGroupById($req->auth['ulb_id']);
             if (collect($Circle)->isEmpty())
                 throw new Exception("Circle Does Not Exist");
             return responseMsgs(true, "", $Circle, "055202", "1.0", responseTime(), "POST", $req->deviceId);
