@@ -21,15 +21,14 @@ class CircleController extends Controller
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'circleName' => 'required|string',
-            'ulbId' => 'required|integer'
+            'circleName' => 'required|string'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
             $metaReqs = [
                 'circle_name' => $req->circleName,
-                'ulb_id' => $req->ulbId
+                'ulb_id' => $req->auth->ulb_id
             ];
 
             $this->_mCircle->create($metaReqs);
@@ -42,13 +41,8 @@ class CircleController extends Controller
     //find by Ulb Id
     public function getCircleByUlb(Request $req)
     {
-        $validator = Validator::make($req->all(), [
-            'ulbId' => 'required|integer'
-        ]);
-        if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
         try {
-            $Circle = $this->_mCircle->getGroupById($req->auth['ulb_id']);
+            $Circle = $this->_mCircle->getGroupById($req->auth->ulb_id);
             if (collect($Circle)->isEmpty())
                 throw new Exception("Circle Does Not Exist");
             return responseMsgs(true, "", $Circle, "055202", "1.0", responseTime(), "POST", $req->deviceId);

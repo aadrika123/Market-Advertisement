@@ -49,7 +49,6 @@ class TollValidationRequest extends FormRequest
             'longitude'             =>   'nullable|string',
             'latitude'              =>   'nullable|string',
             'userId'                =>   'nullable|numeric',
-            'ulbId'                 =>   'nullable|numeric',
             'lastTranId'            =>   'nullable|numeric',
         ];
     }

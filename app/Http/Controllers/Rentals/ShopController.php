@@ -83,7 +83,7 @@ class ShopController extends Controller
 
 
             $metaReqs = [
-                'circle' => $req->circle,
+                'circle_id' => $req->circleId,
                 'market' => $req->market,
                 'allottee' => $req->allottee,
                 'shop_no' => $req->shopNo,
@@ -113,8 +113,8 @@ class ShopController extends Controller
                 'photo2_path_absolute' => $imageName2Absolute ?? "",
                 'remarks' => $req->remarks,
                 'last_tran_id' => $req->lastTranId,
-                'user_id' => $req->userId,
-                'ulb_id' => $req->ulbId,
+                'user_id' => $req->auth->user_id,
+                'ulb_id' => $req->auth->ulb_id,
             ];
 
             $this->_mShops->create($metaReqs);
@@ -161,7 +161,7 @@ class ShopController extends Controller
             }
 
             $metaReqs = [
-                'circle' => $req->circle,
+                'circle_id' => $req->circleId,
                 'market' => $req->market,
                 'allottee' => $req->allottee,
                 'shop_no' => $req->shopNo,
@@ -191,8 +191,8 @@ class ShopController extends Controller
                 'photo2_path_absolute' => $imageName2Absolute ?? "",
                 'remarks' => $req->remarks,
                 'last_tran_id' => $req->lastTranId,
-                'user_id' => $req->userId,
-                'ulb_id' => $req->ulbId,
+                'user_id' => $req->auth->user_id,
+                'ulb_id' => $req->auth->ulb_id,
             ];
 
             if (isset($req->status)) {                  // In Case of Deactivation or Activation

@@ -50,7 +50,7 @@ class MarketController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $Market = $this->_mMarket->getGroupById($req->auth['circle_id']);
+            $Market = $this->_mMarket->getGroupById($req->circleId);
             if (collect($Market)->isEmpty())
                 throw new Exception("Market Does Not Exist");
             return responseMsgs(true, "", $Market, "055302", "1.0", responseTime(), "POST", $req->deviceId);
