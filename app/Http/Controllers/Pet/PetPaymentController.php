@@ -12,6 +12,7 @@ use App\Models\Pet\PetChequeDtl;
 use App\Models\Pet\PetRazorPayRequest;
 use App\Models\Pet\PetRazorPayResponse;
 use App\Models\Pet\PetRegistrationCharge;
+use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Pet\PetTran;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -40,6 +41,7 @@ class PetPaymentController extends Controller
     private $_paymentMode;
     private $_offlineMode;
     private $_PaymentUrl;
+    private $_apiKey;
     # Class constructer 
     public function __construct()
     {
@@ -59,6 +61,7 @@ class PetPaymentController extends Controller
         $this->_paymentMode             = Config::get("pet.PAYMENT_MODE");
         $this->_offlineMode             = Config::get("pet.OFFLINE_PAYMENT_MODE");
         $this->_PaymentUrl              = Config::get('constants.PAYMENT_URL');
+        $this->_apiKey                  = Config::get('pet.API_KEY_PAYMENT');
     }
 
     /**
@@ -259,6 +262,7 @@ class PetPaymentController extends Controller
     /**
      * | Ineciate online payment
         | Serail No : 
+        | Working
      */
     public function handelOnlinePayment(Request $request)
     {
@@ -272,6 +276,7 @@ class PetPaymentController extends Controller
             $applicationId      = $request->id;
             $paymentMode        = $this->_paymentMode;
             $paymentUrl         = $this->_PaymentUrl;
+            $confApiKey         = $this->_apiKey;
             $paymentDetails     = $this->checkParamForPayment($request, $paymentMode['1']);
             $myRequest = [
                 'amount'          => $paymentDetails['regAmount'],
@@ -283,7 +288,7 @@ class PetPaymentController extends Controller
             DB::beginTransaction();
             # Api Calling for OrderId
             $refResponse = Http::withHeaders([
-                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"                             // Static
+                "api-key" => "$confApiKey"
             ])
                 ->withToken($request->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $myRequest);               // Static
@@ -323,6 +328,7 @@ class PetPaymentController extends Controller
     /**
      * | Handel online payment form razorpay Webohook
         | Serial No :
+        | Working
      */
     public function endOnlinePayment(Request $req)
     {
@@ -413,6 +419,27 @@ class PetPaymentController extends Controller
             return responseMsgs(true, "Online Payment Success!", []);
         } catch (Exception $e) {
             DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get data for payment Receipt
+        | Serial No :
+     */
+    public function generatePaymentReceipt(Request $req)
+    {
+        $req->validate([
+            'applicationNo' => 'required|digits_between:1,9223372036854775807',
+        ]);
+        try {
+            $mPetTran = new PetTran();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetRenewalRegistration = new PetRenewalRegistration();
+
+            
+
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
