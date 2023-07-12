@@ -132,10 +132,12 @@ class BanquetMarriageHallController extends Controller
             });
 
             $inboxList = $mMarActiveBanquteHall->listInbox($roleIds, $ulbId);                   // <----- Get Inbox List 
-
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050802", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050802", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050802", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -160,10 +162,12 @@ class BanquetMarriageHallController extends Controller
             });
 
             $outboxList = $mMarActiveBanquteHall->listOutbox($roleIds, $ulbId);                 // <----- Get Outbox List
-
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050803", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050803", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050803", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -227,6 +231,7 @@ class BanquetMarriageHallController extends Controller
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -290,9 +295,9 @@ class BanquetMarriageHallController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($totalApplication == 0) {
-                $data1['data'] = null;
-            }
+            // if ($totalApplication == 0) {
+            //     $data1['data'] = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Applied Applications", $data1, "050805", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -331,7 +336,7 @@ class BanquetMarriageHallController extends Controller
 
             return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Marriage Hall is Escalated' : "Banqute Marriage Hall is removed from Escalated", '', "050806", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050806", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050806", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -362,12 +367,15 @@ class BanquetMarriageHallController extends Controller
 
             $advData = $this->_repository->specialInbox($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
-                ->where('mar_active_banqute_halls.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
+                ->where('mar_active_banqute_halls.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050807", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050807", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050807", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -421,7 +429,7 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050108", "1.0", "$executionTime Sec", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050808", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050808", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -471,7 +479,7 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050809", "1.0", " $executionTime Sec", "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050809", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "050809", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -601,6 +609,7 @@ class BanquetMarriageHallController extends Controller
                     $approvedbanqutehall->setTable('mar_banqute_halls');
                     $temp_id = $approvedbanqutehall->id = $mMarActiveBanquteHall->id;
                     $approvedbanqutehall->payment_amount = $req->payment_amount;
+                    $approvedbanqutehall->demand_amount = round($req->payment_amount);
                     $approvedbanqutehall->license_no = $generatedId;
                     $approvedbanqutehall->approve_date = Carbon::now();
                     $approvedbanqutehall->save();
@@ -630,7 +639,8 @@ class BanquetMarriageHallController extends Controller
                     $approvedBanquteHall = $mMarActiveBanquteHall->replicate();
                     $approvedBanquteHall->setTable('mar_banqute_halls');
                     $temp_id = $approvedBanquteHall->id = $mMarActiveBanquteHall->id;
-                    $approvedBanquteHall->payment_amount = $req->payment_amount;
+                    $approvedBanquteHall->payment_amount = round($req->payment_amount);
+                    $approvedBanquteHall->demand_amount = $req->payment_amount;
                     $approvedBanquteHall->payment_status = $req->payment_status;
                     $approvedBanquteHall->approve_date = Carbon::now();
                     $approvedBanquteHall->save();
@@ -694,9 +704,9 @@ class BanquetMarriageHallController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -1000,7 +1010,7 @@ class BanquetMarriageHallController extends Controller
      * | Function - 22
      * | API - 20
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1026,13 +1036,16 @@ class BanquetMarriageHallController extends Controller
                 ->whereIn('mar_active_banqute_halls.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('mar_active_banqute_halls.id')
-                ->get();
+                ->orderByDesc('mar_active_banqute_halls.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050820", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050820", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050820", 1.0, "", "POST", "", "");
         }

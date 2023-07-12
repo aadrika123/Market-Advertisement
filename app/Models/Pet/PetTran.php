@@ -58,4 +58,14 @@ class PetTran extends Model
             'transactionId' => $mPetTran
         ];
     }
+
+    /**
+     * | Get transaction by application No
+     */
+    public function getTranByApplicationId($applicationId)
+    {
+        return PetTran::where('related_id', $applicationId)
+            ->where('status', 1)
+            ->orderByDesc('id');
+    }
 }

@@ -107,7 +107,7 @@ class MarLodge extends Model
             $pay_id = $mMarLodge->payment_id = "Cash-$req->applicationId-" . time();
             $mMarLodge->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount,'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarLodge->payment_details = json_encode($payDetails);
 
@@ -127,6 +127,8 @@ class MarLodge extends Model
             $mMarLodgeRenewal->payment_status = 1;
             $mMarLodgeRenewal->payment_mode = "Cash";
             $mMarLodgeRenewal->payment_id =  $pay_id;
+            $mMarLodgeRenewal->payment_amount =  $mMarLodge->payment_amount;
+            $mMarLodgeRenewal->demand_amount =  $mMarLodge->demand_amount;
             $mMarLodgeRenewal->payment_date = Carbon::now();
             $mMarLodgeRenewal->valid_from = $mMarLodge->valid_from;
             $mMarLodgeRenewal->valid_upto = $mMarLodge->valid_upto;

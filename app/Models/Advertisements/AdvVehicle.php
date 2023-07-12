@@ -19,7 +19,7 @@ class AdvVehicle extends Model
         return AdvVehicle::select(
             'id',
             'application_no',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
             'application_type',
             'applicant',
             'applicant as owner_name',
@@ -188,6 +188,8 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
             $mAdvVehicleRenewal->payment_mode = "Cash";
+            $mAdvVehicleRenewal->payment_amount = $mAdvVehicle->payment_amount;
+            $mAdvVehicleRenewal->demand_amount = $mAdvVehicle->demand_amount;
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;
             $mAdvVehicleRenewal->valid_upto = $mAdvVehicle->valid_upto;
             $mAdvVehicleRenewal->payment_details = json_encode($payDetails);;

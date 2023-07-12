@@ -198,21 +198,26 @@ class AdvActiveSelfadvertisement extends Model
     {
         $list = AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'doc_upload_status',
-                'application_type',
-                'parked',
-                'workflow_id',
+                'adv_active_selfadvertisements.id',
+                'adv_active_selfadvertisements.application_no',
+                'adv_active_selfadvertisements.applicant',
+                'adv_active_selfadvertisements.entity_name',
+                'adv_active_selfadvertisements.entity_address',
+                'adv_active_selfadvertisements.payment_status',
+                'adv_active_selfadvertisements.doc_upload_status',
+                'adv_active_selfadvertisements.application_type',
+                'adv_active_selfadvertisements.parked',
+                'adv_active_selfadvertisements.workflow_id',
+                DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
+                'wr.role_name',
+                'um.ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('wf_roles as wr','wr.id','=','adv_active_selfadvertisements.current_role_id')
+            ->join('ulb_masters as um','um.id','=','adv_active_selfadvertisements.ulb_id')
+            ->orderByDesc('adv_active_selfadvertisements.id')
             ->get();
         return $list;
+
     }
 
     /**
@@ -311,7 +316,7 @@ class AdvActiveSelfadvertisement extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -321,8 +326,8 @@ class AdvActiveSelfadvertisement extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereIn('current_role_id', $roleIds)
-            ->get();
+            ->whereIn('current_role_id', $roleIds);
+            // ->get();
         return $inbox;
     }
 
@@ -345,8 +350,8 @@ class AdvActiveSelfadvertisement extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereNotIn('current_role_id', $roleIds)
-            ->get();
+            ->whereNotIn('current_role_id', $roleIds);
+            // ->get();
         return $outbox;
     }
 

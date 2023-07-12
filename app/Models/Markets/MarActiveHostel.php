@@ -210,8 +210,8 @@ class MarActiveHostel extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereIn('current_role_id', $roleIds)
-            ->get();
+            ->whereIn('current_role_id', $roleIds);
+            // ->get();
         return $inbox;
     }
 
@@ -233,8 +233,8 @@ class MarActiveHostel extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereNotIn('current_role_id', $roleIds)
-            ->get();
+            ->whereNotIn('current_role_id', $roleIds);
+            // ->get();
         return $outbox;
     }
 

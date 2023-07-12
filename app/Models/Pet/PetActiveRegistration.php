@@ -38,7 +38,6 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->occurrence_type_id     = $req->petFrom;
         $mPetActiveRegistration->apply_through          = $req->applyThrough;                       // holding or saf
         $mPetActiveRegistration->owner_type             = $req->ownerCategory;
-        $mPetActiveRegistration->pet_type               = $req->petType;
 
         $mPetActiveRegistration->created_at             = Carbon::now();
         $mPetActiveRegistration->application_apply_date = Carbon::now();
@@ -49,7 +48,7 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->user_type              = $user->user_type;
         switch ($user->user_type) {
             case ($userType['1']):
-                $mPetActiveRegistration->apply_mode = "ONLINE";
+                $mPetActiveRegistration->apply_mode = "ONLINE";                                     // Static
                 $mPetActiveRegistration->citizen_id = $user->id;
                 break;
             default:
@@ -116,6 +115,21 @@ class PetActiveRegistration extends Model
             ->where('pet_active_registrations.status', 1);
     }
 
+
+    /**
+     * | Get all details according to key 
+        | Remove
+     */
+    public function dummyApplicationDetails($value, $key)
+    {
+        return DB::table('pet_active_registrations')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+            ->where('pet_active_registrations.' . $key, $value)
+            ->where('pet_active_registrations.status', 2);
+    }
+
+
     /**
      * | Delete the application before the payment 
      */
@@ -124,5 +138,17 @@ class PetActiveRegistration extends Model
         PetActiveRegistration::where('pet_active_registrations.id', $applicationId)
             ->where('pet_active_registrations.status', 1)
             ->delete();
+    }
+
+    /** 
+     * | Update the Doc related status in active table 
+     */
+    public function updateDocStatus($applicationId, $status)
+    {
+        PetActiveRegistration::where('id', $applicationId)
+            ->update([
+                // 'doc_upload_status' => true,
+                'doc_verify_status' => $status
+            ]);
     }
 }

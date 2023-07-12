@@ -404,6 +404,7 @@ class ParamController extends Controller
                 $mMarBanquteHall->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mMarBanquteHall->demand_amount;
                 $updateData['valid_from'] = $mMarBanquteHall->valid_from;
                 $updateData['valid_upto'] = $mMarBanquteHall->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -438,6 +439,7 @@ class ParamController extends Controller
                 $mMarHostel->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] =$mMarHostel->demand_amount;
                 $updateData['valid_from'] = $mMarHostel->valid_from;
                 $updateData['valid_upto'] = $mMarHostel->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -472,6 +474,7 @@ class ParamController extends Controller
                 $mMarLodge->save();
 
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mMarLodge->demand_amount;
                 $updateData['valid_from'] = $mMarLodge->valid_from;
                 $updateData['valid_upto'] = $mMarLodge->valid_upto;
                 $updateData['payment_mode'] = "Online";
@@ -504,6 +507,7 @@ class ParamController extends Controller
                 $mMarDharamshala->save();
                 $a = $mMarDharamshala->valid_upto;
                 $updateData['payment_amount'] = $req->amount;
+                $updateData['demand_amount'] = $mMarDharamshala->demand_amount;
                 $updateData['valid_from'] = $mMarDharamshala->valid_from;
                 $updateData['valid_upto'] = $mMarDharamshala->valid_upto;
                 $updateData['payment_mode'] = "Online";

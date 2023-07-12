@@ -132,11 +132,13 @@ class LodgeController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $inboxList = $mMarActiveLodge->listInbox($roleIds, $ulbId);                         // <----- Get Inbox List
-
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050702", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050702", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050702", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -161,11 +163,13 @@ class LodgeController extends Controller
                 return $workflowRole['wf_role_id'];
             });
             $outboxList = $mMarActiveLodge->listOutbox($roleIds, $ulbId);                      // <----- Get Outbox List
-
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050703", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050703", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050703", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -227,6 +231,7 @@ class LodgeController extends Controller
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -357,14 +362,16 @@ class LodgeController extends Controller
 
             $advData = $this->_repository->specialInboxLodge($workflowId)                      // Repository function to get Markets Details
                 ->where('is_escalate', 1)
-                ->where('mar_active_lodges.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
-
+                ->where('mar_active_lodges.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050707", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050707", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050707", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -604,7 +611,8 @@ class LodgeController extends Controller
                     $approvedlodge = $mMarActiveLodge->replicate();
                     $approvedlodge->setTable('mar_lodges');
                     $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
-                    $approvedlodge->payment_amount = $req->payment_amount;
+                    $approvedlodge->payment_amount = round($req->payment_amount);
+                    $approvedlodge->demand_amount = $req->payment_amount;
                     $approvedlodge->license_no = $generatedId;
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->save();
@@ -635,6 +643,7 @@ class LodgeController extends Controller
                     $approvedlodge->setTable('mar_lodges');
                     $temp_id = $approvedlodge->id = $mMarActiveLodge->id;
                     $approvedlodge->payment_amount = $req->payment_amount;
+                    $approvedlodge->demand_amount = round($req->payment_amount);
                     $approvedlodge->payment_status = $req->payment_status;
                     $approvedlodge->approve_date = Carbon::now();
                     $approvedlodge->save();
@@ -698,9 +707,9 @@ class LodgeController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
@@ -1012,7 +1021,7 @@ class LodgeController extends Controller
      * | Function - 23
      * | API - 20
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1038,13 +1047,15 @@ class LodgeController extends Controller
                 ->whereIn('mar_active_lodges.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('mar_active_lodges.id')
-                ->get();
-
+                ->orderByDesc('mar_active_lodges.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050720", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
         }

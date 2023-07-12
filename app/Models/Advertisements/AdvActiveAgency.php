@@ -258,8 +258,8 @@ class AdvActiveAgency extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereIn('current_role_id', $roleIds)
-            ->get();
+            ->whereIn('current_role_id', $roleIds);
+            // ->get();
         return $inbox;
     }
 
@@ -272,16 +272,19 @@ class AdvActiveAgency extends Model
     {
         return AdvActiveAgency::where('citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                'application_date',
-                'entity_name',
-                'address',
-                'doc_upload_status',
-                'application_type',
-                'parked',
+                'adv_active_agencies.id',
+                'adv_active_agencies.application_no',
+                'adv_active_agencies.application_date',
+                'adv_active_agencies.entity_name',
+                'adv_active_agencies.address',
+                'adv_active_agencies.doc_upload_status',
+                'adv_active_agencies.application_type',
+                'adv_active_agencies.parked',
+                DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD/MM/YYYY') as application_date"),
+                'wr.role_name',
             )
-            ->orderByDesc('id')
+            ->join('wf_roles as wr','wr.id','=','adv_active_agencies.current_role_id')
+            ->orderByDesc('adv_active_agencies.id')
             ->get();
     }
 
@@ -303,8 +306,8 @@ class AdvActiveAgency extends Model
             ->orderByDesc('id')
             ->where('parked',NULL)
             ->where('ulb_id',$ulbId)
-            ->whereNotIn('current_role_id', $roleIds)
-            ->get();
+            ->whereNotIn('current_role_id', $roleIds);
+            // ->get();
         return $outbox;
     }
 

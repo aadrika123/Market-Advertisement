@@ -195,18 +195,20 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
             $mAdvActivePrivateland = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $inboxList = $mAdvActivePrivateland->listInbox($roleIds,$ulbId);                   // <----- Get Inbox List From Model
-
+            $inboxList = $mAdvActivePrivateland->listInbox($roleIds, $ulbId);                   // <----- Get Inbox List From Model
+            if (trim($req->key))
+                $inboxList =  searchFilter($inboxList, $req);
+            $list = paginator($inboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", remove_null($inboxList->toArray()), "050404", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050404", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050404", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -224,18 +226,20 @@ class PrivateLandController extends Controller
             $startTime = microtime(true);
             $mPrivateLand = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId=authUser()->ulb_id;
+            $ulbId = authUser()->ulb_id;
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
 
-            $outboxList = $mPrivateLand->listOutbox($roleIds,$ulbId);                            // <----- Get Outbox List From Model
-
+            $outboxList = $mPrivateLand->listOutbox($roleIds, $ulbId);                            // <----- Get Outbox List From Model
+            if (trim($req->key))
+                $outboxList =  searchFilter($outboxList, $req);
+            $list = paginator($outboxList, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", remove_null($outboxList->toArray()), "050405", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050405", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050405", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -261,7 +265,7 @@ class PrivateLandController extends Controller
             }
 
             if ($req->applicationId) {
-               $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
+                $data = $mAdvActivePrivateland->getDetailsById($req->applicationId, $type);     // Get Application Details
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -305,6 +309,7 @@ class PrivateLandController extends Controller
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
             $fullDetailsData['timelineData'] = collect($req);                           // Get Timeline Data
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -365,9 +370,9 @@ class PrivateLandController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($totalApplication == 0) {
-                $data1['data'] = NULL;
-            }
+            // if ($totalApplication == 0) {
+            //     $data1['data'] = NULL;
+            // }
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
@@ -434,13 +439,15 @@ class PrivateLandController extends Controller
 
             $advData = $this->Repository->specialPrivateLandInbox($workflowId)          // Repository function to get Advertiesment Details
                 ->where('is_escalate', 1)
-                ->where('adv_active_privatelands.ulb_id', $ulbId)
-                // ->whereIn('ward_mstr_id', $wardId)
-                ->get();
-
+                ->where('adv_active_privatelands.ulb_id', $ulbId);
+            // ->whereIn('ward_mstr_id', $wardId)
+            // ->get();
+            if (trim($req->key))
+                $advData =  searchFilter($advData, $req);
+            $list = paginator($advData, $req);
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", remove_null($advData), "050409", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050409", "1.0", "$executionTime Sec", "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050409", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -774,9 +781,9 @@ class PrivateLandController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Approved Application List", $data1, "050416", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
@@ -1337,7 +1344,7 @@ class PrivateLandController extends Controller
      * | Function - 31
      * | API - 29
      */
-    public function listBtcInbox()
+    public function listBtcInbox(Request $req)
     {
         try {
             // Variable initialization
@@ -1363,13 +1370,16 @@ class PrivateLandController extends Controller
                 ->whereIn('adv_active_privatelands.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_privatelands.id')
-                ->get();
+                ->orderByDesc('adv_active_privatelands.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
 
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", remove_null($btcList), "050429", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050429", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050429", 1.0, "", "POST", "", "");
         }

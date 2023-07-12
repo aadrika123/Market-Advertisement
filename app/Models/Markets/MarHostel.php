@@ -109,7 +109,7 @@ class MarHostel extends Model
             $pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarHostel->payment_details = json_encode($payDetails);
 
@@ -130,6 +130,8 @@ class MarHostel extends Model
             $mMarHostelRenewal->payment_mode = "Cash";
             $mMarHostelRenewal->payment_id =  $pay_id;
             $mMarHostelRenewal->payment_date = Carbon::now();
+            $mMarHostelRenewal->payment_amount = $mMarHostel->payment_amount;
+            $mMarHostelRenewal->demand_amount = $mMarHostel->demand_amount;
             $mMarHostelRenewal->valid_from = $mMarHostel->valid_from;
             $mMarHostelRenewal->valid_upto = $mMarHostel->valid_upto;
             $mMarHostelRenewal->payment_details = json_encode($payDetails);
