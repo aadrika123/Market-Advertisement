@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
         Route::post('application/get-prop-details', 'getSafHoldingDetails');
         Route::post('application/get-wf-detials', 'getApplicationsDetails');                                    // Workflow
         Route::post('application/edit-pet-details', 'editPetDetails');
+        Route::post('application/edit-applicant-details', 'editApplicantDetails');
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
@@ -63,6 +64,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
     Route::controller(PetPaymentController::class)->group(function () {
         Route::post("application/offline-payment", "offlinePayment");
         Route::post("application/initiate-online-payment", "handelOnlinePayment");                                           // Admin
+        Route::post("application/payment-receipt", "generatePaymentReceipt");
     });
 
     /**
@@ -72,7 +74,7 @@ Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerTok
 
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
-        Route::post('post-next-level', 'postNextLevel'); 
+        Route::post('post-next-level', 'postNextLevel');
         // Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
         // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
         // Route::post('btc-inbox', 'btcInbox');                                                           // Workflow

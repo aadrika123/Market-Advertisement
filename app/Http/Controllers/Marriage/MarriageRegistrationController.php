@@ -99,7 +99,7 @@ class MarriageRegistrationController extends Controller
             $marriageApplicationNo = $idGeneration->generate();
             $refData = [
                 "finisherRoleId"    => collect($finisherRoleId)['role_id'],
-                "initiatorRoleId"   => collect($initiatorRoleId),
+                "initiatorRoleId"   => $initiatorRoleId,
                 // "initiatorRoleId"   => collect($initiatorRoleId)['role_id'],
                 "workflowId"        => $ulbWorkflowId->id,
                 "applicationNo"     => $marriageApplicationNo,

@@ -1362,10 +1362,21 @@ class PetRegistrationController extends Controller
                 }
                 break;
         }
-
-
         return [
             "applicationDetails" => $applicationdetails,
         ];
+    }
+
+
+    /**
+     * | Edit applicant Details 
+     */
+    public function editApplicantDetails(Request $req)
+    {
+        try {
+
+        } catch (Exception $e) {
+            return responseMsgs(false, "Applicant Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 }
