@@ -49,7 +49,7 @@ Route::controller(TollsController::class)->group(function () {
  */
 Route::controller(CircleController::class)->group(function () {
     Route::post('v1/crud/circle/insert', 'store');                     //01
-    Route::post('v1/crud/circle/show-by-ulbId', 'getCircleByUlb');     //02
+    Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     //02
 });
 
 /**
@@ -58,5 +58,5 @@ Route::controller(CircleController::class)->group(function () {
 
 Route::controller(MarketController::class)->group(function () {
     Route::post('v1/crud/market/insert', 'store');                         //01
-    Route::post('v1/crud/market/show-by-circleId', 'getMarketByCircleId'); //02
+    Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); //02
 });
