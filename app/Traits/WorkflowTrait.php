@@ -22,7 +22,7 @@ trait WorkflowTrait
      */
     public function getUlbWorkflowId($bearer, $ulbId, $wfMasterId)
     {
-        $baseUrl = Config::get('constants.BASE_URL');
+        $baseUrl = Config::get('constants.AUTH_URL');
         $workflows = Http::withHeaders([
             "Authorization" => "Bearer $bearer",
             "contentType" => "application/json"
@@ -31,7 +31,10 @@ trait WorkflowTrait
             "ulbId" => $ulbId,
             "workflowMstrId" => $wfMasterId
         ])->json();
-
+        // $promise = Http::async()->post($baseUrl . 'api/workflow/get-ulb-workflow')->then(function ($response) {
+        //     echo $response; 
+        // });
+        // print_r($promise);
         return $workflows;
     }
 
@@ -41,7 +44,7 @@ trait WorkflowTrait
      */
     public function getRoleByUserId($bearer)
     {
-        $baseUrl = Config::get('constants.BASE_URL');
+        $baseUrl = Config::get('constants.AUTH_URL');
         $roles = Http::withHeaders([
             "Authorization" => "Bearer $bearer",
             "contentType" => "application/json"

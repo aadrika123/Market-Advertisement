@@ -248,7 +248,7 @@ if (!function_exists('getClientIpAddress')) {
         function responseTime()
         {
             $responseTime = (microtime(true) - LARAVEL_START) * 1000;
-            return round($responseTime, 2);
+            return round($responseTime, 2)." ms";
         }
     }
 
@@ -291,7 +291,7 @@ if (!function_exists('getClientIpAddress')) {
      * | Api Response time for the the apis
      */
 
-     if (!function_exists('getFinancialYear')) {
+    if (!function_exists('getFinancialYear')) {
         function getFinancialYear($date)
         {
             $Year = date('Y', strtotime($date));
@@ -302,6 +302,17 @@ if (!function_exists('getClientIpAddress')) {
             } else {
                 return $Year . '-' . ($year + 1);
             }
+        }
+    }
+
+
+    /**
+     * | Api Response time for the the apis
+     */
+    if (!function_exists('authUserDetails')) {
+        function authUserDetails($req)
+        {
+            return $req->auth;
         }
     }
 }

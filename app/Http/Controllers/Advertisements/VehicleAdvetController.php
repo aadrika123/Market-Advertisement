@@ -6,6 +6,7 @@ use App\BLL\Advert\CalculateRate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vehicles\RenewalRequest;
 use App\Http\Requests\Vehicles\StoreRequest;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvActiveVehicle;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvVehicle;
@@ -80,18 +81,19 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $advVehicle = new AdvActiveVehicle();
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
+            if ($req->auth['user_type'] == 'JSK') {
+                $userId = ['userId' => $req->auth['id']];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];
+                $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            // $mCalculateRate = new CalculateRate;
+            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -102,10 +104,8 @@ class VehicleAdvetController extends Controller
             DB::beginTransaction();
             $applicationNo = $advVehicle->addNew($req);                             // Apply Vehicle Application 
             DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050301", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            
+            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050301", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050301", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -126,15 +126,12 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
             $details = $mAdvVehicle->applicationDetailsForRenew($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050302", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050302", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050302", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -149,17 +146,18 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $advVehicle = new AdvActiveVehicle();
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
+            if ($req->auth['user_type'] == 'JSK') {
+                $userId = ['userId' => $req->auth['id']];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];
+                $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            // $mCalculateRate = new CalculateRate;
+            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -170,10 +168,8 @@ class VehicleAdvetController extends Controller
             $applicationNo = $advVehicle->renewalApplication($req);               // Renewal Vehicle Application
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050303", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050303", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050303", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -189,10 +185,9 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -201,9 +196,8 @@ class VehicleAdvetController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Inbox Applications", $list, "050304", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            
+            return responseMsgs(true, "Inbox Applications", $list, "050304", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050304", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -218,10 +212,9 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mvehicleAdvets = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -230,9 +223,8 @@ class VehicleAdvetController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Outbox Lists", $list, "050305", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            
+            return responseMsgs(true, "Outbox Lists", $list, "050305", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050305", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -247,7 +239,6 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mvehicleAdvets = new AdvActiveVehicle();
             // $data = array();
             $type = NULL;
@@ -299,15 +290,11 @@ class VehicleAdvetController extends Controller
             $fullDetailsData['timelineData'] = collect($req);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050306", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050306", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050306", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Get Role Details
@@ -315,7 +302,7 @@ class VehicleAdvetController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
         ]);
@@ -349,8 +336,7 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mvehicleAdvets = new AdvActiveVehicle();
             $applications = $mvehicleAdvets->listAppliedApplications($citizenId);
 
@@ -359,9 +345,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Applied Applications", $data1, "050307", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050307", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050307", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -381,19 +365,15 @@ class VehicleAdvetController extends Controller
         ]);
         try {
             // Variable Initialization
-            $startTime = microtime(true);
 
-            $userId = auth()->user()->id;
+            $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
             $data = AdvActiveVehicle::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Movable Vechicle is Escalated' : "Movable Vechicle is removed from Escalated", '', "050308", "1.0", " $executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Movable Vechicle is Escalated' : "Movable Vechicle is removed from Escalated", '', "050308", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050308", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -408,11 +388,10 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
 
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -431,9 +410,7 @@ class VehicleAdvetController extends Controller
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", $list, "050309", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050309", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050309", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -456,7 +433,6 @@ class VehicleAdvetController extends Controller
 
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);
             if ($mAdvActiveVehicle->parked == NULL && $mAdvActiveVehicle->doc_upload_status == '0')
                 throw new Exception("Document Rejected Please Send Back to Citizen !!!");
@@ -482,9 +458,7 @@ class VehicleAdvetController extends Controller
             $track->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050310", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050310", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050310", "1.0", "", "POST", $request->deviceId ?? "");
@@ -505,10 +479,8 @@ class VehicleAdvetController extends Controller
         ]);
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-
-            $userId = authUser()->id;
-            $userType = authUser()->user_type;
+            $userId = $request->auth['id'];
+            $userType = $request->auth['user_type'];
             $workflowTrack = new WorkflowTrack();
             $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActiveVehicle = AdvActiveVehicle::find($request->applicationId);                // Advertisment Details
@@ -536,9 +508,8 @@ class VehicleAdvetController extends Controller
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050311", "1.0", "$executionTime Sec", "POST", "");
+            
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050311", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050311", "1.0", "", "POST", $request->deviceId ?? "");
@@ -606,7 +577,6 @@ class VehicleAdvetController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         // Variable Initialization
-        $startTime = microtime(true);
 
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = AdvVehicle::find($req->applicationId)->workflow_id;
@@ -617,10 +587,8 @@ class VehicleAdvetController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050314", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050314", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -641,7 +609,6 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             // Check if the Current User is Finisher or Not         
             $mAdvActiveVehicle = AdvActiveVehicle::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveVehicle->workflow_id);                                 // Get Finisher using Trait
@@ -741,9 +708,7 @@ class VehicleAdvetController extends Controller
             }
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $msg, "", '011111', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '011111', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), '', "050315", "1.0", "", "POST", "");
@@ -761,10 +726,8 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mAdvVehicle = new AdvVehicle();
             $applications = $mAdvVehicle->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
@@ -772,9 +735,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Approved Application List", $data1, "050316", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050316", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050316", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -791,9 +752,8 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
 
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
             $applications = $mAdvRejectedVehicle->listRejected($citizenId);
             $totalApplication = $applications->count();
@@ -801,9 +761,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Approved Application List", $data1, "050317", "1.0", " $executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050317", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050317", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -820,9 +778,8 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
 
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvActiveVehicle = new AdvActiveVehicle();
             $applications = $mAdvActiveVehicle->getJSKApplications($userId);
             $totalApplication = $applications->count();
@@ -830,10 +787,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Applied Applications", $data1, "050318", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050318", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050318", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -850,9 +804,7 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvVehicle = new AdvVehicle();
             $applications = $mAdvVehicle->listjskApprovedApplication($userId);
             $totalApplication = $applications->count();
@@ -860,10 +812,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Approved Application List", $data1, "050319", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050319", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050319", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -880,9 +829,8 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
 
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
             $applications = $mAdvRejectedVehicle->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
@@ -890,10 +838,7 @@ class VehicleAdvetController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Rejected Application List", $data1, "050320", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050320", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050320", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -915,8 +860,6 @@ class VehicleAdvetController extends Controller
         ]);
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-
             $mAdvVehicle = AdvVehicle::find($req->id);
             $reqData = [
                 "id" => $mAdvVehicle->id,
@@ -942,10 +885,7 @@ class VehicleAdvetController extends Controller
             $data->contact = $mAdvVehicle->mobile_no;
             $data->type = "Movable Vehicles";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050321", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050321", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050321", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -965,7 +905,6 @@ class VehicleAdvetController extends Controller
         ]);
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
 
             if ($req->applicationId) {
@@ -977,10 +916,7 @@ class VehicleAdvetController extends Controller
 
             $data['type'] = "Movable Vehicles";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $data, "050322", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050322", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050322", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -1003,7 +939,6 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvVehicle = new AdvVehicle();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1011,10 +946,8 @@ class VehicleAdvetController extends Controller
             $appDetails = AdvVehicle::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' =>  $appDetails->workflow_id], "050323", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' =>  $appDetails->workflow_id], "050323", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050323", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1043,17 +976,13 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $wfId = AdvVehicle::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);                     // Entry Cheque And DD in Model
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050324", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050324", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050324", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1078,7 +1007,6 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1086,10 +1014,8 @@ class VehicleAdvetController extends Controller
             $appDetails = AdvVehicle::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cheque/DD");
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050325", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050325", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050325", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1115,14 +1041,11 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvActiveVehicle = new AdvActiveVehicle();
             $status = $mAdvActiveVehicle->entryZone($req);                   // Entry Zone In Model
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             if ($status == '1') {
-                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050326", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched',  "Zone Added Successfully", "050326", "1.0", responseTime(), "POST", $req->deviceId);
             } else {
                 throw new Exception("Zone Not Added !!!");
             }
@@ -1149,12 +1072,11 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mWfDocument = new WfActiveDocument();
             $mAdvActiveVehicle = new AdvActiveVehicle();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.SELF-LABEL');
@@ -1209,9 +1131,7 @@ class VehicleAdvetController extends Controller
             }
 
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "050327", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050327", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050327", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1265,7 +1185,6 @@ class VehicleAdvetController extends Controller
         ]);
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActiveVehicle::find($req->applicationId);
 
@@ -1294,10 +1213,7 @@ class VehicleAdvetController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Done", "", "", '050328', '01', "$executionTime Sec", 'Post', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050328', '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050328", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1313,10 +1229,9 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-            $startTime = microtime(true);
-            $auth = auth()->user();
-            $userId = $auth->id;
-            $ulbId = $auth->ulb_id;
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1341,10 +1256,7 @@ class VehicleAdvetController extends Controller
                 $btcList =  searchFilter($btcList, $req);
             $list = paginator($btcList, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "BTC Inbox List", $list, "050329", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050329", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050329", 1.0, "271ms", "POST", "", "");
         }
@@ -1390,15 +1302,12 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $startTime = microtime(true);
             $mAdvActiveVehicle = new AdvActiveVehicle();
             DB::beginTransaction();
             $appId = $mAdvActiveVehicle->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050330", 1.0, " $executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050330", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
@@ -1427,7 +1336,6 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mAdvVehicle = new AdvVehicle();
             $approveList = $mAdvVehicle->approveListForReport();
@@ -1459,9 +1367,7 @@ class VehicleAdvetController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050331", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050331", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050331", 1.0, "271ms", "POST", "", "");
         }
@@ -1474,10 +1380,10 @@ class VehicleAdvetController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050332", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1491,8 +1397,6 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $endTime = microtime(true);
 
             $approveList = DB::table('adv_vehicle_renewals')
                 ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
@@ -1520,8 +1424,7 @@ class VehicleAdvetController extends Controller
                 $amounts->push($item->payment_amount);
             });
 
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
         }

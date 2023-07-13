@@ -100,8 +100,10 @@ class AdvActiveHoarding extends Model
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->MetaReqs($req);
         // $workflowId = $this->_workflowId;
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ipAddress = getClientIpAddress();
         // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -118,7 +120,7 @@ class AdvActiveHoarding extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->MetaReqs($req),
@@ -129,7 +131,7 @@ class AdvActiveHoarding extends Model
         $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
 
         $mDocuments = $req->documents;
-        $this->uploadDocument($licenceId, $mDocuments);
+        $this->uploadDocument($licenceId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -143,9 +145,9 @@ class AdvActiveHoarding extends Model
         // Variable Initializing
         $bearerToken = $req->bearerToken();
         $LicencesMetaReqs = $this->RenewMetaReqs($req);
-        // $workflowId = $this->_workflowId;
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'HORDING/REN-' . random_int(100000, 999999)];                  // Generate Lecence No
         $details = AdvHoarding::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo = ['license_no' => $details->license_no];
@@ -162,7 +164,7 @@ class AdvActiveHoarding extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "Renew"
             ],
             $this->RenewMetaReqs($req),
@@ -173,7 +175,7 @@ class AdvActiveHoarding extends Model
 
         $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
         $mDocuments = $req->documents;
-        $this->uploadDocument($licenceId, $mDocuments);
+        $this->uploadDocument($licenceId, $mDocuments,$req->auth);
         return $mRenewNo['renew_no'];
     }
 
@@ -182,9 +184,9 @@ class AdvActiveHoarding extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents,$auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId) {
+        collect($documents)->map(function ($doc) use ($tempId,$auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -205,7 +207,7 @@ class AdvActiveHoarding extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a,$auth);
         });
     }
 

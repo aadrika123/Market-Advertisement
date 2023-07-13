@@ -612,50 +612,53 @@ class ParamController extends Controller
     /**
      * | Advertisement Dashboard
      */
-    public function advertDashboard()
+    public function advertDashboard(Request $req)
     {
+        // return $req;
+       $userDetails=authUserDetails($req);
+       $ulbId=$userDetails['ulb_id'];
         try {
             // Variable initialization
             $startTime = microtime(true);
 
             $madvSelfAdvertisement = new AdvSelfadvertisement();
-            $approveList = $madvSelfAdvertisement->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();              // Find Self Advertisement Approve Applications
+            $approveList = $madvSelfAdvertisement->allApproveList()->where('ulb_id',$ulbId)->values();              // Find Self Advertisement Approve Applications
             $advert['selfApprovedApplications'] = $approveList;
 
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();  // Find Self Advertisement Rejected Applications
+            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication()->where('ulb_id',$ulbId)->values();  // Find Self Advertisement Rejected Applications
             $advert['selfRejectedApplications'] = $rejectList;
 
             $mAdvPrivateland = new AdvPrivateland();
-            $pvtapproveList = $mAdvPrivateland->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                 // Find Pvt Land Approve Applications
+            $pvtapproveList = $mAdvPrivateland->allApproveList()->where('ulb_id',$ulbId)->values();                 // Find Pvt Land Approve Applications
             $advert['pvtLandApprovedApplications'] = $pvtapproveList;
 
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();     // Find Pvt Land Rejected Applications
+            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication()->where('ulb_id',$ulbId)->values();     // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = $pvtRejectList;
 
             $mAdvVehicle = new AdvVehicle();
-            $vehicleApproveList = $mAdvVehicle->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                // Find Vehicle Approve Applications
+            $vehicleApproveList = $mAdvVehicle->allApproveList()->where('ulb_id',$ulbId)->values();                // Find Vehicle Approve Applications
             $advert['vehicleApprovedApplications'] = $vehicleApproveList;
 
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();    // Find Vehicle Rejected Applications
+            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication()->where('ulb_id',$ulbId)->values();    // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = $vehicleRejectList;
 
             $mAdvAgency = new AdvAgency();
-            $agencyApproveList = $mAdvAgency->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Agency Approve Applications
+            $agencyApproveList = $mAdvAgency->allApproveList()->where('ulb_id',$ulbId)->values();                  // Find Agency Approve Applications
             $advert['agencyApprovedApplications'] = $agencyApproveList;
 
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();      // Find Agency Rejected Applications
+            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication()->where('ulb_id',$ulbId)->values();      // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = $agencyRejectList;
 
             $mAdvHoarding = new AdvHoarding();
-            $hoardingApproveList = $mAdvHoarding->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();              // Find Hoarding Approve Applications
+            $hoardingApproveList = $mAdvHoarding->allApproveList()->where('ulb_id',$ulbId)->values();              // Find Hoarding Approve Applications
             $advert['hoardingApprovedApplications'] = $hoardingApproveList;
 
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
-            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();  // Find Hoarding Rejected Applications
+            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id',$ulbId)->values();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
             $endTime = microtime(true);
@@ -670,42 +673,44 @@ class ParamController extends Controller
     /**
      * | Market Dashboard
      */
-    public function marketDashboard()
+    public function marketDashboard(Request $req)
     {
+        $userDetails=authUserDetails($req);
+        $ulbId=$userDetails['ulb_id'];
         try {
             // Variable initialization
             $startTime = microtime(true);
 
             $mMarBanquteHall = new MarBanquteHall();
-            $approveList = $mMarBanquteHall->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                              // Find Banquet Hall Approve Applications
+            $approveList = $mMarBanquteHall->allApproveList()->where('ulb_id',$ulbId)->values();                              // Find Banquet Hall Approve Applications
             $market['banquetApprovedApplications'] = $approveList;
 
             $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $rejectList = $mMarRejectedBanquteHall->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Banquet Hall Rejected Applications
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication()->where('ulb_id',$ulbId)->values();                  // Find Banquet Hall Rejected Applications
             $market['banquetRejectedApplications'] = $rejectList;
 
             $mMarHostel = new MarHostel();
-            $hostelapproveList = $mMarHostel->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                             // Find Hostel Approve Applications
+            $hostelapproveList = $mMarHostel->allApproveList()->where('ulb_id',$ulbId)->values();                             // Find Hostel Approve Applications
             $market['hostelApprovedApplications'] = $hostelapproveList;
 
             $mMarRejectedHostel = new MarRejectedHostel();
-            $hostelRejectList = $mMarRejectedHostel->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                 // Find Hostel Rejected Applications
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication()->where('ulb_id',$ulbId)->values();                 // Find Hostel Rejected Applications
             $market['hostelRejectedApplications'] = $hostelRejectList;
 
             $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                               // Find Lodge Approve Applications
+            $lodgeApproveList = $mMarLodge->allApproveList()->where('ulb_id',$ulbId)->values();                               // Find Lodge Approve Applications
             $market['lodgeApprovedApplications'] = $lodgeApproveList;
 
             $mMarRejectedLodge = new MarRejectedLodge();
-            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();                   // Find Lodge Rejected Applications
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication()->where('ulb_id',$ulbId)->values();                   // Find Lodge Rejected Applications
             $market['lodgeRejectedApplications'] = $lodgeRejectList;
 
             $mMarDharamshala = new MarDharamshala();
-            $dharamshalaApproveList = $mMarDharamshala->allApproveList()->where('ulb_id',authUser()->ulb_id)->values();                  // Find Dharamshala Approve Applications
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList()->where('ulb_id',$ulbId)->values();                  // Find Dharamshala Approve Applications
             $market['dharamshalaApprovedApplications'] = $dharamshalaApproveList;
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id',authUser()->ulb_id)->values();      // Find Dharamshala Rejected Applications
+            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id',$ulbId)->values();      // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
             $endTime = microtime(true);

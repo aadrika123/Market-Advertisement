@@ -110,8 +110,10 @@ class AdvActiveVehicle extends Model
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'VEHICLE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -125,7 +127,7 @@ class AdvActiveVehicle extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
@@ -135,7 +137,7 @@ class AdvActiveVehicle extends Model
         // return $metaReqs;
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
         $mDocuments = $req->documents;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -149,8 +151,10 @@ class AdvActiveVehicle extends Model
         $metaReqs = $this->metaReqs($req);
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ipAddress = getClientIpAddress();
         $mRenew = ['renew_no' => 'VEHICLE/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = AdvVehicle::find($req->applicationId);                              // Find Previous Application No
         $licenseNo = ['license_no' => $details->license_no];
@@ -166,7 +170,7 @@ class AdvActiveVehicle extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "Renew"
             ],
             $this->metaRenewReqs($req),
@@ -177,7 +181,7 @@ class AdvActiveVehicle extends Model
         // return $metaReqs;
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
         $mDocuments = $req->documents;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $mRenew['renew_no'];
     }
@@ -186,7 +190,7 @@ class AdvActiveVehicle extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('adv_active_vehicles')
             ->select(
@@ -198,10 +202,10 @@ class AdvActiveVehicle extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
+            ->where('parked', NULL)
             ->where('ulb_id', $ulbId)
             ->whereNotIn('current_roles', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -209,9 +213,9 @@ class AdvActiveVehicle extends Model
      * | Store Uploaded document after application store
      */
 
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents, $auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId) {
+        collect($documents)->map(function ($doc) use ($tempId, $auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -232,7 +236,7 @@ class AdvActiveVehicle extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a, $auth);
         });
     }
 
@@ -250,7 +254,7 @@ class AdvActiveVehicle extends Model
     /**
      * | Inbox List
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('adv_active_vehicles')
             ->select(
@@ -264,10 +268,10 @@ class AdvActiveVehicle extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_roles', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
@@ -375,7 +379,7 @@ class AdvActiveVehicle extends Model
                 DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD/MM/YYYY') as application_date"),
                 'wr.role_name',
             )
-            ->join('wf_roles as wr','wr.id','=','adv_active_vehicles.current_roles')
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
             ->orderByDesc('adv_active_vehicles.id')
             ->get();
     }

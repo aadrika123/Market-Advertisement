@@ -28,7 +28,7 @@ class WfActiveDocument extends Model
     /**
      * | Upload document funcation
      */
-    public function postDocuments($req)
+    public function postDocuments($req,$auth)
     {
         $metaReqs = new WfActiveDocument();
         $metaReqs->active_id            = $req->activeId;
@@ -37,8 +37,8 @@ class WfActiveDocument extends Model
         $metaReqs->module_id            = $req->moduleId;
         $metaReqs->relative_path        = $req->relativePath;
         $metaReqs->document             = $req->document;
-        $metaReqs->uploaded_by          = authUser()->id;
-        $metaReqs->uploaded_by_type     = authUser()->user_type;
+        $metaReqs->uploaded_by          = $auth['id'];
+        $metaReqs->uploaded_by_type     = $auth['user_type'];
         $metaReqs->remarks              = $req->remarks ?? null;
         $metaReqs->doc_code             = $req->docCode;
         $metaReqs->owner_dtl_id         = $req->ownerDtlId;

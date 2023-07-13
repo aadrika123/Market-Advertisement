@@ -60,6 +60,6 @@ class PrefixIdGenerator implements iIdGenerator
             $id = $stringVal  . str_pad($intVal, 7, "0", STR_PAD_LEFT);
         }
 
-        return $prefixString . '/' . $id . $flag;
+        return $prefixString . '-' . $id . $flag;
     }
 }
