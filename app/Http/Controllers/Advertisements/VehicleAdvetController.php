@@ -104,7 +104,7 @@ class VehicleAdvetController extends Controller
             DB::beginTransaction();
             $applicationNo = $advVehicle->addNew($req);                             // Apply Vehicle Application 
             DB::commit();
-            
+
             return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050301", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050301", "1.0", "", "POST", $req->deviceId ?? "");
@@ -196,7 +196,7 @@ class VehicleAdvetController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            
+
             return responseMsgs(true, "Inbox Applications", $list, "050304", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050304", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -223,7 +223,7 @@ class VehicleAdvetController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            
+
             return responseMsgs(true, "Outbox Lists", $list, "050305", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050305", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -281,7 +281,7 @@ class VehicleAdvetController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d H:i:s',  $data['created_at'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d H:i:s',  $data['created_at'])->format('d-m-Y');
             $fullDetailsData['zone'] = $data['zone'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {
@@ -508,7 +508,7 @@ class VehicleAdvetController extends Controller
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-            
+
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050311", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -629,8 +629,10 @@ class VehicleAdvetController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveVehicle->ulb_id); // Generate Application No
+                // $mCalculateRate = new CalculateRate;
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveVehicle->ulb_id); // Generate Application No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveVehicle->ulb_id);
+                $generatedId = $idGeneration->generate();
                 // approved Vehicle Application replication
                 if ($mAdvActiveVehicle->renew_no == NULL) {
                     $approvedVehicle = $mAdvActiveVehicle->replicate();

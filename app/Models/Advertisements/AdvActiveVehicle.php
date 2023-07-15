@@ -196,7 +196,7 @@ class AdvActiveVehicle extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'application_type',
@@ -260,7 +260,7 @@ class AdvActiveVehicle extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'created_at as applied_date',
@@ -376,7 +376,7 @@ class AdvActiveVehicle extends Model
                 'adv_active_vehicles.application_type',
                 'adv_active_vehicles.parked',
                 'adv_active_vehicles.doc_upload_status',
-                DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')

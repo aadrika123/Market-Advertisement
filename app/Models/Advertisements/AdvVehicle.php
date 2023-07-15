@@ -19,7 +19,7 @@ class AdvVehicle extends Model
         return AdvVehicle::select(
             'id',
             'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'application_type',
             'applicant',
             'applicant as owner_name',
@@ -145,10 +145,10 @@ class AdvVehicle extends Model
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Movable Vehicle";
-        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
-        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
-        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
-        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
+        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d-m-Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d-m-Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d-m-Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d-m-Y');
         return $details;
     }
 

@@ -113,9 +113,10 @@ class AdvActivePrivateland extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
-        // $mApplicationNo = ['application_no' => 'LAND-' . random_int(100000, 999999)];                  // Generate Application No
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        // $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -130,7 +131,7 @@ class AdvActivePrivateland extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
@@ -138,7 +139,7 @@ class AdvActivePrivateland extends Model
             $ulbWorkflowReqs
         );
         $tempId = AdvActivePrivateland::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -150,8 +151,10 @@ class AdvActivePrivateland extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        // $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
         $mRenewalNo = ['renew_no' => 'LAND/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = AdvPrivateland::find($req->applicationId);                              // Find Previous Application No
         $licenseNo = ['license_no' => $details->license_no];
@@ -169,7 +172,7 @@ class AdvActivePrivateland extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "Renew"
             ],
             $this->metaRenewReqs($req),
@@ -179,7 +182,7 @@ class AdvActivePrivateland extends Model
         );
         // return $metaReqs;                                                                                      // Add Relative Path as Request and Client Ip Address etc.
         $tempId = AdvActivePrivateland::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $mRenewalNo['renew_no'];
     }
@@ -190,9 +193,9 @@ class AdvActivePrivateland extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents, $auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId) {
+        collect($documents)->map(function ($doc) use ($tempId, $auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -213,7 +216,7 @@ class AdvActivePrivateland extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a, $auth);
         });
     }
 
@@ -269,7 +272,7 @@ class AdvActivePrivateland extends Model
                     'il.string_parameter as installationLocation',
                 )
                 ->where('adv_rejected_privatelands.id', $id)
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_privatelands.ulb_id')  
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_privatelands.ulb_id')
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_rejected_privatelands.ward_id::int'))
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_rejected_privatelands.permanent_ward_id::int'))
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_rejected_privatelands.entity_ward_id::int'))
@@ -290,7 +293,7 @@ class AdvActivePrivateland extends Model
                     'il.string_parameter as installationLocation',
                 )
                 ->where('adv_privatelands.id', $id)
-                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')  
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_privatelands.ulb_id')
                 ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_privatelands.ward_id::int'))
                 ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_privatelands.permanent_ward_id::int'))
                 ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_privatelands.entity_ward_id::int'))
@@ -307,13 +310,13 @@ class AdvActivePrivateland extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('adv_active_privatelands')
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -321,33 +324,33 @@ class AdvActivePrivateland extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('adv_active_privatelands')
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -367,10 +370,10 @@ class AdvActivePrivateland extends Model
                 'adv_active_privatelands.entity_address',
                 'adv_active_privatelands.parked',
                 'adv_active_privatelands.doc_upload_status',
-                DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
             )
-            ->join('wf_roles as wr','wr.id','=','adv_active_privatelands.current_role_id')
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
             ->orderByDesc('adv_active_privatelands.id')
             ->get();
     }
@@ -429,7 +432,7 @@ class AdvActivePrivateland extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$auth)
     {
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
@@ -450,7 +453,7 @@ class AdvActivePrivateland extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a);
+        $mWfActiveDocument->postDocuments($a,$auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];

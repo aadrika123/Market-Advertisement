@@ -8,6 +8,7 @@ use App\Http\Requests\Agency\RenewalHordingRequest;
 use App\Http\Requests\Agency\RenewalRequest;
 use App\Http\Requests\Agency\StoreRequest;
 use App\Http\Requests\Agency\StoreLicenceRequest;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvActiveAgency;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyAmount;
@@ -88,19 +89,18 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $agency = new AdvActiveAgency();
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
+            if ($req->auth['user_type'] == 'JSK') {
+                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];
+                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
                 $req->request->add($citizenId);
             }
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
 
             $req->request->add($applicationNo);
@@ -112,10 +112,7 @@ class AgencyController extends Controller
             $applicationNo = $agency->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050501", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050501", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
@@ -137,7 +134,6 @@ class AgencyController extends Controller
         // }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
             $agencydetails = $mAdvAgency->getagencyDetails($req->auth['id']);
@@ -147,10 +143,7 @@ class AgencyController extends Controller
             remove_null($agencydetails);
             $data1['data'] = $agencydetails;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Agency Details", $data1, "050502", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Agency Details", $data1, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -166,8 +159,7 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
@@ -178,10 +170,9 @@ class AgencyController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
+            
 
-            return responseMsgs(true, "Inbox Applications", $list, "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050503", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -192,11 +183,10 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->token;
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -207,10 +197,7 @@ class AgencyController extends Controller
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Inbox Applications",  $list, "050503", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications",  $list, "050503", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -226,10 +213,9 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mAdvActiveAgency = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -238,10 +224,8 @@ class AgencyController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", $list, "050504", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050504", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050504", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -259,7 +243,6 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mAdvActiveAgency = new AdvActiveAgency();
             // $data = array();
             $fullDetailsData = array();
@@ -305,7 +288,7 @@ class AgencyController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
@@ -314,10 +297,7 @@ class AgencyController extends Controller
             $fullDetailsData['timelineData'] = collect($req);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050505", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050505", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050505", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -354,7 +334,6 @@ class AgencyController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
     /**
      * | Get Applied Applications by Logged In Citizen
      * | Function - 07
@@ -364,9 +343,7 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mAdvActiveAgency = new AdvActiveAgency();
             $applications = $mAdvActiveAgency->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
@@ -377,10 +354,7 @@ class AgencyController extends Controller
             //     $data1 = null;
             // }
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Applied Applications", $data1, "050506", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050506", "1.0",responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050506", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -399,19 +373,14 @@ class AgencyController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = auth()->user()->id;
+            $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
             $data = AdvActiveAgency::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Agency is Escalated' : "Agency is removed from Escalated", '', "050507", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Agency is Escalated' : "Agency is removed from Escalated", '', "050507", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050507", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -426,11 +395,9 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -448,10 +415,8 @@ class AgencyController extends Controller
             if (trim($req->key))
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", $list, "050508", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050508", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050508", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -473,7 +438,6 @@ class AgencyController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
             // Advertisment Application Update Current Role Updation
             $adv = AdvActiveAgency::find($request->applicationId);
             if ($adv->parked == NULL && $adv->doc_upload_status == '0')
@@ -497,10 +461,7 @@ class AgencyController extends Controller
             $track->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050509", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050509", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050509", "1.0", "", "POST", $request->deviceId ?? "");
@@ -523,10 +484,9 @@ class AgencyController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
-            $userId = authUser()->id;
-            $userType = authUser()->user_type;
+            $userId = $request->auth['id'];
+            $userType = $request->auth['user_type'];
             $workflowTrack = new WorkflowTrack();
             $mWfRoleUsermap = new WfRoleusermap();
             $mAdvActiveAgency = AdvActiveAgency::find($request->applicationId);                // Agency Details
@@ -555,10 +515,7 @@ class AgencyController extends Controller
             $workflowTrack->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050510", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050510", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050510", "1.0", "", "POST", $request->deviceId ?? "");
@@ -627,7 +584,6 @@ class AgencyController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
-        $startTime = microtime(true);
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
         else
@@ -637,10 +593,8 @@ class AgencyController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050513", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050513", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -658,7 +612,6 @@ class AgencyController extends Controller
                 'status' => 'required|integer',
             ]);
             // Variable initialization
-            $startTime = microtime(true);
 
             // Check if the Current User is Finisher or Not         
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
@@ -679,8 +632,10 @@ class AgencyController extends Controller
                     "paramId" => $this->_paramId,
                     'ulbId' => $mAdvActiveAgency->ulb_id
                 ];
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveAgency->ulb_id); // Generate Application No
+                // $mCalculateRate = new CalculateRate;
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveAgency->ulb_id); // Generate Application No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveAgency->ulb_id);
+                $generatedId = $idGeneration->generate();
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
@@ -753,9 +708,7 @@ class AgencyController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $msg, "", '050514', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050514', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050514", "1.0", "", "POST", $req->deviceId ?? "");
@@ -783,10 +736,9 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mAdvAgency = new AdvAgency();
             $applications = $mAdvAgency->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
@@ -796,9 +748,7 @@ class AgencyController extends Controller
             // if ($data1['arrayCount'] == 0) {
             //     $data1 = null;
             // }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050515", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -815,9 +765,8 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $applications = $mAdvRejectedAgency->listRejected($citizenId);
             $totalApplication = $applications->count();
@@ -828,10 +777,8 @@ class AgencyController extends Controller
                 $data1 = null;
             }
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050516", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050516", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050516", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -846,9 +793,7 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvActiveAgency = new AdvActiveAgency();
             $applications = $mAdvActiveAgency->getJSKApplications($userId);
             $totalApplication = $applications->count();
@@ -858,10 +803,8 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Applied Applications", $data1, "050517", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050517", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050517", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -877,9 +820,7 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvAgency = new AdvAgency();
             $applications = $mAdvAgency->listjskApprovedApplication($userId);
             $totalApplication = $applications->count();
@@ -889,10 +830,8 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Approved Application List", $data1, "050518", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050518", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050518", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -908,9 +847,7 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $applications = $mAdvRejectedAgency->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
@@ -920,9 +857,7 @@ class AgencyController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Rejected Application List", $data1, "050519", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "050519", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050519", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -941,7 +876,6 @@ class AgencyController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mAdvAgency = AdvAgency::find($req->id);
             $reqData = [
                 "id" => $mAdvAgency->id,
@@ -967,10 +901,8 @@ class AgencyController extends Controller
             $data->contact = $mAdvAgency->mobile_no;
             $data->type = "Agency";
             // return $data;
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050520", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050520", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050520", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -990,7 +922,6 @@ class AgencyController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
             if ($req->applicationId) {
@@ -1001,9 +932,7 @@ class AgencyController extends Controller
                 throw new Exception("Application Not Found");
 
             $data['type'] = "Agency";
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, 'Data Fetched',  $data, "050521", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050521", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050521", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -1018,19 +947,17 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $agency = new AdvActiveAgency();
-            if (authUser()->user_type == 'JSK') {
-                $userId = ['userId' => authUser()->id];
+            if ($req->auth['user_type'] == 'JSK') {
+                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => authUser()->id];
+                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
                 $req->request->add($citizenId);
             }
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -1038,10 +965,7 @@ class AgencyController extends Controller
             $applicationNo = $agency->renewalAgency($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Submitted Application For Renewals !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050522", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted Application For Renewals !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050522", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050522", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1064,7 +988,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
             $mAdvMarTransaction = new AdvMarTransaction();
@@ -1074,11 +997,8 @@ class AgencyController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $d['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $d['paymentId'], 'workflowId' => $appDetails->workflow_id], "050523", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $d['paymentId'], 'workflowId' => $appDetails->workflow_id], "050523", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050523", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1106,17 +1026,13 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $wfId = AdvAgency::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050524", "1.0", " $executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050524", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050524", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1141,7 +1057,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
@@ -1151,11 +1066,8 @@ class AgencyController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050525", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050525", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050525", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1183,8 +1095,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mWfDocument = new WfActiveDocument();
             $mAdvActiveAgency = new AdvActiveAgency();
             $mWfRoleusermap = new WfRoleusermap();
@@ -1245,10 +1155,7 @@ class AgencyController extends Controller
 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "050526", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050526", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050526", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1301,7 +1208,6 @@ class AgencyController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $redis = Redis::connection();
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
@@ -1331,10 +1237,8 @@ class AgencyController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Successfully Done", "", "", '050527', '01', "$executionTime Sec", 'Post', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050527', '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050527", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1349,11 +1253,10 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
-            $auth = auth()->user();
-            $userId = $auth->id;
-            $ulbId = $auth->ulb_id;
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1377,10 +1280,7 @@ class AgencyController extends Controller
                 $btcList =  searchFilter($btcList, $req);
             $list = paginator($btcList, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "BTC Inbox List", $list, "050528", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050528", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050528", 1.0, "", "POST", "", "");
         }
@@ -1426,7 +1326,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvActiveAgency = new AdvActiveAgency();
             DB::beginTransaction();
@@ -1434,10 +1333,7 @@ class AgencyController extends Controller
             $this->checkFullUpload($appId);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050529", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050529", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050529", 1.0, "", "POST", "", "");
@@ -1459,17 +1355,13 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvAgency = new AdvAgency();
             $listApplications = $mAdvAgency->searchByNameorMobile($req);
             if (!$listApplications)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched Successfully", $listApplications, "050530", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $listApplications, "050530", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050530", 1.0, "", "POST", "", "");
         }
@@ -1484,22 +1376,19 @@ class AgencyController extends Controller
     public function isAgency(Request $req)
     {
         try {
-            $userType = authUser()->user_type;
+            $userType = $req->auth['user_type'];
             if ($userType == "Citizen") {
                 // Variable initialization
                 $startTime = microtime(true);
 
-                $citizenId = authUser()->id;
+                $citizenId = $req->auth['id'];
                 $mAdvAgency = new AdvAgency();
                 $isAgency = $mAdvAgency->checkAgency($citizenId);
-
-                $endTime = microtime(true);
-                $executionTime = $endTime - $startTime;
 
                 if (empty($isAgency)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {
-                    return responseMsgs(true, "Data Fetched !!!", $isAgency, "050531", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+                    return responseMsgs(true, "Data Fetched !!!", $isAgency, "050531", "1.0", responseTime(), "POST", $req->deviceId ?? "");
                 }
             } else {
                 throw new Exception("You Are Not Citizen");
@@ -1517,21 +1406,16 @@ class AgencyController extends Controller
     public function getAgencyDashboard(Request $req)
     {
         try {
-            $userType = authUser()->user_type;
+            $userType = $req->auth['user_type'];
             if ($userType == "Citizen") {
-
                 // Variable initialization
-                $startTime = microtime(true);
-
                 $citizenId = authUser()->id;
                 $mAdvHoarding = new AdvHoarding();
                 $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId,119);
-                $endTime = microtime(true);
-                $executionTime = $endTime - $startTime;
                 if (empty($agencyDashboard)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {
-                    return responseMsgs(true, "Data Fetched !!!", $agencyDashboard, "050532", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+                    return responseMsgs(true, "Data Fetched !!!", $agencyDashboard, "050532", "1.0", responseTime(), "POST", $req->deviceId ?? "");
                 }
             } else {
                 throw new Exception("You Are Not Citizen");
@@ -1548,10 +1432,10 @@ class AgencyController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050533", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1564,7 +1448,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mAdvAgency = new AdvAgency();
             $approveList = $mAdvAgency->approveListForReport();
@@ -1596,9 +1479,7 @@ class AgencyController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050533", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050533", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050533", 1.0, "271ms", "POST", "", "");
         }
@@ -1611,10 +1492,10 @@ class AgencyController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050534", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1628,8 +1509,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $endTime = microtime(true);
 
             $approveList = DB::table('adv_agency_renewals')
                 ->select('id', 'application_no', 'entity_name', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
@@ -1656,9 +1535,7 @@ class AgencyController extends Controller
             $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
                 $amounts->push($item->payment_amount);
             });
-
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050534", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050534", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050534", 1.0, "271ms", "POST", "", "");
         }

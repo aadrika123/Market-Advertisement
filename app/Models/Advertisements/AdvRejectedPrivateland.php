@@ -19,7 +19,7 @@ class AdvRejectedPrivateland extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 // 'entity_address',
                 // 'old_application_no',
                 // 'payment_status',
@@ -38,7 +38,7 @@ class AdvRejectedPrivateland extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 // 'entity_address',
                 // 'old_application_no',
                 // 'payment_status',
@@ -56,7 +56,7 @@ class AdvRejectedPrivateland extends Model
         return AdvRejectedPrivateland::select(
             'id',
             'application_no',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             // 'entity_address',
             // 'old_application_no',
             // 'payment_status',

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Dharamshala\RenewalRequest;
 use App\Http\Requests\Dharamshala\StoreRequest;
 use App\Http\Requests\Dharamshala\UpdateRequest;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveDharamshala;
@@ -78,14 +79,13 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarActiveDharamshala = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -97,10 +97,7 @@ class DharamshalaController extends Controller
             $applicationNo = $mMarActiveDharamshala->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051001", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051001", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051001", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -117,11 +114,9 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveDharamshala = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -130,10 +125,8 @@ class DharamshalaController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", $list, "051002", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "051002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051002", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -153,7 +146,7 @@ class DharamshalaController extends Controller
 
             $mMarActiveDharamshala = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -165,7 +158,7 @@ class DharamshalaController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists",  $list, "051003", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists",  $list, "051003", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051003", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -181,8 +174,6 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveDharamshala = $this->_modelObj;
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -227,15 +218,12 @@ class DharamshalaController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d', $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d', $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "051004", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "051004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051004", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -247,7 +235,7 @@ class DharamshalaController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -283,9 +271,7 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarActiveDharamshala = $this->_modelObj;
             $applications = $mMarActiveDharamshala->listAppliedApplications($citizenId);
             $totalApplication = $applications->count();
@@ -293,10 +279,7 @@ class DharamshalaController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Applied Applications", $data1, "051005", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "051005", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051005", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -317,8 +300,6 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $userId = auth()->user()->id;
             $applicationId = $request->applicationId;
             $data = MarActiveDharamshala::find($applicationId);
@@ -326,10 +307,7 @@ class DharamshalaController extends Controller
             $data->escalate_by = $userId;
             $data->save();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Dharamshala is Escalated' : "Dharamshala is removed from Escalated", '', "051006", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Dharamshala is Escalated' : "Dharamshala is removed from Escalated", '', "051006", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051006", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -346,11 +324,9 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -369,10 +345,7 @@ class DharamshalaController extends Controller
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Data Fetched", $list, "051007", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "051007", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051007", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -395,8 +368,6 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             // Marriage Banqute Hall Application Update Current Role Updation
             DB::beginTransaction();
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);
@@ -420,10 +391,7 @@ class DharamshalaController extends Controller
             $track->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "051008", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "051008", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051008", "1.0", "", "POST", $request->deviceId ?? "");
@@ -447,8 +415,6 @@ class DharamshalaController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $workflowTrack = new WorkflowTrack();
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
@@ -469,13 +435,9 @@ class DharamshalaController extends Controller
 
             $request->request->add($metaReqs);
             $workflowTrack->saveTrack($request);
-
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "051009", "1.0", " $executionTime Sec", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "051009", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051009", "1.0", "", "POST", $request->deviceId ?? "");
@@ -543,7 +505,6 @@ class DharamshalaController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         // Variable initialization
-        $startTime = microtime(true);
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = MarDharamshala::find($req->applicationId)->workflow_id;
         else
@@ -554,10 +515,7 @@ class DharamshalaController extends Controller
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
 
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
-
-        return responseMsgs(true, "Data Fetched", remove_null($data), "051012", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "051012", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -580,8 +538,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             // Check if the Current User is Finisher or Not         
             $mMarActiveDharamshala = MarActiveDharamshala::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mMarActiveDharamshala->workflow_id);                                 // Get Finisher using Trait
@@ -600,9 +556,8 @@ class DharamshalaController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveDharamshala->ulb_id); // Generate Application No
-
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mMarActiveDharamshala->ulb_id);
+                $generatedId = $idGeneration->generate();
                 if ($mMarActiveDharamshala->renew_no == NULL) {
                     // dharamshala Application replication
                     $approveddharamshala = $mMarActiveDharamshala->replicate();
@@ -674,10 +629,7 @@ class DharamshalaController extends Controller
             }
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $msg, "", '051013', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '051013', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false,  $e->getMessage(), "", '051013', 01, "", 'POST', $req->deviceId);
@@ -695,10 +647,8 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mMarDharamshala = new MarDharamshala();
             $applications = $mMarDharamshala->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
@@ -709,10 +659,8 @@ class DharamshalaController extends Controller
             // if ($data1['arrayCount'] == 0) {
             //     $data1 = null;
             // }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Approved Application List", $data1, "051014", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "051014", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051014", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -729,9 +677,7 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
             $applications = $mMarRejectedDharamshala->listRejected($citizenId);
             $totalApplication = $applications->count();
@@ -742,10 +688,7 @@ class DharamshalaController extends Controller
                 $data1 = null;
             }
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Rejected Application List", $data1, "051015", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Rejected Application List", $data1, "051015", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051015", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -766,8 +709,6 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarDharamshala = MarDharamshala::find($req->id);
             $reqData = [
                 "id" => $mMarDharamshala->id,
@@ -793,10 +734,8 @@ class DharamshalaController extends Controller
             $data->contact = $mMarDharamshala->mobile_no;
             $data->type = "Dharamshala";
             // return $data;
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "051016", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "051016", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051016", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -816,7 +755,6 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarDharamshala = new MarDharamshala();
             if ($req->applicationId) {
                 $data = $mMarDharamshala->getApplicationDetailsForPayment($req->applicationId);
@@ -827,10 +765,7 @@ class DharamshalaController extends Controller
 
             $data['type'] = "Dharamshala";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $data, "051017", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "051017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051017", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -855,13 +790,11 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mWfDocument = new WfActiveDocument();
             $mMarActiveDharamshala = new MarActiveDharamshala();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.MARKET-LABEL');
@@ -916,10 +849,7 @@ class DharamshalaController extends Controller
             }
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "051018", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "051018", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051018", "1.0", "", "POST", $req->deviceId ?? "");
@@ -972,7 +902,6 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $redis = Redis::connection();
             $mMarActiveDharamshala = MarActiveDharamshala::find($req->applicationId);
@@ -1003,10 +932,7 @@ class DharamshalaController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Done", "", "", '051019', '01', "$executionTime Sec", 'Post', '');
+            return responseMsgs(true, "Successfully Done", "", "", '051019', '01',responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051019", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1024,9 +950,9 @@ class DharamshalaController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $auth = auth()->user();
-            $userId = $auth->id;
-            $ulbId = $auth->ulb_id;
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId =  $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1051,10 +977,7 @@ class DharamshalaController extends Controller
                 $btcList =  searchFilter($btcList, $req);
             $list = paginator($btcList, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "BTC Inbox List", $list, "051020", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "051020", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051020", 1.0, "271ms", "POST", "", "");
         }
@@ -1106,17 +1029,13 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mmMarActiveDharamshala = new MarActiveDharamshala();
             DB::beginTransaction();
             $appId = $mmMarActiveDharamshala->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Document Uploaded Successfully", "", "051021", 1.0, "$executionTime Sec", "POST", "", "");
+            
+            return responseMsgs(true, "Document Uploaded Successfully", "", "051021", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "051021", 1.0, "271ms", "POST", "", "");
@@ -1140,8 +1059,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarDharamshala = new MarDharamshala();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1150,11 +1067,8 @@ class DharamshalaController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "051022", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "051022", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "051022", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1182,17 +1096,13 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $wfId = MarDharamshala::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "051023", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "051023", "1.0",responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051023", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1215,8 +1125,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1225,11 +1133,8 @@ class DharamshalaController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "051024", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", '', "051024", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "051024", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1255,17 +1160,12 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarDharamshala = new MarDharamshala();
             $details = $mMarDharamshala->applicationDetailsForRenew($req->applicationId);       // Get Details For Renew Application
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "051025", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "051025", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051025", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1281,14 +1181,12 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mActiveDharamshala = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -1299,10 +1197,7 @@ class DharamshalaController extends Controller
             $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051026", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051026", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051026", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1324,17 +1219,13 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveDharamshala = new MarActiveDharamshala();
             $details = $mMarActiveDharamshala->getApplicationDetailsForEdit($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "051027", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "051027", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Featched !!!", "", "051027", 1.0, "", "POST", "", "");
         }
@@ -1349,18 +1240,12 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveHostel = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             DB::commit();
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "051028", 1.0, "$executionTime Sec", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "051028", 1.0, responseTime(), "POST", "", "");
             else
                 return responseMsgs(false, "Application Not Updated !!!", "", "051028", 1.0, "", "POST", "", "");
         } catch (Exception $e) {
@@ -1376,10 +1261,10 @@ class DharamshalaController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051029", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1393,7 +1278,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mMarDharamshala = new MarDharamshala();
             $approveList = $mMarDharamshala->approveListForReport();
@@ -1425,9 +1309,7 @@ class DharamshalaController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "051029", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "051029", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "051029", 1.0, "271ms", "POST", "", "");
         }
@@ -1441,10 +1323,10 @@ class DharamshalaController extends Controller
      */
     public function getApplicationFinancialYearWise(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051030", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1457,8 +1339,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarDharamshala = new MarDharamshala();
             $approveList = $mMarDharamshala->approveListForReport();
 
@@ -1480,9 +1360,7 @@ class DharamshalaController extends Controller
             $data = $approveList->union($pendingList)->union($rejectList);
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "051030", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "051030", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "051030", 1.0, "271ms", "POST", "", "");
         }
@@ -1495,10 +1373,10 @@ class DharamshalaController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051031", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1513,8 +1391,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $endTime = microtime(true);
 
             $approveList = DB::table('mar_dharamshala_renewals')
                 ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
@@ -1542,8 +1418,7 @@ class DharamshalaController extends Controller
                 $amounts->push($item->payment_amount);
             });
 
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "051031", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "051031", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "051031", 1.0, "271ms", "POST", "", "");
         }
@@ -1556,10 +1431,10 @@ class DharamshalaController extends Controller
      */
     public function ruleWiseApplications(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051032", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1574,7 +1449,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mMarDharamshala = new MarDharamshala();
             $approveList = $mMarDharamshala->approveListForReport();
@@ -1606,9 +1480,7 @@ class DharamshalaController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "051032", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "051032", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "051032", 1.0, "271ms", "POST", "", "");
         }
@@ -1621,10 +1493,10 @@ class DharamshalaController extends Controller
      */
     public function getApplicationByOrganizationType(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051033", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1640,8 +1512,6 @@ class DharamshalaController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarDharamshala = new MarDharamshala();
             $approveList = $mMarDharamshala->approveListForReport();
 
@@ -1674,10 +1544,7 @@ class DharamshalaController extends Controller
                 $data = $approveList;
             }
             $data = $data->paginate($req->perPage);
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "051033", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "051033", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "051033", 1.0, "271ms", "POST", "", "");
         }

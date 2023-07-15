@@ -75,8 +75,8 @@ class MarActiveLodge extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.LODGE');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
+        $ulbWorkflows = $ulbWorkflows['data'];
         //  $mApplicationNo = ['application_no' => 'LODGE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -92,7 +92,7 @@ class MarActiveLodge extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
@@ -100,7 +100,7 @@ class MarActiveLodge extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveLodge::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -111,8 +111,8 @@ class MarActiveLodge extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.LODGE');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
+        $ulbWorkflows = $ulbWorkflows['data'];
         $mRenewNo = ['renew_no' => 'LODGE/REN-' . random_int(100000, 999999)];                  // Generate Renewal No
         $details = MarLodge::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo = ['license_no' => $details->license_no];
@@ -130,7 +130,7 @@ class MarActiveLodge extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "Renew"
             ],
             $this->metaReqs($req),
@@ -139,7 +139,7 @@ class MarActiveLodge extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveLodge::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments,$req->auth);
 
         return $mRenewNo['renew_no'];
     }
@@ -149,14 +149,14 @@ class MarActiveLodge extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mMarActiveLodge = new MarActiveLodge();
         $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveLodge, $relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveLodge, $relativePath, $auth) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveLodge->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -172,7 +172,7 @@ class MarActiveLodge extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a,$auth);
         });
     }
 
@@ -191,7 +191,7 @@ class MarActiveLodge extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('mar_active_lodges')
             ->select(
@@ -204,17 +204,17 @@ class MarActiveLodge extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('mar_active_lodges')
             ->select(
@@ -227,10 +227,10 @@ class MarActiveLodge extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 

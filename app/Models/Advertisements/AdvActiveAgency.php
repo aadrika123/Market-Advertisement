@@ -90,8 +90,10 @@ class AdvActiveAgency extends Model
         $bearerToken = $req->bearerToken();
         $metaReqs = $this->metaReqs($req);
         // $workflowId = Config::get('workflow-constants.AGENCY');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ipAddress = getClientIpAddress();
         // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -106,7 +108,7 @@ class AdvActiveAgency extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
@@ -118,7 +120,7 @@ class AdvActiveAgency extends Model
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
         $mDocuments = $req->documents;
-        $this->uploadDocument($agencyId, $mDocuments);
+        $this->uploadDocument($agencyId, $mDocuments,$req->auth);
 
         // Store Director Details
         $mDocService = new DocumentUpload;
@@ -136,9 +138,9 @@ class AdvActiveAgency extends Model
     /**
      * | Upload document after application is submit
      */
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents,$auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId) {
+        collect($documents)->map(function ($doc) use ($tempId,$auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -159,7 +161,7 @@ class AdvActiveAgency extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a,$auth);
         });
     }
 
@@ -249,7 +251,7 @@ class AdvActiveAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 'address',
                 'doc_upload_status',
@@ -280,7 +282,7 @@ class AdvActiveAgency extends Model
                 'adv_active_agencies.doc_upload_status',
                 'adv_active_agencies.application_type',
                 'adv_active_agencies.parked',
-                DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
             )
             ->join('wf_roles as wr','wr.id','=','adv_active_agencies.current_role_id')
@@ -298,7 +300,7 @@ class AdvActiveAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 'address',
                 'application_type',
@@ -340,7 +342,7 @@ class AdvActiveAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date'
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             )
             ->orderByDesc('id')
             ->get();
@@ -356,9 +358,10 @@ class AdvActiveAgency extends Model
         $bearerToken = $req->bearerToken();
         $metaReqs = $this->renewalReqs($req);
 
-        $workflowId = Config::get('workflow-constants.AGENCY');
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $workflowId);        // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        // $workflowId = Config::get('workflow-constants.AGENCY');
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        $ulbWorkflows = $ulbWorkflows['data'];
+         // $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'AGENCY/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = AdvAgency::find($req->applicationId);                              // Find Previous Application No
         $licenseNo = ['license_no' => $details->license_no];
@@ -375,7 +378,7 @@ class AdvActiveAgency extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $req->ipAddress,
                 'renewal' => 1,
                 'application_type' => "Renew"
             ],
@@ -389,7 +392,7 @@ class AdvActiveAgency extends Model
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
         $mDocuments = $req->documents;
-        $this->uploadDocument($agencyId, $mDocuments);
+        $this->uploadDocument($agencyId, $mDocuments,$req->auth);
 
         // Store Director Details
         $mDocService = new DocumentUpload;
@@ -450,7 +453,7 @@ class AdvActiveAgency extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a);
+        $mWfActiveDocument->postDocuments($a,$req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];

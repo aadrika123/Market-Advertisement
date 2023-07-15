@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Lodge\RenewalRequest;
 use App\Http\Requests\Lodge\StoreRequest;
 use App\Http\Requests\Lodge\UpdateRequest;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveLodge;
@@ -83,14 +84,12 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveLodge = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -102,9 +101,7 @@ class LodgeController extends Controller
             $applicationNo = $mMarActiveLodge->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050701", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050701", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050701", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -122,11 +119,9 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveLodge = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -135,10 +130,8 @@ class LodgeController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", $list, "050702", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050702", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050702", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -154,10 +147,9 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveLodge = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -166,10 +158,8 @@ class LodgeController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Outbox Lists", $list, "050703", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Outbox Lists", $list, "050703", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050703", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -186,7 +176,6 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveLodge = $this->_modelObj;
             $fullDetailsData = array();
             $type = NULL;
@@ -228,15 +217,12 @@ class LodgeController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050704", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050704", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050704", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -247,7 +233,7 @@ class LodgeController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -284,9 +270,7 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarActiveLodge = $this->_modelObj;
             $applications = $mMarActiveLodge->listAppliedApplications($citizenId);         // Get Applied Applications 
             $totalApplication = $applications->count();
@@ -294,10 +278,7 @@ class LodgeController extends Controller
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Applied Applications", $data1, "050705", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050705", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050705", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -318,19 +299,14 @@ class LodgeController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = auth()->user()->id;
+            $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
             $data = MarActiveLodge::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Lodge is Escalated' : "Lodge is removed from Escalated", '', "050706", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Lodge is Escalated' : "Lodge is removed from Escalated", '', "050706", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050706", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -347,11 +323,9 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -368,10 +342,8 @@ class LodgeController extends Controller
             if (trim($req->key))
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Data Fetched", $list, "050707", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050707", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050707", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -396,8 +368,6 @@ class LodgeController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             // Marriage Banqute Hall Application Update Current Role Updation
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
             if ($mMarActiveLodge->parked == NULL && $mMarActiveLodge->doc_upload_status == '0')
@@ -422,10 +392,7 @@ class LodgeController extends Controller
             $track->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
@@ -450,8 +417,6 @@ class LodgeController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $workflowTrack = new WorkflowTrack();
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
@@ -474,10 +439,7 @@ class LodgeController extends Controller
             $workflowTrack->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050709", "1.0", " $executionTime Sec", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050709", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050709", "1.0", "", "POST", $request->deviceId ?? "");
@@ -549,7 +511,6 @@ class LodgeController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
-        $startTime = microtime(true);
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = MarLodge::find($req->applicationId)->workflow_id;
         else
@@ -559,10 +520,8 @@ class LodgeController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050712", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050712", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -585,8 +544,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             // Check if the Current User is Finisher or Not         
             $mMarActiveLodge = MarActiveLodge::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mMarActiveLodge->workflow_id);                                 // Get Finisher using Trait
@@ -603,9 +560,10 @@ class LodgeController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveLodge->ulb_id); // Generate License No
-
+                // $mCalculateRate = new CalculateRate;
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveLodge->ulb_id); // Generate License No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mMarActiveLodge->ulb_id);
+                $generatedId = $idGeneration->generate();
                 if ($mMarActiveLodge->renew_no == NULL) {
                     // Lodge Application replication
                     $approvedlodge = $mMarActiveLodge->replicate();
@@ -676,9 +634,7 @@ class LodgeController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $msg, "", '050713', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050713', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false,  $e->getMessage(), "", '050713', 01, "", 'POST', $req->deviceId);
@@ -696,24 +652,15 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mMarLodge = new MarLodge();
             $applications = $mMarLodge->listApproved($citizenId, $userType);          // Get Applied Application List
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Approved Application List", $data1, "050714", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050714", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050714", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -730,22 +677,15 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarRejectedLodge = new MarRejectedLodge();
             $applications = $mMarRejectedLodge->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Rejected Application List", $data1, "050715", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            
+            return responseMsgs(true, "Rejected Application List", $data1, "050715", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050715", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -766,7 +706,6 @@ class LodgeController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarLodge = MarLodge::find($req->id);
             $reqData = [
@@ -793,10 +732,7 @@ class LodgeController extends Controller
             $data->contact = $mMarLodge->mobile_no;
             $data->type = "Lodge";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050716", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050716", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050716", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -816,8 +752,6 @@ class LodgeController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarLodge = new MarLodge();
             if ($req->applicationId) {
                 $data = $mMarLodge->getApplicationDetailsForPayment($req->applicationId);
@@ -828,10 +762,7 @@ class LodgeController extends Controller
 
             $data['type'] = "Lodge";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $data, "050717", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050717", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050717", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -856,13 +787,12 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mWfDocument = new WfActiveDocument();
             $mMarActiveLodge = new MarActiveLodge();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.MARKET-LABEL');
@@ -918,10 +848,7 @@ class LodgeController extends Controller
             }
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "050718", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050718", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050718", "1.0", "", "POST", $req->deviceId ?? "");
@@ -975,8 +902,6 @@ class LodgeController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $redis = Redis::connection();
             $mMarActiveLodge = MarActiveLodge::find($req->applicationId);
 
@@ -993,7 +918,6 @@ class LodgeController extends Controller
             $mMarActiveLodge->parked = 1;
             $mMarActiveLodge->save();
 
-
             $metaReqs['moduleId'] = $this->_moduleIds;
             $metaReqs['workflowId'] = $mMarActiveLodge->workflow_id;
             $metaReqs['refTableDotId'] = "mar_active_lodges.id";
@@ -1006,10 +930,7 @@ class LodgeController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Done", "", "", '050719', '01', "$executionTime Sec", 'POST', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050719', '01', responseTime(), 'POST', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050719", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1027,9 +948,9 @@ class LodgeController extends Controller
             // Variable initialization
             $startTime = microtime(true);
 
-            $auth = auth()->user();
-            $userId = $auth->id;
-            $ulbId = $auth->ulb_id;
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1052,10 +973,8 @@ class LodgeController extends Controller
             if (trim($req->key))
                 $btcList =  searchFilter($btcList, $req);
             $list = paginator($btcList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
         }
@@ -1068,7 +987,6 @@ class LodgeController extends Controller
      */
     public function checkFullUpload($applicationId)
     {
-
         $appDetails = MarActiveLodge::find($applicationId);
         $docCode = $this->_docCode;
         // $docCode = $this->_docCodeRenew;
@@ -1108,18 +1026,13 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveLodge = new MarActiveLodge();
             DB::beginTransaction();
             $appId = $mMarActiveLodge->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
@@ -1143,7 +1056,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarLodge = new MarLodge();
             $mAdvMarTransaction = new AdvMarTransaction();
@@ -1153,11 +1065,8 @@ class LodgeController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050722", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050722", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050722", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1185,17 +1094,13 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $wfId = MarLodge::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050723", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050723", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050723", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1220,8 +1125,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1230,11 +1133,8 @@ class LodgeController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "050724", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", '', "050724", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050724", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1260,17 +1160,12 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarLodge = new MarLodge();
             $details = $mMarLodge->applicationDetailsForRenew($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050725", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Application Fetched !!!", remove_null($details), "050725", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050725", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1286,8 +1181,6 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => authUser()->id];
             $req->request->add($citizenId);
@@ -1305,10 +1198,7 @@ class LodgeController extends Controller
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050726", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050726", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050726", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1329,17 +1219,12 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveLodge = new MarActiveLodge();
             $details = $mMarActiveLodge->getApplicationDetailsForEdit($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050727", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050727", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
         }
@@ -1353,16 +1238,12 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveHostel = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "050728", 1.0, "$executionTime Sec", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050728", 1.0, responseTime(), "POST", "", "");
             else
                 return responseMsgs(false, "Application Not Updated !!!", "", "050728", 1.0, "", "POST", "", "");
         } catch (Exception $e) {
@@ -1378,10 +1259,10 @@ class LodgeController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050729", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1395,7 +1276,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
 
             $mMarLodge = new MarLodge();
@@ -1426,9 +1306,7 @@ class LodgeController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050729", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050729", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050729", 1.0, "271ms", "POST", "", "");
         }
@@ -1441,10 +1319,10 @@ class LodgeController extends Controller
      */
     public function getApplicationFinancialYearWise(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050730", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1457,7 +1335,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarLodge = new MarLodge();
             $approveList = $mMarLodge->approveListForReport();
@@ -1481,9 +1358,7 @@ class LodgeController extends Controller
             $data = $approveList->union($pendingList)->union($rejectList);
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050730", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050730", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050730", 1.0, "271ms", "POST", "", "");
         }
@@ -1496,10 +1371,10 @@ class LodgeController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050731", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1514,8 +1389,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $endTime = microtime(true);
 
             $approveList = DB::table('mar_lodge_renewals')
                 ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
@@ -1543,8 +1416,7 @@ class LodgeController extends Controller
                 $amounts->push($item->payment_amount);
             });
 
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050731", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050731", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050731", 1.0, "271ms", "POST", "", "");
         }
@@ -1557,10 +1429,10 @@ class LodgeController extends Controller
      */
     public function ruleWiseApplications(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050732", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1575,7 +1447,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mMarLodge = new MarLodge();
             $approveList = $mMarLodge->approveListForReport();
@@ -1607,8 +1478,6 @@ class LodgeController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Application Fetched Successfully", $data, "050732", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050732", 1.0, "271ms", "POST", "", "");
@@ -1622,10 +1491,10 @@ class LodgeController extends Controller
      */
     public function getApplicationByLodgelType(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050733", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1641,7 +1510,6 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarLodge = new MarLodge();
             $approveList = $mMarLodge->approveListForReport();
@@ -1673,9 +1541,7 @@ class LodgeController extends Controller
             }
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050733", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050733", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050733", 1.0, "271ms", "POST", "", "");
         }

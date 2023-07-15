@@ -16,7 +16,7 @@ class AdvSelfadvertisement extends Model
         return AdvSelfadvertisement::select(
             'id',
             'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'applicant',
             'applicant as owner_name',
             'entity_name',
@@ -81,7 +81,7 @@ class AdvSelfadvertisement extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -106,7 +106,7 @@ class AdvSelfadvertisement extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -153,10 +153,10 @@ class AdvSelfadvertisement extends Model
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Self Advertisement";
-        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
-        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d/m/Y');
-        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d/m/Y');
-        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
+        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d-m-Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d', $details->valid_from)->format('d-m-Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->format('d-m-Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d-m-Y');
         return $details;
     }
     /**
@@ -209,7 +209,7 @@ class AdvSelfadvertisement extends Model
      */
     public function findPreviousApplication($license_no)
     {
-        return $details = AdvSelfadvetRenewal::select('valid_upto')
+        return  AdvSelfadvetRenewal::select('valid_upto')
             ->where('license_no', $license_no)
             ->orderByDesc('id')
             ->skip(1)->first();

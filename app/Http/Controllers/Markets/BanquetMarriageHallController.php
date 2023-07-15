@@ -9,6 +9,7 @@ use App\Models\Markets\MarketPriceMstrs;
 use Illuminate\Http\Request;
 use App\Http\Requests\BanquetMarriageHall\StoreRequest;
 use App\Http\Requests\BanquetMarriageHall\UpdateRequest;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveBanquteHall;
@@ -86,13 +87,12 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
             // $mWfWorkflow=new WfWorkflow();
@@ -103,9 +103,7 @@ class BanquetMarriageHallController extends Controller
             $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050801", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050801", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050801", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -122,10 +120,9 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -135,9 +132,7 @@ class BanquetMarriageHallController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Inbox Applications", $list, "050802", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050802", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050802", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -155,7 +150,7 @@ class BanquetMarriageHallController extends Controller
             $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
             $bearerToken = $req->bearerToken();
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
             $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -165,9 +160,8 @@ class BanquetMarriageHallController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Outbox Lists", $list, "050803", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+
+            return responseMsgs(true, "Outbox Lists", $list, "050803", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050803", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -183,8 +177,6 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveBanquteHall = $this->_modelObj;
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -229,14 +221,11 @@ class BanquetMarriageHallController extends Controller
 
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
             $fullDetailsData['timelineData'] = collect($req);                                     // Get Timeline Data
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050804", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050804", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050804", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -248,7 +237,7 @@ class BanquetMarriageHallController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -284,9 +273,7 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarActiveBanquteHall = $this->_modelObj;
 
             $applications = $mMarActiveBanquteHall->listAppliedApplications($citizenId);                // Get Citizen Apply List
@@ -298,9 +285,7 @@ class BanquetMarriageHallController extends Controller
             // if ($totalApplication == 0) {
             //     $data1['data'] = null;
             // }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Applied Applications", $data1, "050805", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050805", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050805", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -322,19 +307,14 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $userId = auth()->user()->id;
+            $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
             $data = MarActiveBanquteHall::find($applicationId);
             $data->is_escalate = $request->escalateStatus;
             $data->escalate_by = $userId;
             $data->save();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Marriage Hall is Escalated' : "Banqute Marriage Hall is removed from Escalated", '', "050806", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Banqute Marriage Hall is Escalated' : "Banqute Marriage Hall is removed from Escalated", '', "050806", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050806", "1.0", "", "POST", $request->deviceId ?? "");
         }
@@ -352,10 +332,9 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mWfWardUser = new WfWardUser();
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                        // Get All Occupied Ward By user id using trait
             $wardId = $occupiedWard->map(function ($item, $key) {                           // Filter All ward_id in an array using laravel collections
@@ -373,9 +352,7 @@ class BanquetMarriageHallController extends Controller
             if (trim($req->key))
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Data Fetched", $list, "050807", "1.0", "$executionTime Sec", "POST", "");
+            return responseMsgs(true, "Data Fetched", $list, "050807", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050807", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -399,7 +376,6 @@ class BanquetMarriageHallController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             // Marriage Banqute Hall Application Update Current Role Updation
             $adv = MarActiveBanquteHall::find($request->applicationId);
@@ -424,9 +400,7 @@ class BanquetMarriageHallController extends Controller
             $track->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050108", "1.0", "$executionTime Sec", "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050108", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050808", "1.0", "", "POST", $request->deviceId ?? "");
@@ -451,7 +425,6 @@ class BanquetMarriageHallController extends Controller
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $workflowTrack = new WorkflowTrack();
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
@@ -474,9 +447,7 @@ class BanquetMarriageHallController extends Controller
             $workflowTrack->saveTrack($request);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050809", "1.0", " $executionTime Sec", "POST", "");
+            return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050809", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050809", "1.0", "", "POST", $request->deviceId ?? "");
@@ -545,7 +516,6 @@ class BanquetMarriageHallController extends Controller
      */
     public function viewDocumentsOnWorkflow(Request $req)
     {
-        $startTime = microtime(true);
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = MarBanquteHall::find($req->applicationId)->workflow_id;
         else
@@ -555,10 +525,8 @@ class BanquetMarriageHallController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050812", "1.0", "$executionTime Sec", "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050812", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -581,8 +549,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             // Check if the Current User is Finisher or Not         
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mMarActiveBanquteHall->workflow_id);                                 // Get Finisher using Trait
@@ -600,9 +566,10 @@ class BanquetMarriageHallController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveBanquteHall->ulb_id); // Generate Application No
-
+                // $mCalculateRate = new CalculateRate;
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveBanquteHall->ulb_id); // Generate Application No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mMarActiveBanquteHall->ulb_id);
+                $generatedId = $idGeneration->generate();
                 if ($mMarActiveBanquteHall->renew_no == NULL) {
                     // Banqute Hall Application replication
                     $approvedbanqutehall = $mMarActiveBanquteHall->replicate();
@@ -673,9 +640,7 @@ class BanquetMarriageHallController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $msg, "", '050813', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050813', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false,  $e->getMessage(), "", '050813', 01, "", 'POST', $req->deviceId);
@@ -693,10 +658,9 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
-            $citizenId = authUser()->id;
-            $userType = authUser()->user_type;
+            $citizenId = $req->auth['id'];
+            $userType = $req->auth['user_type'];
             $mMarBanquteHall = new MarBanquteHall();
             $applications = $mMarBanquteHall->listApproved($citizenId, $userType);
             $totalApplication = $applications->count();
@@ -707,10 +671,8 @@ class BanquetMarriageHallController extends Controller
             // if ($data1['arrayCount'] == 0) {
             //     $data1 = null;
             // }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Approved Application List", $data1, "050814", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Approved Application List", $data1, "050814", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050814", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -727,21 +689,17 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $citizenId = authUser()->id;
+            $citizenId = $req->auth['id'];
             $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
             $applications = $mMarRejectedBanquteHall->listRejected($citizenId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
-            }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Rejected Application List", $data1, "050815", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            // if ($data1['arrayCount'] == 0) {
+            //     $data1 = null;
+            // }
+            return responseMsgs(true, "Rejected Application List", $data1, "050815", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050815", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -761,7 +719,6 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarBanquteHall = MarBanquteHall::find($req->id);
             $reqData = [
                 "id" => $mMarBanquteHall->id,
@@ -787,10 +744,7 @@ class BanquetMarriageHallController extends Controller
             $data->contact = $mMarBanquteHall->mobile_no;
             $data->type = "Marriage Banqute Hall";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050816", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050816", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050816", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -810,8 +764,6 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarBanquteHall = new MarBanquteHall();
             if ($req->applicationId) {
                 $data = $mMarBanquteHall->getApplicationDetailsForPayment($req->applicationId);
@@ -822,10 +774,7 @@ class BanquetMarriageHallController extends Controller
 
             $data['type'] = "Banquet Marriage Hall";
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $data, "050817", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched',  $data, "050817", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050817", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -849,7 +798,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mWfDocument = new WfActiveDocument();
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             $mWfRoleusermap = new WfRoleusermap();
@@ -906,11 +854,8 @@ class BanquetMarriageHallController extends Controller
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
-
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, $req->docStatus . " Successfully", "", "050818", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "050818", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050818", "1.0", "", "POST", $req->deviceId ?? "");
@@ -964,7 +909,6 @@ class BanquetMarriageHallController extends Controller
         ]);
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $redis = Redis::connection();
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
@@ -995,10 +939,7 @@ class BanquetMarriageHallController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Successfully Done", "", "", '050819', '01', "$executionTime Sec", 'POST', '');
+            return responseMsgs(true, "Successfully Done", "", "", '050819', '01', responseTime(), 'POST', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050819", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1014,11 +955,9 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
-            $auth = auth()->user();
-            $userId = $auth->id;
-            $ulbId = $auth->ulb_id;
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1042,10 +981,7 @@ class BanquetMarriageHallController extends Controller
                 $btcList =  searchFilter($btcList, $req);
             $list = paginator($btcList, $req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "BTC Inbox List", $list, "050820", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "BTC Inbox List", $list, "050820", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050820", 1.0, "", "POST", "", "");
         }
@@ -1057,7 +993,6 @@ class BanquetMarriageHallController extends Controller
      */
     public function checkFullUpload($applicationId)
     {
-
         $appDetails = MarActiveBanquteHall::find($applicationId);
         $docCode = $this->_docCode;
         // $docCode = $this->_docCodeRenew;
@@ -1096,16 +1031,13 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             DB::beginTransaction();
             $appId = $mMarActiveBanquteHall->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050821", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050821", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "050821", 010717, 1.0, "", "POST", "", "");
@@ -1128,7 +1060,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarBanquteHall = new MarBanquteHall();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1137,11 +1068,8 @@ class BanquetMarriageHallController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050822", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050822", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050822", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1170,16 +1098,13 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $wfId = MarBanquteHall::find($req->applicationId)->workflow_id;
             $mAdvCheckDtl = new AdvChequeDtl();
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050823", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050823", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050823", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1203,8 +1128,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mAdvCheckDtl = new AdvChequeDtl();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
@@ -1213,10 +1136,8 @@ class BanquetMarriageHallController extends Controller
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cheque/DD");
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             if ($req->status == '1' && $status == 1) {
-                return responseMsgs(true, "Payment Successfully !!", '', "050824", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+                return responseMsgs(true, "Payment Successfully !!", '', "050824", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050824", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1263,13 +1184,14 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
 
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            // $mCalculateRate = new CalculateRate;
+            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulb_id);
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
@@ -1280,9 +1202,7 @@ class BanquetMarriageHallController extends Controller
             $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050826", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050826", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050826", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1305,14 +1225,11 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             $details = $mMarActiveBanquteHall->getApplicationDetailsForEdit($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found !!!");
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Featch Successfully !!!", $details, "050827", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Featched !!!", "", "050827", 1.0, "", "POST", "", "");
         }
@@ -1327,18 +1244,13 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveBanquteHall = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveBanquteHall->updateApplication($req);       //<--------------- Update Banquet Hall Application
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
             if ($res)
-                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, "$executionTime Sec", "POST", "", "");
+                return responseMsgs(true, "Application Update Successfully !!!", "", "050828", 1.0, responseTime(), "POST", "", "");
             else
                 return responseMsgs(false, "Application Not Updated !!!", "", "050828", 1.0, "", "POST", "", "");
         } catch (Exception $e) {
@@ -1354,10 +1266,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050829", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1371,7 +1283,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->approveListForReport();
@@ -1402,9 +1313,7 @@ class BanquetMarriageHallController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050829", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050829", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050829", 1.0, "271ms", "POST", "", "");
         }
@@ -1417,10 +1326,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function getApplicationFinancialYearWise(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050830", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1433,8 +1342,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->approveListForReport();
 
@@ -1456,9 +1363,7 @@ class BanquetMarriageHallController extends Controller
             $data = $approveList->union($pendingList)->union($rejectList);
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050830", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050830", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050830", 1.0, "271ms", "POST", "", "");
         }
@@ -1471,10 +1376,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function paymentCollection(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050831", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1489,8 +1394,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $endTime = microtime(true);
 
             $approveList = DB::table('mar_banqute_hall_renewals')
                 ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
@@ -1518,8 +1421,7 @@ class BanquetMarriageHallController extends Controller
                 $amounts->push($item->payment_amount);
             });
 
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050831", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050831", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050831", 1.0, "271ms", "POST", "", "");
         }
@@ -1532,10 +1434,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function ruleWiseApplications(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050832", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1550,7 +1452,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             #=============================================================
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->approveListForReport();
@@ -1584,9 +1485,7 @@ class BanquetMarriageHallController extends Controller
             }
             $data = $data1->paginate($req->perPage);
             #=============================================================
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050832", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050832", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050832", 1.0, "271ms", "POST", "", "");
         }
@@ -1599,10 +1498,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function getApplicationByHallType(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050833", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1618,7 +1517,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->approveListForReport();
@@ -1650,9 +1548,7 @@ class BanquetMarriageHallController extends Controller
             }
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050833", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050833", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050833", 1.0, "271ms", "POST", "", "");
         }
@@ -1665,10 +1561,10 @@ class BanquetMarriageHallController extends Controller
      */
     public function getApplicationByOrganizationType(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1684,7 +1580,6 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mMarBanquteHall = new MarBanquteHall();
             $approveList = $mMarBanquteHall->approveListForReport();
@@ -1716,9 +1611,7 @@ class BanquetMarriageHallController extends Controller
             }
             $data = $data->paginate($req->perPage);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050834", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050834", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050834", 1.0, "271ms", "POST", "", "");
         }

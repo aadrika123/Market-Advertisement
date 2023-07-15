@@ -57,7 +57,7 @@ class AdvAgency extends Model
         return AdvAgency::select(
             'id',
             'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'application_type',
             'entity_name',
             'payment_status',
@@ -100,7 +100,7 @@ class AdvAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'payment_status',
                 'payment_amount',
                 'approve_date',
@@ -118,7 +118,7 @@ class AdvAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 'payment_status',
                 'payment_amount',
@@ -182,10 +182,10 @@ class AdvAgency extends Model
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Agency";
-        $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d/m/Y');
-        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
-        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');
-        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
+        $details->payment_date = Carbon::createFromFormat('Y-m-d H:i:s',  $details->payment_date)->format('d-m-Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d-m-Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d-m-Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d-m-Y');
         return $details;
     }
 

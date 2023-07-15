@@ -80,8 +80,8 @@ class MarActiveHostel extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
+        $ulbWorkflows = $ulbWorkflows['data'];
         //  $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -97,14 +97,14 @@ class MarActiveHostel extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $$req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments,$req->auth);
 
         return $req->application_no;
     }
@@ -115,8 +115,8 @@ class MarActiveHostel extends Model
     {
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
-        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ipAddress = getClientIpAddress();
+        $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
+        $ulbWorkflows = $ulbWorkflows['data'];
         $mRenewNo = ['renew_no' => 'HOSTEL/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = MarHostel::find($req->applicationId);                              // Find Previous Application No
         $mLicenseNo = ['license_no' => $details->license_no];
@@ -134,7 +134,7 @@ class MarActiveHostel extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $ipAddress,
+                'ip_address' => $$req->ipAddress,
                 'application_type' => "Renew"
             ],
             $this->metaReqs($req),
@@ -143,7 +143,7 @@ class MarActiveHostel extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments);
+        $this->uploadDocument($tempId, $mDocuments,$req->auth);
 
         return $mRenewNo['renew_no'];;
     }
@@ -153,14 +153,14 @@ class MarActiveHostel extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents)
+    public function uploadDocument($tempId, $documents,$auth)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mMarActiveHostel = new MarActiveHostel();
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId,$auth, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveHostel->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -176,7 +176,7 @@ class MarActiveHostel extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a);
+            $mWfActiveDocument->postDocuments($a,$auth);
         });
     }
 

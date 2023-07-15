@@ -279,7 +279,7 @@ class HoardingController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d/m/Y');
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {
                 $fullDetailsData['payment_amount'] = $data['payment_amount'];
@@ -607,9 +607,10 @@ class HoardingController extends Controller
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
-                $mCalculateRate = new CalculateRate;
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveHoarding->ulb_id); // Generate Application No
-
+                // $mCalculateRate = new CalculateRate;
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveHoarding->ulb_id); // Generate Application No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveHoarding->ulb_id);
+                $generatedId = $idGeneration->generate();
                 if ($mAdvActiveHoarding->renew_no == NULL) {
                     // approved Hording Application replication
                     $approvedHoarding = $mAdvActiveHoarding->replicate();

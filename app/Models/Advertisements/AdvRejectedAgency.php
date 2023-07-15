@@ -19,7 +19,7 @@ class AdvRejectedAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 // 'entity_address',
                 // 'old_application_no',
@@ -39,7 +39,7 @@ class AdvRejectedAgency extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 // 'entity_address',
                 // 'old_application_no',
                 // 'payment_status',
@@ -57,7 +57,7 @@ class AdvRejectedAgency extends Model
         return AdvRejectedAgency::select(
             'id',
             'application_no',
-            'application_date',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'entity_name',
             'ulb_id',
             'rejected_date',

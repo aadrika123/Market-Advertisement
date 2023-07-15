@@ -93,13 +93,17 @@ class SelfAdvetController extends Controller
     public function addNew(Request $req)
     {
         // dd($req->all());
-        $auth = authUserDetails($req);
+        // $auth = authUserDetails($req);
         try {
             // Variable initialization
             $mAdvActiveSelfadvertisement = $this->_modelObj;
-          
-            $citizenId = ['citizenId' => $auth['id']];
-            $req->request->add($citizenId);
+            if ($req->auth['user_type'] == 'JSK') {
+                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+                $req->request->add($userId);
+            } else {
+                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+                $req->request->add($citizenId);
+            }
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $applicationNo = $idGeneration->generate();
@@ -746,8 +750,9 @@ class SelfAdvetController extends Controller
                 $req->request->add($data['payment_status']);
                 $req->request->add($data['demand_amount']);
 
-                $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
-
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveSelfadvertisement->ulb_id);
+                $generatedId = $idGeneration->generate();
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
                     // Selfadvertisement Application replication
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();

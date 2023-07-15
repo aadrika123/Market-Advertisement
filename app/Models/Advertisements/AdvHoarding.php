@@ -21,7 +21,7 @@ class AdvHoarding extends Model
             'id',
             'application_no',
             'license_no',
-            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -52,7 +52,7 @@ class AdvHoarding extends Model
             'id',
             'application_no',
             'license_no',
-            DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'payment_status',
             'payment_amount',
             'approve_date',
@@ -423,10 +423,10 @@ class AdvHoarding extends Model
             ->first();
         $details->payment_details = json_decode($details->payment_details);
         $details->towards = "Hoarding";
-        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d/m/Y');
-        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d/m/Y');
-        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d/m/Y');
-        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d/m/Y');
+        $details->payment_date = Carbon::createFromFormat('Y-m-d', $details->payment_date)->format('d-m-Y');
+        $details->valid_from = Carbon::createFromFormat('Y-m-d',  $details->valid_from)->format('d-m-Y');
+        $details->valid_upto = Carbon::createFromFormat('Y-m-d',  $details->valid_upto)->format('d-m-Y');
+        $details->applyDate = Carbon::createFromFormat('Y-m-d',  $details->applyDate)->format('d-m-Y');
         return $details;
     }
 
