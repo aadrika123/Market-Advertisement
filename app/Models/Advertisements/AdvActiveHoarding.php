@@ -312,7 +312,7 @@ class AdvActiveHoarding extends Model
                 'id',
                 'application_no',
                 'license_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
                 'application_type',
                 'parked',
@@ -337,7 +337,7 @@ class AdvActiveHoarding extends Model
                 'id',
                 'application_no',
                 'license_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
                 'application_type',
                 // 'bank_name',
@@ -364,7 +364,7 @@ class AdvActiveHoarding extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date'
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             )
             ->orderByDesc('id')
             ->get();
@@ -414,7 +414,7 @@ class AdvActiveHoarding extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a);
+        $mWfActiveDocument->postDocuments($a,$req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];

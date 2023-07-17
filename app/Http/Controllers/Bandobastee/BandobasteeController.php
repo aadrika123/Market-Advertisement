@@ -52,8 +52,7 @@ class BandobasteeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-            $mUlbId = authUser()->ulb_id;
+            $mUlbId = $req->auth['ulb_id'];
             if ($mUlbId == '')
                 throw new Exception("You Are Not Authorished !!!");
             $data = array();
@@ -69,9 +68,7 @@ class BandobasteeController extends Controller
             $listMaster = $mBdMaster->listMaster();                             // Get Bandobastee List
             $data['bandobasteeCategories']['BandobasteeType'] = $listMaster;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Bandobastee List", $data, "051101", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Bandobastee List", $data, "051101", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051101", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -88,12 +85,9 @@ class BandobasteeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdStandCategory = new BdStandCategory();
             $listCategory = $mBdStandCategory->listCategory();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Category List", $listCategory, "051102", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Category List", $listCategory, "051102", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051102", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -106,7 +100,7 @@ class BandobasteeController extends Controller
      */
     public function getStands(Request $req)
     {
-        $mUlbId = authUser()->ulb_id;
+        $mUlbId = $req->auth['ulb_id'];
         if ($mUlbId == '')
             throw new Exception("You Are Not Authorished !!!");
 
@@ -118,12 +112,9 @@ class BandobasteeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdStand = new BdStand();
             $listStands = $mBdStand->listStands($req->categoryId, $mUlbId);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Stand List", $listStands, "051103", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Stand List", $listStands, "051103", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051103", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -136,14 +127,13 @@ class BandobasteeController extends Controller
      */
     public function addNew(StoreRequest $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $mCalculateRate = new CalculateRate;
             $gst = $mCalculateRate->calculateAmount($req->baseAmount, $this->_gstAmt);          // Calculate GST Amount From BLL
@@ -164,9 +154,7 @@ class BandobasteeController extends Controller
             $mBdSettler->addNew($req);       //<--------------- Model function to store 
             DB::commit();
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Successfully Accepted !!", '', "0511045", "1.0", "$executionTime Sec", 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Accepted !!", '', "0511045", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051104", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -182,12 +170,9 @@ class BandobasteeController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdPenaltyMaster = new BdPenaltyMaster();
             $listPanalty = $mBdPenaltyMaster->listPenalty();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Category List", $listPanalty, "051105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Category List", $listPanalty, "051105", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051105", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -201,13 +186,12 @@ class BandobasteeController extends Controller
      */
     public function listSettler(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051106", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $listSettler = $mBdSettler->listSettler($ulbId);
             $list = $listSettler->map(function ($settler) {
@@ -219,9 +203,7 @@ class BandobasteeController extends Controller
                 $settler->rest_performance_security = ($totalAmt['performance_security_amount'] - $totalAmt['total_penalty']);
                 return $settler;
             });
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Stand Settler List", $list, "051106", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Stand Settler List", $list, "051106", "1.0",responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051106", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -258,13 +240,12 @@ class BandobasteeController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
 
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051107", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdPayment = new BdPayment();
             $mBdStand = BdSettler::find($req->settlerId);
             $ulbId = ['ulbId' => $mBdStand->ulb_id];
@@ -274,9 +255,7 @@ class BandobasteeController extends Controller
             $req->request->add($installmentDate);
             // return $req;
             $listSettler = $mBdPayment->installmentPayment($req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Payment Successfully", '', "051107", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment Successfully", '', "051107", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051107", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -297,22 +276,19 @@ class BandobasteeController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
 
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051108", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdPayment = new BdPayment();
 
             $listInstallment = $mBdPayment->listInstallmentPayment($req->settlerId)->map(function ($val) {
                 $val->installment_date = Carbon::parse($val->installment_date)->format('d-m-Y');
                 return $val;
             });
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Payment Successfully", $listInstallment, "051108", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment Successfully", $listInstallment, "051108", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051108", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -325,19 +301,16 @@ class BandobasteeController extends Controller
      */
     public function getBandobasteeCategory(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051109", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdMaster = new BdMaster();
 
             $list = $mBdMaster->listMaster();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Bandobastee List", $list, "051109", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Bandobastee List", $list, "051109", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051109", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -362,7 +335,6 @@ class BandobasteeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettlerTransaction = new BdSettlerTransaction();
 
             $mBdStand = BdSettler::find($req->settlerId);
@@ -371,9 +343,7 @@ class BandobasteeController extends Controller
 
             $res = $mBdSettlerTransaction->addTransaction($req);
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Added Successfully", "", "051110", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Added Successfully", "", "051110", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051110", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -395,7 +365,6 @@ class BandobasteeController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettlerTransaction = new BdSettlerTransaction();
 
             $credit = 0;
@@ -414,9 +383,7 @@ class BandobasteeController extends Controller
             }
             $availableBalance = $credit - $debit;
             // return $ps->first()->amount;
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Settler Transaction Details", ['performanceSecurityAmt' => $ps->first()->amount, 'penalty' => $pty, 'availableBalance' => $availableBalance], "051111", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Settler Transaction Details", ['performanceSecurityAmt' => $ps->first()->amount, 'penalty' => $pty, 'availableBalance' => $availableBalance], "051111", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051111", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -430,19 +397,16 @@ class BandobasteeController extends Controller
      */
     public function listParking(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051112", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdParking = new BdParking();
 
             $list = $mBdParking->listParking($ulbId);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Parking List", $list, "051112", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Parking List", $list, "051112", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051112", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -455,13 +419,12 @@ class BandobasteeController extends Controller
      */
     public function listParkingSettler(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051113", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettler = new BdSettler();
 
             $listSettler = $mBdSettler->listParkingSettler($ulbId);
@@ -474,9 +437,7 @@ class BandobasteeController extends Controller
                 $settler->rest_performance_security = ($totalAmt['performance_security_amount'] - $totalAmt['total_penalty']);
                 return $settler;
             });
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Parking Settler List", $list, "051113", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Parking Settler List", $list, "051113", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051113", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -489,19 +450,16 @@ class BandobasteeController extends Controller
      */
     public function listBazar(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051114", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdBazar = new BdBazar();
 
             $list = $mBdBazar->listBazar($ulbId);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Bazar List", $list, "051114", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Bazar List", $list, "051114", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051114", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -514,13 +472,12 @@ class BandobasteeController extends Controller
      */
     public function listBazarSettler(Request $req)
     {
-        if (authUser()->ulb_id == '')
+        if ($req->auth['ulb_id'] == '')
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "051115", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mBdSettler = new BdSettler();
             $listSettler = $mBdSettler->listBazarSettler($ulbId);
             $list = $listSettler->map(function ($settler) {
@@ -532,9 +489,7 @@ class BandobasteeController extends Controller
                 $settler->rest_performance_security = ($totalAmt['performance_security_amount'] - $totalAmt['total_penalty']);
                 return $settler;
             });
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Bazar Settler List", $list, "051115", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Bazar Settler List", $list, "051115", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051115", "1.0", "", "POST", $req->deviceId ?? "");
         }

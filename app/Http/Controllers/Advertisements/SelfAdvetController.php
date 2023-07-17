@@ -504,8 +504,6 @@ class SelfAdvetController extends Controller
         }
     }
 
-
-
     /**
      * |  Post Independent Comment
      * |  Function - 13

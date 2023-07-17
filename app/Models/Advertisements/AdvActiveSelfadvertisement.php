@@ -201,8 +201,8 @@ class AdvActiveSelfadvertisement extends Model
      * | @param citizenId
      */
     public function listAppliedApplications($citizenId)
-    {
-        $list = AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
+    { 
+        return AdvActiveSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
                 'adv_active_selfadvertisements.id',
                 'adv_active_selfadvertisements.application_no',
@@ -222,7 +222,6 @@ class AdvActiveSelfadvertisement extends Model
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
             ->orderByDesc('adv_active_selfadvertisements.id')
             ->get();
-        return $list;
     }
 
     /**
@@ -345,7 +344,7 @@ class AdvActiveSelfadvertisement extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -371,7 +370,7 @@ class AdvActiveSelfadvertisement extends Model
             ->select(
                 'id',
                 'application_no',
-                'application_date',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -424,7 +423,7 @@ class AdvActiveSelfadvertisement extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a);
+        $mWfActiveDocument->postDocuments($a,$req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
