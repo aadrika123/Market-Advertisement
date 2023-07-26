@@ -237,7 +237,7 @@ class BanquetMarriageHallController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = $request->auth['ulb_id'];
+        // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -714,9 +714,12 @@ class BanquetMarriageHallController extends Controller
      */
     public function generatePaymentOrderId(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
             $mMarBanquteHall = MarBanquteHall::find($req->id);
@@ -726,6 +729,7 @@ class BanquetMarriageHallController extends Controller
                 'workflowId' => $mMarBanquteHall->workflow_id,
                 'ulbId' => $mMarBanquteHall->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth'=>$req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -735,7 +739,7 @@ class BanquetMarriageHallController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-
+            $data=$data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -802,7 +806,7 @@ class BanquetMarriageHallController extends Controller
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.MARKET-LABEL');

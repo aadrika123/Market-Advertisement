@@ -933,6 +933,7 @@ class HoardingController extends Controller
                 'workflowId' => $mAdvHoarding->workflow_id,
                 'ulbId' => $mAdvHoarding->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth'=>$req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -942,7 +943,7 @@ class HoardingController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-
+            $data=$data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1549,7 +1550,7 @@ class HoardingController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = $request->auth['ulb_id'];
+        // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 

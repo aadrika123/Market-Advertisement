@@ -60,7 +60,7 @@ class ShopPaymentBll
             'rate' => $this->_shopDetails->rate,
             'months' => $totalMonths,
             'payment_date' => Carbon::now(),
-            'user_id' => $req->auth->id ?? 0,
+            'user_id' => $req->auth['id'] ?? 0,
             'ulb_id' => $this->_shopDetails->ulb_id,
             'remarks' => $req->remarks
         ];

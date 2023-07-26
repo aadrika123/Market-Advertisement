@@ -6,11 +6,16 @@ use App\BLL\Market\ShopPaymentBll;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\ShopRequest;
 use App\MicroServices\DocumentUpload;
+use App\Models\Master\MCircle;
+use App\Models\Master\MMarket;
+use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
+use App\Models\Rentals\ShopPayment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class ShopController extends Controller
@@ -41,7 +46,7 @@ class ShopController extends Controller
         });
 
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return $validator->errors();
 
         // Business Logics
         try {
@@ -54,39 +59,36 @@ class ShopController extends Controller
         }
     }
 
-    // Add records
+    /**
+     * | Add Shop Records
+     */
     public function store(ShopRequest $req)
     {
         try {
             $docUpload = new DocumentUpload;
             $relativePath = Config::get('constants.SHOP_PATH');
 
-
-
             if (isset($req->photo1Path)) {
                 $image = $req->file('photo1Path');
                 $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                $absolutePath = public_path($relativePath);
-                $imageName1Absolute = $absolutePath . '-' . $imageName1;
+                // $absolutePath = $relativePath;
+                $imageName1Absolute = $relativePath;
             }
-
-
 
             if (isset($req->photo2Path)) {
                 $image = $req->file('photo2Path');
                 $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-                $absolutePath = public_path($relativePath);
-                $imageName2Absolute = $absolutePath . '-' . $imageName2;
+                // $absolutePath = $relativePath;
+                $imageName2Absolute = $relativePath;
             }
-
-
+            $shopNo = $this->shopIdGeneration($req->marketId);
             $metaReqs = [
                 'circle_id' => $req->circleId,
-                'market' => $req->market,
+                'market_id' => $req->marketId,
                 'allottee' => $req->allottee,
-                'shop_no' => $req->shopNo,
+                'shop_no' => $shopNo,
                 'address' => $req->address,
                 'rate' => $req->rate,
                 'arrear' => $req->arrear,
@@ -116,7 +118,7 @@ class ShopController extends Controller
                 'user_id' => $req->auth['id'],
                 'ulb_id' => $req->auth['ulb_id']
             ];
-
+            // return $metaReqs;
             $this->_mShops->create($metaReqs);
 
             return responseMsgs(true, "Successfully Saved", [$metaReqs], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -126,45 +128,51 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | ID Generation For Shop
+     */
+    public function shopIdGeneration($marketId)
+    {
+        $idDetails = DB::table('m_market')->select('shop_counter', 'market_name')->where('id', $marketId)->first();
+        $market = strtoupper(substr($idDetails->market_name, 0, 3));
+        $counter = $idDetails->shop_counter + 1;
+        DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
+        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
+    }
 
     // Edit records
-    public function edit(ShopRequest $req)
+    public function edit(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|numeric',
             'status' => 'nullable|bool'
         ]);
-
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
+            return $validator->errors();
 
         try {
             $docUpload = new DocumentUpload;
             $relativePath = Config::get('constants.SHOP_PATH');
-
             if (isset($req->photo1Path)) {
                 $image = $req->file('photo1Path');
                 $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                $absolutePath = public_path($relativePath);
-                $imageName1Absolute = $absolutePath . '-' . $imageName1;
+                // $absolutePath = $relativePath;
+                $imageName1Absolute = $relativePath;
             }
-
-
 
             if (isset($req->photo2Path)) {
                 $image = $req->file('photo2Path');
                 $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-                $absolutePath = public_path($relativePath);
-                $imageName2Absolute = $absolutePath . '-' . $imageName2;
+                // $absolutePath = $relativePath;
+                $imageName2Absolute = $relativePath;
             }
 
             $metaReqs = [
                 'circle_id' => $req->circleId,
-                'market' => $req->market,
+                'market_id' => $req->marketId,
                 'allottee' => $req->allottee,
-                'shop_no' => $req->shopNo,
                 'address' => $req->address,
                 'rate' => $req->rate,
                 'arrear' => $req->arrear,
@@ -185,10 +193,10 @@ class ShopController extends Controller
                 'contact_no' => $req->contactNo,
                 'longitude' => $req->longitude,
                 'latitude' => $req->latitude,
-                'photo1_path' => $imageName1 ?? "",
-                'photo1_path_absolute' => $imageName1Absolute ?? "",
-                'photo2_path' => $imageName2 ?? "",
-                'photo2_path_absolute' => $imageName2Absolute ?? "",
+                // 'photo1_path' => $imageName1 ?? "",
+                // 'photo1_path_absolute' => $imageName1Absolute ?? "",
+                // 'photo2_path' => $imageName2 ?? "",
+                // 'photo2_path_absolute' => $imageName2Absolute ?? "",
                 'remarks' => $req->remarks,
                 'last_tran_id' => $req->lastTranId,
                 'user_id' => $req->auth['id'],
@@ -198,6 +206,17 @@ class ShopController extends Controller
             if (isset($req->status)) {                  // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
                 $metaReqs = array_merge($metaReqs, ['status', $status]);
+            }
+
+
+            if (isset($req->photograph1)) {
+                $metaReqs = array_merge($metaReqs, ['photo1_path', $imageName1]);
+                $metaReqs = array_merge($metaReqs, ['photo1_path_absolute', $imageName1Absolute]);
+            }
+
+            if (isset($req->photograph2)) {
+                $metaReqs = array_merge($metaReqs, ['photo2_path', $imageName2]);
+                $metaReqs = array_merge($metaReqs, ['photo2_path_absolute', $imageName2Absolute]);
             }
 
             $Shops = $this->_mShops::findOrFail($req->id);
@@ -218,7 +237,7 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $Shops = $this->_mShops->getGroupById($req->id);
+            $Shops = $this->_mShops->getShopDetailById($req->id);
 
             if (collect($Shops)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
@@ -255,24 +274,203 @@ class ShopController extends Controller
     public function delete(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'status' => 'required|bool'
+            'id' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-            if (isset($req->status)) { // In Case of Deactivation or Activation
-                $status = $req->status == false ? 0 : 1;
-                $metaReqs = [
-                    'status' => $status
-                ];
-            }
+            // if (isset($req->status)) { // In Case of Deactivation or Activation
+            //     $status = $req->status == false ? 0 : 1;
+            //     $metaReqs = [
+            //         'status' => $status
+            //     ];
+            // }
+            $metaReqs = [
+                'status' => '0',
+            ];
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
             return responseMsgs(true, "Status Updated Successfully", [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
+    }
+
+    /**
+     * | List Ulb Wise Circle
+     */
+    public function listUlbWiseCircle(Request $req)
+    {
+        try {
+            $mMCircle = new MCircle();
+            $list = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);
+            return responseMsgs(true, "Circle List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get Market list Circle wise
+     */
+    public function listCircleWiseMarket(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'circleId' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mMMarket = new MMarket();
+            $list = $mMMarket->getMarketByCircleId($req->circleId);
+            return responseMsgs(true, "Market List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Get Shop list by Market Id
+     */
+    public function listShopByMarketId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'marketId' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mShop = new Shop();
+            $list = $mShop->getShop($req->marketId);
+            $list = paginator($list, $req);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function listShop(Request $req)
+    {
+        try {
+            $ulbId = $req->auth['ulb_id'];
+            $mShop = new Shop();
+            $list = $mShop->getAllShopUlbWise($ulbId);
+            $list = paginator($list, $req);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function getShopDetailtId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mShop = new Shop();
+            $list = $mShop->getShopDetailById($req->shopId);
+            return responseMsgs(true, "Shop Details Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function getShopCollectionSummary(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mShopPayment = new ShopPayment();
+            $list = $mShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = paginator($list, $req);
+            $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
+            // $list['todayCollection']=500.02;
+            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get TC Collection Datewise 
+     */
+    public function getTcCollection(Request $req)
+    {
+        // return $req;
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $authUrl = Config::get('constants.AUTH_URL');
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mShopPayment = new ShopPayment();
+            $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
+            $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            $mMarTollPayment = new MarTollPayment();
+            $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
+            $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            $totalCollection = collect($shopPayment)->merge($tollPayment);
+            $refValues = collect($totalCollection)->pluck('user_id')->unique();
+            $ids['ids'] = $refValues;
+            $userDetails = Http::withToken($req->token)
+                ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
+
+            $userDetails = json_decode($userDetails);
+            // $data=$data->data;
+            $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
+                $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
+                $ref['userId'] = $values;
+                // $ref['tcName'] = "ANCTC";
+                $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
+                return $ref;
+            });
+            $list1['list'] = $list;
+            $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
+            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function pay()
+    {
+        echo "hii";
     }
 }

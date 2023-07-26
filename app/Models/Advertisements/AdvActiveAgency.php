@@ -284,8 +284,10 @@ class AdvActiveAgency extends Model
                 'adv_active_agencies.parked',
                 DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
+                'um.ulb_name',
             )
             ->join('wf_roles as wr','wr.id','=','adv_active_agencies.current_role_id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
             ->orderByDesc('adv_active_agencies.id')
             ->get();
     }

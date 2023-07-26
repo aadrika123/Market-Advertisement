@@ -309,7 +309,7 @@ class AgencyController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = auth()->user()->ulb_id;
+        // $ulbId = auth()->user()->ulb_id;
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -871,9 +871,12 @@ class AgencyController extends Controller
      */
     public function generatePaymentOrderId(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
             $mAdvAgency = AdvAgency::find($req->id);
@@ -883,6 +886,7 @@ class AgencyController extends Controller
                 'workflowId' => $mAdvAgency->workflow_id,
                 'ulbId' => $mAdvAgency->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -892,7 +896,7 @@ class AgencyController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-
+            $data=$data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1099,7 +1103,7 @@ class AgencyController extends Controller
             $mAdvActiveAgency = new AdvActiveAgency();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $applicationId = $req->applicationId;
 
             $wfLevel = Config::get('constants.SELF-LABEL');

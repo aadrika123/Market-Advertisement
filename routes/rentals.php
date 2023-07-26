@@ -23,6 +23,14 @@ Route::controller(ShopController::class)->group(function () {
     Route::post('crud/shop/retrieve-all', 'retrieve');                         // 05
     Route::post('crud/shop/retrieve-all-active', 'retrieveAllActive');         // 06
     Route::post('crud/shop/delete', 'delete');
+    Route::post('rental/list-ulb-wise-circle', 'listUlbWiseCircle');
+    Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');
+    Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');
+    Route::post('rental/list-shop', 'listShop');
+    Route::post('rental/get-shop-detail-by-id', 'getShopDetailtId');
+    Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');
+    Route::post('rental/get-tc-collection', 'getTcCollection');
+    Route::post('rental/pay', 'shopPayment');
 });
 
 /**
@@ -36,6 +44,10 @@ Route::controller(TollsController::class)->group(function () {
     Route::post('crud/toll/retrieve-all', 'retrieve');                       //05 
     Route::post('crud/toll/retrieve-all-active', 'retrieveActive');          //06
     Route::post('crud/toll/delete', 'delete');
+    Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');
+    Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');
+    // Route::post('rental/list-shop', 'listShop');
+    Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
 });
 
 

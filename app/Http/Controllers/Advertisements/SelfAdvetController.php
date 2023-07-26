@@ -280,9 +280,9 @@ class SelfAdvetController extends Controller
      */
     public function getDetailsById(Request $req)
     {
+        // return $req;
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $fullDetailsData = array();
             $type = NULL;
@@ -299,7 +299,7 @@ class SelfAdvetController extends Controller
                 throw new Exception("Application Not Found");
 
             // Basic Details
-            $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
+           $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
@@ -332,9 +332,7 @@ class SelfAdvetController extends Controller
             }
             $fullDetailsData['timelineData'] = collect($metaReqs);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050107", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -346,7 +344,7 @@ class SelfAdvetController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = $request->auth['ulb_id'];
+        // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
         ]);
@@ -975,19 +973,23 @@ class SelfAdvetController extends Controller
 
     public function generatePaymentOrderId(Request $req)
     {
-        $req->validate([
-            'id' => 'required|integer',
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer'
         ]);
+        if ($validator->fails()) {
+            // return responseMsgs(false, $validator->errors(), "", "050115", "1.0", "", "POST", $req->deviceId ?? "");
+            return $validator->errors();
+        }
         try {
             // Variable initialization
-            $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
-
-            $reqData = [
+        $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
+          $reqData = [
                 "id" => $mAdvSelfadvertisement->id,
                 'amount' => $mAdvSelfadvertisement->payment_amount,
                 'workflowId' => $mAdvSelfadvertisement->workflow_id,
                 'ulbId' => $mAdvSelfadvertisement->ulb_id,
-                'departmentId' => $this->_moduleIds
+                'departmentId' => $this->_moduleIds,
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -997,7 +999,7 @@ class SelfAdvetController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-
+            $data=$data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 

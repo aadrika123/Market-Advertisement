@@ -96,18 +96,19 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(ParamController::class)->group(function () {
-        Route::post('advert/crud/param-strings', 'paramStrings');                              // 01 ( Get Param String List)
-        Route::post('advert/get-approval-letter', 'getApprovalLetter');         // 02 ( Get All Approval Letter )
-        Route::post('advert/crud/v1/list-document', 'listDocument');            // 03 ( Applied Document List )
-        // Route::post('crud/district-mstrs', 'districtMstrs');                            // 04
-        Route::post('advert/payment-success-failure', 'paymentSuccessFailure'); // 05 ( Update Payment Success or Failure )
-        Route::post('advert/dashboard', 'advertDashboard');                     // 06 ( Advertisement Dashboard )
-        Route::post('advert/search-by-name-or-mobile', 'searchByNameOrMobile'); // 07 ( Search Application By Mobile or Name )
-        Route::post('market/dashboard', 'marketDashboard');                            // 08 ( Market Dashboard )
-        Route::post('advert/get-payment-details', 'getPaymentDetails');          // 09 ( Application Details For Payments )
-        Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');          // 10 ( Application Details For Payments )
-        Route::post('advert/application-reports', 'applicationReports');      // 11 ( Application Reports )
-        Route::post('advert/get-financial-year-master-data', 'getFinancialMasterData');      // 11 ( Get Financial Year For Search )
+        Route::post('advert/crud/param-strings', 'paramStrings');                               // 01 ( Get Param String List)
+        Route::post('advert/get-approval-letter', 'getApprovalLetter');                         // 02 ( Get All Approval Letter )
+        Route::post('advert/crud/v1/list-document', 'listDocument');                           // 03 ( Applied Document List )
+        // Route::post('crud/district-mstrs', 'districtMstrs');                                 // 04
+        Route::post('advert/payment-success-failure', 'paymentSuccessFailure');                 // 05 ( Update Payment Success or Failure )
+        Route::post('advert/dashboard', 'advertDashboard');                                     // 06 ( Advertisement Dashboard )
+        Route::post('advert/search-by-name-or-mobile', 'searchByNameOrMobile');                 // 07 ( Search Application By Mobile or Name )
+        Route::post('market/dashboard', 'marketDashboard');                                     // 08 ( Market Dashboard )
+        Route::post('advert/get-payment-details', 'getPaymentDetails');                         // 09 ( Application Details For Payments )
+        Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');                  // 10 ( Application Details For Payments )
+        Route::post('advert/application-reports', 'applicationReports');                        // 11 ( Application Reports )
+        Route::post('advert/get-financial-year-master-data', 'getFinancialMasterData');         // 12 ( Get Financial Year For Search )
+        Route::post('advert/advertisement-dashboard', 'advertisementDashboard');                // 13 ( Advertisement Dashboard )
     });
 
     /**

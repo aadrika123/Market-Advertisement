@@ -235,7 +235,7 @@ class DharamshalaController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = $request->auth['ulb_id'];
+        // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -704,9 +704,12 @@ class DharamshalaController extends Controller
      */
     public function generatePaymentOrderId(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
             $mMarDharamshala = MarDharamshala::find($req->id);
@@ -716,6 +719,7 @@ class DharamshalaController extends Controller
                 'workflowId' => $mMarDharamshala->workflow_id,
                 'ulbId' => $mMarDharamshala->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -725,7 +729,7 @@ class DharamshalaController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -932,7 +936,7 @@ class DharamshalaController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($req);
 
-            return responseMsgs(true, "Successfully Done", "", "", '051019', '01',responseTime(), 'Post', '');
+            return responseMsgs(true, "Successfully Done", "", "", '051019', '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051019", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1034,7 +1038,7 @@ class DharamshalaController extends Controller
             $appId = $mmMarActiveDharamshala->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-            
+
             return responseMsgs(true, "Document Uploaded Successfully", "", "051021", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -1102,7 +1106,7 @@ class DharamshalaController extends Controller
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);
 
-            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "051023", "1.0",responseTime(), 'POST', $req->deviceId ?? "");
+            return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "051023", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "051023", "1.0", "", "POST", $req->deviceId ?? "");
         }

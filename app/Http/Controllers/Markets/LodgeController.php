@@ -233,7 +233,7 @@ class LodgeController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        $ulbId = $request->auth['ulb_id'];
+        // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -701,9 +701,12 @@ class LodgeController extends Controller
      */
     public function generatePaymentOrderId(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
         try {
             // Variable initialization
 
@@ -714,6 +717,7 @@ class LodgeController extends Controller
                 'workflowId' => $mMarLodge->workflow_id,
                 'ulbId' => $mMarLodge->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth'=>$req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -722,8 +726,8 @@ class LodgeController extends Controller
                 ->withToken($req->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
-            $data = json_decode($refResponse);
-
+            $data = json_decode($refResponse['data']);
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 

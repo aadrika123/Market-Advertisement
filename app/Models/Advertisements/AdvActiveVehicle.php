@@ -378,8 +378,10 @@ class AdvActiveVehicle extends Model
                 'adv_active_vehicles.doc_upload_status',
                 DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
+                'um.ulb_name',
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
             ->orderByDesc('adv_active_vehicles.id')
             ->get();
     }
