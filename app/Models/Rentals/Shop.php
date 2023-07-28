@@ -106,13 +106,15 @@ class Shop extends Model
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
-      'mm.market_name',    
+      'mm.market_name',  
+      'sc.construction_type',    
       DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
       DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.id', $id)
       ->first();

@@ -30,7 +30,9 @@ Route::controller(ShopController::class)->group(function () {
     Route::post('rental/get-shop-detail-by-id', 'getShopDetailtId');
     Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');
     Route::post('rental/get-tc-collection', 'getTcCollection');
+    // Route::post('rental/abc', 'abc');
     Route::post('rental/pay', 'shopPayment');
+    Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
 });
 
 /**
@@ -48,6 +50,7 @@ Route::controller(TollsController::class)->group(function () {
     Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');
     // Route::post('rental/list-shop', 'listShop');
     Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
+    Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
 });
 
 
@@ -77,5 +80,6 @@ Route::controller(MarketController::class)->group(function () {
     Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); //03
     Route::post('v1/crud/market/list-all-market', 'retireveAll');                 //04
     Route::post('v1/crud/market/delete', 'delete');                               //05
+    Route::post('rental/list-construction', 'listConstruction');                               //05
 
 });

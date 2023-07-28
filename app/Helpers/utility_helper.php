@@ -187,6 +187,18 @@ if (!function_exists('dateDiff')) {
     }
 }
 
+
+// get days from two months
+if (!function_exists('monthDiff')) {
+    function monthDiff(string $date1, string $date2)
+    {
+        $date1 = Carbon::parse($date1);
+        $date2 = Carbon::parse($date2);
+
+        return $date1->diffInMonths($date2);
+    }
+}
+
 // Get Authenticated users list
 if (!function_exists('authUser')) {
     function authUser()

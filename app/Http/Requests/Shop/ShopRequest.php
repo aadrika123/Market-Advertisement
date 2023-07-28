@@ -44,7 +44,7 @@ class ShopRequest extends FormRequest
             'noOfFloors'               =>   'nullable|string',
             'presentOccupier'          =>   'nullable|regex:/^[A-Za-z ]+$/',
             'tradeLicense'             =>   'nullable|string',
-            'construction'             =>   'required|string',
+            'construction'             =>   'required|integer',
             'electricity'              =>   'required|string',
             'water'                    =>   'required|string',
             'salePurchase'             =>   'nullable|string',

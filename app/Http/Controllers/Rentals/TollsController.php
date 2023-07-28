@@ -210,7 +210,7 @@ class TollsController extends Controller
                 $status = $request->status == false ? 0 : 1;
                 $marToll = array_merge($marToll, ['status', $status]);
             }
-            
+
             if (isset($request->photograph1)) {
                 $marToll = array_merge($marToll, ['photograph1', $imageName1]);
                 $marToll = array_merge($marToll, ['photo1_absolute_path', $imageName1Absolute]);
@@ -218,7 +218,7 @@ class TollsController extends Controller
 
             if (isset($request->photograph2)) {
                 $marToll = array_merge($marToll, ['photograph2', $imageName2]);
-                $marToll = array_merge($marToll, ['photo2_absolute_path',$imageName2Absolute]);  
+                $marToll = array_merge($marToll, ['photo2_absolute_path', $imageName2Absolute]);
             }
 
             $toll = $this->_mToll::findOrFail($request->id);
@@ -391,6 +391,59 @@ class TollsController extends Controller
             // $list['todayCollection']=500.02;
             $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Toll Payment By Admin
+     */
+    public function tollPaymentByAdmin(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'required|date_format:Y-m-d',
+            'toDate' => 'required|date_format:Y-m-d',
+            'tollNo' => 'required|string',
+            'amount' => 'required|numeric',
+            'rate' =>   'required|numeric',
+            'paymentDate' => 'required|date_format:Y-m-d',
+            'collectedBy' => 'required|string',
+            'remarks' => "required|string",
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SHOP_PATH');
+            if (isset($req->image)) {
+                $image = $req->file('image');
+                $refImageName = 'reciept' . '-' . time();
+                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
+                // $absolutePath = $relativePath;
+                $imageName1Absolute = $relativePath;
+                $req->merge(['reciepts' => $imageName1]);
+                $req->merge(['absolutePath' => $imageName1Absolute]);
+            }
+
+
+            $mMarTollPayment = new MarTollPayment();
+            $details = DB::table('mar_tolls')->select('*')->where('toll_no', $req->tollNo)->first();
+            if (!$details)
+                throw new Exception("Toll Not Found !!!");
+            $tollId = $details->id;
+            $months = monthDiff($req->toDate, $req->fromDate) + 1;
+            $req->merge(['months' => $months]);
+
+            $paymentId = $mMarTollPayment->addPaymentByAdmin($req, $tollId);
+            $mMarToll = new MarToll();
+            $mTollDetails = $mMarToll->find($tollId);
+            $mTollDetails->last_tran_id = $paymentId;
+            $mTollDetails->save();
+            return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }

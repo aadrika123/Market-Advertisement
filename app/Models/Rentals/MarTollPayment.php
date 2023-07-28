@@ -27,4 +27,35 @@ class MarTollPayment extends Model
             //  ->sum('amount');
     }
 
+      
+
+  /**
+   * | Payment Accept By Admin
+   */
+  public function addPaymentByAdmin($req,$shopId){
+    $metaReqs=$this->metaReqs($req,$shopId);
+    // dd($metaReqs);
+    return self::create($metaReqs)->id;
+
+  }
+
+  public function metaReqs($req,$tollId){
+    return [
+      "toll_id"=>$tollId,
+      "from_date"=>$req->fromDate,
+      "to_date"=>$req->fromDate,
+      "amount"=>$req->amount,
+      "pmt_mode"=>"CASH",
+      "rate"=>$req->rate,
+      "payment_date"=>$req->paymentDate,
+      "remarks"=>$req->remarks,
+      "is_active"=>'1',
+      "ulb_id"=>$req->auth['ulb_id'],
+      "collected_by"=>$req->collectedBy,
+      "reciepts"=>$req->reciepts,
+      "absolute_path"=>$req->absolutePath,
+    ];
+  }
+
+
 }

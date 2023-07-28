@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Master\MMarket;
+use App\Models\Rentals\ShopConstruction;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
@@ -129,6 +130,17 @@ class MarketController extends Controller
             $Shops->update($metaReqs);
             return responseMsgs(true, "Status Updated Successfully", [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function listConstruction(Request $req){
+        try{
+            $mShopConstruction=new ShopConstruction();
+            $list=$mShopConstruction->listConstruction();
+            return responseMsgs(true, "Construction Fetch Successfully", $list, "055205", "1.0", responseTime(), "POST", $req->deviceId);
+        }catch(Exception $e){
             return responseMsgs(false, $e->getMessage(), [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }

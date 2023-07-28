@@ -35,14 +35,13 @@ class ShopController extends Controller
         $shopPmtBll = new ShopPaymentBll;
         $validator = Validator::make($req->all(), [
             "shopId" => "required|integer",
-            "paymentTo" => "required|date|date_format:Y-m",
+            "paymentTo" => "required|date|date_format:Y-m-d",
             "amount" => 'required|numeric'
         ]);
-
-        $validator->sometimes("paymentFrom", "required|date|date_format:Y-m|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
+        $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
             $shopPmtBll->_shopDetails = $this->_mShops::findOrFail($input->shopId);
             $shopPmtBll->_tranId = $shopPmtBll->_shopDetails->last_tran_id;
-            return !isset($this->_tranId);
+            return !isset($shopPmtBll->_tranId);
         });
 
         if ($validator->fails())
@@ -140,7 +139,9 @@ class ShopController extends Controller
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
 
-    // Edit records
+    /**
+     * | Edit shop Records
+     */
     public function edit(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -228,7 +229,9 @@ class ShopController extends Controller
         }
     }
 
-    //View by id
+    /**
+     * | Get Shop Details By Id
+     */
     public function show(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -370,6 +373,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Get Shop Details By ID
+     */
     public function getShopDetailtId(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -469,8 +475,55 @@ class ShopController extends Controller
         }
     }
 
-    public function pay()
+    /**
+     * | Shop Payment By Admin
+     */
+    public function shopPaymentByAdmin(Request $req)
     {
-        echo "hii";
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'required|date_format:Y-m-d',
+            'toDate' => 'required|date_format:Y-m-d',
+            'shopNo' => 'required|string',
+            'amount' => 'required|numeric',
+            'due'    => 'required|numeric',
+            'rate' =>   'required|numeric',
+            'paymentDate' => 'required|date_format:Y-m-d',
+            'collectedBy' => 'required|string',
+            'remarks' => "required|string",
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SHOP_PATH');
+            if (isset($req->image)) {
+                $image = $req->file('image');
+                $refImageName = 'reciept' . '-' . time();
+                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
+                // $absolutePath = $relativePath;
+                $imageName1Absolute = $relativePath;
+                $req->merge(['reciepts' => $imageName1]);
+                $req->merge(['absolutePath' => $imageName1Absolute]);
+            }
+            $mShopPayment = new ShopPayment();
+            $details = DB::table('mar_shops')->select('*')->where('shop_no', $req->shopNo)->first();
+            if (!$details)
+                throw new Exception("Shop Not Found !!!");
+            $shopId = $details->id;
+            $months = monthDiff($req->toDate, $req->fromDate) + 1;
+            $req->merge(['months' => $months]);
+            $paymentId = $mShopPayment->addPaymentByAdmin($req, $shopId);
+            $mshop = new Shop();
+            $mshopDetails = $mshop->find($shopId);
+            $mshopDetails->last_tran_id = $paymentId;
+            $mshopDetails->arrear = $req->due;
+            $mshopDetails->save();
+            return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
     }
 }
