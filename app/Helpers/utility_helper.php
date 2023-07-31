@@ -201,9 +201,9 @@ if (!function_exists('monthDiff')) {
 
 // Get Authenticated users list
 if (!function_exists('authUser')) {
-    function authUser()
+    function authUser($req)
     {
-        return auth()->user();
+        return (object)$req->auth;
     }
 }
 
@@ -260,7 +260,7 @@ if (!function_exists('getClientIpAddress')) {
         function responseTime()
         {
             $responseTime = (microtime(true) - LARAVEL_START) * 1000;
-            return round($responseTime, 2)." ms";
+            return round($responseTime, 2) . " ms";
         }
     }
 

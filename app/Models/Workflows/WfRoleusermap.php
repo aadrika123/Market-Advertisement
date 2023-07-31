@@ -56,7 +56,7 @@ class WfRoleusermap extends Model
      */
     public function getUserId($req)
     {
-        return WfRoleusermap::select('user_id', 'wf_role_id')
+        return  WfRoleusermap::select('user_id', 'wf_role_id')
             ->join('users', 'users.id', 'wf_roleusermaps.user_id')
             ->where('wf_role_id', $req['roleId'])
             ->where('ulb_id', $req['ulbId'])
