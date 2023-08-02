@@ -23,12 +23,14 @@ use App\Models\Advertisements\AdvHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\User;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 use App\Traits\AdvDetailsTraits;
 use App\Models\Workflows\WfWardUser;
@@ -42,6 +44,7 @@ use Illuminate\Support\Facades\Validator;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 
@@ -65,6 +68,7 @@ class AgencyController extends Controller
     protected $_paramId;
     protected $_baseUrl;
     protected $_wfMasterId;
+    protected $_fileUrl;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
@@ -74,6 +78,7 @@ class AgencyController extends Controller
         $this->_tempParamId = Config::get('workflow-constants.TEMP_AGY_ID');
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
@@ -126,6 +131,7 @@ class AgencyController extends Controller
      */
     public function getAgencyDetails(Request $req)
     {
+        // return $req;
         // $validator = Validator::make($req->all(), [
         //     'applicationId' => 'required|integer',
         // ]);
@@ -136,7 +142,7 @@ class AgencyController extends Controller
             // Variable initialization
 
             $mAdvAgency = new AdvAgency();
-            $agencydetails = $mAdvAgency->getagencyDetails($req->auth['id']);
+            $agencydetails = $mAdvAgency->getagencyDetails($req->auth['email']);
             if (!$agencydetails) {
                 throw new Exception('You Have No Any Agency !!!');
             }
@@ -170,7 +176,7 @@ class AgencyController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            
+
 
             return responseMsgs(true, "Inbox Applications", $list, "050503", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -354,7 +360,7 @@ class AgencyController extends Controller
             //     $data1 = null;
             // }
 
-            return responseMsgs(true, "Applied Applications", $data1, "050506", "1.0",responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $data1, "050506", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050506", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -550,7 +556,11 @@ class AgencyController extends Controller
         } else {
             throw new Exception("Required Application Id ");
         }
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -572,7 +582,11 @@ class AgencyController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -593,8 +607,12 @@ class AgencyController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050513", "1.0", responseTime(), "POST", "");
+        $appUrl = $this->_fileUrl;
+        $data1= collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050513", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -692,6 +710,9 @@ class AgencyController extends Controller
                         ->update(['last_renewal_id' => $approvedAgency->id]);
                     $msg = "Application Successfully Renewal !!";
                 }
+                $userId = $this->store($req, $mAdvActiveAgency);
+
+                // dd($userId);
             }
             // Rejection
             if ($req->status == 0) {
@@ -896,7 +917,7 @@ class AgencyController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1240,8 +1261,7 @@ class AgencyController extends Controller
             $req->request->add($metaReqs);
             $track = new WorkflowTrack();
             $track->saveTrack($req);
-
-
+            
             return responseMsgs(true, "Successfully Done", "", "", '050527', '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050527", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1415,7 +1435,7 @@ class AgencyController extends Controller
                 // Variable initialization
                 $citizenId = authUser()->id;
                 $mAdvHoarding = new AdvHoarding();
-                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId,119);
+                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId, 119);
                 if (empty($agencyDashboard)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {
@@ -1543,5 +1563,57 @@ class AgencyController extends Controller
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050534", 1.0, "271ms", "POST", "", "");
         }
+    }
+
+    /**
+     * | Create Agency User For Hoardings
+     */
+    public function store($req, $data)
+    {
+        // try {
+            // Validation---@source-App\Http\Requests\AuthUserRequest
+            $user = new User();
+            $this->saving($user, $req, $data);                     // Storing data using Auth trait
+            $user->password = Hash::make($data->mobile_no);
+            $user->save();
+           return $id= $user->id;
+        // } catch (Exception $e) {
+        //     return responseMsgs(false, $e->getMessage(), "");
+        // }
+    }
+
+    /**
+     * Saving User Credentials 
+     */
+    public function saving($user, $request, $data)
+    {
+        $user->name = $data->entity_name;
+        $user->mobile = $data->mobile_no;
+        $user->email = $data->email;
+        // if ($request['ulb']) {
+        $user->ulb_id = $data->ulb_id;
+        // }
+        // if ($request['userType']) {
+        $user->user_type = "Advert-Agency";
+        // }
+
+        $token = Str::random(80);                       //Generating Random Token for Initial
+        $user->remember_token = $token;
+    }
+
+    /**
+     * | Image Document Upload
+     * | @param refImageName format Image Name like SAF-geotagging-id (Pass Your Ref Image Name Here)
+     * | @param requested image (pass your request image here)
+     * | @param relativePath Image Relative Path (pass your relative path of the image to be save here)
+     * | @return imageName imagename to save (Final Image Name with time and extension)
+     */
+    public function upload($refImageName, $image, $relativePath)
+    {
+        $extention = $image->getClientOriginalExtension();
+        $imageName = time() . '-' . $refImageName . '.' . $extention;
+        $image->move($relativePath, $imageName);
+
+        return $imageName;
     }
 }

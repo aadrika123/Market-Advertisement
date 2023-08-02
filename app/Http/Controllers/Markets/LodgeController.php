@@ -57,6 +57,7 @@ class LodgeController extends Controller
     protected $_tempParamId;
     protected $_paramId;
     protected $_wfMasterId;
+    protected $_fileUrl;
 
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
@@ -71,6 +72,7 @@ class LodgeController extends Controller
         $this->_paramId = Config::get('workflow-constants.LOD_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_LOD_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
 
         $this->_wfMasterId = Config::get('workflow-constants.LODGE_WF_MASTER_ID');
     }
@@ -477,7 +479,11 @@ class LodgeController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -499,7 +505,11 @@ class LodgeController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -520,8 +530,12 @@ class LodgeController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050712", "1.0", responseTime(), "POST", "");
+        $appUrl = $this->_fileUrl;
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050712", "1.0", responseTime(), "POST", "");
     }
 
 

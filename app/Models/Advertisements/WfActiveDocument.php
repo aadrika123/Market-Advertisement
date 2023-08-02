@@ -28,7 +28,7 @@ class WfActiveDocument extends Model
     /**
      * | Upload document funcation
      */
-    public function postDocuments($req,$auth)
+    public function postDocuments($req, $auth)
     {
         $metaReqs = new WfActiveDocument();
         $metaReqs->active_id            = $req->activeId;
@@ -188,7 +188,7 @@ class WfActiveDocument extends Model
     /**
      * | Deactivate the Rejected Document 
      * | @param metaReqs
-        | Use for deactivate the rejected document
+       | Use for deactivate the rejected document
      */
     public function deactivateRejectedDoc($metaReqs)
     {

@@ -58,6 +58,7 @@ class VehicleAdvetController extends Controller
     protected $_paramId;
     protected $_baseUrl;
     protected $_wfMasterId;
+    protected $_fileUrl;
     public function __construct(iSelfAdvetRepo $self_repo)
     {
         $this->_modelObj = new AdvActiveVehicle();
@@ -67,6 +68,7 @@ class VehicleAdvetController extends Controller
         $this->_tempParamId = Config::get('workflow-constants.TEMP_VCL_ID');
         $this->_paramId = Config::get('workflow-constants.VCL_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->Repository = $self_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.VEHICLE_WF_MASTER_ID');
@@ -543,7 +545,11 @@ class VehicleAdvetController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -565,7 +571,11 @@ class VehicleAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -587,8 +597,13 @@ class VehicleAdvetController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
+        $appUrl = $this->_fileUrl;
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
 
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050314", "1.0", responseTime(), "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050314", "1.0", responseTime(), "POST", "");
     }
 
     /**

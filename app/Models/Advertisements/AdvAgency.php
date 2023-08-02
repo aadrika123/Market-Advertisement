@@ -15,12 +15,12 @@ class AdvAgency extends Model
     /**
      * | Get Agency Details by Agency Id
      */
-    public function getagencyDetails($id)
+    public function getagencyDetails($email)
     {
         $details1 = DB::table('adv_agencies')
             ->select('adv_agencies.*', 'et.string_parameter as entity_type_name')
             ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', 'adv_agencies.entity_type')
-            ->where('adv_agencies.id', $id)
+            ->where('adv_agencies.email', $email)
             ->first();
         $details = json_decode(json_encode($details1), true);
         if (!empty($details)) {

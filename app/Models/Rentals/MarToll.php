@@ -83,7 +83,9 @@ class MarToll extends Model
             ->where('mar_tolls.status', '1');
         // ->get();
     }
-
+/**
+ * | Get All Toll By Market Id 
+ */
     public function getToll($marketid)
     {
         return MarToll::select(

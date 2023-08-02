@@ -66,6 +66,7 @@ class SelfAdvetController extends Controller
     protected $_baseUrl;
 
     protected $_wfMasterId;
+    protected $_fileUrl;
 
     //Constructor
     public function __construct(iSelfAdvetRepo $self_repo)
@@ -78,6 +79,7 @@ class SelfAdvetController extends Controller
         $this->_docCode = Config::get('workflow-constants.SELF_ADVERTISMENT_DOC_CODE');
         $this->_paramId = Config::get('workflow-constants.SELF_ID');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_SELF_ID');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->_baseUrl = Config::get('constants.BASE_URL');
 
         $this->_wfMasterId = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
@@ -90,10 +92,8 @@ class SelfAdvetController extends Controller
      * | Function - 01
      * | API No. - 01
      */
-    public function addNew(Request $req)
+    public function addNew(StoreRequest $req)
     {
-        // dd($req->all());
-        // $auth = authUserDetails($req);
         try {
             // Variable initialization
             $mAdvActiveSelfadvertisement = $this->_modelObj;
@@ -299,7 +299,7 @@ class SelfAdvetController extends Controller
                 throw new Exception("Application Not Found");
 
             // Basic Details
-           $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
+            $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
             $basicElement = [
                 'headerTitle' => "Basic Details",
                 "data" => $basicDetails
@@ -387,7 +387,7 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            
+
             return responseMsgs(true, "Applied Applications", $data1, "050108", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050108", "1.0", "", "POST", $req->deviceId ?? "");
@@ -494,7 +494,7 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-            
+
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050111", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -545,7 +545,7 @@ class SelfAdvetController extends Controller
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-            
+
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050112", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -614,6 +614,7 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), "", "050115", "1.0", "", "POST", $req->deviceId ?? "");
         }
+        $appUrl = $this->_fileUrl;
         // $mWfWorkflow=new WfWorkflow();
         // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId,$ulbId);      // get workflow Id
         if ($req->type == 'Active')
@@ -626,7 +627,10 @@ class SelfAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -645,11 +649,14 @@ class SelfAdvetController extends Controller
         }
         $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
 
-
+        $appUrl = $this->_fileUrl;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -699,10 +706,14 @@ class SelfAdvetController extends Controller
         else
             $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
-
+        $appUrl = $this->_fileUrl;
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050118", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -849,7 +860,7 @@ class SelfAdvetController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            
+
             return responseMsgs(true, "Approved Application List", $data1, "050120", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050120", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -982,8 +993,8 @@ class SelfAdvetController extends Controller
         }
         try {
             // Variable initialization
-        $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
-          $reqData = [
+            $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
+            $reqData = [
                 "id" => $mAdvSelfadvertisement->id,
                 'amount' => $mAdvSelfadvertisement->payment_amount,
                 'workflowId' => $mAdvSelfadvertisement->workflow_id,
@@ -999,7 +1010,7 @@ class SelfAdvetController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1041,7 +1052,7 @@ class SelfAdvetController extends Controller
                 throw new Exception("Application Not Found");
 
             $data['type'] = "Self Advertisement";
-            
+
             return responseMsgs(true, 'Data Fetched',  $data, "050126", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050126", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1108,7 +1119,7 @@ class SelfAdvetController extends Controller
 
             $req->request->add($workflowId);
             $transNo = $mAdvCheckDtl->entryChequeDd($req);                              // Store Cheque Details In Model
-            
+
             return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050128", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050128", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1141,7 +1152,7 @@ class SelfAdvetController extends Controller
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cheque/DD");
             DB::commit();
-            
+
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050129", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
@@ -1227,7 +1238,7 @@ class SelfAdvetController extends Controller
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
-            
+
             DB::commit();
             return responseMsgs(true, $req->docStatus . " Successfully", responseTime(), "050130", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -1432,7 +1443,7 @@ class SelfAdvetController extends Controller
 
             if (!$listApplications)
                 throw new Exception("Application Not Found !!!");
-                
+
             return responseMsgs(true, "Application Fetched Successfully", $listApplications, "050134", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050134", 1.0, "271ms", "POST", "", "");
@@ -1493,7 +1504,7 @@ class SelfAdvetController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            
+
             return responseMsgs(true, "Application Fetched Successfully", $data, "050135", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050135", 1.0, "271ms", "POST", "", "");

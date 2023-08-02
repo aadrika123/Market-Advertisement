@@ -58,7 +58,7 @@ class BanquetMarriageHallController extends Controller
     protected $_tempParamId;
     protected $_baseUrl;
     protected $_wfMasterId;
-
+    protected $_fileUrl;
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
@@ -72,6 +72,7 @@ class BanquetMarriageHallController extends Controller
         $this->_paramId = Config::get('workflow-constants.BQT_ID');
         $this->_tempParamId = Config::get('workflow-constants.T_BQT_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
 
 
         $this->_wfMasterId = Config::get('workflow-constants.BANQUTE_HALL_WF_MASTER_ID');
@@ -484,7 +485,11 @@ class BanquetMarriageHallController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -505,7 +510,11 @@ class BanquetMarriageHallController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -525,8 +534,12 @@ class BanquetMarriageHallController extends Controller
         if ($req->applicationId) {
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
-
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050812", "1.0", responseTime(), "POST", "");
+        $appUrl = $this->_fileUrl;
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050812", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -729,7 +742,7 @@ class BanquetMarriageHallController extends Controller
                 'workflowId' => $mMarBanquteHall->workflow_id,
                 'ulbId' => $mMarBanquteHall->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
-                'auth'=>$req->auth,
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -739,7 +752,7 @@ class BanquetMarriageHallController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 

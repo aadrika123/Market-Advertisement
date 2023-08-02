@@ -81,6 +81,24 @@ return [
             ],
         ],
 
+        'pgsql2' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('MSTR_DB_HOST', 'forge'),
+            'port' => env('MSTR_DB_PORT', 'forge'),
+            'database' => env('MSTR_DB_DATABASE', 'forge'),
+            'username' => env('MSTR_DB_USERNAME', 'forge'),
+            'password' => env('MSTR_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+            'options'   => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),

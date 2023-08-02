@@ -56,6 +56,7 @@ class HoardingController extends Controller
     protected $_paramId;
     protected $_baseUrl;
     protected $_wfMasterId;
+    protected $_fileUrl;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActivehoarding();
@@ -65,6 +66,7 @@ class HoardingController extends Controller
         $this->_tempParamId = Config::get('workflow-constants.TEMP_HOR_ID');
         $this->_paramId = Config::get('workflow-constants.HOR_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.HORDING_WF_MASTER_ID');
@@ -130,6 +132,7 @@ class HoardingController extends Controller
      */
     public function addNew(StoreLicenceRequest $req)
     {
+        // return $req;
         try {
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
@@ -521,7 +524,11 @@ class HoardingController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type ");
         }
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -543,7 +550,11 @@ class HoardingController extends Controller
         $workflowId = AdvActiveHoarding::find($req->applicationId)->workflow_id;
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = $data;
+        $appUrl = $this->_fileUrl;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
         return $data1;
     }
 
@@ -568,8 +579,12 @@ class HoardingController extends Controller
         }
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-
-        return responseMsgs(true, "Data Fetched", remove_null($data), "050614", "1.0", "$executionTime Sec", "POST", "");
+        $appUrl = $this->_fileUrl;
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
+            $value->doc_path = $appUrl . $value->doc_path;
+            return $value;
+        });
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050614", "1.0", "$executionTime Sec", "POST", "");
     }
     /**
      * | Final Approval and Rejection of the Application
