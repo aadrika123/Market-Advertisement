@@ -66,7 +66,7 @@ class MarriageRegistrationController extends Controller
             $mWfWorkflow = new WfWorkflow();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $mWfRoleusermaps = new WfRoleusermap();
-            $user                       = authUser();
+            $user                       = authUser($req);
             $ulbId                      = $user->ulb_id ?? $req->ulbId;
             $userType                   = $user->user_type;
             $workflowMasterId           = $this->_workflowMasterId;
@@ -388,8 +388,8 @@ class MarriageRegistrationController extends Controller
     public function inbox(Request $req)
     {
         try {
-            $userId = authUser()->id;
-            $ulbId = authUser()->ulb_id;
+            $userId = authUser($req)->id;
+            $ulbId = authUser($req)->ulb_id;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
             $perPage = $req->perPage ?? 10;
 
@@ -538,7 +538,7 @@ class MarriageRegistrationController extends Controller
     public function listApplications(Request $req)
     {
         try {
-            $registrationDtl = MarriageActiveRegistration::where('citizen_id', authUser()->id)->get();
+            $registrationDtl = MarriageActiveRegistration::where('citizen_id', authUser($req)->id)->get();
             if (!$registrationDtl)
                 throw new Exception('No Data Found');
 
@@ -594,7 +594,7 @@ class MarriageRegistrationController extends Controller
                     throw new Exception("Today is not the appointment date. You can't approve the application today");
             } else
                 throw new Exception('Appointment Date is not set');
-            $userId = authUser()->id;
+            $userId = authUser($req)->id;
             $getFinisherQuery = $this->getFinisherId($details->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
 
