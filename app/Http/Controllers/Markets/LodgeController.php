@@ -573,7 +573,6 @@ class LodgeController extends Controller
                 $amount = $mMarketPriceMstr->getMarketTaxPrice($this->_wfMasterId, $mMarActiveLodge->no_of_beds, $mMarActiveLodge->ulb_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-
                 // $mCalculateRate = new CalculateRate;
                 // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mMarActiveLodge->ulb_id); // Generate License No
                 $idGeneration = new PrefixIdGenerator($this->_paramId, $mMarActiveLodge->ulb_id);
