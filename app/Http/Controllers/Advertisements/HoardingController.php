@@ -132,7 +132,6 @@ class HoardingController extends Controller
      */
     public function addNew(StoreLicenceRequest $req)
     {
-        // return $req;
         try {
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();

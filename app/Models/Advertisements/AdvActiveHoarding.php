@@ -129,8 +129,10 @@ class AdvActiveHoarding extends Model
 
 
         $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
+        // $licenceId = 5;
 
         $mDocuments = $req->documents;
+        // $mDocuments = str_replace(']"'," ",$mDocuments);
         $this->uploadDocument($licenceId, $mDocuments, $req->auth);
 
         return $req->application_no;
