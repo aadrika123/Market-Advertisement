@@ -284,7 +284,7 @@ if (!function_exists('getClientIpAddress')) {
 
 
     /**
-     * | Api Response time for the the apis
+     * | All Data Filter According to Key
      */
 
     if (!function_exists("searchFilter")) {
@@ -299,8 +299,9 @@ if (!function_exists('getClientIpAddress')) {
             });
         }
     }
+
     /**
-     * | Api Response time for the the apis
+     * | Get Financial Year
      */
 
     if (!function_exists('getFinancialYear')) {
@@ -325,6 +326,44 @@ if (!function_exists('getClientIpAddress')) {
         function authUserDetails($req)
         {
             return $req->auth;
+        }
+    }
+
+    
+
+    /**
+     * | Search Filter for Shop Rental Data
+     */
+
+     if (!function_exists("searchShopRentalFilter")) {
+        function searchShopRentalFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
+                ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
+                // ->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
+                // ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+            });
+        }
+    }
+
+
+    
+    /**
+     * | Search Filter for Shop Rental Data
+     */
+
+     if (!function_exists("searchTollRentalFilter")) {
+        function searchTollRentalFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                // $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
+                // ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
+                $query->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
+                ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+            });
         }
     }
 }

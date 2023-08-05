@@ -258,6 +258,8 @@ class TollsController extends Controller
     {
         try {
             $mtoll = $this->_mToll->getUlbWiseToll($request->auth['ulb_id']);
+            if ($request->key)
+                $mtoll = searchTollRentalFilter($mtoll, $request);
             $mtoll = paginator($mtoll, $request);
             return responseMsgs(true, "", $mtoll, 55106, "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {

@@ -352,6 +352,8 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->getShop($req->marketId);
+            // if ($req->key)
+            //     $list = searchRentalFilter($list, $req);
             $list = paginator($list, $req);
             return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -366,6 +368,8 @@ class ShopController extends Controller
             $ulbId = $req->auth['ulb_id'];
             $mShop = new Shop();
             $list = $mShop->getAllShopUlbWise($ulbId);
+            if ($req->key)
+                $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
             return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
