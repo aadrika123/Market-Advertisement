@@ -104,7 +104,7 @@ class MarActiveHostel extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments,$req->auth);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -143,7 +143,7 @@ class MarActiveHostel extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments,$req->auth);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $mRenewNo['renew_no'];;
     }
@@ -153,14 +153,14 @@ class MarActiveHostel extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents,$auth)
+    public function uploadDocument($tempId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mMarActiveHostel = new MarActiveHostel();
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId,$auth, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
+        collect($documents)->map(function ($doc) use ($tempId, $auth, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveHostel->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -176,7 +176,7 @@ class MarActiveHostel extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            $mWfActiveDocument->postDocuments($a, $auth);
         });
     }
 
@@ -195,7 +195,7 @@ class MarActiveHostel extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('mar_active_hostels')
             ->select(
@@ -208,17 +208,17 @@ class MarActiveHostel extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('mar_active_hostels')
             ->select(
@@ -231,10 +231,10 @@ class MarActiveHostel extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -348,20 +348,22 @@ class MarActiveHostel extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        return MarActiveHostel::where('citizen_id', $citizenId)
+        return MarActiveHostel::where('mar_active_hostels.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'doc_upload_status',
-                'doc_verify_status',
-                'application_type',
-                'parked',
+                'mar_active_hostels.id',
+                'mar_active_hostels.application_no',
+                DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"),
+                'mar_active_hostels.applicant',
+                'mar_active_hostels.entity_name',
+                'mar_active_hostels.entity_address',
+                'mar_active_hostels.doc_upload_status',
+                'mar_active_hostels.doc_verify_status',
+                'mar_active_hostels.application_type',
+                'mar_active_hostels.parked',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_active_hostels.ulb_id')
+            ->orderByDesc('mar_active_hostels.id')
             ->get();
     }
 
@@ -408,7 +410,7 @@ class MarActiveHostel extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
+        $mWfActiveDocument->postDocuments($a, $req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];

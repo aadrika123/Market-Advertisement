@@ -19,26 +19,28 @@ class MarLodge extends Model
     public function allApproveList()
     {
         return MarLodge::select(
-            'id',
-            'application_no',
-            'application_date',
-            'entity_address',
-            'entity_name',
-            'applicant',
-            'applicant as owner_name',
-            'mobile as mobile_no',
-            'payment_amount',
-            'payment_status',
-            'approve_date',
-            'citizen_id',
-            'ulb_id',
-            'valid_upto',
-            'workflow_id',
-            'license_no',
-            'application_type',
+            'mar_lodges.id',
+            'mar_lodges.application_no',
+            'mar_lodges.application_date',
+            'mar_lodges.entity_address',
+            'mar_lodges.entity_name',
+            'mar_lodges.applicant',
+            'mar_lodges.applicant as owner_name',
+            'mar_lodges.mobile as mobile_no',
+            'mar_lodges.payment_amount',
+            'mar_lodges.payment_status',
+            'mar_lodges.approve_date',
+            'mar_lodges.citizen_id',
+            'mar_lodges.ulb_id',
+            'mar_lodges.valid_upto',
+            'mar_lodges.workflow_id',
+            'mar_lodges.license_no',
+            'mar_lodges.application_type',
             DB::raw("'lodge' as type"),
+            'um.ulb_name as ulb_name',
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+            ->orderByDesc('mar_lodges.id')
             ->get();
     }
 
@@ -107,7 +109,7 @@ class MarLodge extends Model
             $pay_id = $mMarLodge->payment_id = "Cash-$req->applicationId-" . time();
             $mMarLodge->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount,'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarLodge->payment_details = json_encode($payDetails);
 

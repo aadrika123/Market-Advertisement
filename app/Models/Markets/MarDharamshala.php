@@ -19,25 +19,27 @@ class MarDharamshala extends Model
     public function allApproveList()
     {
         return MarDharamshala::select(
-            'id',
-            'application_no',
-            'application_date',
-            'entity_address',
-            'payment_amount',
-            'entity_name',
-            'applicant',
-            'applicant as owner_name',
-            'mobile as mobile_no',
-            'approve_date',
-            'payment_status',
-            'citizen_id',
-            'ulb_id',
-            'valid_upto',
-            'workflow_id',
-            'license_no',
-            'application_type',
+            'mar_dharamshalas.id',
+            'mar_dharamshalas.application_no',
+            'mar_dharamshalas.application_date',
+            'mar_dharamshalas.entity_address',
+            'mar_dharamshalas.payment_amount',
+            'mar_dharamshalas.entity_name',
+            'mar_dharamshalas.applicant',
+            'mar_dharamshalas.applicant as owner_name',
+            'mar_dharamshalas.mobile as mobile_no',
+            'mar_dharamshalas.approve_date',
+            'mar_dharamshalas.payment_status',
+            'mar_dharamshalas.citizen_id',
+            'mar_dharamshalas.ulb_id',
+            'mar_dharamshalas.valid_upto',
+            'mar_dharamshalas.workflow_id',
+            'mar_dharamshalas.license_no',
+            'mar_dharamshalas.application_type',
             DB::raw("'dharamshala' as type"),
+            'um.ulb_name as ulb_name',
         )
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_dharamshalas.ulb_id')
             ->orderByDesc('id')
             ->get();
     }

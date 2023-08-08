@@ -20,27 +20,29 @@ class MarBanquteHall extends Model
     public function allApproveList()
     {
         return MarBanquteHall::select(
-            'id',
-            'application_no',
-            'application_date',
-            'applicant',
-            'applicant as owner_name',
-            'entity_address',
-            'entity_name',
-            'mobile as mobile_no',
-            'payment_status',
-            'payment_amount',
-            'approve_date',
-            'citizen_id',
-            'user_id',
-            'ulb_id',
-            'application_type',
-            'valid_upto',
-            'workflow_id',
-            'license_no',
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.application_date',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.applicant as owner_name',
+            'mar_banqute_halls.entity_address',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.mobile as mobile_no',
+            'mar_banqute_halls.payment_status',
+            'mar_banqute_halls.payment_amount',
+            'mar_banqute_halls.approve_date',
+            'mar_banqute_halls.citizen_id',
+            'mar_banqute_halls.user_id',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.valid_upto',
+            'mar_banqute_halls.workflow_id',
+            'mar_banqute_halls.license_no',
             DB::raw("'banquetMarriageHall' as type"),
+            'um.ulb_name as ulb_name'
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
+            ->orderByDesc('mar_banqute_halls.id')
             ->get();
     }
 
@@ -111,7 +113,7 @@ class MarBanquteHall extends Model
             $pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarBanquteHall->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount,'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->citizen_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount, 'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->citizen_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarBanquteHall->payment_details = json_encode($payDetails);
             if ($mMarBanquteHall->renew_no == NULL) {
@@ -203,7 +205,7 @@ class MarBanquteHall extends Model
      */
     public function getPaymentDetails($paymentId)
     {
-         $details = MarBanquteHall::select(
+        $details = MarBanquteHall::select(
             'mar_banqute_halls.payment_amount',
             'mar_banqute_halls.payment_id',
             'mar_banqute_halls.payment_date',

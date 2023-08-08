@@ -14,29 +14,31 @@ class AdvSelfadvertisement extends Model
     public function allApproveList()
     {
         return AdvSelfadvertisement::select(
-            'id',
-            'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-            'applicant',
-            'applicant as owner_name',
-            'entity_name',
-            'entity_ward_id',
-            'mobile_no',
-            'entity_address',
-            'payment_status',
-            'payment_amount',
-            'approve_date',
-            'ulb_id',
-            'workflow_id',
-            'citizen_id',
-            'license_no',
-            'valid_upto',
-            'valid_from',
-            'user_id',
-            'application_type',
+            'adv_selfadvertisements.id',
+            'adv_selfadvertisements.application_no',
+            DB::raw("TO_CHAR(adv_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_selfadvertisements.applicant',
+            'adv_selfadvertisements.applicant as owner_name',
+            'adv_selfadvertisements.entity_name',
+            'adv_selfadvertisements.entity_ward_id',
+            'adv_selfadvertisements.mobile_no',
+            'adv_selfadvertisements.entity_address',
+            'adv_selfadvertisements.payment_status',
+            'adv_selfadvertisements.payment_amount',
+            'adv_selfadvertisements.approve_date',
+            'adv_selfadvertisements.ulb_id',
+            'adv_selfadvertisements.workflow_id',
+            'adv_selfadvertisements.citizen_id',
+            'adv_selfadvertisements.license_no',
+            'adv_selfadvertisements.valid_upto',
+            'adv_selfadvertisements.valid_from',
+            'adv_selfadvertisements.user_id',
+            'adv_selfadvertisements.application_type',
             DB::raw("'selfAdvt' as type"),
             DB::raw("'Approved' as applicationStatus"),
+            'um.ulb_name as ulb_name',
         )
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_selfadvertisements.ulb_id')
             ->orderByDesc('id')
             ->get();
     }
@@ -146,9 +148,9 @@ class AdvSelfadvertisement extends Model
             'wn.ward_name as wardNo',
             DB::raw("'Advertisement' as module"),
         )
-        ->leftjoin('ulb_masters', 'adv_selfadvertisements.ulb_id', '=', 'ulb_masters.id')
-        ->leftjoin('ref_adv_paramstrings as ly', 'adv_selfadvertisements.license_year', '=', 'ly.id')
-        ->leftjoin('ulb_ward_masters as wn', 'adv_selfadvertisements.ward_id', '=', 'wn.id')
+            ->leftjoin('ulb_masters', 'adv_selfadvertisements.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ref_adv_paramstrings as ly', 'adv_selfadvertisements.license_year', '=', 'ly.id')
+            ->leftjoin('ulb_ward_masters as wn', 'adv_selfadvertisements.ward_id', '=', 'wn.id')
             ->where('adv_selfadvertisements.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
@@ -172,7 +174,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_mode = "Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount,'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
             if ($mAdvSelfadvertisement->renew_no == NULL) {                             // Fresh Application Time 

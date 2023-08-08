@@ -15,17 +15,16 @@ class AdvRejectedPrivateland extends Model
      */
     public function listRejected($citizenId)
     {
-        return AdvRejectedPrivateland::where('citizen_id', $citizenId)
+        return AdvRejectedPrivateland::where('adv_rejected_privatelands.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
-                'rejected_date',
+                'adv_rejected_privatelands.id',
+                'adv_rejected_privatelands.application_no',
+                DB::raw("TO_CHAR(adv_rejected_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+                'adv_rejected_privatelands.rejected_date',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_rejected_privatelands.ulb_id')
+            ->orderByDesc('adv_rejected_privatelands.id')
             ->get();
     }
 

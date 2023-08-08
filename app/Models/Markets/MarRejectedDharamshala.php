@@ -15,18 +15,18 @@ class MarRejectedDharamshala extends Model
      */
     public function listRejected($citizenId)
     {
-        return MarRejectedDharamshala::where('citizen_id', $citizenId)
+        return MarRejectedDharamshala::where('mar_rejected_dharamshalas.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                'application_date',
-                'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
-                'rejected_date',
-                'citizen_id',
+                'mar_rejected_dharamshalas.id',
+                'mar_rejected_dharamshalas.application_no',
+                'mar_rejected_dharamshalas.application_date',
+                'mar_rejected_dharamshalas.entity_address',
+                'mar_rejected_dharamshalas.rejected_date',
+                'mar_rejected_dharamshalas.citizen_id',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_dharamshalas.ulb_id')
+            ->orderByDesc('mar_rejected_dharamshalas.id')
             ->get();
     }    
     

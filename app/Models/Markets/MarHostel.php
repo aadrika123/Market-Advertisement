@@ -20,26 +20,28 @@ class MarHostel extends Model
     public function allApproveList()
     {
         return MarHostel::select(
-            'id',
-            'application_no',
-            'application_date',
-            'entity_address',
-            'entity_name',
-            'applicant',
-            'applicant as owner_name',
-            'mobile as mobile_no',
-            'payment_status',
-            'payment_amount',
-            'approve_date',
-            'citizen_id',
-            'ulb_id',
-            'valid_upto',
-            'workflow_id',
-            'license_no',
-            'application_type',
+            'mar_hostels.id',
+            'mar_hostels.application_no',
+            'mar_hostels.application_date',
+            'mar_hostels.entity_address',
+            'mar_hostels.entity_name',
+            'mar_hostels.applicant',
+            'mar_hostels.applicant as owner_name',
+            'mar_hostels.mobile as mobile_no',
+            'mar_hostels.payment_status',
+            'mar_hostels.payment_amount',
+            'mar_hostels.approve_date',
+            'mar_hostels.citizen_id',
+            'mar_hostels.ulb_id',
+            'mar_hostels.valid_upto',
+            'mar_hostels.workflow_id',
+            'mar_hostels.license_no',
+            'mar_hostels.application_type',
             DB::raw("'hostel' as type"),
+            'um.ulb_name as ulb_name',
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
+            ->orderByDesc('mar_hostels.id')
             ->get();
     }
 

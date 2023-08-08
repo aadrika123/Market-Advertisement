@@ -17,16 +17,18 @@ class AdvRejectedSelfadvertisement extends Model
     {
         return AdvRejectedSelfadvertisement::where('citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'rejected_date',
+                'adv_rejected_selfadvertisements.id',
+                'adv_rejected_selfadvertisements.application_no',
+                DB::raw("TO_CHAR(adv_rejected_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
+                'adv_rejected_selfadvertisements.applicant',
+                'adv_rejected_selfadvertisements.entity_name',
+                'adv_rejected_selfadvertisements.entity_address',
+                'adv_rejected_selfadvertisements.payment_status',
+                'adv_rejected_selfadvertisements.rejected_date',
+                'um.ulb_name as ulb_name'
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um','um.id','=','adv_rejected_selfadvertisements.ulb_id')
+            ->orderByDesc('adv_rejected_selfadvertisements.id')
             ->get();
     }
 

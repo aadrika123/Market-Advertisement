@@ -3,6 +3,7 @@
 use App\Http\Controllers\Advertisements\AgencyController;
 use App\Http\Controllers\Advertisements\HoardingController;
 use App\Http\Controllers\Advertisements\PrivateLandController;
+use App\Http\Controllers\Advertisements\SearchController;
 use App\Http\Controllers\Advertisements\SelfAdvetController;
 use App\Http\Controllers\Advertisements\VehicleAdvetController;
 use App\Http\Controllers\Bandobastee\BandobasteeController;
@@ -520,5 +521,18 @@ Route::group(['middleware' => ['checkToken']], function () {
         // Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 16   ( Banquet Hall List )
         // Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 17   ( BanquetHall Settler List )
 
+    });
+
+
+    /**
+     * | Search Controller
+     * | Controller-12
+     * | Created By - Bikash Kumar
+     * | Date - 07 Aug 2023
+     * | Status - Open
+     */
+    Route::controller(SearchController::class)->group(function () {
+        Route::post('advert/search/list-all-advertisement-records', 'listAllAdvertisementRecords');                              // 01   ( All Advertisement records List  of citizen )
+        Route::post('advert/search/list-all-market-records', 'listAllMarketRecords');                                     // 02   ( All Market records List  of citizen )
     });
 });

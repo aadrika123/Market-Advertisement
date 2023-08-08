@@ -18,28 +18,30 @@ class AdvPrivateland extends Model
     public function allApproveList()
     {
         return AdvPrivateland::select(
-            'id',
-            'application_no',
-            'applicant',
-            'applicant as owner_name',
-            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-            'application_type',
-            'entity_name',
-            'mobile_no',
-            'entity_address',
-            'payment_amount',
-            'payment_status',
-            'valid_upto',
-            'valid_from',
-            'approve_date',
-            'citizen_id',
-            'user_id',
-            'ulb_id',
-            'workflow_id',
-            'license_no',
-            DB::raw("'privateLand' as type")
+            'adv_privatelands.id',
+            'adv_privatelands.application_no',
+            'adv_privatelands.applicant',
+            'adv_privatelands.applicant as owner_name',
+            DB::raw("TO_CHAR(adv_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_privatelands.application_type',
+            'adv_privatelands.entity_name',
+            'adv_privatelands.mobile_no',
+            'adv_privatelands.entity_address',
+            'adv_privatelands.payment_amount',
+            'adv_privatelands.payment_status',
+            'adv_privatelands.valid_upto',
+            'adv_privatelands.valid_from',
+            'adv_privatelands.approve_date',
+            'adv_privatelands.citizen_id',
+            'adv_privatelands.user_id',
+            'adv_privatelands.ulb_id',
+            'adv_privatelands.workflow_id',
+            'adv_privatelands.license_no',
+            DB::raw("'privateLand' as type"),
+            'um.ulb_name as ulb_name',
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_privatelands.ulb_id')
+            ->orderByDesc('adv_privatelands.id')
             ->get();
     }
 
@@ -134,8 +136,8 @@ class AdvPrivateland extends Model
             'wn.ward_name as wardNo',
             DB::raw("'Advertisement' as module"),
         )
-        ->leftjoin('ulb_masters', 'adv_privatelands.ulb_id', '=', 'ulb_masters.id')
-        ->leftjoin('ulb_ward_masters as wn', DB::raw('adv_privatelands.entity_ward_id::int'), '=', 'wn.id')
+            ->leftjoin('ulb_masters', 'adv_privatelands.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ulb_ward_masters as wn', DB::raw('adv_privatelands.entity_ward_id::int'), '=', 'wn.id')
             ->where('adv_privatelands.payment_id', $paymentId)
             ->first();
         $details->payment_details = json_decode($details->payment_details);
@@ -163,7 +165,7 @@ class AdvPrivateland extends Model
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount,'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvPrivateland->payment_details = json_encode($payDetails);
             if ($mAdvPrivateland->renew_no == NULL) {

@@ -329,6 +329,8 @@ class TollsController extends Controller
         try {
             $mMarToll = new MarToll();
             $list = $mMarToll->getToll($req->marketId);
+            if ($req->key)
+                $list = searchTollRentalFilter($list, $req);
             $list = paginator($list, $req);
             return responseMsgs(true, "Toll List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {

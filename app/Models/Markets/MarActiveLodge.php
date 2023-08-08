@@ -347,19 +347,21 @@ class MarActiveLodge extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        return MarActiveLodge::where('citizen_id', $citizenId)
+        return MarActiveLodge::where('mar_active_lodges.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'doc_upload_status',
-                'application_type',
-                'parked',
+                'mar_active_lodges.id',
+                'mar_active_lodges.application_no',
+                DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
+                'mar_active_lodges.applicant',
+                'mar_active_lodges.entity_name',
+                'mar_active_lodges.entity_address',
+                'mar_active_lodges.doc_upload_status',
+                'mar_active_lodges.application_type',
+                'mar_active_lodges.parked',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_active_lodges.ulb_id')
+            ->orderByDesc('mar_active_lodges.id')
             ->get();
     }
 

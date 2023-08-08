@@ -374,19 +374,21 @@ class MarActiveBanquteHall extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        return MarActiveBanquteHall::where('citizen_id', $citizenId)
+        return MarActiveBanquteHall::where('mar_active_banqute_halls.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'doc_upload_status',
-                'application_type',
-                'parked',
+                'mar_active_banqute_halls.id',
+                'mar_active_banqute_halls.application_no',
+                DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+                'mar_active_banqute_halls.applicant',
+                'mar_active_banqute_halls.entity_name',
+                'mar_active_banqute_halls.entity_address',
+                'mar_active_banqute_halls.doc_upload_status',
+                'mar_active_banqute_halls.application_type',
+                'mar_active_banqute_halls.parked',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_active_banqute_halls.ulb_id')
+            ->orderByDesc('mar_active_banqute_halls.id')
             ->get();
     }
 

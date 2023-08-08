@@ -15,19 +15,18 @@ class AdvRejectedVehicle extends Model
      */
     public function listRejected($citizenId)
     {
-        return AdvRejectedVehicle::where('citizen_id', $citizenId)
+        return AdvRejectedVehicle::where('adv_rejected_vehicles.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
-                'rejected_date',
+                'adv_rejected_vehicles.id',
+                'adv_rejected_vehicles.application_no',
+                DB::raw("TO_CHAR(adv_rejected_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+                'adv_rejected_vehicles.applicant',
+                'adv_rejected_vehicles.entity_name',
+                'adv_rejected_vehicles.rejected_date',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_rejected_vehicles.ulb_id')
+            ->orderByDesc('adv_rejected_vehicles.id')
             ->get();
     }
 

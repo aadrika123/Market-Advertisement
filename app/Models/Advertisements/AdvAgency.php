@@ -11,7 +11,7 @@ use Carbon\Carbon;
 class AdvAgency extends Model
 {
     use HasFactory;
-    
+
     /**
      * | Get Agency Details by Agency Id
      */
@@ -55,26 +55,28 @@ class AdvAgency extends Model
     public function allApproveList()
     {
         return AdvAgency::select(
-            'id',
-            'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-            'application_type',
-            'entity_name',
-            'payment_status',
-            'mobile_no',
-            'payment_amount',
-            'approve_date',
-            'valid_upto',
-            'valid_from',
-            'citizen_id',
-            'user_id',
-            'ulb_id',
-            'workflow_id',
-            'license_no',
+            'adv_agencies.id',
+            'adv_agencies.application_no',
+            DB::raw("TO_CHAR(adv_agencies.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_agencies.application_type',
+            'adv_agencies.entity_name',
+            'adv_agencies.payment_status',
+            'adv_agencies.mobile_no',
+            'adv_agencies.payment_amount',
+            'adv_agencies.approve_date',
+            'adv_agencies.valid_upto',
+            'adv_agencies.valid_from',
+            'adv_agencies.citizen_id',
+            'adv_agencies.user_id',
+            'adv_agencies.ulb_id',
+            'adv_agencies.workflow_id',
+            'adv_agencies.license_no',
             DB::raw("'agency' as type"),
-            DB::raw("'' as owner_name")
+            DB::raw("'' as owner_name"),
+            'um.ulb_name as ulb_name',
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
+            ->orderByDesc('adv_agencies.id')
             ->get();
     }
 
@@ -225,7 +227,7 @@ class AdvAgency extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount,'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvAgency->payment_details = json_encode($payDetails);
             if ($mAdvAgency->renew_no == NULL) {

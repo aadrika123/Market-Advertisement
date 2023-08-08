@@ -10,34 +10,36 @@ use Illuminate\Support\Facades\DB;
 class AdvVehicle extends Model
 {
     use HasFactory;
-    
+
     /**
      * | Get all approve application list
      */
     public function allApproveList()
     {
         return AdvVehicle::select(
-            'id',
+            'adv_vehicles.id',
             'application_no',
-            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-            'application_type',
-            'applicant',
-            'applicant as owner_name',
-            'entity_name',
-            'mobile_no',
-            'license_no',
-            'payment_status',
-            'payment_amount',
-            'approve_date',
-            'citizen_id',
-            'valid_upto',
-            'valid_from',
-            'user_id',
-            'ulb_id',
-            'workflow_id',
-            DB::raw("'movableVehicle' as type")
+            DB::raw("TO_CHAR(adv_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_vehicles.application_type',
+            'adv_vehicles.applicant',
+            'adv_vehicles.applicant as owner_name',
+            'adv_vehicles.entity_name',
+            'adv_vehicles.mobile_no',
+            'adv_vehicles.license_no',
+            'adv_vehicles.payment_status',
+            'adv_vehicles.payment_amount',
+            'adv_vehicles.approve_date',
+            'adv_vehicles.citizen_id',
+            'adv_vehicles.valid_upto',
+            'adv_vehicles.valid_from',
+            'adv_vehicles.user_id',
+            'adv_vehicles.ulb_id',
+            'adv_vehicles.workflow_id',
+            DB::raw("'movableVehicle' as type"),
+            'um.ulb_name as ulb_name',
         )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_vehicles.ulb_id')
+            ->orderByDesc('adv_vehicles.id')
             ->get();
     }
 
@@ -168,7 +170,7 @@ class AdvVehicle extends Model
             $mAdvVehicle->payment_date = Carbon::now();
 
             // Payment Details
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount,'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvVehicle->payment_details =  json_encode($payDetails);
             if ($mAdvVehicle->renew_no == NULL) {

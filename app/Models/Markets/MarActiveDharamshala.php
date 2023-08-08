@@ -98,7 +98,7 @@ class MarActiveDharamshala extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveDharamshala::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments,$req->auth);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -137,7 +137,7 @@ class MarActiveDharamshala extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveDharamshala::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments,$req->auth);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $mRenewNo['renew_no'];
     }
@@ -147,14 +147,14 @@ class MarActiveDharamshala extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents,$auth)
+    public function uploadDocument($tempId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mMarActiveDharamshala = new MarActiveDharamshala();
         $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveDharamshala, $relativePath,$auth) {
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarActiveDharamshala, $relativePath, $auth) {
             $metaReqs = array();
             $getApplicationDtls = $mMarActiveDharamshala->getApplicationDtls($tempId);
             $refImageName = $doc['docCode'];
@@ -170,7 +170,7 @@ class MarActiveDharamshala extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            $mWfActiveDocument->postDocuments($a, $auth);
         });
     }
 
@@ -189,7 +189,7 @@ class MarActiveDharamshala extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('mar_active_dharamshalas')
             ->select(
@@ -202,17 +202,17 @@ class MarActiveDharamshala extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('mar_active_dharamshalas')
             ->select(
@@ -225,10 +225,10 @@ class MarActiveDharamshala extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -331,19 +331,21 @@ class MarActiveDharamshala extends Model
      */
     public function listAppliedApplications($citizenId)
     {
-        return MarActiveDharamshala::where('citizen_id', $citizenId)
+        return MarActiveDharamshala::where('mar_active_dharamshalas.citizen_id', $citizenId)
             ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'doc_upload_status',
-                'application_type',
-                'parked',
+                'mar_active_dharamshalas.id',
+                'mar_active_dharamshalas.application_no',
+                DB::raw("TO_CHAR(mar_active_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"),
+                'mar_active_dharamshalas.applicant',
+                'mar_active_dharamshalas.entity_name',
+                'mar_active_dharamshalas.entity_address',
+                'mar_active_dharamshalas.doc_upload_status',
+                'mar_active_dharamshalas.application_type',
+                'mar_active_dharamshalas.parked',
+                'um.ulb_name as ulb_name',
             )
-            ->orderByDesc('id')
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_active_dharamshalas.ulb_id')
+            ->orderByDesc('mar_active_dharamshalas.id')
             ->get();
     }
 
@@ -390,7 +392,7 @@ class MarActiveDharamshala extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
+        $mWfActiveDocument->postDocuments($a, $req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
