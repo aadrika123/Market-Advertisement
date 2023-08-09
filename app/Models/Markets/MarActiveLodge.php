@@ -359,7 +359,9 @@ class MarActiveLodge extends Model
                 'mar_active_lodges.application_type',
                 'mar_active_lodges.parked',
                 'um.ulb_name as ulb_name',
+                'wr.role_name',
             )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_lodges.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'mar_active_lodges.ulb_id')
             ->orderByDesc('mar_active_lodges.id')
             ->get();

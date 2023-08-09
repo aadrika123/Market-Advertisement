@@ -921,6 +921,8 @@ class LodgeController extends Controller
             // Variable initialization
             $redis = Redis::connection();
             $mMarActiveLodge = MarActiveLodge::find($req->applicationId);
+            if($mMarActiveLodge -> doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mMarActiveLodge->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

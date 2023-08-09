@@ -343,7 +343,9 @@ class MarActiveDharamshala extends Model
                 'mar_active_dharamshalas.application_type',
                 'mar_active_dharamshalas.parked',
                 'um.ulb_name as ulb_name',
+                'wr.role_name',
             )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_dharamshalas.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'mar_active_dharamshalas.ulb_id')
             ->orderByDesc('mar_active_dharamshalas.id')
             ->get();

@@ -1236,6 +1236,8 @@ class AgencyController extends Controller
 
             $redis = Redis::connection();
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
+            if($mAdvActiveAgency -> doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActiveAgency->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

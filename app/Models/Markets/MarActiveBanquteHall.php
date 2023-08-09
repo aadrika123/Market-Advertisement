@@ -386,7 +386,9 @@ class MarActiveBanquteHall extends Model
                 'mar_active_banqute_halls.application_type',
                 'mar_active_banqute_halls.parked',
                 'um.ulb_name as ulb_name',
+                'wr.role_name',
             )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_banqute_halls.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'mar_active_banqute_halls.ulb_id')
             ->orderByDesc('mar_active_banqute_halls.id')
             ->get();

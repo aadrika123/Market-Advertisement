@@ -1281,6 +1281,8 @@ class HoardingController extends Controller
             // Variable initialization
             $redis = Redis::connection();
             $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
+            if($mAdvActiveHoarding -> doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActiveHoarding->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

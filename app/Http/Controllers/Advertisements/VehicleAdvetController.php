@@ -1208,6 +1208,8 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActiveVehicle::find($req->applicationId);
+            if($mAdvActivePrivateland -> doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActivePrivateland->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

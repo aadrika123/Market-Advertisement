@@ -923,6 +923,8 @@ class DharamshalaController extends Controller
 
             $redis = Redis::connection();
             $mMarActiveDharamshala = MarActiveDharamshala::find($req->applicationId);
+            if($mMarActiveDharamshala -> doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mMarActiveDharamshala->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
