@@ -93,11 +93,10 @@ class ParamController extends Controller
         $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
     }
 
-
-
     /**
      * | String Parameters values
      * | @param request $req
+     * | Function - 01
      */
     public function paramStrings(Request $req)
     {
@@ -130,6 +129,7 @@ class ParamController extends Controller
 
     /**
      * | Get Document Masters from our localstorage db
+     * | Function - 02
      */
     public function documentMstrs()
     {
@@ -138,11 +138,12 @@ class ParamController extends Controller
         $documents = remove_null($documents);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(true, "Document Masters", $documents, "040202", "1.0", $executionTime . " Sec", "POST");
+        return responseMsgs(true, "Document Masters", $documents, "050202", "1.0", $executionTime . " Sec", "POST");
     }
 
     /**
      * | All Document List
+     * | Function - 03
      */
     public function listDocument()
     {
@@ -165,6 +166,7 @@ class ParamController extends Controller
 
     /**
      * | Get Document Masters from our localstorage db
+     * | Function - 04
      */
     public function districtMstrs()
     {
@@ -173,7 +175,7 @@ class ParamController extends Controller
         $districts = remove_null($districts);
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
-        return responseMsgs(true, "District Masters", $districts, "040202", "1.0", $executionTime . " Sec", "POST");
+        return responseMsgs(true, "District Masters", $districts, "050204", "1.0", $executionTime . " Sec", "POST");
     }
 
     public function metaReqs($req)
@@ -191,6 +193,7 @@ class ParamController extends Controller
      * Summary of payment Success Failure of all Types of Advertisment 
      * @return void
      * @param request $req
+     * | Function - 05
      */
     public function paymentSuccessFailure(Request $req)
     {
@@ -532,6 +535,7 @@ class ParamController extends Controller
 
     /**
      * | Get Payment Details for all workflow
+     * | Function - 06
      */
     public function getPaymentDetails(Request $req)
     {
@@ -601,16 +605,17 @@ class ParamController extends Controller
             if (empty($paymentDetails)) {
                 throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
             } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050209", "1.0", "$executionTime Sec", "POST", $req->deviceId);
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050206", "1.0", "$executionTime Sec", "POST", $req->deviceId);
             }
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", '050209', 01, "", 'POST', $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'POST', $req->deviceId);
         }
     }
 
 
     /**
      * | Advertisement Dashboard
+     * | Function - 07
      */
     public function advertDashboard(Request $req)
     {
@@ -684,14 +689,15 @@ class ParamController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, 'Data Fetched',  $advert, "050206", "1.0", "$executionTime Sec", "POST");
+            return responseMsgs(true, 'Data Fetched',  $advert, "050207", "1.0", "$executionTime Sec", "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'POST', '');
+            return responseMsgs(false, $e->getMessage(), "", '050207', 01, "", 'POST', '');
         }
     }
 
     /**
      * | Market Dashboard
+     * | Function - 08
      */
     public function marketDashboard(Request $req)
     {
@@ -758,6 +764,11 @@ class ParamController extends Controller
         }
     }
 
+    
+    /**
+     * | Get Advertisement Dashboard
+     * | Function - 09
+     */
     public function advertisementDashboard(Request $req)
     {
         try {
@@ -813,14 +824,15 @@ class ParamController extends Controller
 
             // $dashboardReport['advert']=$advert;
             // $dashboardReport['market']=$market;
-            return responseMsgs(true, "Application Fetched Successfully", $dashboardReport, "050207", 1.0, responseTime(), "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $dashboardReport, "050209", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, "", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050209", 1.0, "", "POST", "", "");
         }
     }
 
     /**
      * | All Application Search application by name or mobile
+     * | Function - 10
      */
     public function searchByNameorMobile(Request $req)
     {
@@ -887,15 +899,16 @@ class ParamController extends Controller
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050210", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, "", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050210", 1.0, "", "POST", "", "");
         }
     }
 
 
     /**
      * | Get Payment Details For Application
+     * | Function - 11
      */
     public function getApprovalLetter(Request $req)
     {
@@ -944,14 +957,12 @@ class ParamController extends Controller
             }
 
 
-
-
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "010050202717", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "050211", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050211", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -963,6 +974,7 @@ class ParamController extends Controller
 
     /**
      * | Get Financial year Master data
+     * | Function - 12
      */
     public function getFinancialMasterData(Request $req)
     {
@@ -971,15 +983,16 @@ class ParamController extends Controller
             $financialYear = RefAdvParamstring::select('id', 'string_parameter')->where('param_category_id', '1017')->orderBy('string_parameter')->get();
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "010050202717", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "050212", 1.0, "$executionTime Sec", "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050212", 1.0, "271ms", "POST", "", "");
         }
     }
 
 
     /**
      * | Get Workflow Master Id 
+     * | Function - 13
      */
     public function getWorkflowMasterId($workflowId)
     {

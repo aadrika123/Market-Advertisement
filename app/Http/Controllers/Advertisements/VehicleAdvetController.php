@@ -897,7 +897,7 @@ class VehicleAdvetController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1208,7 +1208,7 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActiveVehicle::find($req->applicationId);
-            if($mAdvActivePrivateland -> doc_verify_status == 1)
+            if ($mAdvActivePrivateland->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActivePrivateland->workflow_id;
