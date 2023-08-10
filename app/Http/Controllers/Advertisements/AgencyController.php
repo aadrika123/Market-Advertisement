@@ -1637,9 +1637,9 @@ class AgencyController extends Controller
         try {
             $count = (DB::table('users')->where('email', $req->email))->count();
             if ($count > 0)
-                return 0;                                      // Email is Taken 
+                return ['status' => true, 'data' => 0];                                      // Email is Taken 
             else
-                return 1;                                      // Email is Free For Taken
+                return ['status' => true, 'data' => 1];                                      // Email is Free For Taken
         } catch (Exception $e) {
             return responseMsgs(false, "", $e->getMessage(), "050535", 1.0, "271ms", "POST", "", "");
         }
