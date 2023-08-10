@@ -608,7 +608,7 @@ class AgencyController extends Controller
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $appUrl = $this->_fileUrl;
-        $data1= collect($data)->map(function ($value) use ($appUrl) {
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
             $value->doc_path = $appUrl . $value->doc_path;
             return $value;
         });
@@ -1236,8 +1236,10 @@ class AgencyController extends Controller
 
             $redis = Redis::connection();
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
-            if($mAdvActiveAgency -> doc_verify_status == 1)
+            if ($mAdvActiveAgency->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAdvActiveAgency->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActiveAgency->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
@@ -1263,7 +1265,7 @@ class AgencyController extends Controller
             $req->request->add($metaReqs);
             $track = new WorkflowTrack();
             $track->saveTrack($req);
-            
+
             return responseMsgs(true, "Successfully Done", "", "", '050527', '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050527", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1573,12 +1575,12 @@ class AgencyController extends Controller
     public function store($req, $data)
     {
         // try {
-            // Validation---@source-App\Http\Requests\AuthUserRequest
-            $user = new User();
-            $this->saving($user, $req, $data);                     // Storing data using Auth trait
-            $user->password = Hash::make($data->mobile_no);
-            $user->save();
-           return $id= $user->id;
+        // Validation---@source-App\Http\Requests\AuthUserRequest
+        $user = new User();
+        $this->saving($user, $req, $data);                     // Storing data using Auth trait
+        $user->password = Hash::make($data->mobile_no);
+        $user->save();
+        return $id = $user->id;
         // } catch (Exception $e) {
         //     return responseMsgs(false, $e->getMessage(), "");
         // }
@@ -1624,15 +1626,21 @@ class AgencyController extends Controller
      * | Function - 39
      * | API - 35
      */
-    public function isEmailAvailable(Request $req){
-        try{
-            $count = DB::table('users')->where('email', $req->email)->count();
-            if($count == 0){
-                return 1;
-            }else{
-                return 0;
-            }
-        }catch(Exception $e){
+    public function isEmailAvailable(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'email' => 'required|email',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $count = (DB::table('users')->where('email', $req->email))->count();
+            if ($count > 0)
+                return 0;                                      // Email is Taken 
+            else
+                return 1;                                      // Email is Free For Taken
+        } catch (Exception $e) {
             return responseMsgs(false, "", $e->getMessage(), "050535", 1.0, "271ms", "POST", "", "");
         }
     }

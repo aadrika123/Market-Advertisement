@@ -1297,8 +1297,10 @@ class SelfAdvetController extends Controller
             // Variable initialization
             $redis = Redis::connection();
             $mAdvActiveSelfadvertisement = AdvActiveSelfadvertisement::find($req->applicationId);
-            if($mAdvActiveSelfadvertisement -> doc_verify_status == 1)
+            if ($mAdvActiveSelfadvertisement->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAdvActiveSelfadvertisement->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
             $workflowId = $mAdvActiveSelfadvertisement->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
             if (!$backId) {

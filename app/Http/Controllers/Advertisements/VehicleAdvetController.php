@@ -1207,11 +1207,13 @@ class VehicleAdvetController extends Controller
         try {
             // Variable Initialization
             $redis = Redis::connection();
-            $mAdvActivePrivateland = AdvActiveVehicle::find($req->applicationId);
-            if ($mAdvActivePrivateland->doc_verify_status == 1)
+            $mAdvActiveVehicle = AdvActiveVehicle::find($req->applicationId);
+            if ($mAdvActiveVehicle->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAdvActiveVehicle->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
-            $workflowId = $mAdvActivePrivateland->workflow_id;
+            $workflowId = $mAdvActiveVehicle->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
             if (!$backId) {
                 $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
@@ -1220,12 +1222,12 @@ class VehicleAdvetController extends Controller
                 $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
             }
 
-            $mAdvActivePrivateland->current_roles = $backId->wf_role_id;
-            $mAdvActivePrivateland->parked = 1;
-            $mAdvActivePrivateland->save();
+            $mAdvActiveVehicle->current_roles = $backId->wf_role_id;
+            $mAdvActiveVehicle->parked = 1;
+            $mAdvActiveVehicle->save();
 
             $metaReqs['moduleId'] = $this->_moduleIds;
-            $metaReqs['workflowId'] = $mAdvActivePrivateland->workflow_id;
+            $metaReqs['workflowId'] = $mAdvActiveVehicle->workflow_id;
             $metaReqs['refTableDotId'] = "adv_active_vehicles.id";
             $metaReqs['refTableIdValue'] = $req->applicationId;
             $metaReqs['verificationStatus'] = $req->verificationStatus;

@@ -697,7 +697,7 @@ class LodgeController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            
+
             return responseMsgs(true, "Rejected Application List", $data1, "050715", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050715", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -730,7 +730,7 @@ class LodgeController extends Controller
                 'workflowId' => $mMarLodge->workflow_id,
                 'ulbId' => $mMarLodge->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
-                'auth'=>$req->auth,
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -921,8 +921,10 @@ class LodgeController extends Controller
             // Variable initialization
             $redis = Redis::connection();
             $mMarActiveLodge = MarActiveLodge::find($req->applicationId);
-            if($mMarActiveLodge -> doc_verify_status == 1)
+            if ($mMarActiveLodge->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mMarActiveLodge->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mMarActiveLodge->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

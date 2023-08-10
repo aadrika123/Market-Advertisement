@@ -1286,6 +1286,8 @@ class HoardingController extends Controller
             $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
             if ($mAdvActiveHoarding->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAdvActiveHoarding->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActiveHoarding->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

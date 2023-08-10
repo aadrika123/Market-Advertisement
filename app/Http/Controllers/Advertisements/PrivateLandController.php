@@ -223,7 +223,7 @@ class PrivateLandController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            
+
 
             return responseMsgs(true, "Outbox Lists", $list, "050405", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -418,7 +418,7 @@ class PrivateLandController extends Controller
             if (trim($req->key))
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
-            
+
             return responseMsgs(true, "Data Fetched", $list, "050409", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050409", "1.0", "", "POST", $req->deviceId ?? "");
@@ -598,7 +598,7 @@ class PrivateLandController extends Controller
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $appUrl = $this->_fileUrl;
-        $data1= collect($data)->map(function ($value) use ($appUrl) {
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
             $value->doc_path = $appUrl . $value->doc_path;
             return $value;
         });
@@ -753,7 +753,7 @@ class PrivateLandController extends Controller
             // if ($data1['arrayCount'] == 0) {
             //     $data1 = null;
             // }
-            
+
             return responseMsgs(true, "Approved Application List", $data1, "050416", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050416", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -909,7 +909,7 @@ class PrivateLandController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1224,8 +1224,10 @@ class PrivateLandController extends Controller
 
             $redis = Redis::connection();
             $mAdvActivePrivateland = AdvActivePrivateland::find($req->applicationId);
-            if($mAdvActivePrivateland -> doc_verify_status == 1)
+            if ($mAdvActivePrivateland->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAdvActivePrivateland->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActivePrivateland->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
@@ -1346,7 +1348,7 @@ class PrivateLandController extends Controller
 
             $mAdvActivePrivateland = new AdvActivePrivateland();
             DB::beginTransaction();
-            $appId = $mAdvActivePrivateland->reuploadDocument($req,$req->auth);
+            $appId = $mAdvActivePrivateland->reuploadDocument($req, $req->auth);
             $this->checkFullUpload($appId);
             DB::commit();
 
@@ -1411,7 +1413,7 @@ class PrivateLandController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            
+
             return responseMsgs(true, "Application Fetched Successfully", $data, "050431", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050431", 1.0, "271ms", "POST", "", "");
@@ -1532,7 +1534,7 @@ class PrivateLandController extends Controller
             $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
                 $amounts->push($item->payment_amount);
             });
-            
+
             return responseMsgs(true, "Application Fetched Successfully", $data, "050433", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050433", 1.0, "271ms", "POST", "", "");

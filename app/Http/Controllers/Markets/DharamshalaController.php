@@ -525,7 +525,7 @@ class DharamshalaController extends Controller
             $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
         }
         $appUrl = $this->_fileUrl;
-        $data1= collect($data)->map(function ($value) use ($appUrl) {
+        $data1 = collect($data)->map(function ($value) use ($appUrl) {
             $value->doc_path = $appUrl . $value->doc_path;
             return $value;
         });
@@ -923,8 +923,10 @@ class DharamshalaController extends Controller
 
             $redis = Redis::connection();
             $mMarActiveDharamshala = MarActiveDharamshala::find($req->applicationId);
-            if($mMarActiveDharamshala -> doc_verify_status == 1)
+            if ($mMarActiveDharamshala->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mMarActiveDharamshala->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mMarActiveDharamshala->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
