@@ -1625,6 +1625,7 @@ class AgencyController extends Controller
      * | API - 35
      */
     public function isEmailAvailable(Request $req){
+        return $req;
         try{
             $count = DB::table('users')->where('email', $req->email)->count();
             if($count == 0){
