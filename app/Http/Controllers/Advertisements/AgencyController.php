@@ -1618,4 +1618,22 @@ class AgencyController extends Controller
 
         return $imageName;
     }
+
+    /**
+     * | Check Email is Available or not For Agency user
+     * | Function - 39
+     * | API - 35
+     */
+    public function isEmailAvailable(Request $req){
+        try{
+            $count = DB::table('users')->where('email', $req->email)->count();
+            if($count == 0){
+                return 1;
+            }else{
+                return 0;
+            }
+        }catch(Exception $e){
+            return responseMsgs(false, "", $e->getMessage(), "050535", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }

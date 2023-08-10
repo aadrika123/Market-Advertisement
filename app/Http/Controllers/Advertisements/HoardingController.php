@@ -133,6 +133,10 @@ class HoardingController extends Controller
     public function addNew(StoreLicenceRequest $req)
     {
         try {
+            $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
+            if ($checkPaymentStatus == 0)
+                throw new Exception("Agency Registration Payment Not Complete !!!");
+
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
             if ($req->auth['user_type'] == 'JSK') {
@@ -166,7 +170,6 @@ class HoardingController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050603", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
 
     /**
@@ -317,7 +320,7 @@ class HoardingController extends Controller
             // $data1['data'] = $applications;
             // $data1['arrayCount'] =  $totalApplication;
 
-            return responseMsgs(true, "Applied Applications", $list, "050607", "1.0",responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Applied Applications", $list, "050607", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050607", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -947,7 +950,7 @@ class HoardingController extends Controller
                 'workflowId' => $mAdvHoarding->workflow_id,
                 'ulbId' => $mAdvHoarding->ulb_id,
                 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
-                'auth'=>$req->auth,
+                'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
             $refResponse = Http::withHeaders([
@@ -957,7 +960,7 @@ class HoardingController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
             $data = json_decode($refResponse);
-            $data=$data->data;
+            $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
@@ -1023,7 +1026,7 @@ class HoardingController extends Controller
         }
         try {
             // Variable initialization
-            
+
             $mAdvHoarding = new AdvHoarding();
             $details = $mAdvHoarding->applicationDetailsForRenew($req->applicationId);
             if (!$details)
@@ -1259,7 +1262,7 @@ class HoardingController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-           
+
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050629", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -1281,7 +1284,7 @@ class HoardingController extends Controller
             // Variable initialization
             $redis = Redis::connection();
             $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
-            if($mAdvActiveHoarding -> doc_verify_status == 1)
+            if ($mAdvActiveHoarding->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
 
             $workflowId = $mAdvActiveHoarding->workflow_id;
@@ -1406,7 +1409,7 @@ class HoardingController extends Controller
             $userType = $req->auth['user_type'];
             $AdvHoarding = new AdvHoarding();
             $applications = $AdvHoarding->getRenewActiveApplications($citizenId, $userType);
-            
+
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);
@@ -1705,7 +1708,7 @@ class HoardingController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            
+
             return responseMsgs(true, "Application Fetched Successfully", $data, "050640", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050640", 1.0, "271ms", "POST", "", "");
@@ -1845,5 +1848,14 @@ class HoardingController extends Controller
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050532", "1.0", "", 'POST', $req->deviceId ?? "");
         }
+    }
+
+    /**
+     * | Check Agency Payment Complete or Not
+     * | Function - 37
+     */
+    public function checkPaymentCompleteOrNot($email)
+    {
+        return DB::table('adv_agencies')->select('payment_status')->where('email', $email)->first('payment_status');
     }
 }
