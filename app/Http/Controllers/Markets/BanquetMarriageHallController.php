@@ -931,6 +931,8 @@ class BanquetMarriageHallController extends Controller
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
             if($mMarActiveBanquteHall -> doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if($mMarActiveBanquteHall -> doc_upload_status == 1)
+                    throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
             $workflowId = $mMarActiveBanquteHall->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
             if (!$backId) {
