@@ -733,13 +733,6 @@ class HoardingController extends Controller
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
             $applications = $mAdvHoarding->listApproved($citizenId, $userId);
-            // $totalApplication = $applications->count();
-            // remove_null($applications);
-            // $data1['data'] = $applications;
-            // $data1['arrayCount'] =  $totalApplication;
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $allApproveList = paginator($applications, $req);
@@ -777,24 +770,12 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
-
-            // $citizenId = authUser()->id;
             $citizenId = $req->auth['id'];
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
             $applications = $mAdvRejectedHoarding->listRejected($citizenId);
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);
-            // $totalApplication = $applications->count();
-            // remove_null($applications);
-            // $data1['data'] = $applications;
-            // $data1['arrayCount'] =  $totalApplication;
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
 
             return responseMsgs(true, "Rejected Application List", $list, "050617", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -813,9 +794,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
-
-            // $citizenId = authUser()->id;
             $citizenId = $req->auth['id'];
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
@@ -823,15 +801,6 @@ class HoardingController extends Controller
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);
-            // $totalApplication = $applications->count();
-            // remove_null($applications);
-            // $data1['data'] = $applications;
-            // $data1['arrayCount'] =  $totalApplication;
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Unpaid Application List", $list, "050618", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050618", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -849,7 +818,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
             $userId = $req->auth['id'];
             $mmAdvRejectedHoarding = new AdvActiveHoarding();
             $applications = $mmAdvRejectedHoarding->getJskApplications($userId);
@@ -860,8 +828,6 @@ class HoardingController extends Controller
             if ($data1['arrayCount'] == 0) {
                 $data1 = null;
             }
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Applied Applications", $data1, "050619", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050619", "1.0", "", "POST", $req->deviceId ?? "");
@@ -879,7 +845,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
             $userId = $req->auth['id'];
             $mAdvHoarding = new AdvHoarding();
             $applications = $mAdvHoarding->listJskApprovedApplication($userId);
@@ -907,7 +872,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
             $userId = $req->auth['id'];
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
             $applications = $mAdvRejectedHoarding->listJskRejectedApplication($userId);
@@ -1056,8 +1020,6 @@ class HoardingController extends Controller
                 $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
-            // $mCalculateRate = new CalculateRate;
-            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];

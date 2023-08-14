@@ -494,7 +494,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
 
     /**
-     * | Dharamshala Controller
+     * | Bandobastee Controller
      * | Controller-11
      * | Created By - Bikash Kumar
      * | Date - 26-04-2023
