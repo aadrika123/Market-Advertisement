@@ -36,6 +36,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.workflow_id',
             'mar_dharamshalas.license_no',
             'mar_dharamshalas.application_type',
+            'mar_dharamshalas.payment_id',
             DB::raw("'dharamshala' as type"),
             'um.ulb_name as ulb_name',
         )

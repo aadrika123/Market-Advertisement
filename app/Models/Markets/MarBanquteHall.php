@@ -38,6 +38,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.valid_upto',
             'mar_banqute_halls.workflow_id',
             'mar_banqute_halls.license_no',
+            'mar_banqute_halls.payment_id',
             DB::raw("'banquetMarriageHall' as type"),
             'um.ulb_name as ulb_name'
         )

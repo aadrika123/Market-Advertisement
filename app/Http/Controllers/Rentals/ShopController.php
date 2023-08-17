@@ -20,6 +20,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ShopController extends Controller
 {
+    /**
+     * | Created On-14-06-2023 
+     * | Created By - Bikash Kumar
+     */
     private $_mShops;
     private $_tranId;
 
@@ -27,7 +31,7 @@ class ShopController extends Controller
     {
         $this->_mShops = new Shop();
     }
-    
+
     /**
      * | Shop Payments
      */

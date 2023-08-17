@@ -71,6 +71,7 @@ class AdvAgency extends Model
             'adv_agencies.ulb_id',
             'adv_agencies.workflow_id',
             'adv_agencies.license_no',
+            'adv_agencies.payment_id',
             DB::raw("'agency' as type"),
             DB::raw("'' as owner_name"),
             'um.ulb_name as ulb_name',
