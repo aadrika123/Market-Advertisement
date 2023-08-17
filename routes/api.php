@@ -519,8 +519,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bandobastee/list-bazar', 'listBazar');                                             // 14   ( Bazar List )
         Route::post('market/bandobastee/list-bazar-settler', 'listBazarSettler');                              // 15   ( Bazar Settler List )
         /* ===================== Banquet Hall Api ========================================= */
-        // Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 16   ( Banquet Hall List )
-        // Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 17   ( BanquetHall Settler List )
+        Route::post('market/bandobastee/list-banquet-hall', 'listBanquetHall');                                 // 16   ( Banquet Hall List )
+        Route::post('market/bandobastee/list-banquet-hall-settler', 'listBanquetHallSettler');                  // 17   ( BanquetHall Settler List )
 
     });
 

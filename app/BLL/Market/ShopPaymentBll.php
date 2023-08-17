@@ -45,8 +45,10 @@ class ShopPaymentBll
             $totalMonths = $diffInMonths + 1;
         }
 
-        $payableAmt = ($this->_shopDetails->rate * $totalMonths) + $this->_shopDetails->arrear;
-        $amount = $req->amount;
+        // $payableAmt = ($this->_shopDetails->rate * $totalMonths) + $this->_shopDetails->arrear;
+        // $amount = $req->amount;
+        $payableAmt = ($this->_shopDetails->rate * $totalMonths);
+        $amount = $payableAmt;
         $arrear = $payableAmt - $amount;
         if ($payableAmt < 1)
             throw new Exception("Dues Not Available");
