@@ -37,6 +37,7 @@ class AdvPrivateland extends Model
             'adv_privatelands.ulb_id',
             'adv_privatelands.workflow_id',
             'adv_privatelands.license_no',
+            'adv_privatelands.payment_id',
             DB::raw("'privateLand' as type"),
             'um.ulb_name as ulb_name',
         )

@@ -14,7 +14,17 @@ class ShopPayment extends Model
 
     public function paymentList($ulbId)
     {
-        return self::where('ulb_id',$ulbId);
+        return self::select(
+                          'mar_shop_payments.*',
+                          'ms.shop_no',
+                          'mc.circle_name',
+                          'mm.market_name',
+                          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+                          )
+                    ->join('mar_shops as ms','ms.id','=','mar_shop_payments.shop_id')
+                    ->join('m_circle as mc','mc.id','=','ms.circle_id')
+                    ->join('m_market as mm','mm.id','=','ms.market_id')
+                    ->where('mar_shop_payments.ulb_id',$ulbId);
     }
 
     

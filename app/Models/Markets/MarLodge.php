@@ -36,6 +36,7 @@ class MarLodge extends Model
             'mar_lodges.workflow_id',
             'mar_lodges.license_no',
             'mar_lodges.application_type',
+            'mar_lodges.payment_id',
             DB::raw("'lodge' as type"),
             'um.ulb_name as ulb_name',
         )

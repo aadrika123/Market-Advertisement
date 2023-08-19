@@ -35,6 +35,7 @@ class AdvVehicle extends Model
             'adv_vehicles.user_id',
             'adv_vehicles.ulb_id',
             'adv_vehicles.workflow_id',
+            'adv_vehicles.payment_id',
             DB::raw("'movableVehicle' as type"),
             'um.ulb_name as ulb_name',
         )

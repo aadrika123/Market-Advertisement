@@ -67,6 +67,7 @@ class AdvHoarding extends Model
             'is_archived',
             'is_blacklist',
             'workflow_id',
+            'payment_id',
             DB::raw("'hoarding' as type"),
             DB::raw("'' as entity_name")
         )

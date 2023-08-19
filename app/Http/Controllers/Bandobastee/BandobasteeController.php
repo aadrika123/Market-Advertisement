@@ -108,7 +108,9 @@ class BandobasteeController extends Controller
             'categoryId' => 'required|integer',
         ]);
         if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
+            return $validator->errors();
+            // return ['status' => false, 'message' =>$validator->errors()]
+
         }
         try {
             // Variable initialization
@@ -499,48 +501,40 @@ class BandobasteeController extends Controller
     /**
      * | Get Banquet Hall List
      */
-    // public function listBanquetHall(Request $req)
-    // {
-    //     if (authUser()->ulb_id == '')
-    //         return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
-    //     else
-    //         $ulbId = authUser()->ulb_id;
-    //     try {
-    //         // Variable initialization
-    //         $startTime = microtime(true);
-    //         $mBdBanquetHall = new BdBanquetHall();
-
-    //         $list = $mBdBanquetHall->listBanquetHall($ulbId);
-    //         $endTime = microtime(true);
-    //         $executionTime = $endTime - $startTime;
-    //         return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
-    //     } catch (Exception $e) {
-    //         return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
-    //     }
-    // }
+    public function listBanquetHall(Request $req)
+    {
+        if ($req->auth['ulb_id'] == '')
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = $req->auth['ulb_id'];
+        try {
+            // Variable initialization
+            $mBdBanquetHall = new BdBanquetHall();
+            $list = $mBdBanquetHall->listBanquetHall($ulbId);
+            return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
     /**
      * | Get Banquet Hall Settler List
      */
-    // public function listBanquetHallSettler(Request $req)
-    // {
-    //     if (authUser()->ulb_id == '')
-    //         return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
-    //     else
-    //         $ulbId = authUser()->ulb_id;
-    //     try {
-    //         // Variable initialization
-    //         $startTime = microtime(true);
-    //         $mBdSettler = new BdSettler();
-
-    //         $list = $mBdSettler->listBanquetHallSettler($ulbId);
-    //         $endTime = microtime(true);
-    //         $executionTime = $endTime - $startTime;
-    //         return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
-    //     } catch (Exception $e) {
-    //         return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
-    //     }
-    // }
+    public function listBanquetHallSettler(Request $req)
+    {
+        if ($req->auth['ulb_id'] == '')
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050834", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId =$req->auth['ulb_id'];
+        try {
+            // Variable initialization
+            $mBdSettler = new BdSettler();
+            $list = $mBdSettler->listBanquetHallSettler($ulbId);
+            return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 
 
     // public function listSettler1(Request $req)

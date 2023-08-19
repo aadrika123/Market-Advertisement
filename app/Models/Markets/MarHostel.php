@@ -37,6 +37,7 @@ class MarHostel extends Model
             'mar_hostels.workflow_id',
             'mar_hostels.license_no',
             'mar_hostels.application_type',
+            'mar_hostels.payment_id',
             DB::raw("'hostel' as type"),
             'um.ulb_name as ulb_name',
         )

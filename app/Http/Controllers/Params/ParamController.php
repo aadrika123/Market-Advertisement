@@ -76,6 +76,7 @@ class ParamController extends Controller
     protected $_dharamshala;
     protected $_advtModuleId;
     protected $_marketModuleId;
+    protected $_ulbLogoUrl;
 
     //Constructor
     public function __construct()
@@ -91,6 +92,7 @@ class ParamController extends Controller
         $this->_dharamshala = Config::get('workflow-constants.DHARAMSHALA_WF_MASTER_ID');
         $this->_advtModuleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_marketModuleId = Config::get('workflow-constants.MARKET_MODULE_ID');
+        $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');
     }
 
     /**
@@ -554,26 +556,31 @@ class ParamController extends Controller
             if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Self Advertisement Tax";
             } elseif ($wfworkflowMasterId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Private Land Tax";
             } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
             } elseif ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Agency Tax";
             } elseif ($wfworkflowMasterId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hoarding Tax";
             }
@@ -582,21 +589,25 @@ class ParamController extends Controller
             elseif ($wfworkflowMasterId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
                 $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
             } elseif ($wfworkflowMasterId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
                 $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hostel Tax";
             } elseif ($wfworkflowMasterId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
                 $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Lodge Tax";
             } elseif ($wfworkflowMasterId == $this->_dharamshala) {
                 $mMarDharamshala = new MarDharamshala();
                 $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Dharamshala Tax";
             }
@@ -772,43 +783,44 @@ class ParamController extends Controller
     public function advertisementDashboard(Request $req)
     {
         try {
+            $dashboardReport['date']=Carbon::now()->format('d-m-Y');
             $advert = $this->advertDashboard($req)->original['data'];
             $market = $this->marketDashboard($req)->original['data'];
-            $dashboardReport['selfApproved']=$advert['selfApprovedApplications']->count();
-            $dashboardReport['selfPending']=$advert['selfPendingApplications']->count();
-            $dashboardReport['selfRejected']=$advert['selfRejectedApplications']->count();
+            $dashboardReport['selfApproved']=$advert['selfApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['selfPending']=$advert['selfPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['selfRejected']=$advert['selfRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['plApproved']=$advert['pvtLandApprovedApplications']->count();
-            $dashboardReport['plPending']=$advert['pvtLandPendingApplications']->count();
-            $dashboardReport['plRejected']=$advert['pvtLandRejectedApplications']->count();
+            $dashboardReport['plApproved']=$advert['pvtLandApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['plPending']=$advert['pvtLandPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['plRejected']=$advert['pvtLandRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['vclApproved']=$advert['vehicleApprovedApplications']->count();
-            $dashboardReport['vclPending']=$advert['vehiclePendingApplications']->count();
-            $dashboardReport['vclRejected']=$advert['vehicleRejectedApplications']->count();
+            $dashboardReport['vclApproved']=$advert['vehicleApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['vclPending']=$advert['vehiclePendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['vclRejected']=$advert['vehicleRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['agApproved']=$advert['agencyApprovedApplications']->count();
-            $dashboardReport['agPending']=$advert['agencyPendingApplications']->count();
-            $dashboardReport['agRejected']=$advert['agencyRejectedApplications']->count();
+            $dashboardReport['agApproved']=$advert['agencyApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['agPending']=$advert['agencyPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['agRejected']=$advert['agencyRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['horApproved']=$advert['hoardingApprovedApplications']->count();
-            $dashboardReport['horPending']=$advert['hoardingPendingApplications']->count();
-            $dashboardReport['horRejected']=$advert['hoardingRejectedApplications']->count();
+            $dashboardReport['horApproved']=$advert['hoardingApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['horPending']=$advert['hoardingPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['horRejected']=$advert['hoardingRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['bqApproved']=$market['banquetApprovedApplications']->count();
-            $dashboardReport['bqPending']=$market['banquetPendingApplications']->count();
-            $dashboardReport['bqRejected']=$market['banquetRejectedApplications']->count();
+            $dashboardReport['bqApproved']=$market['banquetApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['bqPending']=$market['banquetPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['bqRejected']=$market['banquetRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['hsApproved']=$market['hostelApprovedApplications']->count();
-            $dashboardReport['hsPending']=$market['hostelPendingApplications']->count();
-            $dashboardReport['hsRejected']=$market['hostelRejectedApplications']->count();
+            $dashboardReport['hsApproved']=$market['hostelApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['hsPending']=$market['hostelPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['hsRejected']=$market['hostelRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['ldApproved']=$market['lodgeApprovedApplications']->count();
-            $dashboardReport['ldPending']=$market['lodgePendingApplications']->count();
-            $dashboardReport['ldRejected']=$market['lodgeRejectedApplications']->count();
+            $dashboardReport['ldApproved']=$market['lodgeApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['ldPending']=$market['lodgePendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['ldRejected']=$market['lodgeRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['dsApproved']=$market['dharamshalaApprovedApplications']->count();
-            $dashboardReport['dsPending']=$market['dharamshalaPendingApplications']->count();
-            $dashboardReport['dsRejected']=$market['dharamshalaRejectedApplications']->count();
+            $dashboardReport['dsApproved']=$market['dharamshalaApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['dsPending']=$market['dharamshalaPendingApplications']->where('date',$dashboardReport['date'])->count();
+            $dashboardReport['dsRejected']=$market['dharamshalaRejectedApplications']->where('date',$dashboardReport['date'])->count();
 
             $dashboardReport['totalAdvertApproved']=$dashboardReport['selfApproved'] + $dashboardReport['plApproved'] + $dashboardReport['vclApproved'] + $dashboardReport['agApproved'] + $dashboardReport['horApproved'];
             $dashboardReport['totalAdvertPending']=$dashboardReport['selfPending'] + $dashboardReport['plPending'] + $dashboardReport['vclPending'] + $dashboardReport['agPending'] + $dashboardReport['horPending'];

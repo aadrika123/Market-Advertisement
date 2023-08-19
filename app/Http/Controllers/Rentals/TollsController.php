@@ -20,6 +20,7 @@ class TollsController extends Controller
     /**
      * | Created On-14-06-2023 
      * | Author - Anshu Kumar
+     * | Change By - Bikash Kumar
      */
     public function __construct()
     {
@@ -40,7 +41,7 @@ class TollsController extends Controller
 
         try {
             // Variable Assignments
-            $todayDate = Carbon::now();
+            $todayDate = Carbon::now()->format('Y-m-d');
             $mTollPayment = new MarTollPayment();
 
             $toll = $this->_mToll::find($req->tollId);
@@ -229,9 +230,6 @@ class TollsController extends Controller
         }
     }
 
-
-
-
     //------------------------get toll by id----------------------------
     public function show(Request $request)
     {
@@ -304,16 +302,6 @@ class TollsController extends Controller
         }
     }
 
-
-
-
-
-
-
-
-
-
-
     /**
      * | Get Toll list by Market Id
      */
@@ -360,17 +348,9 @@ class TollsController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * | Get Toll Collection Summery
+     */
     public function getTollCollectionSummary(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -432,7 +412,6 @@ class TollsController extends Controller
                 $req->merge(['reciepts' => $imageName1]);
                 $req->merge(['absolutePath' => $imageName1Absolute]);
             }
-
 
             $mMarTollPayment = new MarTollPayment();
             $details = DB::table('mar_tolls')->select('*')->where('toll_no', $req->tollNo)->first();

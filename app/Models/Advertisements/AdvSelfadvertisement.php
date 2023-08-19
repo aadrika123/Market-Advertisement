@@ -34,6 +34,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.valid_from',
             'adv_selfadvertisements.user_id',
             'adv_selfadvertisements.application_type',
+            'adv_selfadvertisements.payment_id',
             DB::raw("'selfAdvt' as type"),
             DB::raw("'Approved' as applicationStatus"),
             'um.ulb_name as ulb_name',

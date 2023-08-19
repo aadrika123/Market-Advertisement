@@ -20,6 +20,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ShopController extends Controller
 {
+    /**
+     * | Created On-14-06-2023 
+     * | Created By - Bikash Kumar
+     */
     private $_mShops;
     private $_tranId;
 
@@ -27,16 +31,17 @@ class ShopController extends Controller
     {
         $this->_mShops = new Shop();
     }
+
     /**
      * | Shop Payments
      */
     public function shopPayment(Request $req)
     {
-        $shopPmtBll = new ShopPaymentBll;
+        $shopPmtBll = new ShopPaymentBll();
         $validator = Validator::make($req->all(), [
             "shopId" => "required|integer",
             "paymentTo" => "required|date|date_format:Y-m-d",
-            "amount" => 'required|numeric'
+            // "amount" => 'required|numeric'
         ]);
         $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
             $shopPmtBll->_shopDetails = $this->_mShops::findOrFail($input->shopId);
@@ -46,7 +51,6 @@ class ShopController extends Controller
 
         if ($validator->fails())
             return $validator->errors();
-
         // Business Logics
         try {
             $shopPmtBll->shopPayment($req);
@@ -208,8 +212,6 @@ class ShopController extends Controller
                 $status = $req->status == false ? 0 : 1;
                 $metaReqs = array_merge($metaReqs, ['status', $status]);
             }
-
-
             if (isset($req->photograph1)) {
                 $metaReqs = array_merge($metaReqs, ['photo1_path', $imageName1]);
                 $metaReqs = array_merge($metaReqs, ['photo1_path_absolute', $imageName1Absolute]);
@@ -250,7 +252,9 @@ class ShopController extends Controller
         }
     }
 
-    //View All Shop Data
+    /**
+     * | View All Shop Data
+     */
     public function retrieve(Request $req)
     {
         try {
@@ -261,8 +265,9 @@ class ShopController extends Controller
         }
     }
 
-
-    //View All Active Shops
+    /**
+     * | View All Active Shops
+     */
     public function retrieveAllActive(Request $req)
     {
         try {
@@ -273,7 +278,9 @@ class ShopController extends Controller
         }
     }
 
-    //delete
+    /**
+     * | Delete Shop by Id
+     */
     public function delete(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -362,7 +369,9 @@ class ShopController extends Controller
         }
     }
 
-
+    /**
+     * | Get list Shop 
+     */
     public function listShop(Request $req)
     {
         try {
@@ -399,6 +408,10 @@ class ShopController extends Controller
         }
     }
 
+
+    /**
+     * | Get Shop Collection Summery
+     */
     public function getShopCollectionSummary(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -472,7 +485,7 @@ class ShopController extends Controller
                 $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
                 return $ref;
             });
-            $list1['list'] = $list;
+            $list1['list'] = $list->values();
             $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
             return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
