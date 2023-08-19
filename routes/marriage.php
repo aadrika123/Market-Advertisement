@@ -23,6 +23,9 @@ Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post('details', 'details');                                          #API_ID=100108
     Route::post('set-appiontment-date', 'appointmentDate');                     #API_ID=100109
     Route::post('final-approval-rejection', 'approvalRejection');               #API_ID=100110
-    Route::post("online-payment", "onlinePayment");                             #API_ID=100111
+    Route::post('doc-verify-reject', 'docVerifyReject');                        #API_ID=100111
+    Route::post('approved-application', 'approvedApplication');                 #API_ID=100112
+    Route::post('edit-application', 'editApplication');                         #API_ID=100113
+    Route::post("generate-order-id", "generateOrderId");                        #API_ID=100114
 });
 // });

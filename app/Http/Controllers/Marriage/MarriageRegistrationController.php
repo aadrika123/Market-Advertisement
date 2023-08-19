@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Marriage;
 
+use App\BLL\Marriage\CalculatePenalty;
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
@@ -12,6 +13,8 @@ use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
+use App\Pipelines\Marriage\SearchByApplicationNo;
+use App\Pipelines\Marriage\SearchByName;
 use App\Traits\Marriage\MarriageTrait;
 use App\Traits\Workflow\Workflow;
 use Carbon\Carbon;
@@ -20,8 +23,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\Http;
-use ReflectionFunctionAbstract;
+use Illuminate\Support\Facades\Validator;
 
 class MarriageRegistrationController extends Controller
 {
@@ -41,6 +45,7 @@ class MarriageRegistrationController extends Controller
     private $_applyMode;
     private $_tranType;
     private $_registrarRoleId;
+    private $_paymentUrl;
     # Class constructer 
     public function __construct()
     {
@@ -55,6 +60,7 @@ class MarriageRegistrationController extends Controller
         $this->_applicationType     = Config::get("marriage.APPLICATION_TYPE");
         $this->_applyMode           = Config::get("marriage.APPLY_MODE");
         $this->_tranType            = Config::get("marriage.TRANSACTION_TYPE");
+        $this->_paymentUrl          = Config::get('constants.PAYMENT_URL');
     }
 
     /**
@@ -65,7 +71,7 @@ class MarriageRegistrationController extends Controller
         try {
             $mWfWorkflow = new WfWorkflow();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
-            $mWfRoleusermaps = new WfRoleusermap();
+            $mWfRoleusermaps  = new WfRoleusermap();
             $user                       = authUser($req);
             $ulbId                      = $user->ulb_id ?? $req->ulbId;
             $userType                   = $user->user_type;
@@ -89,28 +95,43 @@ class MarriageRegistrationController extends Controller
             $registrarId         = $mWfRoleusermaps->getUserId($mreqs);
             $finisherRoleId      = collect(DB::select($refFinisherRoleId))->first();
             $initiatorRoleId     = collect(DB::select($refInitiatorRoleId))->first();
+            $userId              = $user->id;
+            $citizenId           = null;
             if ($userType == 'Citizen') {
-                $initiatorRoleId = collect($initiatorRoleId)['forward_role_id'];         // Send to DA in Case of Citizen
+                $initiatorRoleId = collect($initiatorRoleId)['forward_role_id'];        // Send to DA in Case of Citizen
                 $userId = null;
                 $citizenId = $user->id;
-            }
+            } else
+                $initiatorRoleId = collect($initiatorRoleId)['role_id'];                // Send to BO in Case of JSK
+
+            #_Check BPL for Payment Amount
+            if ($req->bpl == false)
+                $paymentAmount = 50;
+            else
+                $paymentAmount = 0;
+
+            $calculatePenalty = new CalculatePenalty;
+            $penaltyAmount = $calculatePenalty->calculate($req);
 
             $idGeneration = new PrefixIdGenerator($marriageParamId, $ulbId);
             $marriageApplicationNo = $idGeneration->generate();
-            $refData = [
-                "finisherRoleId"    => collect($finisherRoleId)['role_id'],
-                "initiatorRoleId"   => $initiatorRoleId,
-                // "initiatorRoleId"   => collect($initiatorRoleId)['role_id'],
-                "workflowId"        => $ulbWorkflowId->id,
-                "applicationNo"     => $marriageApplicationNo,
-                "userId"            => $userId,
-                "citizenId"         => $citizenId,
-                "registrarId"       => $registrarId->user_id,
-            ];
-            $req->merge($refData);
+            $reqs = $this->makeRequest($req);
 
-            # Save active details 
-            $applicationDetails = $mMarriageActiveRegistration->saveRegistration($req, $user);
+            $refData = [
+                "finisher_role_id"  => collect($finisherRoleId)['role_id'],
+                "initiator_role_id" => $initiatorRoleId,
+                "current_role"      => $initiatorRoleId,
+                "workflow_id"       => $ulbWorkflowId->id,
+                "application_no"    => $marriageApplicationNo,
+                "user_id"           => $userId,
+                "citizen_id"        => $citizenId,
+                "registrar_id"      => $registrarId->user_id,
+                "payment_amount"    => $paymentAmount,
+                "penalty_amount"    => $penaltyAmount,
+                "ulb_id"            => $ulbId
+            ];
+            $newReqs =  array_merge($reqs, $refData);
+            $applicationDetails = $mMarriageActiveRegistration->saveRegistration($newReqs);
 
             $returnData = [
                 "id" => $applicationDetails['id'],
@@ -150,7 +171,7 @@ class MarriageRegistrationController extends Controller
             // $totalDocLists['ApplicationNo']     = $refMarriageApplication->application_no;
             return responseMsgs(true, "", remove_null($totalDocLists), "100102", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "100102", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), "", "100102", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 
@@ -160,6 +181,7 @@ class MarriageRegistrationController extends Controller
     public function filterDocument($documentList, $refSafs, $witnessId = null)
     {
         $mWfActiveDocument = new WfActiveDocument();
+
         $safId = $refSafs->id;
         $workflowId = $refSafs->workflow_id;
         $moduleId = $this->_marriageModuleId;
@@ -174,14 +196,14 @@ class MarriageRegistrationController extends Controller
 
             collect($document)->map(function ($item) use ($uploadedDocs, $documents, $witnessId, $refSafs) {
                 $uploadedDoc = $uploadedDocs->where('doc_code', $item)
-                    ->where('Witness_dtl_id', $witnessId)
+                    // ->where('Witness_dtl_id', $witnessId)
                     ->first();
 
                 if ($uploadedDoc) {
                     $response = [
                         "uploadedDocId" => $uploadedDoc->id ?? "",
                         "documentCode" => $item,
-                        "WitnessId" => $uploadedDoc->Witness_dtl_id ?? "",
+                        // "WitnessId" => $uploadedDoc->Witness_dtl_id ?? "",
                         "docPath" => $uploadedDoc->doc_path ?? "",
                         "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc->verify_status ?? "") : 0,
                         "remarks" => $uploadedDoc->remarks ?? "",
@@ -252,8 +274,7 @@ class MarriageRegistrationController extends Controller
         $req->validate([
             "applicationId" => "required|numeric",
             "document" => "required|mimes:pdf,jpeg,png,jpg",
-            "docCode" => "required",
-            "WitnessId" => "nullable|numeric"
+            "docCode" => "required"
         ]);
         $extention = $req->document->getClientOriginalExtension();
         $req->validate([
@@ -261,12 +282,16 @@ class MarriageRegistrationController extends Controller
         ]);
 
         try {
+            $user = collect(authUser($req));
+
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $relativePath = $this->_relativePath;
             $marriageRegitrationDtl = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            if (!$marriageRegitrationDtl)
+                throw new Exception("Application Not Found");
             $refImageName = $req->docCode;
             $refImageName = $marriageRegitrationDtl->id . '-' . $refImageName;
             $document = $req->document;
@@ -279,16 +304,15 @@ class MarriageRegistrationController extends Controller
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document']     = $imageName;
             $metaReqs['docCode']      = $req->docCode;
-            $metaReqs['WitnessDtlId'] = $marriageRegitrationDtl->prop_Witness_id;
 
             $metaReqs = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($metaReqs);
+            $mWfActiveDocument->postDocuments($metaReqs, $user);
 
             $docUploadStatus = $this->checkFullDocUpload($req->applicationId);
             if ($docUploadStatus == 1) {                                        // Doc Upload Status Update
                 $marriageRegitrationDtl->doc_upload_status = 1;
-                // if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
-                //     $marriageRegitrationDtl->parked = false;
+                if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
+                    $marriageRegitrationDtl->parked = false;
 
                 $marriageRegitrationDtl->save();
             }
@@ -310,7 +334,7 @@ class MarriageRegistrationController extends Controller
         $refReq = [
             'activeId' => $applicationId,
             'workflowId' => $marriageRegitrationDtl->workflow_id,
-            'moduleId' => 10
+            'moduleId' => $this->_marriageModuleId
         ];
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
@@ -326,16 +350,16 @@ class MarriageRegistrationController extends Controller
         $marriageDocs = $this->getMarriageDocLists($marriageRegitrationDtl);
         $docList['marriageDocs'] = explode('#', $marriageDocs);
 
-        $verifiedDocList['marriageDocs'] = $refDocList->where('owner_dtl_id', '!=', null)->values();
+        $verifiedDocList['marriageDocs'] = $refDocList->where('owner_dtl_id', null)->values();
         $collectUploadDocList = collect();
         collect($verifiedDocList['marriageDocs'])->map(function ($item) use ($collectUploadDocList) {
             return $collectUploadDocList->push($item['doc_code']);
         });
 
-        $marriageDocs = collect();
+        // $marriageDocs = collect();
         // Property List Documents
         $flag = 1;
-        foreach ($marriageDocs as $item) {
+        foreach ($docList['marriageDocs'] as $item) {
             $explodeDocs = explode(',', $item);
             array_shift($explodeDocs);
             foreach ($explodeDocs as $explodeDoc) {
@@ -388,8 +412,12 @@ class MarriageRegistrationController extends Controller
     public function inbox(Request $req)
     {
         try {
-            $userId = authUser($req)->id;
-            $ulbId = authUser($req)->ulb_id;
+            // $user = json_decode($req->auth);
+            // $userId = 3873;
+            // $ulbId = 2;
+            $user = authUser($req);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
             $perPage = $req->perPage ?? 10;
 
@@ -398,11 +426,21 @@ class MarriageRegistrationController extends Controller
 
             $list = MarriageActiveRegistration::whereIn('workflow_id', $workflowIds)
                 ->where('marriage_active_registrations.ulb_id', $ulbId)
-                // ->whereIn('marriage_active_registrations.current_role', $roleId)
-                ->orderByDesc('marriage_active_registrations.id')
-                ->get();
+                ->whereIn('marriage_active_registrations.current_role', $roleId)
+                ->orderByDesc('marriage_active_registrations.id');
 
-            return responseMsgs(true, "", remove_null($list), "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            $inbox = app(Pipeline::class)
+                ->send(
+                    $list
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByName::class
+                ])
+                ->thenReturn()
+                ->paginate($perPage);
+
+            return responseMsgs(true, "", remove_null($inbox), "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
@@ -464,6 +502,7 @@ class MarriageRegistrationController extends Controller
                 'data' => $groomDetails
             ];
 
+            // $fullDetailsData->application_no = $details->application_no;
             $fullDetailsData['application_no'] = $details->application_no;
             $fullDetailsData['apply_date'] = $details->created_at->format('d-m-Y');
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$marriageElement, $brideElement, $groomElement]);
@@ -502,7 +541,7 @@ class MarriageRegistrationController extends Controller
             // $custom = $mCustomDetails->getCustomDetails($req);
             // $fullDetailsData['departmentalPost'] = collect($custom)['original']['data'];
 
-            return responseMsgs(true, "Marriage Details", remove_null($fullDetailsData), "100108", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            return responseMsgs(true, "Marriage Details", $fullDetailsData, "100108", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "100108", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
@@ -560,11 +599,21 @@ class MarriageRegistrationController extends Controller
         try {
             $registrationDtl = MarriageActiveRegistration::find($req->applicationId);
             if (!$registrationDtl)
-                throw new Exception('No Data Found');
+                throw new Exception('Application Not Found');
+
+            if ($registrationDtl->doc_upload_status)
+                throw new Exception('Full Document Not Uploaded');
+
+            if ($registrationDtl->doc_verify_status)
+                throw new Exception('Full Document Not Verified');
+
+            if (!is_null($registrationDtl->appointment_date))
+                throw new Exception('Appointment Date Is Already Set On ' . $registrationDtl->appointment_date);
+
             $registrationDtl->appointment_date = Carbon::now()->addMonth(1);
             $registrationDtl->save();
 
-            return responseMsgs(true, "Appointment Date is Fixed on" . $registrationDtl->appointment_date, "", "100109", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            return responseMsgs(true, "Appointment Date is Fixed on " . $registrationDtl->appointment_date, "", "100109", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "100109", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
@@ -575,16 +624,18 @@ class MarriageRegistrationController extends Controller
      */
     public function approvalRejection(Request $req)
     {
+        $req->validate([
+            "applicationId" => "required",
+            "status" => "required"
+        ]);
         try {
-            $req->validate([
-                "applicationId" => "required",
-                "status" => "required"
-            ]);
+
             // Check if the Current User is Finisher or Not
             $mWfRoleUsermap = new WfRoleusermap();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $track = new WorkflowTrack();
             $todayDate = Carbon::now()->format('Y-m-d');
+            $userId = authUser($req)->id;
 
             $details = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
             if (!$details)
@@ -614,6 +665,9 @@ class MarriageRegistrationController extends Controller
 
             // Approval
             if ($req->status == 1) {
+
+                if ($details->doc_verify_status == 0)
+                    throw new Exception("Document Not Fully Verified");
                 // Marriage Application replication
 
                 $approvedMarriage = $details->replicate();
@@ -670,9 +724,129 @@ class MarriageRegistrationController extends Controller
     }
 
     /**
+     * | Application Edit
+     */
+    public function editApplication(Request $req)
+    {
+        try {
+            $validator = Validator::make($req->all(), [
+                'id' => 'required|digits_between:1,9223372036854775807',
+            ]);
+            if ($validator->fails())
+                return validationError($validator);
+
+            $reqs =  $this->makeRequest($req);
+            $mMarriageActiveRegistration = MarriageActiveRegistration::find($req->id);
+            $mMarriageActiveRegistration->update($reqs);
+
+            return responseMsgs(true, "Data Edited", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
+
+    /**
+     * | Document Verify Reject (04)
+     */
+    public function docVerifyReject(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'applicationId' => 'required|digits_between:1,9223372036854775807',
+            'docRemarks' =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+            'docStatus' => 'required|in:Verified,Rejected'
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+
+        try {
+            // Variable Assignments
+            $mWfDocument = new WfActiveDocument();
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $mWfRoleusermap = new WfRoleusermap();
+            $wfDocId = $req->id;
+            $userId = json_decode($req->auth)->id;
+            $applicationId = $req->applicationId;
+            // Derivative Assigments
+            $details = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $safReq = new Request([
+                'userId' => $userId,
+                'workflowId' => $details->workflow_id
+            ]);
+            $senderRoleDtls = $mWfRoleusermap->getRoleByUserWfId($safReq);
+            if (!$senderRoleDtls || collect($senderRoleDtls)->isEmpty())
+                throw new Exception("Role Not Available");
+
+            $senderRoleId = $senderRoleDtls->wf_role_id;
+
+            if ($senderRoleId != $this->_registrarRoleId)                                // Authorization for Dealing Assistant Only
+                throw new Exception("You are not Authorized");
+
+            if (!$details || collect($details)->isEmpty())
+                throw new Exception("Application Details Not Found");
+
+            $ifFullDocVerified = $this->ifFullDocVerified($applicationId);       // (Current Object Derivative Function 4.1)
+            if ($ifFullDocVerified == 1)
+                throw new Exception("Document Fully Verified");
+
+            DB::beginTransaction();
+            if ($req->docStatus == "Verified") {
+                $status = 1;
+            }
+            if ($req->docStatus == "Rejected") {
+                $status = 2;
+                // For Rejection Doc Upload Status and Verify Status will disabled
+                $details->doc_upload_status = 0;
+                $details->doc_verify_status = 0;
+                $details->save();
+            }
+
+            $reqs = [
+                'remarks' => $req->docRemarks,
+                'verify_status' => $status,
+                'action_taken_by' => $userId
+            ];
+            $mWfDocument->docVerifyReject($wfDocId, $reqs);
+            if ($req->docStatus == 'Verified')
+                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId, $req->docStatus);
+            else
+                $ifFullDocVerifiedV1 = 0;                                       // In Case of Rejection the Document Verification Status will always remain false
+
+            // dd($ifFullDocVerifiedV1);
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $details->doc_verify_status = 1;
+                $details->save();
+            }
+            DB::commit();
+            return responseMsgs(true, $req->docStatus . " Successfully", "", "100111", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "100111", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * | Check if the Document is Fully Verified or Not (4.1)
+     */
+    public function ifFullDocVerified($applicationId)
+    {
+        $mMarriageActiveRegistration = new MarriageActiveRegistration();
+        $mWfActiveDocument = new WfActiveDocument();
+        $details = $mMarriageActiveRegistration->getApplicationById($applicationId);
+        $refReq = [
+            'activeId' => $applicationId,
+            'workflowId' => $details->workflow_id,
+            'moduleId' => $this->_marriageModuleId,
+        ];
+        $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
+        return $this->isAllDocs($applicationId, $refDocList, $details);
+    }
+
+    /**
      * | Initiate Online Payment
      */
-    public function handelOnlinePayment(Request $request)
+    public function generateOrderId(Request $request)
     {
         $request->validate([
             'applicationId' => 'required|digits_between:1,9223372036854775807',
@@ -682,49 +856,29 @@ class MarriageRegistrationController extends Controller
             $refUser            = Auth()->user();
             $confModuleId       = $this->_marriageModuleId;
             $applicationId      = $request->applicationId;
-            $paymentMode        = $this->_paymentMode;
-            $paymentUrl         = $this->_PaymentUrl;
-            $paymentDetails     = $this->checkParamForPayment($request, $paymentMode['1']);
+            $paymentUrl         = $this->_paymentUrl;
+            $mMarriageActiveRegistration    = new MarriageActiveRegistration();
+            $marriageDetails = $mMarriageActiveRegistration->getApplicationById($applicationId);
+
             $myRequest = [
-                'amount'          => $paymentDetails['regAmount'],
-                'workflowId'      => $paymentDetails['applicationDetails']['workflow_id'],
+                'amount'          => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
+                'workflowId'      => $marriageDetails->workflow_id,
                 'id'              => $applicationId,
                 'departmentId'    => $confModuleId
             ];
+            $newRequest = $request->merge($myRequest);
 
-            DB::beginTransaction();
             # Api Calling for OrderId
             $refResponse = Http::withHeaders([
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"                             // Static
             ])
                 ->withToken($request->bearerToken())
-                ->post($paymentUrl . 'api/payment/generate-orderid', $myRequest);               // Static
+                ->post($paymentUrl . 'api/payment/generate-orderid', $newRequest);               // Static
 
             $orderData = json_decode($refResponse);
-            $jsonIncodedData = json_encode($orderData);
+            $jsonIncodedData = $orderData->data;
 
-            $RazorPayRequest = new MarriageRazorpayRequest();
-            $RazorPayRequest->application_id    = $applicationId;
-            $RazorPayRequest->payment_from      = $paymentDetails['chargeCategory'];
-            $RazorPayRequest->amount            = $orderData->amount;
-            $RazorPayRequest->demand_id         = $paymentDetails["chargeId"];
-            $RazorPayRequest->ip_address        = $request->ip();
-            $RazorPayRequest->order_id          = $orderData->orderId;
-            $RazorPayRequest->department_id     = $orderData->departmentId;
-            $RazorPayRequest->note              = $jsonIncodedData;
-            $RazorPayRequest->save();
-
-            #--------------------water Consumer----------------------
-            DB::commit();
-            $returnData = [
-                'name'               => $refUser->user_name,
-                'mobile'             => $refUser->mobile,
-                'email'              => $refUser->email,
-                'userId'             => $refUser->id,
-                'ulbId'              => $refUser->ulb_id,
-            ];
-            $returnData = collect($returnData)->merge($orderData);
-            return responseMsgs(true, "Order Id generated successfully", $returnData);
+            return responseMsgs(true, "Order Id generated successfully", $jsonIncodedData);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);

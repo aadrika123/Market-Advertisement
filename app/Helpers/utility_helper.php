@@ -11,6 +11,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
+if (!function_exists("responseMsg")) {
+    function responseMsg($status, $message, $data)
+    {
+        $response = ['status' => $status, "message" => $message, "data" => $data];
+        return response()->json($response, 200);
+    }
+}
+
 /**
  * | Response Msg Version2 with apiMetaData
  */
@@ -203,7 +211,23 @@ if (!function_exists('monthDiff')) {
 if (!function_exists('authUser')) {
     function authUser($req)
     {
-        return (object)$req->auth;
+        $auth = $req->auth;
+        if (!$auth)
+            throw new Exception("Auth Not Available");
+        if (is_array($auth))
+            return (object)$auth;
+        else
+            return json_decode($req->auth);
+    }
+}
+
+/**
+ * | To throw Validation Error
+ */
+if (!function_exists("validationError")) {
+    function validationError($validator)
+    {
+        return responseMsg(false, 'Validation Error', $validator->errors()->all());
     }
 }
 
@@ -329,19 +353,19 @@ if (!function_exists('getClientIpAddress')) {
         }
     }
 
-    
+
 
     /**
      * | Search Filter for Shop Rental Data
      */
 
-     if (!function_exists("searchShopRentalFilter")) {
+    if (!function_exists("searchShopRentalFilter")) {
         function searchShopRentalFilter($orm, $req)
         {
             $key = trim($req->key);
             return $orm->where(function ($query) use ($key) {
                 $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
-                ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
+                    ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
                 // ->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
                 // ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
             });
@@ -349,12 +373,12 @@ if (!function_exists('getClientIpAddress')) {
     }
 
 
-    
+
     /**
      * | Search Filter for Shop Rental Data
      */
 
-     if (!function_exists("searchTollRentalFilter")) {
+    if (!function_exists("searchTollRentalFilter")) {
         function searchTollRentalFilter($orm, $req)
         {
             $key = trim($req->key);
@@ -362,7 +386,7 @@ if (!function_exists('getClientIpAddress')) {
                 // $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
                 // ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
                 $query->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
-                ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+                    ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
             });
         }
     }

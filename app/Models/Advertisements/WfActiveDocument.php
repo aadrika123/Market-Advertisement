@@ -4,6 +4,7 @@ namespace App\Models\Advertisements;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class WfActiveDocument extends Model
@@ -13,8 +14,9 @@ class WfActiveDocument extends Model
 
     public function getDocByRefIds($activeId, $workflowId, $moduleId)
     {
+        $docUrl  = Config::get("marriage.DOC_URL");
         return WfActiveDocument::select(
-            DB::raw("concat(relative_path,'/',document) as doc_path"),
+            DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
             '*'
         )
             ->where('active_id', $activeId)
@@ -265,11 +267,13 @@ class WfActiveDocument extends Model
      */
     public function getDocsByAppId($applicationId, $workflowId, $moduleId)
     {
+        $docUrl  = Config::get("marriage.DOC_URL");
+
         return DB::table('wf_active_documents as d')
             ->select(
                 'd.id',
                 'd.document',
-                DB::raw("concat(relative_path,'/',document) as doc_path"),
+                DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
                 'd.remarks',
                 'd.verify_status',
                 'd.doc_code',
@@ -279,6 +283,24 @@ class WfActiveDocument extends Model
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
             ->where('d.module_id', $moduleId)
+            ->get();
+    }
+
+    /**
+     * | Get Verified Documents
+     */
+    public function getVerifiedDocsByActiveId(array $req)
+    {
+        return WfActiveDocument::where('active_id', $req['activeId'])
+            ->select(
+                'doc_code',
+                'owner_dtl_id',
+                'verify_status'
+            )
+            ->where('workflow_id', $req['workflowId'])
+            ->where('module_id', $req['moduleId'])
+            ->where('verify_status', 1)
+            ->where('status', 1)
             ->get();
     }
 }
