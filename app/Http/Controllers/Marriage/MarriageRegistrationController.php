@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Marriage;
 use App\BLL\Marriage\CalculatePenalty;
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
+use App\MicroServices\IdGeneration;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Marriage\MarriageActiveRegistration;
+use App\Models\Marriage\MarriageTransaction;
+use App\Models\UlbMaster;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
@@ -38,12 +41,8 @@ class MarriageRegistrationController extends Controller
     private $_marriageModuleId;
     private $_userType;
     private $_marriageWfRoles;
-    private $_docReqCatagory;
     private $_relativePath;
-    private $_fee;
     private $_applicationType;
-    private $_applyMode;
-    private $_tranType;
     private $_registrarRoleId;
     private $_paymentUrl;
     # Class constructer 
@@ -54,12 +53,8 @@ class MarriageRegistrationController extends Controller
         $this->_marriageParamId     = Config::get("marriage.PARAM_ID");
         $this->_userType            = Config::get("marriage.REF_USER_TYPE");
         $this->_registrarRoleId     = Config::get("marriage.REGISTRAR_ROLE_ID");
-        $this->_docReqCatagory      = Config::get("marriage.DOC_REQ_CATAGORY");
         $this->_relativePath        = Config::get("marriage.RELATIVE_PATH");
-        $this->_fee                 = Config::get("marriage.FEE_CHARGES");
         $this->_applicationType     = Config::get("marriage.APPLICATION_TYPE");
-        $this->_applyMode           = Config::get("marriage.APPLY_MODE");
-        $this->_tranType            = Config::get("marriage.TRANSACTION_TYPE");
         $this->_paymentUrl          = Config::get('constants.PAYMENT_URL');
     }
 
@@ -77,7 +72,6 @@ class MarriageRegistrationController extends Controller
             $userType                   = $user->user_type;
             $workflowMasterId           = $this->_workflowMasterId;
             $marriageParamId            = $this->_marriageParamId;
-            $feeId                      = $this->_fee;
             $registrarRoleId            = $this->_registrarRoleId;
 
             # Get initiator and finisher for the workflow 
@@ -155,7 +149,7 @@ class MarriageRegistrationController extends Controller
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $applicationId               = $req->applicationId;
 
-            $refMarriageApplication = $mMarriageActiveRegistration->getApplicationById($applicationId);                      // Get Marriage Details
+            $refMarriageApplication = MarriageActiveRegistration::find($applicationId);                      // Get Marriage Details
             if (is_null($refMarriageApplication)) {
                 throw new Exception("Application Not Found for respective ($applicationId) id!");
             }
@@ -289,7 +283,7 @@ class MarriageRegistrationController extends Controller
             $mWfActiveDocument = new WfActiveDocument();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $relativePath = $this->_relativePath;
-            $marriageRegitrationDtl = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $marriageRegitrationDtl = MarriageActiveRegistration::find($req->applicationId);
             if (!$marriageRegitrationDtl)
                 throw new Exception("Application Not Found");
             $refImageName = $req->docCode;
@@ -314,6 +308,9 @@ class MarriageRegistrationController extends Controller
                 if ($marriageRegitrationDtl->parked == true)                                // Case of Back to Citizen
                     $marriageRegitrationDtl->parked = false;
 
+                if ($marriageRegitrationDtl->is_bpl == true)
+                    $marriageRegitrationDtl->payment_status = true;
+
                 $marriageRegitrationDtl->save();
             }
             return responseMsgs(true, "Document Uploadation Successful", "", "100103", "01", responseTime(), $req->getMethod(), $req->deviceId);
@@ -329,7 +326,7 @@ class MarriageRegistrationController extends Controller
     {
         $mMarriageActiveRegistration = new MarriageActiveRegistration();
         $mWfActiveDocument = new WfActiveDocument();
-        $marriageRegitrationDtl = $mMarriageActiveRegistration->getApplicationById($applicationId);
+        $marriageRegitrationDtl = MarriageActiveRegistration::find($applicationId);
         // Get Saf Details
         $refReq = [
             'activeId' => $applicationId,
@@ -394,7 +391,7 @@ class MarriageRegistrationController extends Controller
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $moduleId = $this->_marriageModuleId;
 
-            $marriageDetails = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $marriageDetails = MarriageActiveRegistration::find($req->applicationId);
             if (!$marriageDetails)
                 throw new Exception("Application Not Found for this application Id");
 
@@ -412,9 +409,6 @@ class MarriageRegistrationController extends Controller
     public function inbox(Request $req)
     {
         try {
-            // $user = json_decode($req->auth);
-            // $userId = 3873;
-            // $ulbId = 2;
             $user = authUser($req);
             $userId = $user->id;
             $ulbId = $user->ulb_id;
@@ -461,7 +455,7 @@ class MarriageRegistrationController extends Controller
             // $mWorkflowTracks = new WorkflowTrack();
             // $mCustomDetails = new CustomDetail();
             // $mForwardBackward = new WorkflowMap();
-            $details = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $details = MarriageActiveRegistration::find($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found");
             $witnessDetails = array();
@@ -564,6 +558,7 @@ class MarriageRegistrationController extends Controller
                 $registrationDtl->appointment_status = true;
             else
                 $registrationDtl->appointment_status = false;
+            $registrationDtl->total_payable_amount = $registrationDtl->payment_amount + $registrationDtl->penalty_amount;
 
             return responseMsgs(true, "", remove_null($registrationDtl), "100105", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
@@ -637,7 +632,7 @@ class MarriageRegistrationController extends Controller
             $todayDate = Carbon::now()->format('Y-m-d');
             $userId = authUser($req)->id;
 
-            $details = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $details = MarriageActiveRegistration::find($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found");
             if (isset($details->appointment_date)) {
@@ -769,7 +764,7 @@ class MarriageRegistrationController extends Controller
             $userId = json_decode($req->auth)->id;
             $applicationId = $req->applicationId;
             // Derivative Assigments
-            $details = $mMarriageActiveRegistration->getApplicationById($req->applicationId);
+            $details = MarriageActiveRegistration::find($req->applicationId);
             $safReq = new Request([
                 'userId' => $userId,
                 'workflowId' => $details->workflow_id
@@ -833,7 +828,7 @@ class MarriageRegistrationController extends Controller
     {
         $mMarriageActiveRegistration = new MarriageActiveRegistration();
         $mWfActiveDocument = new WfActiveDocument();
-        $details = $mMarriageActiveRegistration->getApplicationById($applicationId);
+        $details = MarriageActiveRegistration::find($applicationId);
         $refReq = [
             'activeId' => $applicationId,
             'workflowId' => $details->workflow_id,
@@ -858,7 +853,7 @@ class MarriageRegistrationController extends Controller
             $applicationId      = $request->applicationId;
             $paymentUrl         = $this->_paymentUrl;
             $mMarriageActiveRegistration    = new MarriageActiveRegistration();
-            $marriageDetails = $mMarriageActiveRegistration->getApplicationById($applicationId);
+            $marriageDetails = MarriageActiveRegistration::find($applicationId);
 
             $myRequest = [
                 'amount'          => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
@@ -882,6 +877,115 @@ class MarriageRegistrationController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+    /**
+     * | Offline Payment
+     */
+    public function offlinePayment(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "applicationId" => "required|integer",
+            "paymentMode" => "required",
+            "chequeDdNo" => "nullable",
+            "chequeDate" => "nullable|date"
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $user = authUser($req);
+            $userId = $user->id;
+
+            $idGeneration = new IdGeneration;
+            $mMarriageTransaction = new MarriageTransaction();
+            $marriageDetails = MarriageActiveRegistration::find($req->applicationId);
+            $paymentMode = strtoupper($req->paymentMode);
+
+            if (!$marriageDetails)
+                throw new Exception("Application not found");
+
+            if ($marriageDetails->payment_status == 1)
+                throw new Exception("Payment Already Done");
+
+            if ($paymentMode != "CASH")
+                $status = 2;
+            else
+                $status = 1;
+
+            $tranNo = $idGeneration->generateTransactionNo($marriageDetails->ulb_id);
+            $mReqs = [
+                "application_id" => $marriageDetails->id,
+                "tran_date"      => Carbon::now(),
+                "tran_no"        => $tranNo,
+                "amount"         => $marriageDetails->payment_amount,
+                "penalty_amount" => $marriageDetails->penalty_amount,
+                "amount_paid"    => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
+                "payment_mode"   => $paymentMode,
+                "cheque_dd_no"   => $req->chequeDdNo,
+                "cheque_date"    => $req->chequeDate,
+                "workflow_id"    => $marriageDetails->workflow_id,
+                "ulb_id"         => $marriageDetails->ulb_id,
+                "user_id"        => $userId,
+                "status"         => $status,
+            ];
+            DB::beginTransaction();
+            $tranDtl = $mMarriageTransaction->store($mReqs);
+
+            if ($tranDtl->payment_mode == "CASH")
+                $marriageDetails->payment_status = 1;
+            else
+                $marriageDetails->payment_status = 2;
+            $marriageDetails->save();
+
+            DB::commit();
+            return responseMsgs(true, "Payment Done", $tranDtl, 100115, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", 100115, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    /**
+     * | Payment Receipt
+     */
+    public function paymentReceipt(Request $req)
+    {
+        try {
+            $validator =  Validator::make($req->all(), [
+                "transactionNo" => "required"
+            ]);
+
+            if ($validator->fails())
+                return validationError($validator);
+
+            $mMarriageTransaction = new MarriageTransaction();
+            $mUlbMaster = new UlbMaster();
+            $tranDtls = $mMarriageTransaction->where('tran_no', $req->transactionNo)->first();
+
+            if (!$tranDtls)
+                throw new Exception("Transaction Not Found");
+            $marriageDetails = MarriageActiveRegistration::find($tranDtls->application_id);
+            $ulbDtl = $mUlbMaster->getUlbDetails($marriageDetails->ulb_id);
+
+            $receiptDtls = [
+                "tran_date"           => $tranDtls->tran_date,
+                "tran_no"             => $tranDtls->tran_no,
+                "payment_mode"        => $tranDtls->payment_mode,
+                "total_paid_amount"   => $tranDtls->amount_paid,
+                "bride_name"          => $marriageDetails->bride_name,
+                "groom_name"          => $marriageDetails->groom_name,
+                "marriage_place"      => $marriageDetails->marriage_place,
+                "marriage_date"       => $marriageDetails->marriage_date,
+                "application_no"      => $marriageDetails->application_no,
+                "registration_amount" => $marriageDetails->payment_amount,
+                "penalty_amount"      => $marriageDetails->penalty_amount,
+                "ulbDetails"          => $ulbDtl
+            ];
+
+            return responseMsgs(true, "Payment Receipt", $receiptDtls, 100116, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 100116, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 }

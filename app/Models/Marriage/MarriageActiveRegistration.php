@@ -27,33 +27,4 @@ class MarriageActiveRegistration extends Model
             "applicationNo" => $registrationDtl->application_no
         ];
     }
-
-    /**
-     * | Update Owner Basic Details
-     */
-    public function edit($req, $id)
-    {
-        $req = new Request($req);
-        $mMarriageActiveRegistration = MarriageActiveRegistration::find($id);
-
-        $reqs = [
-            'owner_name' => strtoupper($req->ownerName),
-            'guardian_name' => strtoupper($req->guardianName),
-            'relation_type' => $req->relation,
-            'mobile_no' => $req->mobileNo,
-            'aadhar_no' => $req->aadhar,
-            'pan_no' => $req->pan,
-            'email' => $req->email,
-        ];
-
-        $mMarriageActiveRegistration->update($reqs);
-    }
-
-    /**
-     * | 
-     */
-    public function getApplicationById($id)
-    {
-        return MarriageActiveRegistration::find($id);
-    }
 }

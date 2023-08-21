@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Marriage\MarriageRegistrationController;
-use App\Models\Marriage\MarriageActiveRegistration;
 use Illuminate\Support\Facades\Route;
 
 
@@ -27,5 +26,7 @@ Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post('approved-application', 'approvedApplication');                 #API_ID=100112
     Route::post('edit-application', 'editApplication');                         #API_ID=100113
     Route::post("generate-order-id", "generateOrderId");                        #API_ID=100114
+    Route::post("offline-payment", "offlinePayment");                           #API_ID=100115
+    Route::post("payment-receipt", "paymentReceipt");                           #API_ID=100116
 });
 // });
