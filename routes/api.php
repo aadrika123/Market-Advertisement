@@ -39,7 +39,7 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
 
 // Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
 // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
-Route::group(['middleware' => ['checkToken']], function () {
+// Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Self Advertisements
      * | Controller-01
@@ -536,4 +536,4 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/search/list-all-advertisement-records', 'listAllAdvertisementRecords');                              // 01   ( All Advertisement records List  of citizen )
         Route::post('advert/search/list-all-market-records', 'listAllMarketRecords');                                     // 02   ( All Market records List  of citizen )
     });
-});
+// });
