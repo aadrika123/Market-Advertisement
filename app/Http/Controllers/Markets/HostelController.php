@@ -84,7 +84,7 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
-            $citizenId = ['citizenId' =>  json_decode($req->auth)->id];
+            $citizenId = ['citizenId' =>  $req->auth->id];
             $req->request->add($citizenId);
 
             // Generate Application No
