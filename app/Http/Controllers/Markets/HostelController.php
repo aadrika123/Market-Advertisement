@@ -83,9 +83,8 @@ class HostelController extends Controller
     {
         try {
             // Variable initialization
-
             $mMarActiveHostel = $this->_modelObj;
-            $citizenId = ['citizenId' => $req->auth['id']];
+            $citizenId = ['citizenId' => json_decode($req->auth)->id];
             $req->request->add($citizenId);
 
             // Generate Application No
@@ -1353,7 +1352,7 @@ class HostelController extends Controller
         if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050930", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',

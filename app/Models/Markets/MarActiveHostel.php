@@ -78,7 +78,7 @@ class MarActiveHostel extends Model
     // Store Application Foe Hostel(1)
     public function addNew($req)
     {
-        $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
         $ulbWorkflows = $ulbWorkflows['data'];
