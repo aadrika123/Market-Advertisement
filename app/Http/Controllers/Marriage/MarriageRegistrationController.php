@@ -10,6 +10,8 @@ use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Marriage\MarriageActiveRegistration;
+use App\Models\Marriage\MarriageRazorpayRequest;
+use App\Models\Marriage\MarriageRazorpayResponse;
 use App\Models\Marriage\MarriageTransaction;
 use App\Models\UlbMaster;
 use App\Models\Workflows\WfRoleusermap;
@@ -99,13 +101,14 @@ class MarriageRegistrationController extends Controller
                 $initiatorRoleId = collect($initiatorRoleId)['role_id'];                // Send to BO in Case of JSK
 
             #_Check BPL for Payment Amount
-            if ($req->bpl == false)
-                $paymentAmount = 50;
-            else
+            if ($req->bpl == true) {
                 $paymentAmount = 0;
-
-            $calculatePenalty = new CalculatePenalty;
-            $penaltyAmount = $calculatePenalty->calculate($req);
+                $penaltyAmount = 0;
+            } else {
+                $paymentAmount = 50;
+                $calculatePenalty = new CalculatePenalty;
+                $penaltyAmount = $calculatePenalty->calculate($req);
+            }
 
             $idGeneration = new PrefixIdGenerator($marriageParamId, $ulbId);
             $marriageApplicationNo = $idGeneration->generate();
@@ -552,13 +555,24 @@ class MarriageRegistrationController extends Controller
 
         try {
             $registrationDtl = MarriageActiveRegistration::find($req->applicationId);
+            $transactions = new MarriageTransaction();
+            $tranNo = null;
             if (!$registrationDtl)
                 throw new Exception('No Data Found');
+
+            $tranDtl = $transactions->where('application_id', $req->applicationId)
+                ->orderbydesc('id')
+                ->first();
+
+            if ($tranDtl)
+                $tranNo = $tranDtl->tran_no;
+
             if (isset($registrationDtl->appointment_date))
                 $registrationDtl->appointment_status = true;
             else
                 $registrationDtl->appointment_status = false;
             $registrationDtl->total_payable_amount = $registrationDtl->payment_amount + $registrationDtl->penalty_amount;
+            $registrationDtl->tran_no = $tranNo;
 
             return responseMsgs(true, "", remove_null($registrationDtl), "100105", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
@@ -840,43 +854,98 @@ class MarriageRegistrationController extends Controller
 
     /**
      * | Initiate Online Payment
+         razor pay request store pending
      */
-    public function generateOrderId(Request $request)
+    public function generateOrderId(Request $req)
     {
-        $request->validate([
+        $req->validate([
             'applicationId' => 'required|digits_between:1,9223372036854775807',
         ]);
 
         try {
-            $refUser            = Auth()->user();
-            $confModuleId       = $this->_marriageModuleId;
-            $applicationId      = $request->applicationId;
+            $user               = authUser($req);
+            $applicationId      = $req->applicationId;
             $paymentUrl         = $this->_paymentUrl;
-            $mMarriageActiveRegistration    = new MarriageActiveRegistration();
+            $mMarriageRazorpayRequest = new MarriageRazorpayRequest();
             $marriageDetails = MarriageActiveRegistration::find($applicationId);
 
             $myRequest = [
                 'amount'          => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
                 'workflowId'      => $marriageDetails->workflow_id,
                 'id'              => $applicationId,
-                'departmentId'    => $confModuleId
+                'departmentId'    => $this->_marriageModuleId
             ];
-            $newRequest = $request->merge($myRequest);
+            $newRequest = $req->merge($myRequest);
 
             # Api Calling for OrderId
             $refResponse = Http::withHeaders([
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"                             // Static
             ])
-                ->withToken($request->bearerToken())
+                ->withToken($req->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $newRequest);               // Static
 
             $orderData = json_decode($refResponse);
             $jsonIncodedData = $orderData->data;
 
+
+
             return responseMsgs(true, "Order Id generated successfully", $jsonIncodedData);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | End Online Payment
+         razor pay response store pending
+     */
+    public function storeTransactionDtl(Request $req)
+    {
+        try {
+            $mMarriageTransaction = new MarriageTransaction();
+            $mMarriageRazorpayResponse = new MarriageRazorpayResponse();
+            $marriageDetails = MarriageActiveRegistration::find($req->id);
+
+            // $razorpayReqs = [
+            //     "application_id"      => $req->id,
+            //     "razorpay_request_id" => $req->tranDate,
+            //     "order_id"            => $req->orderId,
+            //     "payment_id"          => $req->paymentId,
+            //     "amount"              => $req->amount,
+            //     "workflow_id"         => $req->workflowId,
+            //     "transaction_no"      => $req->transactionNo,
+            //     "citizen_id"          => $req->userId,
+            //     "ulb_id"              => $req->ulbId,
+            //     "tran_date"           => $req->paymentMode,
+            //     "gateway_type"        => $req->gatewayType,
+            //     "department_id"       => $req->departmentId,
+            // ];
+
+            $transanctionReqs = [
+                "application_id" => $req->id,
+                "tran_date"      => $req->tranDate,
+                "tran_no"        => $req->transactionNo,
+                "amount_paid"    => $req->amount,
+                "payment_mode"   => $req->paymentMode,
+                "amount"         => $marriageDetails->payment_amount,
+                "penalty_amount" => $marriageDetails->penalty_amount,
+                "workflow_id"    => $marriageDetails->workflow_id,
+                "ulb_id"         => $marriageDetails->ulb_id,
+                "citizen_id"     => $req->userId,
+                "status"         => 1,
+            ];
+            // DB::beginTransaction();
+            $tranDtl = $mMarriageTransaction->store($transanctionReqs);
+            // $tranDtl = $mMarriageRazorpayResponse->store($razorpayReqs);
+            $marriageDetails->update(["payment_status" => 1]);
+
+            // DB::commit();
+
+            return responseMsgs(true, "Data Received", "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 
@@ -946,6 +1015,8 @@ class MarriageRegistrationController extends Controller
         }
     }
 
+
+
     /**
      * | Payment Receipt
      */
@@ -987,5 +1058,12 @@ class MarriageRegistrationController extends Controller
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", 100116, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
+    }
+
+    /**
+     * | Search Application
+     */
+    public function searchApplication(Request $req)
+    {
     }
 }
