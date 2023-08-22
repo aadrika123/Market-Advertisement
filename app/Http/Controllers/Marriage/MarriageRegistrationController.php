@@ -610,10 +610,10 @@ class MarriageRegistrationController extends Controller
             if (!$registrationDtl)
                 throw new Exception('Application Not Found');
 
-            if ($registrationDtl->doc_upload_status)
+            if ($registrationDtl->doc_upload_status == 0)
                 throw new Exception('Full Document Not Uploaded');
 
-            if ($registrationDtl->doc_verify_status)
+            if ($registrationDtl->doc_verify_status == 0)
                 throw new Exception('Full Document Not Verified');
 
             if (!is_null($registrationDtl->appointment_date))
@@ -1065,5 +1065,38 @@ class MarriageRegistrationController extends Controller
      */
     public function searchApplication(Request $req)
     {
+        try {
+            // $validator =  Validator::make($req->all(), [
+            //     "transactionNo" => "required"
+            // ]);
+
+            // if ($validator->fails())
+            //     return validationError($validator);
+            $perPage = $req->perPage ?? 10;
+            $ulbId = $req->ulbId ?? authUser($req)->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb id is required");
+            $mMarriageTransaction = new MarriageTransaction();
+            $mUlbMaster = new UlbMaster();
+            $tranDtls = $mMarriageTransaction->where('tran_no', $req->transactionNo)->first();
+
+            $list = MarriageActiveRegistration::where('marriage_active_registrations.ulb_id', $ulbId)
+                ->orderByDesc('marriage_active_registrations.id');
+
+            $inbox = app(Pipeline::class)
+                ->send(
+                    $list
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByName::class
+                ])
+                ->thenReturn()
+                ->paginate($perPage);
+
+            return responseMsgs(true, "Payment Receipt", $inbox, 100118, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 100118, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
     }
 }
