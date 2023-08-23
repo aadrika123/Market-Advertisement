@@ -51,6 +51,7 @@ Route::controller(TollsController::class)->group(function () {
     // Route::post('rental/list-shop', 'listShop');
     Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
     Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
+    Route::post('rental/get-toll-price-list', 'getTollPriceList');
 });
 
 

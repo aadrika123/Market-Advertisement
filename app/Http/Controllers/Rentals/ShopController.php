@@ -302,7 +302,7 @@ class ShopController extends Controller
             ];
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Status Updated Successfully", [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Deleted Successfully", [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
