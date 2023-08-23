@@ -775,7 +775,7 @@ class MarriageRegistrationController extends Controller
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $mWfRoleusermap = new WfRoleusermap();
             $wfDocId = $req->id;
-            $userId = json_decode($req->auth)->id;
+            $userId = authUser($req)->id;
             $applicationId = $req->applicationId;
             // Derivative Assigments
             $details = MarriageActiveRegistration::find($req->applicationId);
