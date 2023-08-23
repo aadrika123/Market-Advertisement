@@ -875,7 +875,7 @@ class MarriageRegistrationController extends Controller
                 ->thenReturn()
                 ->paginate($perPage);
 
-            return responseMsgs(false, "Approved Application", $approvedList, 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
+            return responseMsgs(true, "Approved Application", $approvedList, 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
