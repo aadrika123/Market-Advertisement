@@ -1016,7 +1016,7 @@ class MarriageRegistrationController extends Controller
             $mReqs = [
                 "application_id" => $marriageDetails->id,
                 "tran_date"      => Carbon::now(),
-                "tran_no"        => $tranNo,
+                "tranNo"        => $tranNo,
                 "amount"         => $marriageDetails->payment_amount,
                 "penalty_amount" => $marriageDetails->penalty_amount,
                 "amount_paid"    => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
