@@ -166,7 +166,7 @@ class PetRegistrationController extends Controller
             $mWfWorkflow                = new WfWorkflow();
             $mMPetFee                   = new MPetFee();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
-            $user                       = authUser();
+            $user                       = authUser($req);
             $ulbId                      = $req->ulbId ?? 2;
             $workflowMasterId           = $this->_workflowMasterId;
             $petParamId                 = $this->_petParamId;
@@ -519,7 +519,7 @@ class PetRegistrationController extends Controller
         ]);
 
         try {
-            $user                       = authUser();
+            $user                       = authUser($req);
             $metaReqs                   = array();
             $applicationId              = $req->applicationId;
             $document                   = $req->document;
@@ -703,7 +703,7 @@ class PetRegistrationController extends Controller
     public function getApplicationList(Request $req)
     {
         try {
-            $user                   = authUser();
+            $user                   = authUser($req);
             $confUserType           = $this->_userType;
             $confDbKey              = $this->_dbKey;
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -1038,7 +1038,7 @@ class PetRegistrationController extends Controller
             'applicationId' => 'required|integer'
         ]);
         try {
-            $user                       = authUser();
+            $user                       = authUser($req);
             $applicationId              = $req->applicationId;
             $confPetModuleId            = $this->_petModuleId;
             $mPetActiveRegistration     = new PetActiveRegistration();
@@ -1207,7 +1207,7 @@ class PetRegistrationController extends Controller
             'ulbId' => 'required|numeric'
         ]);
         try {
-            $citizenId                  = authUser()->id;
+            $citizenId                  = authUser($req)->id;
             $ulbId                      = $req->ulbId;
             $type                       = $req->type;
             $mPropActiveSafs            = new PropActiveSaf();
@@ -1251,7 +1251,7 @@ class PetRegistrationController extends Controller
     public function getApproveRegistration(Request $req)
     {
         try {
-            $user                   = authUser();
+            $user                   = authUser($req);
             $confUserType           = $this->_userType;
             $confDbKey              = $this->_dbKey;
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -1316,7 +1316,7 @@ class PetRegistrationController extends Controller
      */
     public function checkParamForPetUdate($req)
     {
-        $user                   = authUser();
+        $user                   = authUser($req);
         $applicationId          = $req->id;
         $confRoles              = $this->_petWfRoles;
         $mPetActiveRegistration = new PetActiveRegistration();
@@ -1374,7 +1374,6 @@ class PetRegistrationController extends Controller
     public function editApplicantDetails(Request $req)
     {
         try {
-
         } catch (Exception $e) {
             return responseMsgs(false, "Applicant Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
         }
