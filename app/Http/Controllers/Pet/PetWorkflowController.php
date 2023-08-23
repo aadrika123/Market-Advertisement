@@ -67,7 +67,7 @@ class PetWorkflowController extends Controller
     public function inbox(Request $request)
     {
         try {
-            $user   = authUser();
+            $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
@@ -128,7 +128,7 @@ class PetWorkflowController extends Controller
     public function outbox(Request $req)
     {
         try {
-            $user                   = authUser();
+            $user                   = authUser($req);
             $userId                 = $user->id;
             $ulbId                  = $user->ulb_id;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
@@ -200,7 +200,7 @@ class PetWorkflowController extends Controller
             $metaReqs['workflowId']         = $petApplication->workflow_id;
             $metaReqs['refTableDotId']      = 'pet_active_registrations.id';                                                // Static
             $metaReqs['refTableIdValue']    = $req->applicationId;
-            $metaReqs['user_id']            = authUser()->id;
+            $metaReqs['user_id']            = authUser($req)->id;
             $req->request->add($metaReqs);
 
             $waterTrack = new WorkflowTrack();
@@ -270,7 +270,7 @@ class PetWorkflowController extends Controller
             $mWfRoleusermap             = new WfRoleusermap();
             $wfDocId                    = $req->id;
             $applicationId              = $req->applicationId;
-            $userId                     = authUser()->id;
+            $userId                     = authUser($req)->id;
             $wfLevel                    = $this->_petWfRoles;
 
             # validating application
@@ -374,7 +374,7 @@ class PetWorkflowController extends Controller
             'status' => 'required'
         ]);
         try {
-            $userId = authUser()->id;
+            $userId                 = authUser($req)->id;
             $applicationId          = $req->applicationId;
             $mPetActiveRegistration = new PetActiveRegistration();
             $mWfRoleUsermap         = new WfRoleusermap();
@@ -396,7 +396,7 @@ class PetWorkflowController extends Controller
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
 
-                # Change the concept 
+            # Change the concept 
             if ($req->status == 1) {
                 $regNo = "PET" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
                 PetActiveRegistration::where('id', $applicationId)

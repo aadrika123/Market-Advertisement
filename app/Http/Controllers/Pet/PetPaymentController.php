@@ -77,7 +77,7 @@ class PetPaymentController extends Controller
             'paymentMode' => 'required'
         ]);
         try {
-            $user = authUser();
+            $user = authUser($req);
             $petParamId = $this->_petParamId;
             $offlineVerificationModes = $this->_offlineVerificationModes;
             $todayDate = Carbon::now();
@@ -191,7 +191,7 @@ class PetPaymentController extends Controller
             throw new Exception("Payment has been done!");
         }
         if ($paymentMode == $confPaymentMode['1']) {
-            if ($applicationDetail->citizen_id != authUser()->id) {
+            if ($applicationDetail->citizen_id != authUser($req)->id) {
                 throw new Exception("You are not he Autherized User!");
             }
         }
@@ -426,6 +426,7 @@ class PetPaymentController extends Controller
     /**
      * | Get data for payment Receipt
         | Serial No :
+        | Under Con
      */
     public function generatePaymentReceipt(Request $req)
     {
@@ -436,9 +437,6 @@ class PetPaymentController extends Controller
             $mPetTran = new PetTran();
             $mPetActiveRegistration = new PetActiveRegistration();
             $mPetRenewalRegistration = new PetRenewalRegistration();
-
-            
-
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
