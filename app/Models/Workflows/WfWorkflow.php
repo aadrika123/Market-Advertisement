@@ -22,4 +22,22 @@ class WfWorkflow extends Model
             ->where('is_suspended', false)
             ->first();
     }
+
+    /**
+     * | Get Wf master id by Workflow id
+     */
+    public function getWfMstrByWorkflowId($workflowId)
+    {
+        return WfWorkflow::select('wf_master_id')
+            ->where('id', $workflowId)
+            ->firstOrFail();
+    }
+
+    /**
+     * | Get Wf Dtls
+     */
+    public function getWfDetails($ulbWorkflowId)
+    {
+        return WfWorkflow::findOrFail($ulbWorkflowId);
+    }
 }
