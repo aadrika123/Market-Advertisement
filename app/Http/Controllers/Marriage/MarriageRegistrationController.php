@@ -1099,4 +1099,70 @@ class MarriageRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 100118, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
+
+    /**
+     * | Forward / Backward Application
+     */
+    public function postNextLevel(Request $req)
+    {
+        $wfLevels = Config::get('PropertyConstaint.HARVESTING-LABEL');
+        try {
+            $req->validate([
+                'applicationId' => 'required|integer',
+                'receiverRoleId' => 'nullable|integer',
+                'action' => 'required|In:forward,backward',
+            ]);
+
+            $userId = authUser($req)->id;
+            $track = new WorkflowTrack();
+            $marriageDetails = MarriageActiveRegistration::find($req->applicationId);
+            if (!$marriageDetails)
+                throw new Exception("Application not found");
+            $mWfWorkflows = new WfWorkflow();
+            $mWfRoleMaps = new WfWorkflowrolemap();
+            $senderRoleId = $marriageDetails->current_role;
+            $ulbWorkflowId = $marriageDetails->workflow_id;
+            // $req->validate([
+            //     'comment' => $senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
+            // ]);
+
+            $ulbWorkflowMaps = $mWfWorkflows->getWfDetails($ulbWorkflowId);
+            $roleMapsReqs = new Request([
+                'workflowId' => $ulbWorkflowMaps->id,
+                'roleId' => $senderRoleId
+            ]);
+            $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
+
+            DB::beginTransaction();
+            if ($req->action == 'forward') {
+                $wfMstrId = $mWfWorkflows->getWfMstrByWorkflowId($marriageDetails->workflow_id);
+                // $this->checkPostCondition($senderRoleId, $wfLevels, $marriageDetails);          // Check Post Next level condition
+                $marriageDetails->current_role = $forwardBackwardIds->forward_role_id;
+                // $marriageDetails->last_role_id =  $forwardBackwardIds->forward_role_id;         // Update Last Role Id
+                $metaReqs['verificationStatus'] = 1;
+                $metaReqs['receiverRoleId'] = $forwardBackwardIds->forward_role_id;
+            }
+            if ($req->action == 'backward') {
+                $marriageDetails->current_role = $forwardBackwardIds->backward_role_id;
+                $metaReqs['verificationStatus'] = 0;
+                $metaReqs['receiverRoleId'] = $forwardBackwardIds->backward_role_id;
+            }
+
+            $marriageDetails->save();
+            $metaReqs['moduleId'] = Config::get('module-constants.PROPERTY_MODULE_ID');
+            $metaReqs['workflowId'] = $marriageDetails->workflow_id;
+            $metaReqs['refTableDotId'] = 'marriage_active_registrations.id';
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['senderRoleId'] = $senderRoleId;
+            $metaReqs['user_id'] = $userId;
+
+            $req->request->add($metaReqs);
+            $track->saveTrack($req);
+            DB::commit();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", '011110', 01, '446ms', 'Post', $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
 }
