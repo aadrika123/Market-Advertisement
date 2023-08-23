@@ -28,5 +28,9 @@ Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post("generate-order-id", "generateOrderId");                        #API_ID=100114
     Route::post("offline-payment", "offlinePayment");                           #API_ID=100115
     Route::post("payment-receipt", "paymentReceipt");                           #API_ID=100116
+    Route::post("save-tran-dtl", "storeTransactionDtl");                        #API_ID=100117
+    Route::post("search-application", "searchApplication");                     #API_ID=100118
+    Route::post("post-next-level", "postNextLevel");                            #API_ID=100119
+
 });
 // });
