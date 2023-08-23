@@ -10,6 +10,7 @@ use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Marriage\MarriageActiveRegistration;
+use App\Models\Marriage\MarriageApprovedRegistration;
 use App\Models\Marriage\MarriageRazorpayRequest;
 use App\Models\Marriage\MarriageRazorpayResponse;
 use App\Models\Marriage\MarriageTransaction;
@@ -853,6 +854,35 @@ class MarriageRegistrationController extends Controller
     }
 
     /**
+     * | 
+     */
+    public function approvedApplication(Request $req)
+    {
+        try {
+            $perPage = $req->perPage ?? 10;
+            $ulbId = authUser($req)->ulb_id;
+            $list = MarriageApprovedRegistration::where('marriage_approved_registrations.ulb_id', $ulbId)
+                ->orderByDesc('marriage_approved_registrations.id');
+
+            $approvedList = app(Pipeline::class)
+                ->send(
+                    $list
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByName::class
+                ])
+                ->thenReturn()
+                ->paginate($perPage);
+
+            return responseMsgs(true, "Approved Application", $approvedList, 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+
+    /**
      * | Initiate Online Payment
          razor pay request store pending
      */
@@ -986,7 +1016,7 @@ class MarriageRegistrationController extends Controller
             $mReqs = [
                 "application_id" => $marriageDetails->id,
                 "tran_date"      => Carbon::now(),
-                "tran_no"        => $tranNo,
+                "tranNo"        => $tranNo,
                 "amount"         => $marriageDetails->payment_amount,
                 "penalty_amount" => $marriageDetails->penalty_amount,
                 "amount_paid"    => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
