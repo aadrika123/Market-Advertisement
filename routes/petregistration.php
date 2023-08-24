@@ -33,7 +33,7 @@ Route::post('/pet-connection', function () {
 /**
  * | Grouped Route for middleware
  */
-Route::group(['middleware' => ['auth.citizen', 'json.response', 'expireBearerToken']], function () {
+Route::group(['middleware' => ['json.response', 'expireBearerToken']], function () {
     /**
      * | Pet Registration Operation and more fundamental oprations
         | Serial No : 01
