@@ -206,7 +206,7 @@ class SelfAdvetController extends Controller
             ->where('status', '1')
             ->orderBy('id', 'ASC')
             ->get();
-        return responseMsgs(true, "Advertisement Catrgory", remove_null($list->toArray()), "050104", "1.0", responseTime(), "POST",  "");
+        return responseMsgs(true, "Advertisement Category", remove_null($list->toArray()), "050104", "1.0", responseTime(), "POST",  "");
     }
 
     /**
