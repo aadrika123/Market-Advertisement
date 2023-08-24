@@ -212,7 +212,7 @@ if (!function_exists('authUser')) {
     function authUser($req)
     {
         $auth = $req->auth;
-        echo $auth;
+        print_r($auth);
         die;
         if (!$auth)
             throw new Exception("Auth Not Available");
