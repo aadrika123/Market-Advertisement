@@ -66,8 +66,6 @@ class MarriageRegistrationController extends Controller
      */
     public function apply(Request $req)
     {
-        print_r($req->all());
-        die;
         try {
             $mWfWorkflow = new WfWorkflow();
             $mWfRoleusermaps  = new WfRoleusermap();
