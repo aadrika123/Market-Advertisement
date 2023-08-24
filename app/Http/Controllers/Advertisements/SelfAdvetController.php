@@ -85,7 +85,6 @@ class SelfAdvetController extends Controller
         $this->_wfMasterId = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
     }
 
-
     /**
      * | Apply Application for Self Advertisements 
      * | @param StoreRequest 
@@ -367,7 +366,6 @@ class SelfAdvetController extends Controller
             ->first();
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
-
 
     /**
      * | Get Applied Applications by Logged In Citizen
@@ -1331,7 +1329,6 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050131", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Back To Citizen Inbox

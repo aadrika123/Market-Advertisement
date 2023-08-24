@@ -111,7 +111,7 @@ class AdvActivePrivateland extends Model
      */
     public function addNew($req)
     {
-        $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
         // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         // $ipAddress = getClientIpAddress();
@@ -216,7 +216,14 @@ class AdvActivePrivateland extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a, $auth);
+            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 
@@ -229,7 +236,6 @@ class AdvActivePrivateland extends Model
             ->where('id', $appId)
             ->first();
     }
-
 
     /**
      * | Get Application Details by id

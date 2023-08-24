@@ -14,6 +14,8 @@ class WorkflowTrack extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $connection='pgsql_masters';
+
     public function saveTrack($request)
     {
         $userId     = $request->auth['id'];

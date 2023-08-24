@@ -130,7 +130,7 @@ class HoardingController extends Controller
      * | Function - 03
      * | API - 03
      */
-    public function addNew(StoreLicenceRequest $req)
+    public function addNew(Request $req)
     {
         try {
             $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);

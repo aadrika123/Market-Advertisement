@@ -88,13 +88,10 @@ class AdvActiveSelfadvertisement extends Model
     // Store Self Advertisements(1)
     public function addNew($req)
     {
-        $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        //    echo "<pre>"; print_r($ulbWorkflows); die;
-        // if (!$ulbWorkflows)
-        //     $ulbWorkflows = $ulbWorkflows->data;
-
+    
         $ulbWorkflows = $ulbWorkflows['data'];
         // $ipAddress = getClientIpAddress();
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
@@ -191,7 +188,15 @@ class AdvActiveSelfadvertisement extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            // $mWfActiveDocument->postDocuments($a,$auth);
+            $metaReqs = new Request($metaReqs);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

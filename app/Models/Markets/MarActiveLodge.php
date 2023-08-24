@@ -109,7 +109,8 @@ class MarActiveLodge extends Model
     // Store Application Foe Lodge(1)
     public function renewApplication($req)
     {
-        $bearerToken = $req->bearerToken();
+        // $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.LODGE');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
         $ulbWorkflows = $ulbWorkflows['data'];
@@ -172,7 +173,14 @@ class MarActiveLodge extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            // $mWfActiveDocument->postDocuments($a,$auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

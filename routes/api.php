@@ -39,7 +39,7 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
 
 // Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
 // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {
-// Route::group(['middleware' => ['checkToken']], function () {
+Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Self Advertisements
      * | Controller-01
@@ -89,7 +89,6 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');          //37 ( Get Application Financial Year Wise )
         Route::post('advert/self/payment-collection', 'paymentCollection');          //38 ( Get Application Financial Year Wise )
     });
-
 
     /**
      * | Param Strings 
@@ -241,7 +240,6 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('advert/agency/is-email-available', 'isEmailAvailable');          //35 ( Check email is free for agency or not )
     });
 
-
     /**
      * | Hoarding 
      * | Controller-06 
@@ -294,7 +292,6 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('advert/hoarding/get-agency-dashboard', 'getAgencyDashboard'); //32 (Get Agency Dashboard)
 
     });
-
 
     /**
      * | Lodge Controller
@@ -393,7 +390,6 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');          //33 ( Get Application organization type Wise )
     });
 
-
     /**
      * | Hostel Controller
      * | Controller-09
@@ -491,8 +487,6 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType');          //32 ( Get Application Organization type Wise )
     });
 
-
-
     /**
      * | Bandobastee Controller
      * | Controller-11
@@ -536,4 +530,4 @@ Route::post('advertisements/payment-success-failure', [ParamController::class, '
         Route::post('advert/search/list-all-advertisement-records', 'listAllAdvertisementRecords');                              // 01   ( All Advertisement records List  of citizen )
         Route::post('advert/search/list-all-market-records', 'listAllMarketRecords');                                     // 02   ( All Market records List  of citizen )
     });
-// });
+});

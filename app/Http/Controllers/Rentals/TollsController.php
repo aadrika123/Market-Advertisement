@@ -105,7 +105,7 @@ class TollsController extends Controller
                 $imageName2Absolute = $absolutePath;
             }
             $tollNo = $this->tollIdGeneration($request->marketId);
-            $marToll = [
+           $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
                 // 'toll_type'               => $request->tollType,
