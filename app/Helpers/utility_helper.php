@@ -212,6 +212,7 @@ if (!function_exists('authUser')) {
     function authUser($req)
     {
         $auth = $req->auth;
+        return $auth;
         if (!$auth)
             throw new Exception("Auth Not Available");
         if (is_array($auth))
