@@ -184,9 +184,8 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $mAdvActivePrivateland = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -212,9 +211,8 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $mPrivateLand = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });

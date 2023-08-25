@@ -167,8 +167,7 @@ class AgencyController extends Controller
             // Variable initialization
             $ulbId = $req->auth['ulb_id'];
             $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -191,9 +190,8 @@ class AgencyController extends Controller
             // Variable initialization
 
             $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->token;
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -220,9 +218,8 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });

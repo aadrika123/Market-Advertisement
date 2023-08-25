@@ -122,9 +122,8 @@ class BanquetMarriageHallController extends Controller
         try {
             // Variable initialization
             $mMarActiveBanquteHall = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -148,11 +147,9 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mMarActiveBanquteHall = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });

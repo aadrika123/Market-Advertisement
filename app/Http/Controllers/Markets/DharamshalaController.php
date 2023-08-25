@@ -117,9 +117,8 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $mMarActiveDharamshala = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -144,12 +143,9 @@ class DharamshalaController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveDharamshala = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -157,8 +153,6 @@ class DharamshalaController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
             return responseMsgs(true, "Outbox Lists",  $list, "051003", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
