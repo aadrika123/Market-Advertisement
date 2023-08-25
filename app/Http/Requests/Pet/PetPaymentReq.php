@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Pet;
 
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Config;
 
 class PetPaymentReq extends FormRequest
@@ -25,7 +27,6 @@ class PetPaymentReq extends FormRequest
      */
     public function rules()
     {
-        $refDate = Carbon::now()->format('Y-m-d');
         $offlinePaymentModes = Config::get('pet.PAYMENT_MODE');
 
         $rules['id'] = 'required';
@@ -35,10 +36,15 @@ class PetPaymentReq extends FormRequest
             $rules['bankName']      = "required";
             $rules['branchName']    = "required";
             $rules['chequeNo']      = "required";
-            if (isset($this['chequeDate']) && $this['chequeDate'] > $refDate) {
-                # throw error
-            }
         }
         return $rules;
+    }
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'status'    => false,
+            'message'   => "Validation Error!",
+            'error'     => $validator->errors()
+        ], 422));
     }
 }

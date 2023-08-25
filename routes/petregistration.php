@@ -33,7 +33,7 @@ Route::post('/pet-connection', function () {
 /**
  * | Grouped Route for middleware
  */
-Route::group(['middleware' => ['json.response', 'expireBearerToken']], function () {
+Route::group(['middleware' => ['json.response']], function () {
     /**
      * | Pet Registration Operation and more fundamental oprations
         | Serial No : 01
@@ -50,6 +50,7 @@ Route::group(['middleware' => ['json.response', 'expireBearerToken']], function 
         Route::post('application/edit-pet-details', 'editPetDetails');
         Route::post('application/edit-applicant-details', 'editApplicantDetails');
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
+        Route::post('registration/apply-renewal', 'applyPetRenewal');
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
         Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
@@ -75,7 +76,7 @@ Route::group(['middleware' => ['json.response', 'expireBearerToken']], function 
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
         Route::post('post-next-level', 'postNextLevel');
-        // Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
+        Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
         // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
         // Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
         Route::post('doc-verify-reject', 'docVerifyRejects');                                           // Workflow

@@ -14,6 +14,7 @@ use App\Models\Pet\PetRazorPayResponse;
 use App\Models\Pet\PetRegistrationCharge;
 use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Pet\PetTran;
+use App\Models\Pet\PetTranDetail;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -71,29 +72,34 @@ class PetPaymentController extends Controller
      */
     public function offlinePayment(PetPaymentReq $req)
     {
-        $req->validate([
-            'amount' => 'required|numeric|min:0',
-            'remarks' => 'sometimes',
-            'paymentMode' => 'required'
-        ]);
-        try {
-            $user = authUser($req);
-            $petParamId = $this->_petParamId;
-            $offlineVerificationModes = $this->_offlineVerificationModes;
-            $todayDate = Carbon::now();
-            $mPetActiveRegistration = new PetActiveRegistration();
-            $mPetRegistrationCharge = new PetRegistrationCharge();
-            $mPetTran = new PetTran();
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'remarks' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-            $payRelatedDetails = $this->checkParamForPayment($req, $req->paymentMode);
-            $ulbId = $payRelatedDetails['applicationDetails']['ulb_id'];
-            $wardId = $payRelatedDetails['applicationDetails']['ward_id'];
-            $tranType = $payRelatedDetails['applicationDetails']['application_type'];
-            $tranTypeId = $payRelatedDetails['chargeCategory'];
+        try {
+            $user                       = authUser($req);
+            $todayDate                  = Carbon::now();
+            $petParamId                 = $this->_petParamId;
+            $offlineVerificationModes   = $this->_offlineVerificationModes;
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $mPetRegistrationCharge     = new PetRegistrationCharge();
+            $mPetTran                   = new PetTran();
+
+            $payRelatedDetails  = $this->checkParamForPayment($req, $req->paymentMode);
+            $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'];
+            $wardId             = $payRelatedDetails['applicationDetails']['ward_id'];
+            $tranType           = $payRelatedDetails['applicationDetails']['application_type'];
+            $tranTypeId         = $payRelatedDetails['chargeCategory'];
 
             DB::beginTransaction();
-            $idGeneration = new PrefixIdGenerator($petParamId['TRANSACTION'], $ulbId);
-            $petTranNo = $idGeneration->generate();
+
+            $idGeneration   = new PrefixIdGenerator($petParamId['TRANSACTION'], $ulbId);
+            $petTranNo      = $idGeneration->generate();
 
             # Water Transactions
             $req->merge([
@@ -106,7 +112,8 @@ class PetPaymentController extends Controller
                 'wardId'        => $wardId,
                 'tranType'      => $tranType,                                                              // Static
                 'tranTypeId'    => $tranTypeId,
-                'roundAmount'   => $req->amount
+                'amount'        => $payRelatedDetails['refRoundAmount'],
+                'roundAmount'   => $payRelatedDetails['regAmount']
             ]);
 
             # Save the Details of the transaction
@@ -122,15 +129,49 @@ class PetPaymentController extends Controller
                     'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
                 ]);
                 $this->postOtherPaymentModes($req);
-
-                // $mPetActiveRegistration->
-
+                $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             }
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
+    }
+
+
+    /**
+     * | Save the status in active consumer table, transaction, 
+        | Serial No :
+        | Under Con
+     */
+    public function savePetRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
+    {
+        $mPetTranDetail = new PetTranDetail();
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $mPetTran = new PetTran();
+        if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
+            $charges->paid_status = 2;                                       // Update Demand Paid Status // Static
+            $mPetTran->saveVerifyStatus($waterTransId);
+            $refReq = [
+                "payment_status" => 2,
+            ];
+            $mPetActiveRegistration->updateDataForPayment($activeConRequest->id, $refReq);
+        } else {
+            $charges->paid_status = 1;                                      // Update Demand Paid Status // Static
+            $refReq = [
+                "payment_status"    => 1,
+                "current_role"      => $activeConRequest->initiator
+            ];
+            $mPetActiveRegistration->updateDataForPayment($activeConRequest->id, $refReq);
+        }
+        $charges->save();
+        # Save Trans Details                                                   // Save Demand
+        $mPetTranDetail->saveDefaultTrans(
+            $charges->amount,
+            $request->consumerId ?? $request->applicationId,
+            $waterTransId,
+            $charges['id'],
+        );
     }
 
 
@@ -182,11 +223,6 @@ class PetPaymentController extends Controller
         if (is_null($regisCharges)) {
             throw new Exception("Charges not found!");
         }
-        if ($paymentMode != $confPaymentMode['1']) {
-            if (round($regisCharges->amount) != $req->amount) {
-                throw new Exception("Amount Not matched!");
-            }
-        }
         if (in_array($regisCharges->paid_status, [1, 2])) {
             throw new Exception("Payment has been done!");
         }
@@ -207,7 +243,8 @@ class PetPaymentController extends Controller
             "PetCharges"            => $regisCharges,
             "chargeCategory"        => $chargeCategory,
             "chargeId"              => $regisCharges->id,
-            "regAmount"             => $regisCharges->amount
+            "regAmount"             => $regisCharges->amount,
+            "refRoundAmount"        => round($regisCharges->amount)
         ];
     }
 
@@ -266,20 +303,26 @@ class PetPaymentController extends Controller
      */
     public function handelOnlinePayment(Request $request)
     {
-        $request->validate([
-            'id' => 'required|digits_between:1,9223372036854775807',
-        ]);
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'id' => 'required|digits_between:1,9223372036854775807',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
         try {
-            $refUser            = Auth()->user();
-            $confModuleId       = $this->_petModuleId;
-            $applicationId      = $request->id;
-            $paymentMode        = $this->_paymentMode;
-            $paymentUrl         = $this->_PaymentUrl;
-            $confApiKey         = $this->_apiKey;
-            $paymentDetails     = $this->checkParamForPayment($request, $paymentMode['1']);
+            $refUser                = Auth()->user();
+            $confModuleId           = $this->_petModuleId;
+            $applicationId          = $request->id;
+            $paymentMode            = $this->_paymentMode;
+            $paymentUrl             = $this->_PaymentUrl;
+            $confApiKey             = $this->_apiKey;
+            $paymentDetails         = $this->checkParamForPayment($request, $paymentMode['1']);
+            $mPetRazorPayRequest    = new PetRazorPayRequest();
             $myRequest = [
-                'amount'          => $paymentDetails['regAmount'],
+                'amount'          => $paymentDetails['refRoundAmount'],
                 'workflowId'      => $paymentDetails['applicationDetails']['workflow_id'],
                 'id'              => $applicationId,
                 'departmentId'    => $confModuleId
@@ -296,17 +339,16 @@ class PetPaymentController extends Controller
             $orderData = json_decode($refResponse);
             $jsonIncodedData = json_encode($orderData);
 
-            $RazorPayRequest = new PetRazorPayRequest();
-            $RazorPayRequest->related_id        = $applicationId;
-            $RazorPayRequest->payment_from      = $paymentDetails['chargeCategory'];
-            $RazorPayRequest->amount            = $orderData->amount;
-            $RazorPayRequest->demand_id         = $paymentDetails["chargeId"];
-            $RazorPayRequest->ip_address        = $request->ip();
-            $RazorPayRequest->order_id          = $orderData->orderId;
-            $RazorPayRequest->department_id     = $orderData->departmentId;
-            $RazorPayRequest->note              = $jsonIncodedData;
-            $RazorPayRequest->save();
-
+            $refPaymentRequest = new Request([
+                "chargeCategory"    => $paymentDetails['chargeCategory'],
+                "amount"            => $orderData->amount,
+                "chargeId"          => $paymentDetails["chargeId"],
+                "orderId"           => $orderData->orderId,
+                "departmentId"      => $orderData->departmentId,
+                "regAmount"         => $paymentDetails['regAmount'],
+                "ip"                => $request->ip()
+            ]);
+            $mPetRazorPayRequest->savePetRazorpayReq($applicationId, $refPaymentRequest, $jsonIncodedData);
             #--------------------water Consumer----------------------
             DB::commit();
             $returnData = [
@@ -333,6 +375,7 @@ class PetPaymentController extends Controller
     public function endOnlinePayment(Request $req)
     {
         try {
+            $payStatus          = 1;
             $refUserId          = $req->userId;
             $refUlbId           = $req->ulbId;
             $applicationId      = $req->id;
@@ -341,6 +384,7 @@ class PetPaymentController extends Controller
             $petRoles           = $this->_petWfRoles;
 
             $mPetTran               = new PetTran();
+            $mPetTranDetail         = new PetTranDetail();
             $mPetRazorPayRequest    = new PetRazorPayRequest();
             $mPetRazorPayResponse   = new PetRazorPayResponse();
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -361,18 +405,7 @@ class PetPaymentController extends Controller
                 ->where('charge_category', $RazorPayRequest->payment_from)
                 ->where('paid_status', 0)
                 ->first();
-            if (!$chargeDetails) {
-                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
-                throw new Exception("Demand Not found!");
-            }
-            if ($chargeDetails->amount != $req->amount) {
-                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
-                throw new Exception("amount Not found!");
-            }
-            if ($req->amount != $RazorPayRequest->amount) {
-                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
-                throw new Exception("Amount Not Match from request!");
-            }
+            $this->CheckChargeDetails($chargeDetails, $epoch, $req, $RazorPayRequest);
 
             DB::beginTransaction();
             # save razorpay webhook response
@@ -395,26 +428,24 @@ class PetPaymentController extends Controller
                 'pgId'              => $req->gatewayType,
                 'wardId'            => $applicationDetails->ward_id,
                 'tranTypeId'        => $RazorPayRequest->payment_from,
-                'isJsk'             => FALSE,
-                'roundAmount'       => $RazorPayRequest->amount
+                'isJsk'             => FALSE,                                   // Static
+                'roundAmount'       => $RazorPayRequest->round_amount,
+                'refChargeId'       => $chargeDetails->id
             ];
-            $mPetTran->saveTranDetails($tranReq);
+            $transDetails = $mPetTran->saveTranDetails($tranReq);
+            $mPetTranDetail->saveTransDetails($transDetails['transactionId'], $tranReq);
 
             # Save charges payment status
-            PetRegistrationCharge::where('id', $chargeDetails->id)
-                ->update([
-                    "paid_status" => 1,                                                  // Static
+            $chargeStatus = ["paid_status" => $payStatus];
+            $mPetRegistrationCharge->saveStatus($chargeDetails->id, $chargeStatus);
 
-                ]);
-
-            # Save application payment status  
-            PetActiveRegistration::where('id', $applicationId)
-                ->update([
-                    "payment_status" => 1,                                                  // Static
-                    "current_role_id" => $petRoles['DA'],
-                    "last_role_id" => $petRoles['DA']
-                ]);
-
+            # Save application payment status
+            $AppliationStatus = [
+                "payment_status"    => $payStatus,                                                  // Static
+                "current_role_id"   => $petRoles['DA'],
+                "last_role_id"      => $petRoles['DA']
+            ];
+            $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             DB::commit();
             return responseMsgs(true, "Online Payment Success!", []);
         } catch (Exception $e) {
@@ -424,15 +455,42 @@ class PetPaymentController extends Controller
     }
 
     /**
+     * | Save the Error Request data in file while online payment
+        | Serial No :
+        | Under Con  
+     */
+    public function CheckChargeDetails($chargeDetails, $epoch, $req, $RazorPayRequest)
+    {
+        if (!$chargeDetails) {
+            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            throw new Exception("Demand Not found!");
+        }
+        if ($chargeDetails->amount != $req->amount) {
+            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            throw new Exception("amount Not found!");
+        }
+        if ($req->amount != $RazorPayRequest->amount) {
+            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            throw new Exception("Amount Not Match from request!");
+        }
+    }
+
+
+    /**
      * | Get data for payment Receipt
         | Serial No :
         | Under Con
      */
     public function generatePaymentReceipt(Request $req)
     {
-        $req->validate([
-            'applicationNo' => 'required|digits_between:1,9223372036854775807',
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationNo' => 'required|digits_between:1,9223372036854775807',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
         try {
             $mPetTran = new PetTran();
             $mPetActiveRegistration = new PetActiveRegistration();

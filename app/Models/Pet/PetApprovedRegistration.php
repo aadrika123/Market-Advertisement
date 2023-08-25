@@ -34,4 +34,14 @@ class PetApprovedRegistration extends Model
             ->where('pet_approved_registrations.id', $registrationId)
             ->delete();
     }
+
+    /**
+     * | Get the approved application details by id
+     */
+    public function getApplictionByRegId($id)
+    {
+        return PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
+            ->where('pet_approved_registrations.id', $id);
+    }
 }

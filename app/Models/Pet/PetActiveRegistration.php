@@ -38,13 +38,14 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->occurrence_type_id     = $req->petFrom;
         $mPetActiveRegistration->apply_through          = $req->applyThrough;                       // holding or saf
         $mPetActiveRegistration->owner_type             = $req->ownerCategory;
+        $mPetActiveRegistration->application_type_id    = $req->applicationTypeId;
 
         $mPetActiveRegistration->created_at             = Carbon::now();
         $mPetActiveRegistration->application_apply_date = Carbon::now();
 
         $mPetActiveRegistration->holding_no             = $req->holdingNo ?? null;
         $mPetActiveRegistration->saf_no                 = $req->safNo ?? null;
-
+        $mPetActiveRegistration->pet_type               = $req->petType;
         $mPetActiveRegistration->user_type              = $user->user_type;
         switch ($user->user_type) {
             case ($userType['1']):
@@ -150,5 +151,14 @@ class PetActiveRegistration extends Model
                 // 'doc_upload_status' => true,
                 'doc_verify_status' => $status
             ]);
+    }
+
+    /**
+     * | Save the status in Active table
+     */
+    public function saveApplicationStatus($applicationId, $refRequest)
+    {
+        PetActiveRegistration::where('id', $applicationId)
+            ->update($refRequest);
     }
 }

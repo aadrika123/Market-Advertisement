@@ -35,14 +35,13 @@ class PetTran extends Model
         $mPetTran->tran_date    = $req['todayDate'];
         $mPetTran->tran_no      = $req['tranNo'];
         $mPetTran->payment_mode = $req['paymentMode'];
-        // $mPetTran->tran_type    = $req['tranType'];
         $mPetTran->amount       = $req['amount'];
         $mPetTran->emp_dtl_id   = $req['empId'] ?? null;
         $mPetTran->created_at   = $req['todayDate'];
-        // $mPetTran->ip_address   = $req->ip();
+        $mPetTran->ip_address   = $req->ip() ?? null;
         $mPetTran->user_type    = $req['userType'];
         $mPetTran->is_jsk       = $req['isJsk'] ?? false;
-        $mPetTran->citizen_id   = $req['citId'];
+        $mPetTran->citizen_id   = $req['citId'] ?? null;
         $mPetTran->tran_type_id = $req['tranTypeId'];
         $mPetTran->round_amount = $req['roundAmount'];
 
@@ -55,7 +54,7 @@ class PetTran extends Model
 
         return [
             'transactionNo' => $req['tranNo'],
-            'transactionId' => $mPetTran
+            'transactionId'   => $mPetTran->id
         ];
     }
 

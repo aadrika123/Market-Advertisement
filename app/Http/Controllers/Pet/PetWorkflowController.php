@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PetWorkflowController extends Controller
 {
@@ -106,7 +107,8 @@ class PetWorkflowController extends Controller
             'pet_active_registrations.workflow_id',
             'pet_active_registrations.current_role_id as role_id',
             'pet_active_registrations.application_apply_date',
-            'pet_active_registrations.parked'
+            'pet_active_registrations.parked',
+            'pet_active_registrations.is_escalate'
         )
             ->join('ulb_ward_masters as u', 'u.id', '=', 'pet_active_registrations.ward_id')
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
@@ -158,13 +160,19 @@ class PetWorkflowController extends Controller
     public function postNextLevel(Request $req)
     {
         $wfLevels = $this->_petWfRoles;
-        $req->validate([
-            'applicationId'     => 'required',
-            'senderRoleId'      => 'nullable',
-            'receiverRoleId'    => 'nullable',
-            'action'            => 'required|In:forward,backward',
-            'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId'     => 'required',
+                'senderRoleId'      => 'nullable',
+                'receiverRoleId'    => 'nullable',
+                'action'            => 'required|In:forward,backward',
+                'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $mWfRoleMaps        = new WfWorkflowrolemap();
             $current            = Carbon::now();
@@ -256,12 +264,17 @@ class PetWorkflowController extends Controller
      */
     public function docVerifyRejects(Request $req)
     {
-        $req->validate([
-            'id'            => 'required|digits_between:1,9223372036854775807',
-            'applicationId' => 'required|digits_between:1,9223372036854775807',
-            'docRemarks'    =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
-            'docStatus'     => 'required|in:Verified,Rejected'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'id'            => 'required|digits_between:1,9223372036854775807',
+                'applicationId' => 'required|digits_between:1,9223372036854775807',
+                'docRemarks'    =>  $req->docStatus == "Rejected" ? 'required|regex:/^[a-zA-Z1-9][a-zA-Z1-9\. \s]+$/' : "nullable",
+                'docStatus'     => 'required|in:Verified,Rejected'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
         try {
             # Variable Assignments
@@ -364,15 +377,51 @@ class PetWorkflowController extends Controller
 
 
     /**
+     * | Get details for the pet special inbox
+        | Serial No :
+        | Under Con
+     */
+    public function waterSpecialInbox(Request $request)
+    {
+        try {
+            $user   = authUser($request);
+            $userId = $user->id;
+            $ulbId  = $user->ulb_id;
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+
+            $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
+            $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
+                ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+                ->where('pet_active_registrations.is_escalate', true)
+                ->get();
+            $filterWaterList = collect($waterList)->unique('id')->values();
+            return responseMsgs(true, "Inbox List Details!", remove_null($filterWaterList), '', '02', '', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+
+
+    /**
      * | default final applroval 
         | remove
      */
     public function finalVerificationRejection(Request $req)
     {
-        $req->validate([
-            'applicationId' => 'required|digits_between:1,9223372036854775807',
-            'status' => 'required'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|digits_between:1,9223372036854775807',
+                'status' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $userId                 = authUser($req)->id;
             $applicationId          = $req->applicationId;

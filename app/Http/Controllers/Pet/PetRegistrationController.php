@@ -179,7 +179,7 @@ class PetRegistrationController extends Controller
             if (!$ulbWorkflowId) {
                 throw new Exception("Respective Ulb is not maped to 'Pet Registration' Workflow!");
             }
-            $registrationCharges = $mMPetFee->getFeeById($feeId['REGISTRATION']);
+            $registrationCharges = $mMPetFee->getFeeById($feeId['REGISTRATION_RENEWAL']);
             if (!$registrationCharges) {
                 throw new Exception("Currently charges are not available!");
             }
@@ -214,15 +214,15 @@ class PetRegistrationController extends Controller
                     throw new Exception("Registration No is Not Req for new Pet Registraton!");
                 }
                 $refData = [
-                    "applicationType" => "New_Apply",
+                    "applicationType"   => "New_Apply",
                     "applicationTypeId" => $confApplicationType['NEW_APPLY']
                 ];
                 $req->merge($refData);
             }
             if ($req->isRenewal == 1) {
                 $refData = [
-                    "applicationType" => "Renewal",
-                    "registrationId"  => $req->registrationId,
+                    "applicationType"   => "Renewal",
+                    "registrationId"    => $req->registrationId,
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
@@ -295,6 +295,9 @@ class PetRegistrationController extends Controller
                         throw new Exception("Respective property dont have tenant!");
                     }
                 }
+                if ($refPropDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
+                    throw new Exception("Pet cannot be applied in VACANT LAND!");
+                }
                 $returnDetails = [
                     "tenant"        => $isTenant,
                     "propDetails"   => $refPropDetails,
@@ -313,6 +316,9 @@ class PetRegistrationController extends Controller
                     if ($req->ownerCategory == $ownertype['Tenant'] && $isTenant == false) {
                         throw new Exception("Respective property dont have tenant!");
                     }
+                }
+                if ($refSafDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
+                    throw new Exception("Pet cannot be applied in VACANT LAND!");
                 }
                 $returnDetails = [
                     "tenant"        => $isTenant,
@@ -351,9 +357,15 @@ class PetRegistrationController extends Controller
      */
     public function getDocToUpload(Request $req)
     {
-        $req->validate([
-            'applicationId' => 'required|numeric'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $mPetActiveRegistration     = new PetActiveRegistration();
             $petApplicationId           = $req->applicationId;
@@ -511,12 +523,17 @@ class PetRegistrationController extends Controller
      */
     public function uploadPetDoc(Request $req)
     {
-        $req->validate([
-            "applicationId" => "required|numeric",
-            "document"      => "required|mimes:pdf,jpeg,png,jpg|max:2048",
-            "docCode"       => "required",
-            "docCategory"   => "required",                                  // Recheck in case of undefined
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                "applicationId" => "required|numeric",
+                "document"      => "required|mimes:pdf,jpeg,png,jpg|max:2048",
+                "docCode"       => "required",
+                "docCategory"   => "required",                                  // Recheck in case of undefined
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
         try {
             $user                       = authUser($req);
@@ -667,9 +684,15 @@ class PetRegistrationController extends Controller
      */
     public function getUploadDocuments(Request $req)
     {
-        $req->validate([
-            'applicationId' => 'required|numeric'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $mWfActiveDocument      = new WfActiveDocument();
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -745,9 +768,15 @@ class PetRegistrationController extends Controller
      */
     public function getApplicationsDetails(Request $request)
     {
-        $request->validate([
-            'applicationId' => 'required'
-        ]);
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             # object assigning              
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -992,9 +1021,15 @@ class PetRegistrationController extends Controller
      */
     public function getApplicationDetails(Request $req)
     {
-        $req->validate([
-            'applicationId' => 'required|numeric'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $applicationId          = $req->applicationId;
             $mPetActiveRegistration = new PetActiveRegistration();
@@ -1034,9 +1069,15 @@ class PetRegistrationController extends Controller
      */
     public function deletePetApplication(Request $req)
     {
-        $req->validate([
-            'applicationId' => 'required|integer'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $user                       = authUser($req);
             $applicationId              = $req->applicationId;
@@ -1123,11 +1164,18 @@ class PetRegistrationController extends Controller
      */
     public function getSafHoldingDetails(Request $request)
     {
-        $request->validate([
-            'connectionThrough' => 'required|int|in:1,2',
-            'id'                => 'required|',
-            'ulbId'             => 'required|'
-        ]);
+
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'connectionThrough' => 'required|int|in:1,2',
+                'id'                => 'required|',
+                'ulbId'             => 'required|'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $mPropProperty          = new PropProperty();
             $mPropOwner             = new PropOwner();
@@ -1202,10 +1250,16 @@ class PetRegistrationController extends Controller
      */
     public function citizenHoldingSaf(Request $req)
     {
-        $req->validate([
-            'type' => 'required|In:holding,saf,ptn',
-            'ulbId' => 'required|numeric'
-        ]);
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'type'  => 'required|In:holding,saf,ptn',
+                'ulbId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
         try {
             $citizenId                  = authUser($req)->id;
             $ulbId                      = $req->ulbId;
@@ -1376,6 +1430,42 @@ class PetRegistrationController extends Controller
         try {
         } catch (Exception $e) {
             return responseMsgs(false, "Applicant Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Apply the renewal for pet 
+     * | registered pet renewal process
+        | Serial No :
+        | Under Con 
+     */
+    public function applyPetRenewal(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'registrationId'    => 'required|In:holding,saf,ptn',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user       = authUser($request);
+            $renewal    = 1;
+
+            # Check the Registered Application existence
+            $mPetApprovedRegistration = new PetApprovedRegistration();
+            $refApprovedDetails = $mPetApprovedRegistration->getApplictionByRegId($request->registrationId)->first();
+            if (!$refApprovedDetails) {
+                throw new Exception("Application Detial Not found!");
+            }
+
+            # Check Params for renewal of Application
+            $this->checkParamForRenewal();
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $req->deviceId);
         }
     }
 }

@@ -47,4 +47,13 @@ class PetRegistrationCharge extends Model
         PetRegistrationCharge::where('application_id', $applicationId)
             ->delete();
     }
+
+    /**
+     * | Save payment status for payment
+     */
+    public function saveStatus($id, $refRequest)
+    {
+        PetRegistrationCharge::where('id', $id)
+            ->update($refRequest);
+    }
 }
