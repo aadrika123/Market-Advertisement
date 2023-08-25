@@ -149,10 +149,8 @@ class HoardingController extends Controller
 
             $ulbId = ['ulbId' => $req->auth['ulb_id']];
             $req->request->add($ulbId);
-
-            // $mCalculateRate = new CalculateRate;
-            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Generate Application No
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
@@ -225,7 +223,6 @@ class HoardingController extends Controller
         }
     }
 
-
     /**
      * | Application Details
      * | Function - 06
@@ -296,7 +293,6 @@ class HoardingController extends Controller
         }
     }
 
-
     /**
      * | Get Applied Applications by Logged In Citizen
      * | Function - 07
@@ -306,17 +302,12 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $citizenId = authUser()->id;
             $citizenId = $req->auth['id'];
             $mAdvActiveHoarding = new AdvActiveHoarding();
             $applications = $mAdvActiveHoarding->listAppliedApplications($citizenId);
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);
-            // $totalApplication = $applications->count();
-            // remove_null($applications);
-            // $data1['data'] = $applications;
-            // $data1['arrayCount'] =  $totalApplication;
 
             return responseMsgs(true, "Applied Applications", $list, "050607", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -341,7 +332,6 @@ class HoardingController extends Controller
         }
         try {
             // Variable initialization
-
             $userId = $request->auth['id'];
             $applicationId = $request->applicationId;
             $data = AdvActiveHoarding::find($applicationId);
@@ -364,13 +354,12 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
             $mWfWardUser = new WfWardUser();
             $userId = $req->auth['id'];
             $ulbId = $req->auth['ulb_id'];
 
             $occupiedWard = $mWfWardUser->getWardsByUserId($userId);                // Get All Occupied Ward By user id using trait
-            $wardId = $occupiedWard->map(function ($item, $key) {          // Filter All ward_id in an array using laravel collections
+            $wardId = $occupiedWard->map(function ($item, $key) {                   // Filter All ward_id in an array using laravel collections
                 return $item->ward_id;
             });
 
@@ -456,8 +445,6 @@ class HoardingController extends Controller
 
         try {
             // Variable initialization
-            // $startTime = microtime(true);
-
             $userId = $request->auth['id'];
             $userType = $request->auth['user_type'];
             $workflowTrack = new WorkflowTrack();
@@ -488,15 +475,12 @@ class HoardingController extends Controller
             $workflowTrack->saveTrack($request);
 
             DB::commit();
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050611", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050611", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      * | Get  Hoarding Documents
@@ -605,7 +589,6 @@ class HoardingController extends Controller
                 return ['status' => false, 'message' => $validator->errors()];
             }
             // Variable initialization
-            // $startTime = microtime(true);
             // Check if the Current User is Finisher or Not         
             $mAdvActiveHoarding = AdvActiveHoarding::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveHoarding->workflow_id);                                 // Get Finisher using Trait
@@ -621,10 +604,8 @@ class HoardingController extends Controller
                 $amount = $mCalculateRate->getHordingPrice($mAdvActiveHoarding->typology, $mAdvActiveHoarding->zone_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-
-                // $mCalculateRate = new CalculateRate;
-                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveHoarding->ulb_id); // Generate Application No
-                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveHoarding->ulb_id);
+                
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveHoarding->ulb_id);          // Generate Application No
                 $generatedId = $idGeneration->generate();
                 if ($mAdvActiveHoarding->renew_no == NULL) {
                     // approved Hording Application replication
@@ -704,9 +685,6 @@ class HoardingController extends Controller
             }
             DB::commit();
 
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
-
             return responseMsgs(true, $msg, "", '050615', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -724,9 +702,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
-
-            // $citizenId = authUser()->id;
             $citizenId = $req->auth['id'];
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
@@ -748,8 +723,6 @@ class HoardingController extends Controller
                     $allApproveList['data']['renew_option'] = 'Expired';    // Renew Expired
                 }
             }
-            // $endTime = microtime(true);
-            // $executionTime = $endTime - $startTime;
 
             return responseMsgs(true, "Approved Application List", $allApproveList, "050616", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -781,7 +754,6 @@ class HoardingController extends Controller
         }
     }
 
-
     /**
      * | Unpaid License Application List for Citzen
      * | @param Request $req
@@ -804,8 +776,6 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050618", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Get Applied License Applications by Logged In JSK
@@ -831,7 +801,6 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050619", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Approve License Application List for JSK
@@ -1281,8 +1250,6 @@ class HoardingController extends Controller
         }
     }
 
-
-
     /**
      * | Back To Citizen Inbox
      * | Function - 31
@@ -1292,8 +1259,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
-            // $auth = auth()->user();
             $userId = $req->auth['id'];
             $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
@@ -1355,7 +1320,6 @@ class HoardingController extends Controller
         }
     }
 
-
     /**
      * | Hoarding Application list For Renew
      * | @param Request $req
@@ -1381,7 +1345,6 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050633", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Expired Hoarding List
@@ -1433,7 +1396,6 @@ class HoardingController extends Controller
         }
     }
 
-
     /**
      * | Hording Archived List for Citizen
      * | @param Request $req
@@ -1458,7 +1420,6 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050636", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Blacklist Application By Id 
@@ -1509,6 +1470,7 @@ class HoardingController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050638", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
+
     /**
      * | Agency Dashboard Graph
      * | Function - 39
@@ -1534,7 +1496,6 @@ class HoardingController extends Controller
         // $ulbId = $request->auth['ulb_id'];
         $request->validate([
             'workflowId' => 'required|int'
-
         ]);
         $roleDetails = DB::table('wf_workflowrolemaps')
             ->select(
@@ -1556,7 +1517,6 @@ class HoardingController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
     /**
      * | Check if the Document is Fully Verified or Not (4.1)
      * | Function - 41
@@ -1577,10 +1537,6 @@ class HoardingController extends Controller
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
 
         $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
-        // if($mMarActiveBanquteHall->renew_no==NULL){
-        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // }
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1590,7 +1546,6 @@ class HoardingController extends Controller
             return 0;
         }
     }
-
 
     /**
      * | Check full document upload or not
@@ -1623,10 +1578,10 @@ class HoardingController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050640", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId =$req->auth['ulb_id'] ;
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1699,7 +1654,6 @@ class HoardingController extends Controller
         }
         try {
             // Variable initialization
-
             $mAdvHoarding = new AdvHoarding();
             $approveList = $mAdvHoarding->approveListForReport();
 
@@ -1793,11 +1747,8 @@ class HoardingController extends Controller
             $userType = $req->auth['user_type'];
             if ($userType != "Advert-Agency")
                 throw new Exception("You Are Not Advertisement Agency");
-
             // Variable initialization
-
             $citizenId = $req->auth['id'];
-            // $citizenId = 68
             $licenseYear = getFinancialYear(date('Y-m-d'));
             $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;
             $mAdvHoarding = new AdvHoarding();
