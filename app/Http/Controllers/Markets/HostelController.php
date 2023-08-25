@@ -84,7 +84,7 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
-            $citizenId = ['citizenId' =>  $req->auth['id']];
+            $citizenId = ['citizenId' => authUser($req)->id];
             $req->request->add($citizenId);
 
             // Generate Application No
@@ -120,9 +120,8 @@ class HostelController extends Controller
             // Variable initialization
 
             $mMarActiveHostel = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -147,11 +146,10 @@ class HostelController extends Controller
     {
         try {
             // Variable initialization
-
             $mMarActiveHostel = $this->_modelObj;
             $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });

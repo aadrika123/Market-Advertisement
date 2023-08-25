@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Rentals;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Toll\TollValidationRequest;
 use App\MicroServices\DocumentUpload;
+use App\Models\Bandobastee\MarTollPriceList;
 use App\Models\Rentals\MarToll;
 use App\Models\Rentals\MarTollPayment;
 use Carbon\Carbon;
@@ -104,7 +105,7 @@ class TollsController extends Controller
                 $imageName2Absolute = $absolutePath;
             }
             $tollNo = $this->tollIdGeneration($request->marketId);
-            $marToll = [
+           $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
                 // 'toll_type'               => $request->tollType,
@@ -427,6 +428,19 @@ class TollsController extends Controller
             $mTollDetails->last_tran_id = $paymentId;
             $mTollDetails->save();
             return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get Market Toll Price List
+     */
+    public function getTollPriceList(Request $req){
+        try {
+            $mMarTollPriceList = new MarTollPriceList();
+            $list=$mMarTollPriceList->getTollPriceList();
+            return responseMsgs(true, "Price List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }

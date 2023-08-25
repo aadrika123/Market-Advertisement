@@ -107,7 +107,8 @@ class MarActiveDharamshala extends Model
     //Renewal Application For Dharamshala(1)
     public function renewApplication($req)
     {
-        $bearerToken = $req->bearerToken();
+        // $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ulbWorkflows = $ulbWorkflows['data'];
@@ -170,7 +171,14 @@ class MarActiveDharamshala extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a, $auth);
+            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

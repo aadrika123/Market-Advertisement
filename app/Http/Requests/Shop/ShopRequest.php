@@ -29,6 +29,8 @@ class ShopRequest extends FormRequest
         return [
             'circleId'                 =>   'required|integer',
             'marketId'                 =>   'required|string',
+            // 'lastPaymentDate'          =>   'required|date_format:Y-m-d|after_or_equal:'.date('Y-m-d'),
+            // 'lastPaymentAmount'        =>   'required|numeric',
             'allottee'                 =>   'required|regex:/^[A-Za-z ]+$/',
             // 'shopNo'                   =>   'required|regex:/^[A-Za-z0-9 ]+$/',
             'address'                  =>   'nullable|regex:/^[A-Za-z0-9, ]+$/',

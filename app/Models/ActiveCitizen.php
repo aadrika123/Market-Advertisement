@@ -10,4 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 class ActiveCitizen extends Authenticatable
 {
     use HasFactory,HasApiTokens;
+    protected $connection='pgsql_masters';
+    protected $guarded = [];
 }

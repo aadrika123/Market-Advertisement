@@ -108,7 +108,8 @@ class AdvActiveVehicle extends Model
     public function addNew($req)
     {
         $metaReqs = $this->metaReqs($req);
-        $bearerToken = $req->bearerToken();
+        // $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
         // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
@@ -212,7 +213,6 @@ class AdvActiveVehicle extends Model
     /**
      * | Store Uploaded document after application store
      */
-
     public function uploadDocument($tempId, $documents, $auth)
     {
         collect($documents)->map(function ($doc) use ($tempId, $auth) {
@@ -235,8 +235,15 @@ class AdvActiveVehicle extends Model
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
-            $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a, $auth);
+            // $a = new Request($metaReqs);
+            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

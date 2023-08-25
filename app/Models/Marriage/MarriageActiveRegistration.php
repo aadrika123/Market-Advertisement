@@ -19,10 +19,10 @@ class MarriageActiveRegistration extends Model
     public function saveRegistration($request)
     {
         $mMarriageActiveRegistration = new MarriageActiveRegistration();
-        $registrationDtl = $mMarriageActiveRegistration->create($request);
-        return [
-            "id" => $registrationDtl->id,
-            "applicationNo" => $registrationDtl->application_no
-        ];
+        return $registrationDtl = $mMarriageActiveRegistration->create($request);
+        // return [
+        //     "id" => $registrationDtl->id,
+        //     "applicationNo" => $registrationDtl->application_no,
+        // ];
     }
 }

@@ -68,8 +68,10 @@ class MarriageRegistrationController extends Controller
     {
         try {
             $mWfWorkflow = new WfWorkflow();
-            $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $mWfRoleusermaps  = new WfRoleusermap();
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $mMarriageTransaction = new MarriageTransaction();
+            $idGeneration = new IdGeneration;
             $user                       = authUser($req);
             $ulbId                      = $user->ulb_id ?? $req->ulbId;
             $userType                   = $user->user_type;
@@ -111,10 +113,9 @@ class MarriageRegistrationController extends Controller
                 $penaltyAmount = $calculatePenalty->calculate($req);
             }
 
-            $idGeneration = new PrefixIdGenerator($marriageParamId, $ulbId);
-            $marriageApplicationNo = $idGeneration->generate();
+            $prefixIdGeneration = new PrefixIdGenerator($marriageParamId, $ulbId);
+            $marriageApplicationNo = $prefixIdGeneration->generate();
             $reqs = $this->makeRequest($req);
-
             $refData = [
                 "finisher_role_id"  => collect($finisherRoleId)['role_id'],
                 "initiator_role_id" => $initiatorRoleId,
@@ -129,14 +130,36 @@ class MarriageRegistrationController extends Controller
                 "ulb_id"            => $ulbId
             ];
             $newReqs =  array_merge($reqs, $refData);
+            DB::beginTransaction();
             $applicationDetails = $mMarriageActiveRegistration->saveRegistration($newReqs);
 
+
+            if ($req->bpl == true) {
+                $tranNo = $idGeneration->generateTransactionNo($ulbId);
+                $transanctionReqs = [
+                    "application_id" => $applicationDetails['id'],
+                    "tran_date"      => Carbon::now(),
+                    "tran_no"        => $tranNo,
+                    "payment_mode"   => "By " . $userType,
+                    "amount_paid"    => 0,
+                    "amount"         => 0,
+                    "penalty_amount" => 0,
+                    "workflow_id"    => $applicationDetails['workflow_id'],
+                    "ulb_id"         => $applicationDetails['ulb_id'],
+                    "user_id"        => $userId,
+                    "citizen_id"     => $citizenId,
+                    "status"         => 1,
+                ];
+                $tranDtl = $mMarriageTransaction->store($transanctionReqs);
+            }
+            DB::commit();
             $returnData = [
                 "id" => $applicationDetails['id'],
-                "applicationNo" => $applicationDetails['applicationNo'],
+                "applicationNo" => $applicationDetails['application_no'],
             ];
             return responseMsgs(true, "Marriage Registration Application Submitted!", $returnData, "100101", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "100101", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
@@ -861,7 +884,9 @@ class MarriageRegistrationController extends Controller
         try {
             $perPage = $req->perPage ?? 10;
             $ulbId = authUser($req)->ulb_id;
-            $list = MarriageApprovedRegistration::where('marriage_approved_registrations.ulb_id', $ulbId)
+            $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
+                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
+                ->where('marriage_approved_registrations.ulb_id', $ulbId)
                 ->orderByDesc('marriage_approved_registrations.id');
 
             $approvedList = app(Pipeline::class)
@@ -1016,7 +1041,7 @@ class MarriageRegistrationController extends Controller
             $mReqs = [
                 "application_id" => $marriageDetails->id,
                 "tran_date"      => Carbon::now(),
-                "tranNo"        => $tranNo,
+                "tran_no"        => $tranNo,
                 "amount"         => $marriageDetails->payment_amount,
                 "penalty_amount" => $marriageDetails->penalty_amount,
                 "amount_paid"    => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
@@ -1030,6 +1055,7 @@ class MarriageRegistrationController extends Controller
             ];
             DB::beginTransaction();
             $tranDtl = $mMarriageTransaction->store($mReqs);
+            $tranDtl->tranNo = $tranDtl->tran_no;
 
             if ($tranDtl->payment_mode == "CASH")
                 $marriageDetails->payment_status = 1;
@@ -1097,7 +1123,8 @@ class MarriageRegistrationController extends Controller
     {
         try {
             // $validator =  Validator::make($req->all(), [
-            //     "transactionNo" => "required"
+            //     "applicationNo" => "nullable",
+            //     "name" => "nullable",
             // ]);
 
             // if ($validator->fails())
@@ -1110,7 +1137,9 @@ class MarriageRegistrationController extends Controller
             $mUlbMaster = new UlbMaster();
             $tranDtls = $mMarriageTransaction->where('tran_no', $req->transactionNo)->first();
 
-            $list = MarriageActiveRegistration::where('marriage_active_registrations.ulb_id', $ulbId)
+            $list = MarriageActiveRegistration::select('marriage_active_registrations.*', 'tran_no')
+                ->where('marriage_active_registrations.ulb_id', $ulbId)
+                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_active_registrations.id')
                 ->orderByDesc('marriage_active_registrations.id');
 
             $inbox = app(Pipeline::class)

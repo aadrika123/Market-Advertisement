@@ -113,7 +113,8 @@ class MarActiveHostel extends Model
     // Renew Application For Hostel(1)
     public function renewApplication($req)
     {
-        $bearerToken = $req->bearerToken();
+        // $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
         $ulbWorkflows = $ulbWorkflows['data'];
@@ -176,7 +177,14 @@ class MarActiveHostel extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a, $auth);
+            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

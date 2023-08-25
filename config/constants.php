@@ -4,14 +4,17 @@
  * | Relative path and name of Document Uploads
  */
 return [
-    // "BASE_URL" => 'http://192.168.0.202:3000/',
-    // "AUTH_URL" => 'http://192.168.0.95:8005/',
-    "AUTH_URL" => 'http://192.168.0.95:8005/',
-    // "AUTH_URL" => 'http://192.168.0.21:8005/',
-    "PAYMENT_URL" => 'http://203.129.217.246:8004/',
-    "BASE_URL" => 'http://203.129.217.246:8000/',
-    // "PAYMENT_URL" => 'http://203.129.217.246:8000/',    
-    "ULB_LOGO_URL" => 'http://203.129.217.246:8000/',
+    // Live URL
+    "AUTH_URL" => 'http://192.168.0.202:8000/',        
+    "PAYMENT_URL" => 'http://192.168.0.202:8006/',
+    "BASE_URL" => 'http://192.168.0.202:8000/',     
+
+    //Local URL
+    // "AUTH_URL" => 'http://192.168.0.21:8005/',    
+    // "BASE_URL" => 'http://192.168.0.21:8005',         
+    // "PAYMENT_URL" => 'http://192.168.0.202:8006/',  
+
+    "ULB_LOGO_URL" => 'http://192.168.0.202:8000/',
     "AADHAR_RELATIVE_NAME" => "AADHAR",
     "TRADE_RELATIVE_NAME" => "TRADE",
     "HOLDING_RELATIVE_NAME" => "HOLDING",

@@ -85,7 +85,6 @@ class SelfAdvetController extends Controller
         $this->_wfMasterId = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
     }
 
-
     /**
      * | Apply Application for Self Advertisements 
      * | @param StoreRequest 
@@ -207,7 +206,7 @@ class SelfAdvetController extends Controller
             ->where('status', '1')
             ->orderBy('id', 'ASC')
             ->get();
-        return responseMsgs(true, "Advertisement Catrgory", remove_null($list->toArray()), "050104", "1.0", responseTime(), "POST",  "");
+        return responseMsgs(true, "Advertisement Category", remove_null($list->toArray()), "050104", "1.0", responseTime(), "POST",  "");
     }
 
     /**
@@ -220,12 +219,9 @@ class SelfAdvetController extends Controller
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
-            // $ulbId = authUser()->ulb_id;
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -235,10 +231,8 @@ class SelfAdvetController extends Controller
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
             // dd(DB::getQueryLog());
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, "Inbox Applications", $list, "050105", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Inbox Applications", $list, "050105", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050105", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -254,10 +248,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $mAdvActiveSelfadvertisement = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
-            // $ulbId = authUser()->ulb_id;
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -367,7 +359,6 @@ class SelfAdvetController extends Controller
             ->first();
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
-
 
     /**
      * | Get Applied Applications by Logged In Citizen
@@ -1331,7 +1322,6 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050131", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Back To Citizen Inbox

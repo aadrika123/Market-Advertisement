@@ -104,7 +104,7 @@ class AgencyController extends Controller
                 $req->request->add($citizenId);
             }
 
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Id Generation 
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
 
@@ -131,16 +131,8 @@ class AgencyController extends Controller
      */
     public function getAgencyDetails(Request $req)
     {
-        // return $req;
-        // $validator = Validator::make($req->all(), [
-        //     'applicationId' => 'required|integer',
-        // ]);
-        // if ($validator->fails()) {
-        //     return ['status' => false, 'message' => $validator->errors()];
-        // }
         try {
             // Variable initialization
-
             $mAdvAgency = new AdvAgency();
             $agencydetails = $mAdvAgency->getagencyDetails($req->auth['email']);
             if (!$agencydetails) {
@@ -167,8 +159,7 @@ class AgencyController extends Controller
             // Variable initialization
             $ulbId = $req->auth['ulb_id'];
             $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -185,31 +176,6 @@ class AgencyController extends Controller
     }
 
 
-    public function listInbox_new(Request $req)
-    {
-        try {
-            // Variable initialization
-
-            $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->token;
-            $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
-            $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
-                return $workflowRole['wf_role_id'];
-            });
-            $inboxList = $mAdvActiveAgency->listInbox($roleIds, $ulbId);                        // <----- Get Inbox List
-
-            if (trim($req->key))
-                $inboxList =  searchFilter($inboxList, $req);
-            $list = paginator($inboxList, $req);
-
-            return responseMsgs(true, "Inbox Applications",  $list, "050503", "1.0", responseTime(), "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050503", "1.0", "", 'POST', $req->deviceId ?? "");
-        }
-    }
-
-
     /**
      * | Outbox List
      * | Function - 04
@@ -220,9 +186,8 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $mAdvActiveAgency = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -315,7 +280,6 @@ class AgencyController extends Controller
      */
     public function getRoleDetails(Request $request)
     {
-        // $ulbId = auth()->user()->ulb_id;
         $request->validate([
             'workflowId' => 'required|int'
 
@@ -356,10 +320,6 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
-
             return responseMsgs(true, "Applied Applications", $data1, "050506", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050506", "1.0", "", "POST", $req->deviceId ?? "");
@@ -490,7 +450,6 @@ class AgencyController extends Controller
 
         try {
             // Variable initialization
-
             $userId = $request->auth['id'];
             $userType = $request->auth['user_type'];
             $workflowTrack = new WorkflowTrack();
@@ -541,8 +500,7 @@ class AgencyController extends Controller
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), "", "050511", "1.0", "", "POST", $req->deviceId ?? "");
         }
-        // $mWfWorkflow=new WfWorkflow();
-        // $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId,$ulbId);      // get workflow Id
+        // get workflow Id
         if ($req->type == 'Active')
             $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
         elseif ($req->type == 'Approve')
@@ -650,10 +608,9 @@ class AgencyController extends Controller
                     "paramId" => $this->_paramId,
                     'ulbId' => $mAdvActiveAgency->ulb_id
                 ];
-                // $mCalculateRate = new CalculateRate;
-                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveAgency->ulb_id); // Generate Application No
-                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveAgency->ulb_id);
-                $generatedId = $idGeneration->generate();
+                
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveAgency->ulb_id);               // Generate Application No
+                $generatedId = $idGeneration->generate(); 
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
@@ -757,7 +714,6 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $userType = $req->auth['user_type'];
             $mAdvAgency = new AdvAgency();
@@ -766,9 +722,7 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            // if ($data1['arrayCount'] == 0) {
-            //     $data1 = null;
-            // }
+            
             return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050515", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -783,10 +737,9 @@ class AgencyController extends Controller
      * | API - 16
      */
     public function listRejected(Request $req)
-    {
+    { 
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $mAdvRejectedAgency = new AdvRejectedAgency();
             $applications = $mAdvRejectedAgency->listRejected($citizenId);
@@ -1207,10 +1160,7 @@ class AgencyController extends Controller
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
 
         $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
-        // if($mMarActiveBanquteHall->renew_no==NULL){
-        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // }
+
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1281,8 +1231,6 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
-
-            // $auth = auth()->user();
             $userId = $req->auth['id'];
             $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);
@@ -1407,8 +1355,6 @@ class AgencyController extends Controller
             $userType = $req->auth['user_type'];
             if ($userType == "Citizen") {
                 // Variable initialization
-                $startTime = microtime(true);
-
                 $citizenId = $req->auth['id'];
                 $mAdvAgency = new AdvAgency();
                 $isAgency = $mAdvAgency->checkAgency($citizenId);
@@ -1437,7 +1383,7 @@ class AgencyController extends Controller
             $userType = $req->auth['user_type'];
             if ($userType == "Citizen") {
                 // Variable initialization
-                $citizenId = authUser()->id;
+                $citizenId = $req->auth['id'];
                 $mAdvHoarding = new AdvHoarding();
                 $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId, 119);
                 if (empty($agencyDashboard)) {
@@ -1637,7 +1583,7 @@ class AgencyController extends Controller
         try {
             $count = (DB::table('users')->where('email', $req->email))->count();
             if ($count > 0)
-                return ['status' => true, 'data' => 0];                                      // Email is Taken 
+                return ['status' => true, 'data' => 0];                                      // Email is Taken ( Alraedy Exist )
             else
                 return ['status' => true, 'data' => 1];                                      // Email is Free For Taken
         } catch (Exception $e) {

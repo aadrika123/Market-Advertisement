@@ -184,9 +184,8 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $mAdvActivePrivateland = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -212,9 +211,8 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $mPrivateLand = $this->_modelObj;
-            $bearerToken = $req->bearerToken();
             $ulbId = $req->auth['ulb_id'];
-            $workflowRoles = collect($this->getRoleByUserId($bearerToken));             // <----- Get Workflow Roles roles 
+            $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
             });
@@ -351,9 +349,6 @@ class PrivateLandController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            // if ($totalApplication == 0) {
-            //     $data1['data'] = NULL;
-            // }
 
             return responseMsgs(true, "Applied Applications", $data1, "050407", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -398,7 +393,6 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
-
             $mWfWardUser = new WfWardUser();
             $userId = $req->auth['id'];
             $ulbId = $req->auth['ulb_id'];
@@ -567,8 +561,6 @@ class PrivateLandController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        // Variable initialization
-        // $startTime = microtime(true);
         $workflowId = AdvActivePrivateland::find($req->applicationId)->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
@@ -580,6 +572,7 @@ class PrivateLandController extends Controller
         });
         return $data1;
     }
+
     /**
      * | Workflow View Uploaded Document by application ID
      * | Function - 15
@@ -604,8 +597,6 @@ class PrivateLandController extends Controller
         });
         return responseMsgs(true, "Data Fetched", remove_null($data1), "050414", "1.0", responseTime(), "POST", "");
     }
-
-
 
     /**
      * | Approval and Rejection of the Application
@@ -728,7 +719,6 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050415", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Approve Application List for Citzen

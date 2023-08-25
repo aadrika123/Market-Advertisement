@@ -87,14 +87,11 @@ class AdvActiveAgency extends Model
     public function addNew($req)
     {
         $directors = $req->directors;
-        $bearerToken = $req->bearerToken();
+        // $bearerToken = $req->bearerToken();
+        $bearerToken = $req->token;
         $metaReqs = $this->metaReqs($req);
-        // $workflowId = Config::get('workflow-constants.AGENCY');
-        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ulbWorkflows = $ulbWorkflows['data'];
-        // $ipAddress = getClientIpAddress();
-        // $mApplicationNo = ['application_no' => 'AGENCY-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -126,9 +123,6 @@ class AdvActiveAgency extends Model
         $mDocService = new DocumentUpload;
         $mRelativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
         collect($directors)->map(function ($director) use ($agencyId, $agencyDirector, $mDocService, $mRelativePath) {
-            // $mDocRelativeName = "AADHAR";
-            // $mImage = $director['aadhar'];
-            // $mDocName = $mDocService->upload($mDocRelativeName, $mImage, $mRelativePath);
             $agencyDirector->store($director, $agencyId);       // Model function to store
         });
 
@@ -161,7 +155,14 @@ class AdvActiveAgency extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            // $mWfActiveDocument->postDocuments($a,$auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

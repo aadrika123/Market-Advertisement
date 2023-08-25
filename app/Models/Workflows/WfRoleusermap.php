@@ -10,6 +10,8 @@ class WfRoleusermap extends Model
 {
     use HasFactory;
 
+    protected $connection='pgsql_masters';
+
     /**
      * | get Role By User Id
      */

@@ -209,7 +209,14 @@ class AdvActiveHoarding extends Model
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
             $a = new Request($metaReqs);
-            $mWfActiveDocument->postDocuments($a,$auth);
+            // $mWfActiveDocument->postDocuments($a,$auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 

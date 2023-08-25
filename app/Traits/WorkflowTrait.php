@@ -42,14 +42,13 @@ trait WorkflowTrait
      * | Get Roles by Logged In user Id
      * | @param userId Logged In UserId
      */
-    public function getRoleByUserId($bearer)
+    public function getRoleByUserId($userId)
     {
-        $baseUrl = Config::get('constants.AUTH_URL');
-        $roles = Http::withHeaders([
-            "Authorization" => "Bearer $bearer",
-            "contentType" => "application/json"
-        ])->post($baseUrl . 'api/role-by-user')->json();
-        return $roles['data'];
+          $roles = WfRoleusermap::select('id', 'wf_role_id', 'user_id')
+            ->where('user_id', $userId)
+            ->where('is_suspended', false)
+            ->get();
+        return $roles;
     }
 
        /**
