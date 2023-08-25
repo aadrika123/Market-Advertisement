@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Pet;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class PetEditReq extends FormRequest
 {
@@ -36,5 +38,13 @@ class PetEditReq extends FormRequest
         $rules['petIdentity']           = 'nullable|';
         $rules['petName']               = 'nullable|';
         return $rules;
+    }
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'status'    => false,
+            'message'   => "Validation Error!",
+            'error'     => $validator->errors()
+        ], 422));
     }
 }

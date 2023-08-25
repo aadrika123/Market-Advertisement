@@ -70,11 +70,11 @@ return [
         "1" => "citizen_id",
     ],
     "FEE_CHARGES" => [
-        "REGISTRATION" => 1
+        "REGISTRATION_RENEWAL" => 1
     ],
     "APPLICATION_TYPE" => [                                       // related to TRANSACTION_TYPE
         "NEW_APPLY" => 1,
-        "RENEWAL" => 2
+        "RENEWAL"   => 2
     ],
 
     'PAYMENT_MODE' => [

@@ -5,7 +5,6 @@ namespace App\Http\Requests\Pet;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Config;
 
 class PetRegistrationReq extends FormRequest
 {
