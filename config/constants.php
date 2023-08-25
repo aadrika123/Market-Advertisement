@@ -14,7 +14,8 @@ return [
     // "BASE_URL" => 'http://192.168.0.21:8005',         
     // "PAYMENT_URL" => 'http://192.168.0.202:8006/',  
 
-    "ULB_LOGO_URL" => 'http://192.168.0.202:8000/',
+    "ULB_LOGO_URL" => 'http://192.168.0.202:8001/',
+
     "AADHAR_RELATIVE_NAME" => "AADHAR",
     "TRADE_RELATIVE_NAME" => "TRADE",
     "HOLDING_RELATIVE_NAME" => "HOLDING",
