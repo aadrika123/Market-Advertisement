@@ -93,6 +93,7 @@ class PetRegistrationController extends Controller
         $this->_tableName           = Config::get("pet.TABLE_NAME");
     }
 
+
     /**
      * | Get all master data
      * | Collect the master data related pet module
@@ -283,7 +284,8 @@ class PetRegistrationController extends Controller
 
         switch ($req->applyThrough) {
             case ($req->applyThrough == $confApplyThrough['Holding']):
-                $refPropDetails = $mPropProperty->getPropDtls()->where('prop_properties.holding_no', $req->propertyNo)
+                $refPropDetails = $mPropProperty->getPropDtls()
+                    ->where('prop_properties.holding_no', $req->propertyNo)
                     ->first();
                 if (is_null($refPropDetails)) {
                     throw new Exception("property according to $req->propertyNo not found!");

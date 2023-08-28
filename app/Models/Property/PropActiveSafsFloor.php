@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PropActiveSafsFloor extends Model
 {
     use HasFactory;
+    protected $connection = 'pgsql_property';
 
     /**
      * | Get Safs Floors By Saf Id

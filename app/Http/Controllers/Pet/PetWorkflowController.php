@@ -114,7 +114,6 @@ class PetWorkflowController extends Controller
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.status', 1)
-            // ->where('pet_active_registrations.payment_status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->whereIn('pet_active_registrations.workflow_id', $workflowIds)
             ->orderByDesc('pet_active_applicants.id');

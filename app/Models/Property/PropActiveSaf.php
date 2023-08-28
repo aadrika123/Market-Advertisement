@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class PropActiveSaf extends Model
 {
     use HasFactory;
+    protected $connection = 'pgsql_property';
 
     /**
      * | Get Saf Details by Saf No

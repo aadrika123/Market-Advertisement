@@ -7,7 +7,8 @@ return [
     // Live URL
     "AUTH_URL" => 'http://192.168.0.202:8000/',        
     "PAYMENT_URL" => 'http://192.168.0.202:8006/',
-    "BASE_URL" => 'http://192.168.0.202:8000/',     
+    "BASE_URL" => 'http://192.168.0.202:8000/',
+    "95_PAYMENT_URL" => 'http://192.168.0.95:8004/',      
 
     // Local URL
     // "AUTH_URL" => 'http://192.168.0.21:8005/',    

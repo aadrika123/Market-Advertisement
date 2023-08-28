@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class PropSaf extends Model
 {
     use HasFactory;
+    protected $connection = 'pgsql_property';
 }

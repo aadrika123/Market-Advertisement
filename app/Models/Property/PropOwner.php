@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PropOwner extends Model
 {
     use HasFactory;
-
+    protected $connection = 'pgsql_property';
 
     /**
      * | Get The Owner by Property Id

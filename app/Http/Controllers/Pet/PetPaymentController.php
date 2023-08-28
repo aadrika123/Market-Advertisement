@@ -63,7 +63,7 @@ class PetPaymentController extends Controller
         $this->_offlineVerificationModes    = Config::get("pet.VERIFICATION_PAYMENT_MODES");
         $this->_paymentMode                 = Config::get("pet.PAYMENT_MODE");
         $this->_offlineMode                 = Config::get("pet.OFFLINE_PAYMENT_MODE");
-        $this->_PaymentUrl                  = Config::get('constants.PAYMENT_URL');
+        $this->_PaymentUrl                  = Config::get('constants.95_PAYMENT_URL');
         $this->_apiKey                      = Config::get('pet.API_KEY_PAYMENT');
         $this->_refStatus                   = Config::get('pet.REF_STATUS');
     }
@@ -326,7 +326,7 @@ class PetPaymentController extends Controller
             return validationError($validated);
 
         try {
-            $refUser                = Auth()->user();
+            $refUser                = authUser($request);
             $confModuleId           = $this->_petModuleId;
             $applicationId          = $request->id;
             $paymentMode            = $this->_paymentMode;
@@ -335,10 +335,11 @@ class PetPaymentController extends Controller
             $paymentDetails         = $this->checkParamForPayment($request, $paymentMode['1']);
             $mPetRazorPayRequest    = new PetRazorPayRequest();
             $myRequest = [
-                'amount'          => $paymentDetails['refRoundAmount'],
-                'workflowId'      => $paymentDetails['applicationDetails']['workflow_id'],
-                'id'              => $applicationId,
-                'departmentId'    => $confModuleId
+                'amount'        => $paymentDetails['refRoundAmount'],
+                'workflowId'    => $paymentDetails['applicationDetails']['workflow_id'],
+                'id'            => $applicationId,
+                'departmentId'  => $confModuleId,
+                'auth'          => $request->auth
             ];
 
             DB::beginTransaction();
@@ -350,28 +351,30 @@ class PetPaymentController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $myRequest);               // Static
 
             $orderData = json_decode($refResponse);
+            if ($orderData->status == false) {
+                throw new Exception(collect($orderData->message)->first());
+            }
             $jsonIncodedData = json_encode($orderData);
 
             $refPaymentRequest = new Request([
                 "chargeCategory"    => $paymentDetails['chargeCategory'],
-                "amount"            => $orderData->amount,
+                "amount"            => $orderData->data->amount,
                 "chargeId"          => $paymentDetails["chargeId"],
-                "orderId"           => $orderData->orderId,
-                "departmentId"      => $orderData->departmentId,
+                "orderId"           => $orderData->data->orderId,
+                "departmentId"      => $orderData->data->departmentId,
                 "regAmount"         => $paymentDetails['regAmount'],
                 "ip"                => $request->ip()
             ]);
             $mPetRazorPayRequest->savePetRazorpayReq($applicationId, $refPaymentRequest, $jsonIncodedData);
-            #--------------------water Consumer----------------------
             DB::commit();
             $returnData = [
                 'name'               => $refUser->user_name,
                 'mobile'             => $refUser->mobile,
                 'email'              => $refUser->email,
                 'userId'             => $refUser->id,
-                'ulbId'              => $refUser->ulb_id,
+                'ulbId'              => $refUser->ulb_id ?? $orderData->data->ulbId,
             ];
-            $returnData = collect($returnData)->merge($orderData);
+            $returnData = collect($returnData)->merge($orderData->data);
             return responseMsgs(true, "Order Id generated successfully", $returnData);
         } catch (Exception $e) {
             DB::rollBack();
