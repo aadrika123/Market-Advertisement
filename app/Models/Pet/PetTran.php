@@ -54,7 +54,7 @@ class PetTran extends Model
 
         return [
             'transactionNo' => $req['tranNo'],
-            'transactionId'   => $mPetTran->id
+            'transactionId' => $mPetTran->id
         ];
     }
 
@@ -66,5 +66,14 @@ class PetTran extends Model
         return PetTran::where('related_id', $applicationId)
             ->where('status', 1)
             ->orderByDesc('id');
+    }
+
+    /**
+     * | Update request for transaction table
+     */
+    public function saveStatusInTrans($id, $refReq)
+    {
+        PetTran::where('id', $id)
+            ->update($refReq);
     }
 }

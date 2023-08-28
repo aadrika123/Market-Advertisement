@@ -43,26 +43,29 @@ class PetPaymentController extends Controller
     private $_offlineMode;
     private $_PaymentUrl;
     private $_apiKey;
+    private $_refStatus;
+
     # Class constructer 
     public function __construct()
     {
-        $this->_masterDetails           = Config::get("pet.MASTER_DATA");
-        $this->_propertyType            = Config::get("pet.PROP_TYPE");
-        $this->_occupancyType           = Config::get("pet.PROP_OCCUPANCY_TYPE");
-        $this->_workflowMasterId        = Config::get("pet.WORKFLOW_MASTER_ID");
-        $this->_petParamId              = Config::get("pet.PARAM_ID");
-        $this->_petModuleId             = Config::get('pet.PET_MODULE_ID');
-        $this->_userType                = Config::get("pet.REF_USER_TYPE");
-        $this->_petWfRoles              = Config::get("pet.ROLE_LABEL");
-        $this->_docReqCatagory          = Config::get("pet.DOC_REQ_CATAGORY");
-        $this->_dbKey                   = Config::get("pet.DB_KEYS");
-        $this->_fee                     = Config::get("pet.FEE_CHARGES");
-        $this->_applicationType         = Config::get("pet.APPLICATION_TYPE");
-        $this->_offlineVerificationModes = Config::get("pet.VERIFICATION_PAYMENT_MODES");
-        $this->_paymentMode             = Config::get("pet.PAYMENT_MODE");
-        $this->_offlineMode             = Config::get("pet.OFFLINE_PAYMENT_MODE");
-        $this->_PaymentUrl              = Config::get('constants.PAYMENT_URL');
-        $this->_apiKey                  = Config::get('pet.API_KEY_PAYMENT');
+        $this->_masterDetails               = Config::get("pet.MASTER_DATA");
+        $this->_propertyType                = Config::get("pet.PROP_TYPE");
+        $this->_occupancyType               = Config::get("pet.PROP_OCCUPANCY_TYPE");
+        $this->_workflowMasterId            = Config::get("pet.WORKFLOW_MASTER_ID");
+        $this->_petParamId                  = Config::get("pet.PARAM_ID");
+        $this->_petModuleId                 = Config::get('pet.PET_MODULE_ID');
+        $this->_userType                    = Config::get("pet.REF_USER_TYPE");
+        $this->_petWfRoles                  = Config::get("pet.ROLE_LABEL");
+        $this->_docReqCatagory              = Config::get("pet.DOC_REQ_CATAGORY");
+        $this->_dbKey                       = Config::get("pet.DB_KEYS");
+        $this->_fee                         = Config::get("pet.FEE_CHARGES");
+        $this->_applicationType             = Config::get("pet.APPLICATION_TYPE");
+        $this->_offlineVerificationModes    = Config::get("pet.VERIFICATION_PAYMENT_MODES");
+        $this->_paymentMode                 = Config::get("pet.PAYMENT_MODE");
+        $this->_offlineMode                 = Config::get("pet.OFFLINE_PAYMENT_MODE");
+        $this->_PaymentUrl                  = Config::get('constants.PAYMENT_URL');
+        $this->_apiKey                      = Config::get('pet.API_KEY_PAYMENT');
+        $this->_refStatus                   = Config::get('pet.REF_STATUS');
     }
 
     /**
@@ -132,6 +135,10 @@ class PetPaymentController extends Controller
                 $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             }
             DB::commit();
+            $returnData = [
+                "transactionNo" => $petTranNo
+            ];
+            return responseMsgs(true, "Paymet done!", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
@@ -142,36 +149,42 @@ class PetPaymentController extends Controller
     /**
      * | Save the status in active consumer table, transaction, 
         | Serial No :
-        | Under Con
+        | Working
      */
     public function savePetRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
     {
-        $mPetTranDetail = new PetTranDetail();
+        $mPetTranDetail         = new PetTranDetail();
         $mPetActiveRegistration = new PetActiveRegistration();
-        $mPetTran = new PetTran();
+        $mPetTran               = new PetTran();
+
         if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
-            $charges->paid_status = 2;                                       // Update Demand Paid Status // Static
-            $mPetTran->saveVerifyStatus($waterTransId);
+            $charges->paid_status = 2;
             $refReq = [
                 "payment_status" => 2,
             ];
-            $mPetActiveRegistration->updateDataForPayment($activeConRequest->id, $refReq);
+            $tranReq = [
+                "verify_status" => 2
+            ];                                                              // Update Demand Paid Status // Static
+            $mPetTran->saveStatusInTrans($waterTransId, $tranReq);
+            $mPetActiveRegistration->saveApplicationStatus($activeConRequest->id, $refReq);
         } else {
             $charges->paid_status = 1;                                      // Update Demand Paid Status // Static
             $refReq = [
                 "payment_status"    => 1,
                 "current_role"      => $activeConRequest->initiator
             ];
-            $mPetActiveRegistration->updateDataForPayment($activeConRequest->id, $refReq);
+            $mPetActiveRegistration->saveApplicationStatus($activeConRequest->id, $refReq);
         }
-        $charges->save();
-        # Save Trans Details                                                   // Save Demand
-        $mPetTranDetail->saveDefaultTrans(
-            $charges->amount,
-            $request->consumerId ?? $request->applicationId,
-            $waterTransId,
-            $charges['id'],
-        );
+        $charges->save();                                                                   // Save Demand
+
+        $refTranDetails = [
+            "id"            => $activeConRequest->id,
+            "refChargeId"   => $charges->id,
+            "roundAmount"   => $request->roundAmount,
+            "tranTypeId"    => $request->tranType
+        ];
+        # Save Trans Details                                                   
+        $mPetTranDetail->saveTransDetails($waterTransId, $refTranDetails);
     }
 
 

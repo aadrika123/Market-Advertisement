@@ -111,4 +111,10 @@ return [
     "TABLE_NAME" => [
         "1" => "pet_active_details",
     ],
+
+    "REF_STATUS" => [
+        "ACTIVE"    => 1,
+        "DEACTIVE"  => 0,
+        "PENDING"   => 2
+    ],
 ];

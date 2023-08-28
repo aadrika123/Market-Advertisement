@@ -1465,7 +1465,7 @@ class PetRegistrationController extends Controller
             # Check Params for renewal of Application
             $this->checkParamForRenewal();
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 }
