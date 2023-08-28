@@ -63,6 +63,7 @@ return [
             ]) : [],
         ],
 
+        # Default DB marketAdvertisment
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
@@ -80,7 +81,7 @@ return [
                 PDO::ATTR_PERSISTENT => true,
             ],
         ],
-
+        # For master
         'pgsql_masters' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
@@ -98,6 +99,26 @@ return [
                 PDO::ATTR_PERSISTENT => true,
             ],
         ],
+
+        # For Property
+        'pgsql_property' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_MASTER_HOST', 'forge'),
+            'port' => env('DB_MASTER_PORT', 'forge'),
+            'database' => env('DB_MASTER_DATABASE', 'forge'),
+            'username' => env('DB_MASTER_USERNAME', 'forge'),
+            'password' => env('DB_MASTER_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+            'options'   => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
+        ],
+
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
