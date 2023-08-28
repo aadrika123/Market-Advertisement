@@ -102,9 +102,7 @@ class AdvActiveHoarding extends Model
         // $workflowId = $this->_workflowId;
         // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ulbWorkflows = $ulbWorkflows['data'];
-        // $ipAddress = getClientIpAddress();
-        // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
+        // $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],

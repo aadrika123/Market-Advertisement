@@ -91,7 +91,7 @@ class AdvActiveAgency extends Model
         $bearerToken = $req->token;
         $metaReqs = $this->metaReqs($req);
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],

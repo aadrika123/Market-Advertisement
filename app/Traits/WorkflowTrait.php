@@ -23,17 +23,17 @@ trait WorkflowTrait
      */
     public function getUlbWorkflowId($bearer, $ulbId, $wfMasterId)
     {
-        // $mWfWorkflow=new WfWorkflow();
-        // $workflows=$mWfWorkflow->getWorkflow(['ulbId'=>$ulbId,'workflowMstrId'=>$wfMasterId]);
-        $baseUrl = Config::get('constants.AUTH_URL');
-        $workflows = Http::withHeaders([
-            "Authorization" => "Bearer $bearer",
-            "contentType" => "application/json"
+        $mWfWorkflow=new WfWorkflow();
+        $workflows=$mWfWorkflow->getWorkflow(['ulbId'=>$ulbId,'workflowMstrId'=>$wfMasterId]);
+        // $baseUrl = Config::get('constants.AUTH_URL');
+        // $workflows = Http::withHeaders([
+        //     "Authorization" => "Bearer $bearer",
+        //     "contentType" => "application/json"
 
-        ])->post($baseUrl . 'api/workflow/get-ulb-workflow', [
-            "ulbId" => $ulbId,
-            "workflowMstrId" => $wfMasterId
-        ])->json();
+        // ])->post($baseUrl . 'api/workflow/get-ulb-workflow', [
+        //     "ulbId" => $ulbId,
+        //     "workflowMstrId" => $wfMasterId
+        // ])->json();
         return $workflows;
     }
 

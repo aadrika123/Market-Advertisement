@@ -76,7 +76,7 @@ class MarActiveLodge extends Model
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.LODGE');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         //  $mApplicationNo = ['application_no' => 'LODGE-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],

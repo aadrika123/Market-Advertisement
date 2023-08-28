@@ -112,11 +112,8 @@ class AdvActivePrivateland extends Model
     public function addNew($req)
     {
         $bearerToken = $req->token;
-        // $workflowId = Config::get('workflow-constants.PRIVATE_LANDS');
-        // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-        // $ipAddress = getClientIpAddress();
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
