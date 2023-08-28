@@ -124,7 +124,7 @@ class ShopController extends Controller
             // return $metaReqs;
             $this->_mShops->create($metaReqs);
 
-            return responseMsgs(true, "Successfully Saved", [$metaReqs], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Saved", ['shopNo'=>$shopNo], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
             return responseMsgs(false, $e->getMessage(), [], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");

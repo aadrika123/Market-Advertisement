@@ -136,7 +136,7 @@ class TollsController extends Controller
             ];
             // return $marToll;
             $this->_mToll->create($marToll);
-            return responseMsgs(true, "Successfully Saved", $marToll, 055102, "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(true, "Successfully Saved", ['tollNo'=>$tollNo], 055102, "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $request->deviceId);
         }
