@@ -161,4 +161,13 @@ class PetActiveRegistration extends Model
         PetActiveRegistration::where('id', $applicationId)
             ->update($refRequest);
     }
+
+    /**
+     * | Get active application by registration id 
+     */
+    public function getApplicationByRegId($regstrationId)
+    {
+        return PetActiveRegistration::where('registration_id',$regstrationId)
+        ->where('status',1);
+    }
 }

@@ -11,7 +11,7 @@ class WfActiveDocument extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    protected $connection='pgsql_masters';
+    protected $connection = 'pgsql_masters';
 
     public function getDocByRefIds($activeId, $workflowId, $moduleId)
     {
@@ -61,8 +61,8 @@ class WfActiveDocument extends Model
         $mWfActiveDocument->module_id         = $req->moduleId;
         $mWfActiveDocument->relative_path     = $req->relativePath;
         $mWfActiveDocument->document          = $req->document;
-        $mWfActiveDocument->uploaded_by       = authUser()->id;
-        $mWfActiveDocument->uploaded_by_type  = authUser()->user_type;
+        $mWfActiveDocument->uploaded_by       = authUser($req)->id;
+        $mWfActiveDocument->uploaded_by_type  = authUser($req)->user_type;
         $mWfActiveDocument->remarks           = $req->remarks ?? null;
         $mWfActiveDocument->doc_code          = $req->docCode;
         $mWfActiveDocument->owner_dtl_id      = $req->ownerDtlId;
@@ -179,8 +179,8 @@ class WfActiveDocument extends Model
             'module_id'         => $req->moduleId,
             'relative_path'     => $req->relativePath,
             'document'          => $req->document,
-            'uploaded_by'       => authUser()->id,
-            'uploaded_by_type'  => authUser()->user_type,
+            'uploaded_by'       => authUser($req)->id,
+            'uploaded_by_type'  => authUser($req)->user_type,
             'remarks'           => $req->remarks ?? null,
             'doc_code'          => $req->docCode,
             'owner_dtl_id'      => $req->ownerDtlId,

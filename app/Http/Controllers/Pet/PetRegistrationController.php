@@ -563,7 +563,8 @@ class PetRegistrationController extends Controller
                 'document'      => $imageName,
                 'docCode'       => $req->docCode,
                 'ownerDtlId'    => $req->ownerId ?? null,
-                'docCategory'   => $req->docCategory
+                'docCategory'   => $req->docCategory,
+                'auth'          => $req->auth
             ];
 
             if ($user->user_type == $confUserType['1']) {
@@ -1353,12 +1354,12 @@ class PetRegistrationController extends Controller
             $this->checkParamForPetUdate($req);
 
             DB::beginTransaction();
+            # operate with the data from above calling function 
             $petDetails = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
             $oldPetDetails = json_encode($petDetails);
             $mPetAudit->saveAuditData($oldPetDetails, $confTableName['1']);
             $mPetActiveDetail->updatePetDetails($req, $petDetails);
             DB::commit();
-
             return responseMsgs(true, "Pet Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -1412,11 +1413,11 @@ class PetRegistrationController extends Controller
                 if ($applicationdetails->payment_status == 1) {
                     throw new Exception("Payment is done applicationcannot be updated!");
                 }
-                $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
-                if ($transactionDetails) {
-                    throw new Exception("Transaction data exist application cannot be updated!");
-                }
                 break;
+        }
+        $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
+        if ($transactionDetails) {
+            throw new Exception("Transaction data exist application cannot be updated!");
         }
         return [
             "applicationDetails" => $applicationdetails,
@@ -1448,6 +1449,8 @@ class PetRegistrationController extends Controller
             $request->all(),
             [
                 'registrationId'    => 'required|In:holding,saf,ptn',
+                'dateOfLepVaccine'  => 'required',
+                'dateOfRabiesVac'   => 'required'
             ]
         );
         if ($validated->fails())
@@ -1456,18 +1459,85 @@ class PetRegistrationController extends Controller
         try {
             $user       = authUser($request);
             $renewal    = 1;
+            $mPetApprovedRegistration = new PetApprovedRegistration();
 
             # Check the Registered Application existence
-            $mPetApprovedRegistration = new PetApprovedRegistration();
             $refApprovedDetails = $mPetApprovedRegistration->getApplictionByRegId($request->registrationId)->first();
             if (!$refApprovedDetails) {
                 throw new Exception("Application Detial Not found!");
             }
-
             # Check Params for renewal of Application
-            $this->checkParamForRenewal();
+            $this->checkParamForRenewal($refApprovedDetails->id);
+            // $newReq = new Request([
+            //     "address"           => $refApprovedDetails->address,
+            //     "applyThrough"      => $refApprovedDetails->apply_through
+            //     "breed"             => $refApprovedDetails->breed
+            //     "ownerCategory"     => $refApprovedDetails->owner_type
+            //     "color"             => $refApprovedDetails->color
+            //     "dateOfLepVaccine"  => $refApprovedDetails->
+            //     "dateOfRabies"      => $refApprovedDetails->
+            //     "doctorName"        => $refApprovedDetails->
+            //     "doctorRegNo"       => $refApprovedDetails->
+            //     "petBirthDate"      => $refApprovedDetails->
+            //     "petFrom"           => $refApprovedDetails->
+            //     "petGender"         => $refApprovedDetails->
+            //     "petIdentity"       => $refApprovedDetails->
+            //     "petName"           => $refApprovedDetails->
+            //     "petType"           => $refApprovedDetails->
+            //     "ulbId"             => $refApprovedDetails->
+            //     "ward"              => $refApprovedDetails->
+            //     "applicantName"     => $refApprovedDetails->
+            //     "mobileNo"          => $refApprovedDetails->
+            //     "email"             => $refApprovedDetails->
+            //     "panNo"             => $refApprovedDetails->
+            //     "telephone"         => $refApprovedDetails->
+            //     "propertyNo"        => $refApprovedDetails->
+
+            //     "registrationId"    =>
+            //     "isRenewal"         =>
+            //     "auth"              => $request->auth
+            // ]);
+
+            DB::beginTransaction();
+            $applyDetails = $this->applyPetRegistration($request);
+            $this->updateRenewalDetails($refApprovedDetails);
+            DB::commit();
+            // $applyDetails->data;
+            return responseMsgs(true, "Application applied for renewal!", $applyDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
+    }
+
+    /**
+     * | check param for renewal of pet 
+        | Serial No :
+        | Under con
+     */
+    public function checkParamForRenewal($renewalId)
+    {
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $isRenewalInProcess = $mPetActiveRegistration->getApplicationByRegId($renewalId)
+            ->where('renewal', 1)
+            ->first();
+        if ($isRenewalInProcess) {
+            throw new Exception("Renewal of the Application is in process!");
+        }
+    }
+
+    /**
+     * | Update the status for the renewal process in approved table and to other related table
+        | Serial No :
+        | Under con
+        | do same for the applicants and the pet details
+     */
+    public function updateRenewalDetails($previousAppDetils)
+    {
+        $mPetApprovedRegistration = new PetApprovedRegistration();
+        $updateReq = [
+            'status' => 2                                   // Static
+        ];
+        $mPetApprovedRegistration->updateRelatedStatus($previousAppDetils->approveId, $updateReq);
     }
 }

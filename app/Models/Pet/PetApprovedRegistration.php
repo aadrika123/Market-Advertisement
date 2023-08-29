@@ -40,8 +40,24 @@ class PetApprovedRegistration extends Model
      */
     public function getApplictionByRegId($id)
     {
-        return PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+        return PetApprovedRegistration::select(
+            "pet_approved_registrations.id AS approveId",
+            "pet_approve_applicants.id AS applicantId",
+            "pet_approve_details.id AS petId"
+        )
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
-            ->where('pet_approved_registrations.id', $id);
+            ->where('pet_approved_registrations.id', $id)
+            ->where('pet_approved_registrations.status', 1);
+    }
+
+    /**
+     * | Update the related status for Approved appications
+     */
+    public function updateRelatedStatus($id, $refReq)
+    {
+        PetApprovedRegistration::where('id', $id)
+            ->where('status', 1)
+            ->update($refReq);
     }
 }
