@@ -75,7 +75,7 @@ class MarActiveDharamshala extends Model
         $bearerToken = $req->bearerToken();
         // $workflowId = Config::get('workflow-constants.DHARAMSHALA');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],

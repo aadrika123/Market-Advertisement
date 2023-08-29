@@ -100,7 +100,6 @@ class HostelController extends Controller
             DB::beginTransaction();
             $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();

@@ -40,4 +40,20 @@ class WfWorkflow extends Model
     {
         return WfWorkflow::findOrFail($ulbWorkflowId);
     }
+
+    /**
+     * |
+     */
+    //working
+    //get workflow by ulb and master id
+    public function getWorkflow($request)
+    {
+
+        $workflow = WfWorkflow::select('wf_workflows.*')
+            ->where('ulb_id', $request['ulbId'])
+            ->where('wf_master_id', $request['workflowMstrId'])
+            ->where('is_suspended', false)
+            ->first();
+        return $workflow;
+    }
 }

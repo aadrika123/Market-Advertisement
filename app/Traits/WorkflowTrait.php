@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Markets\MarketPriceMstrs;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
+use App\Models\Workflows\WfWorkflow;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
@@ -22,19 +23,17 @@ trait WorkflowTrait
      */
     public function getUlbWorkflowId($bearer, $ulbId, $wfMasterId)
     {
-        $baseUrl = Config::get('constants.AUTH_URL');
-        $workflows = Http::withHeaders([
-            "Authorization" => "Bearer $bearer",
-            "contentType" => "application/json"
+        $mWfWorkflow=new WfWorkflow();
+        $workflows=$mWfWorkflow->getWorkflow(['ulbId'=>$ulbId,'workflowMstrId'=>$wfMasterId]);
+        // $baseUrl = Config::get('constants.AUTH_URL');
+        // $workflows = Http::withHeaders([
+        //     "Authorization" => "Bearer $bearer",
+        //     "contentType" => "application/json"
 
-        ])->post($baseUrl . 'api/workflow/get-ulb-workflow', [
-            "ulbId" => $ulbId,
-            "workflowMstrId" => $wfMasterId
-        ])->json();
-        // $promise = Http::async()->post($baseUrl . 'api/workflow/get-ulb-workflow')->then(function ($response) {
-        //     echo $response; 
-        // });
-        // print_r($promise);
+        // ])->post($baseUrl . 'api/workflow/get-ulb-workflow', [
+        //     "ulbId" => $ulbId,
+        //     "workflowMstrId" => $wfMasterId
+        // ])->json();
         return $workflows;
     }
 

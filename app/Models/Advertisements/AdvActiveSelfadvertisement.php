@@ -91,8 +91,7 @@ class AdvActiveSelfadvertisement extends Model
         $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.SELF_ADVERTISENTS');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-    
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         // $ipAddress = getClientIpAddress();
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],

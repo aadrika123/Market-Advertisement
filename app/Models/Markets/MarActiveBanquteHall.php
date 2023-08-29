@@ -111,7 +111,7 @@ class MarActiveBanquteHall extends Model
         $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
          $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],

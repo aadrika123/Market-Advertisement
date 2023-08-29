@@ -81,7 +81,7 @@ class MarActiveHostel extends Model
         $bearerToken = $req->token;
         // $workflowId = Config::get('workflow-constants.HOSTEL');                            // 350
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);
-        $ulbWorkflows = $ulbWorkflows['data'];
+        // $ulbWorkflows = $ulbWorkflows['data'];
         //  $mApplicationNo = ['application_no' => 'HOSTEL-' . random_int(100000, 999999)];                  // Generate Application No
         $ulbWorkflowReqs = [                                                                             // Workflow Meta Requests
             'workflow_id' => $ulbWorkflows['id'],
@@ -97,12 +97,12 @@ class MarActiveHostel extends Model
                 'ulb_id' => $req->ulbId,
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
-                'ip_address' => $$req->ipAddress,
+                'ip_address' => $req->ipAddress,
                 'application_type' => "New Apply"
             ],
             $this->metaReqs($req),
             $ulbWorkflowReqs
-        );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
+        );   
         $tempId = MarActiveHostel::create($metaReqs)->id;
         $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
