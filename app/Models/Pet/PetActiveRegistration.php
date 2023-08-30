@@ -167,7 +167,30 @@ class PetActiveRegistration extends Model
      */
     public function getApplicationByRegId($regstrationId)
     {
-        return PetActiveRegistration::where('registration_id',$regstrationId)
-        ->where('status',1);
+        return PetActiveRegistration::where('registration_id', $regstrationId)
+            ->where('status', 1);
+    }
+
+    /**
+     * | Get Application details according to the related details in request 
+     */
+    public function getActiveApplicationDetails($req, $key, $refNo)
+    {
+        return PetActiveRegistration::select(
+            'pet_active_registrations.id',
+            'pet_active_registrations.application_no',
+            'pet_active_registrations.application_type',
+            'pet_active_registrations.payment_status',
+            'pet_active_registrations.application_apply_date',
+            'pet_active_registrations.doc_upload_status',
+            'pet_active_registrations.renewal',
+            'pet_active_applicants.mobile_no',
+            'pet_active_applicants.applicant_name',
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->where('pet_active_registrations.' . $key, 'LIKE', '%' . $refNo . '%')
+            ->where('pet_active_registrations.status', 1)
+            ->where('pet_active_registrations.ulb_id', authUser($req)->ulb_id)
+            ->orderByDesc('pet_active_registrations.id');
     }
 }

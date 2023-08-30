@@ -85,6 +85,7 @@ class PetPaymentController extends Controller
             return validationError($validated);
 
         try {
+            # Variable declaration
             $user                       = authUser($req);
             $todayDate                  = Carbon::now();
             $petParamId                 = $this->_petParamId;
@@ -93,6 +94,7 @@ class PetPaymentController extends Controller
             $mPetRegistrationCharge     = new PetRegistrationCharge();
             $mPetTran                   = new PetTran();
 
+            # Check the params for checking payment method
             $payRelatedDetails  = $this->checkParamForPayment($req, $req->paymentMode);
             $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'];
             $wardId             = $payRelatedDetails['applicationDetails']['ward_id'];
@@ -100,7 +102,7 @@ class PetPaymentController extends Controller
             $tranTypeId         = $payRelatedDetails['chargeCategory'];
 
             DB::beginTransaction();
-
+            # Generate transaction no 
             $idGeneration   = new PrefixIdGenerator($petParamId['TRANSACTION'], $ulbId);
             $petTranNo      = $idGeneration->generate();
 

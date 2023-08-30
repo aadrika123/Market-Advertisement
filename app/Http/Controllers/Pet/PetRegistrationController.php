@@ -42,6 +42,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -1543,9 +1544,71 @@ class PetRegistrationController extends Controller
     }
 
     /**
-     * | Search Application 
+     * | Search active applications Application 
+        | Serial No :
+        | Working
      */
-    public function searchApplication()
+    public function searchApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
+                'parameter' => 'required',
+                'pages'     => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            # Variable assigning
+            $key        = $request->filterBy;
+            $paramenter = $request->parameter;
+            $pages      = $request->pages ?? 10;
+            $refstring  = Str::snake($key);
+
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetActiveApplicant    = new PetActiveApplicant();
+
+            # Distrubtion of search category
+            switch ($key) {
+                case ("mobileNo"):                                                                                                                      // Static
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($activeApplication)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("applicationNo"):
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($activeApplication)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("applicantName"):
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($activeApplication)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("holdingNo"):
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($activeApplication)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("safNo"):
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($activeApplication)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
+            return responseMsgs(true, "Pet active appliction details according to parameter!", remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
     }
 }
