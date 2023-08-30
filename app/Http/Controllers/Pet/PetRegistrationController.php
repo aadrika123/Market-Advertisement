@@ -1167,7 +1167,6 @@ class PetRegistrationController extends Controller
      */
     public function getSafHoldingDetails(Request $request)
     {
-
         $validated = Validator::make(
             $request->all(),
             [
@@ -1450,7 +1449,9 @@ class PetRegistrationController extends Controller
             [
                 'registrationId'    => 'required|In:holding,saf,ptn',
                 'dateOfLepVaccine'  => 'required',
-                'dateOfRabiesVac'   => 'required'
+                'dateOfRabiesVac'   => 'required',
+                'doctorName'        => 'required',
+                'doctorRegNo'       => 'required'
             ]
         );
         if ($validated->fails())
@@ -1470,20 +1471,20 @@ class PetRegistrationController extends Controller
             $this->checkParamForRenewal($refApprovedDetails->id);
             // $newReq = new Request([
             //     "address"           => $refApprovedDetails->address,
-            //     "applyThrough"      => $refApprovedDetails->apply_through
-            //     "breed"             => $refApprovedDetails->breed
-            //     "ownerCategory"     => $refApprovedDetails->owner_type
-            //     "color"             => $refApprovedDetails->color
-            //     "dateOfLepVaccine"  => $refApprovedDetails->
-            //     "dateOfRabies"      => $refApprovedDetails->
-            //     "doctorName"        => $refApprovedDetails->
-            //     "doctorRegNo"       => $refApprovedDetails->
-            //     "petBirthDate"      => $refApprovedDetails->
-            //     "petFrom"           => $refApprovedDetails->
-            //     "petGender"         => $refApprovedDetails->
-            //     "petIdentity"       => $refApprovedDetails->
-            //     "petName"           => $refApprovedDetails->
-            //     "petType"           => $refApprovedDetails->
+            //     "applyThrough"      => $refApprovedDetails->apply_through,
+            //     "breed"             => $refApprovedDetails->breed,
+            //     "ownerCategory"     => $refApprovedDetails->owner_type,
+            //     "color"             => $refApprovedDetails->color,
+            //     "dateOfLepVaccine"  => $request->dateOfLepVaccine,
+            //     "dateOfRabies"      => $request->dateOfRabiesVac,
+            //     "doctorName"        => $request->doctorName,
+            //     "doctorRegNo"       => $request->doctorRegNo
+            //     "petBirthDate"      => $refApprovedDetails->dob,
+            //     "petFrom"           => $refApprovedDetails->occurrence_type_id
+            //     "petGender"         => $refApprovedDetails->sex
+            //     "petIdentity"       => $refApprovedDetails->identification_mark
+            //     "petName"           => $refApprovedDetails->pet_name
+            //     "petType"           => $refApprovedDetails->pet_type
             //     "ulbId"             => $refApprovedDetails->
             //     "ward"              => $refApprovedDetails->
             //     "applicantName"     => $refApprovedDetails->
@@ -1499,7 +1500,7 @@ class PetRegistrationController extends Controller
             // ]);
 
             DB::beginTransaction();
-            $applyDetails = $this->applyPetRegistration($request);
+            $applyDetails = $this->applyPetRegistration($request);   // here 
             $this->updateRenewalDetails($refApprovedDetails);
             DB::commit();
             // $applyDetails->data;
@@ -1539,5 +1540,12 @@ class PetRegistrationController extends Controller
             'status' => 2                                   // Static
         ];
         $mPetApprovedRegistration->updateRelatedStatus($previousAppDetils->approveId, $updateReq);
+    }
+
+    /**
+     * | Search Application 
+     */
+    public function searchApplication()
+    {
     }
 }

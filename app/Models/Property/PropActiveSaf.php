@@ -17,15 +17,14 @@ class PropActiveSaf extends Model
      */
     public function getSafDtlBySaf()
     {
-        return DB::table('prop_active_safs as s')
-            ->select(
-                's.*',
+        return PropActiveSaf::select(
+                'prop_active_safs.*',
                 'u.ward_name as old_ward_no',
                 'u1.ward_name as new_ward_no',
             )
-            ->join('ulb_ward_masters as u', 's.ward_mstr_id', '=', 'u.id')
-            ->leftJoin('ulb_ward_masters as u1', 's.new_ward_mstr_id', '=', 'u1.id')
-            ->where('s.status', 1);
+            ->join('ulb_ward_masters as u', 'prop_active_safs.ward_mstr_id', '=', 'u.id')
+            ->leftJoin('ulb_ward_masters as u1', 'prop_active_safs.new_ward_mstr_id', '=', 'u1.id')
+            ->where('prop_active_safs.status', 1);
     }
 
 
@@ -35,31 +34,30 @@ class PropActiveSaf extends Model
      */
     public function getSafDtlBySafUlbNo($safNo, $ulbId)
     {
-        return DB::table('prop_active_safs as s')
-            ->where('s.saf_no', $safNo)
-            ->where('s.ulb_id', $ulbId)
+        return PropActiveSaf::where('prop_active_safs.saf_no', $safNo)
+            ->where('prop_active_safs.ulb_id', $ulbId)
             ->select(
-                's.id',
-                's.saf_no',
-                's.ward_mstr_id',
-                's.new_ward_mstr_id',
-                's.elect_consumer_no',
-                's.elect_acc_no',
-                's.elect_bind_book_no',
-                's.elect_cons_category',
-                's.prop_address',
-                's.corr_address',
-                's.prop_pin_code',
-                's.corr_pin_code',
-                's.area_of_plot as total_area_in_desimal',
-                's.apartment_details_id',
-                's.prop_type_mstr_id',
+                'prop_active_safs.id',
+                'prop_active_safs.saf_no',
+                'prop_active_safs.ward_mstr_id',
+                'prop_active_safs.new_ward_mstr_id',
+                'prop_active_safs.elect_consumer_no',
+                'prop_active_safs.elect_acc_no',
+                'prop_active_safs.elect_bind_book_no',
+                'prop_active_safs.elect_cons_category',
+                'prop_active_safs.prop_address',
+                'prop_active_safs.corr_address',
+                'prop_active_safs.prop_pin_code',
+                'prop_active_safs.corr_pin_code',
+                'prop_active_safs.area_of_plot as total_area_in_desimal',
+                'prop_active_safs.apartment_details_id',
+                'prop_active_safs.prop_type_mstr_id',
                 'u.ward_name as old_ward_no',
                 'u1.ward_name as new_ward_no',
             )
-            ->join('ulb_ward_masters as u', 's.ward_mstr_id', '=', 'u.id')
-            ->leftJoin('ulb_ward_masters as u1', 's.new_ward_mstr_id', '=', 'u1.id')
-            ->where('s.status', 1)
+            ->join('ulb_ward_masters as u', 'prop_active_safs.ward_mstr_id', '=', 'u.id')
+            ->leftJoin('ulb_ward_masters as u1', 'prop_active_safs.new_ward_mstr_id', '=', 'u1.id')
+            ->where('prop_active_safs.status', 1)
             ->first();
     }
 

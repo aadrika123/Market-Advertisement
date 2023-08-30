@@ -43,7 +43,10 @@ class PetApprovedRegistration extends Model
         return PetApprovedRegistration::select(
             "pet_approved_registrations.id AS approveId",
             "pet_approve_applicants.id AS applicantId",
-            "pet_approve_details.id AS petId"
+            "pet_approve_details.id AS petId",
+            "pet_approved_registrations.*",
+            "pet_approve_applicants.*",
+            "pet_approved_registrations.*"
         )
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
