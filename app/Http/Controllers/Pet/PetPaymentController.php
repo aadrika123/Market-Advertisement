@@ -132,7 +132,7 @@ class PetPaymentController extends Controller
                     'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
                     'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
                 ]);
-                $this->postOtherPaymentModes($req);   
+                $this->postOtherPaymentModes($req);
             }
             $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             DB::commit();
@@ -498,10 +498,10 @@ class PetPaymentController extends Controller
         | Serial No :
         | Under Con
      */
-    public function generatePaymentReceipt(Request $req)
+    public function generatePaymentReceipt(Request $request)
     {
         $validated = Validator::make(
-            $req->all(),
+            $request->all(),
             [
                 'transactionNo' => 'required|',
             ]
@@ -517,11 +517,38 @@ class PetPaymentController extends Controller
             $mPetRenewalRegistration    = new PetRenewalRegistration();
 
             # Get transaction details according to trans no
-            $mPetTran->getTranDetailsByTranNo();
+            return $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
+            if (!$transactionDetails) {
+                throw new Exception("transaction details not found! for $request->transactionNo");
+            }
 
-
+            # check the transaction related details in related table
+            $this->getApplicationRelatedDetails($transactionDetails);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
+    }
+
+    /**
+     * | Serch application from every registration table
+        | Serial No 
+        | Under Con
+     */
+    public function getApplicationRelatedDetails($transactionDetails)
+    {
+        $mPetActiveRegistration     = new PetActiveRegistration();
+        $mPetApprovedRegistration   = new PetApprovedRegistration();
+        $mPetRenewalRegistration    = new PetRenewalRegistration();
+
+        $applicationDetails = $mPetActiveRegistration->getApplicationById($transactionDetails->related_id)
+            ->selectRaw(
+                'pet_active_registrations.application_no',
+                'pet_active_applicants.applicant_name'
+            )->first();
+        if(!$mPetActiveRegistration)
+        {
+
+        }
+        // return $applicationDetails
     }
 }

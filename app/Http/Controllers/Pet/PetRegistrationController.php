@@ -1038,6 +1038,7 @@ class PetRegistrationController extends Controller
             $applicationId          = $req->applicationId;
             $mPetActiveRegistration = new PetActiveRegistration();
             $mPetRegistrationCharge = new PetRegistrationCharge();
+            $mPetTran               = new PetTran();
 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (is_null($applicationDetails)) {
@@ -1055,6 +1056,14 @@ class PetRegistrationController extends Controller
                 ->first();
             if (is_null($chargeDetails)) {
                 throw new Exception("Charges for respective application not found!");
+            }
+            if ($chargeDetails->paid_status == 1) {
+                # Get Transaction details 
+                $tranDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
+                if (!$tranDetails) {
+                    throw new Exception("Transaction details not found there is some error in data !");
+                }
+                $applicationDetails['transactionDetails'] = $tranDetails;
             }
             $chargeDetails['roundAmount'] = round($chargeDetails['amount']);
             $applicationDetails['charges'] = $chargeDetails;

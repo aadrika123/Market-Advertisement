@@ -80,9 +80,16 @@ class PetTran extends Model
     /**
      * | Get transaction details according to transaction no
      */
-    public function getTranDetailsByTranNo()
+    public function getTranDetailsByTranNo($tranNo)
     {
-        
+        return PetTran::select(
+            'pet_trans.id AS refTransId',
+            'pet_trans.*',
+            'pet_tran_details.*',
+        )
+            ->join('pet_tran_details', 'pet_tran_details.tran_id', 'pet_trans.id')
+            ->where('pet_trans.tran_no', $tranNo)
+            ->where('pet_trans.status', 1)
+            ->orderByDesc('pet_trans.id');
     }
-
 }

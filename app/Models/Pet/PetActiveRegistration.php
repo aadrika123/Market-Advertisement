@@ -193,4 +193,14 @@ class PetActiveRegistration extends Model
             ->where('pet_active_registrations.ulb_id', authUser($req)->ulb_id)
             ->orderByDesc('pet_active_registrations.id');
     }
+
+    /**
+     * | Get application details by id
+     */
+    public function getApplicationById($id)
+    {
+        return PetActiveRegistration::join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->where('id', $id)
+            ->where('status', 1);
+    }
 }
