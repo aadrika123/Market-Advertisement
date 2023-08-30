@@ -1544,7 +1544,7 @@ class PetRegistrationController extends Controller
     }
 
     /**
-     * | Search active applications Application 
+     * | Search active applications according to certain search category
         | Serial No :
         | Working
      */

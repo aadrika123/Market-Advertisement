@@ -90,8 +90,6 @@ class PetPaymentController extends Controller
             $todayDate                  = Carbon::now();
             $petParamId                 = $this->_petParamId;
             $offlineVerificationModes   = $this->_offlineVerificationModes;
-            $mPetActiveRegistration     = new PetActiveRegistration();
-            $mPetRegistrationCharge     = new PetRegistrationCharge();
             $mPetTran                   = new PetTran();
 
             # Check the params for checking payment method
@@ -133,9 +131,9 @@ class PetPaymentController extends Controller
                     'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
                     'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
                 ]);
-                $this->postOtherPaymentModes($req);
-                $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+                $this->postOtherPaymentModes($req);   
             }
+            $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             DB::commit();
             $returnData = [
                 "transactionNo" => $petTranNo
@@ -173,7 +171,7 @@ class PetPaymentController extends Controller
             $charges->paid_status = 1;                                      // Update Demand Paid Status // Static
             $refReq = [
                 "payment_status"    => 1,
-                "current_role"      => $activeConRequest->initiator
+                "current_role_id"   => $activeConRequest->initiator_role_id
             ];
             $mPetActiveRegistration->saveApplicationStatus($activeConRequest->id, $refReq);
         }
