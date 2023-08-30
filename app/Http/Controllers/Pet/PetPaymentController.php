@@ -8,6 +8,7 @@ use App\Http\Requests\Pet\PetRegistrationReq;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Payment\TempTransaction;
 use App\Models\Pet\PetActiveRegistration;
+use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Pet\PetChequeDtl;
 use App\Models\Pet\PetRazorPayRequest;
 use App\Models\Pet\PetRazorPayResponse;
@@ -502,15 +503,23 @@ class PetPaymentController extends Controller
         $validated = Validator::make(
             $req->all(),
             [
-                'applicationNo' => 'required|digits_between:1,9223372036854775807',
+                'transactionNo' => 'required|',
             ]
         );
         if ($validated->fails())
             return validationError($validated);
         try {
-            $mPetTran = new PetTran();
-            $mPetActiveRegistration = new PetActiveRegistration();
-            $mPetRenewalRegistration = new PetRenewalRegistration();
+            $mPetTran                   = new PetTran();
+            $mPetTranDetail             = new PetTranDetail();
+
+            $mPetActiveRegistration     = new PetActiveRegistration();
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetRenewalRegistration    = new PetRenewalRegistration();
+
+            # Get transaction details according to trans no
+            $mPetTran->getTranDetailsByTranNo();
+
+
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }

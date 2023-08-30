@@ -1574,33 +1574,33 @@ class PetRegistrationController extends Controller
             # Distrubtion of search category
             switch ($key) {
                 case ("mobileNo"):                                                                                                                      // Static
-                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
                     $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal || $checkVal == 0)
+                    if (!$checkVal) // || $checkVal == 0
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 case ("applicationNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
                     $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal || $checkVal == 0)
+                    if (!$checkVal)
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 case ("applicantName"):
-                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
                     $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal || $checkVal == 0)
+                    if (!$checkVal)
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 case ("holdingNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
                     $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal || $checkVal == 0)
+                    if (!$checkVal)
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 case ("safNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
                     $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal || $checkVal == 0)
+                    if (!$checkVal)
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 default:

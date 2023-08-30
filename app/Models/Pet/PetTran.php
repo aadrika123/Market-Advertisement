@@ -76,4 +76,13 @@ class PetTran extends Model
         PetTran::where('id', $id)
             ->update($refReq);
     }
+
+    /**
+     * | Get transaction details according to transaction no
+     */
+    public function getTranDetailsByTranNo()
+    {
+        
+    }
+
 }
