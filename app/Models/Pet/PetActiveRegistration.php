@@ -54,7 +54,7 @@ class PetActiveRegistration extends Model
                 break;
             case (!$userType['1']):
                 $mPetActiveRegistration->apply_mode = $user->user_type;
-                $mPetActiveRegistration->user_id    = $req->userId;
+                $mPetActiveRegistration->user_id    = $user->id;
                 break;
         }
         $mPetActiveRegistration->save();
