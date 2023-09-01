@@ -40,7 +40,8 @@ return [
     "ROLE_LABEL" => [
         "BO" => 11,
         "DA" => 6,
-        "SI" => 9
+        "SI" => 9,
+        "JSK" => 8
     ],
     "APPLY_MODE" =>
     [
@@ -110,6 +111,7 @@ return [
 
     "TABLE_NAME" => [
         "1" => "pet_active_details",
+        "2" => "pet_active_registrations"
     ],
 
     "REF_STATUS" => [

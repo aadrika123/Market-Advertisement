@@ -1345,25 +1345,33 @@ class PetRegistrationController extends Controller
     /**
      * | Edit the application pet details
         | Serial No :
-        | Create a log for the old record 
-        | Redesign the function 
+        | Under Con
         | CAUTION
      */
     public function editPetDetails(PetEditReq $req)
     {
         try {
-            $applicationId      = $req->id;
-            $confTableName      = $this->_tableName;
-            $mPetActiveDetail   = new PetActiveDetail();
-            $mPetAudit          = new PetAudit();
-            $this->checkParamForPetUdate($req);
+            $applicationId          = $req->id;
+            $confTableName          = $this->_tableName;
+            $mPetActiveDetail       = new PetActiveDetail();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetAudit              = new PetAudit();
+            $refRelatedDetails      = $this->checkParamForPetUdate($req);
+            $applicationDetails     = $refRelatedDetails['applicationDetails'];
 
             DB::beginTransaction();
             # operate with the data from above calling function 
-            $petDetails = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
-            $oldPetDetails = json_encode($petDetails);
+            $petDetails     = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
+            $oldPetDetails  = json_encode($petDetails);
+            $oldApplication = json_encode($applicationDetails);
+
             $mPetAudit->saveAuditData($oldPetDetails, $confTableName['1']);
+            $mPetAudit->saveAuditData($oldApplication, $confTableName['2']);
             $mPetActiveDetail->updatePetDetails($req, $petDetails);
+            $updateReq = [
+                "occurrence_type_id" => $req->petFrom ?? $applicationDetails->occurrence_type_id
+            ];
+            $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $updateReq);
             DB::commit();
             return responseMsgs(true, "Pet Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1400,14 +1408,14 @@ class PetRegistrationController extends Controller
                     throw new Exception("User Dont have any role!");
                 }
                 $roleId = $readRoleDtls->wf_role_id;
-                if ($roleId != $confRoles['BO']) {
+                if ($roleId != $confRoles['JSK']) {
                     throw new Exception("You are not Permited to edit the application!");
                 }
                 if ($user->id != $applicationdetails->user_id) {
                     throw new Exception("You are not the right user who applied!");
                 }
-                if ($roleId != $applicationdetails->initiator_role_id) {
-                    throw new Exception("You are not the Initiator!");
+                if ($applicationdetails->payment_status == 1) {
+                    throw new Exception("Payment is done application cannot be updated!");
                 }
                 break;
 
@@ -1416,7 +1424,7 @@ class PetRegistrationController extends Controller
                     throw new Exception("You are not the right user who applied!");
                 }
                 if ($applicationdetails->payment_status == 1) {
-                    throw new Exception("Payment is done applicationcannot be updated!");
+                    throw new Exception("Payment is done application cannot be updated!");
                 }
                 break;
         }
@@ -1428,19 +1436,6 @@ class PetRegistrationController extends Controller
             "applicationDetails" => $applicationdetails,
         ];
     }
-
-
-    /**
-     * | Edit applicant Details 
-     */
-    public function editApplicantDetails(Request $req)
-    {
-        try {
-        } catch (Exception $e) {
-            return responseMsgs(false, "Applicant Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
-        }
-    }
-
 
     /**
      * | Apply the renewal for pet 

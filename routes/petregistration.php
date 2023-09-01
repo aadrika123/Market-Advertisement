@@ -47,8 +47,8 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('application/delete', 'deletePetApplication');                                              // Citizen / Admin
         Route::post('application/get-prop-details', 'getSafHoldingDetails');
         Route::post('application/get-wf-detials', 'getApplicationsDetails');                                    // Workflow
-        Route::post('application/edit-pet-details', 'editPetDetails');
-        Route::post('application/edit-applicant-details', 'editApplicantDetails');
+        Route::post('application/edit-pet-details', 'editPetDetails');                                          // Admin / Citizen
+        Route::post('application/edit-applicant-details', 'editApplicantDetails');                              // Not Used
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
         Route::post('registration/apply-renewal', 'applyPetRenewal');
         Route::post('application/searh-application', 'searchApplication');                                      // Admin
