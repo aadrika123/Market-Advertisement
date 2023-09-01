@@ -47,16 +47,15 @@ class PetActiveRegistration extends Model
         $mPetActiveRegistration->saf_no                 = $req->safNo ?? null;
         $mPetActiveRegistration->pet_type               = $req->petType;
         $mPetActiveRegistration->user_type              = $user->user_type;
-        switch ($user->user_type) {
-            case ($userType['1']):
-                $mPetActiveRegistration->apply_mode = "ONLINE";                                     // Static
-                $mPetActiveRegistration->citizen_id = $user->id;
-                break;
-            case (!$userType['1']):
-                $mPetActiveRegistration->apply_mode = $user->user_type;
-                $mPetActiveRegistration->user_id    = $user->id;
-                break;
+
+        if ($user->user_type == $userType['1']) {
+            $mPetActiveRegistration->apply_mode = "ONLINE";                                     // Static
+            $mPetActiveRegistration->citizen_id = $user->id;
+        } else {
+            $mPetActiveRegistration->apply_mode = $user->user_type;
+            $mPetActiveRegistration->user_id    = $user->id;
         }
+
         $mPetActiveRegistration->save();
         return [
             "id" => $mPetActiveRegistration->id,
