@@ -721,6 +721,7 @@ class PetRegistrationController extends Controller
             $confUserType           = $this->_userType;
             $confDbKey              = $this->_dbKey;
             $mPetActiveRegistration = new PetActiveRegistration();
+            $mPetTran               = new PetTran();
 
             if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
                 throw new Exception("You are not an autherised Citizen!");
@@ -739,7 +740,17 @@ class PetRegistrationController extends Controller
             } catch (QueryException $q) {
                 return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
             }
-            return responseMsgs(true, "list of active registration!", remove_null($refAppDetails), "", "01", ".ms", "POST", $req->deviceId);
+
+            # Get transaction no for the respective application
+            $returnData = collect($refAppDetails)->map(function ($value)
+            use ($mPetTran) {
+                if ($value->payment_status != 0) {
+                    $tranNo = $mPetTran->getTranDetails($value->id, $value->application_type_id)->first();
+                    $value->transactionNo = $tranNo->tran_no;
+                }
+                return $value;
+            });
+            return responseMsgs(true, "list of active registration!", remove_null($returnData), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
