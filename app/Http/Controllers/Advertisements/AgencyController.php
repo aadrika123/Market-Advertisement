@@ -114,12 +114,14 @@ class AgencyController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $agency->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050501", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }

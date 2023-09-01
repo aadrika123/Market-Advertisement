@@ -114,12 +114,17 @@ class SelfAdvetController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->addNew($req);                                       //<--------------- Model function to store 
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
 
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050101", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+
             return responseMsgs(false, $e->getMessage(), "", "050101", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -165,17 +170,6 @@ class SelfAdvetController extends Controller
             $req->request->add($citizenId);
             // $startTime = microtime(true);
             $mAdvActiveSelfadvertisement = $this->_modelObj;
-            // if (authUser()->user_type == 'JSK') {
-            //     $userId = ['userId' => authUser()->id];
-            //     $req->request->add($userId);
-            // } else {
-            //     $citizenId = ['citizenId' => authUser()->id];
-            //     $req->request->add($citizenId);
-            // }
-
-            // $mCalculateRate = new CalculateRate;
-            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
-            // $applicationNo = ['application_no' => $generatedId];
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $applicationNo = $idGeneration->generate();
             $applicationNo = ['application_no' => $applicationNo];
@@ -185,12 +179,14 @@ class SelfAdvetController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mAdvActiveSelfadvertisement->renewalSelfAdvt($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo['renew_no']], "050103", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050103", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -483,12 +479,14 @@ class SelfAdvetController extends Controller
             $track = new WorkflowTrack();
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050111", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050111", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -533,13 +531,15 @@ class SelfAdvetController extends Controller
             }
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050112", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050112", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -824,7 +824,7 @@ class SelfAdvetController extends Controller
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";
             }
-            DB::commit();
+            DB::commit(); 
             return responseMsgs(true, $msg, "", '050119', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -1206,6 +1206,7 @@ class SelfAdvetController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -1231,9 +1232,11 @@ class SelfAdvetController extends Controller
             }
 
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", responseTime(), "050130", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050130", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1405,12 +1408,15 @@ class SelfAdvetController extends Controller
             // Variable initialization
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mAdvActiveSelfadvertisement->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
