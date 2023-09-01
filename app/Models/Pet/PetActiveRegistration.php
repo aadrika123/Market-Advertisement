@@ -52,7 +52,7 @@ class PetActiveRegistration extends Model
                 $mPetActiveRegistration->apply_mode = "ONLINE";                                     // Static
                 $mPetActiveRegistration->citizen_id = $user->id;
                 break;
-            default:
+            case (!$userType['1']):
                 $mPetActiveRegistration->apply_mode = $user->user_type;
                 $mPetActiveRegistration->user_id    = $req->userId;
                 break;
@@ -199,7 +199,8 @@ class PetActiveRegistration extends Model
      */
     public function getApplicationById($id)
     {
-        return PetActiveRegistration::join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+        return PetActiveRegistration::join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('id', $id)
             ->where('status', 1);
     }

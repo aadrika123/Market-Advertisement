@@ -24,4 +24,13 @@ class PetChequeDtl extends Model
         $mPetChequeDtl->user_id            =  $req['user_id'];
         $mPetChequeDtl->save();
     }
+
+    /**
+     * | Get cheque details by trans id
+     */
+    public function getDetailsByTranId($tranId)
+    {
+        return PetChequeDtl::where('transaction_id',$tranId)
+        ->where('status',1);
+    }
 }

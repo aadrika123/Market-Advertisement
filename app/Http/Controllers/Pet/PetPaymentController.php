@@ -509,12 +509,11 @@ class PetPaymentController extends Controller
         if ($validated->fails())
             return validationError($validated);
         try {
-            $mPetTran                   = new PetTran();
-            $mPetTranDetail             = new PetTranDetail();
-
-            $mPetActiveRegistration     = new PetActiveRegistration();
-            $mPetApprovedRegistration   = new PetApprovedRegistration();
-            $mPetRenewalRegistration    = new PetRenewalRegistration();
+            $now            = Carbon::now();
+            $toward         = "pet Registration";
+            $mPetTran       = new PetTran();
+            $mPetChequeDtl  = new PetChequeDtl();
+            $confVerifyMode = $this->_offlineVerificationModes;
 
             # Get transaction details according to trans no
             return $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
@@ -522,8 +521,28 @@ class PetPaymentController extends Controller
                 throw new Exception("transaction details not found! for $request->transactionNo");
             }
 
+            # Check for bank details for dd,cheque,neft
+            if (in_array($transactionDetails->payment_mode, $confVerifyMode)) {
+                $bankRelatedDetails = $mPetChequeDtl->getDetailsByTranId($transactionDetails->refTransId)->first();
+            }
             # check the transaction related details in related table
-            $this->getApplicationRelatedDetails($transactionDetails);
+            $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
+
+            $returnData = [
+                "todayDate"     => $now,
+                "applicationNo" => $applicationDetails->application_no,
+                "applicantName" => $applicationDetails->applicant_name,
+                "paidAmount"    => $transactionDetails->amount,
+                "toward"        => $toward,
+                "paymentMode"   => $transactionDetails->payment_mode,
+                "bankName"      => $bankRelatedDetails->bank_name ?? null,
+                "branchName"    => $bankRelatedDetails->branch_name ?? null,
+                "chequeNo"      => $bankRelatedDetails->cheque_no ?? null,
+                "chequeDate"    => $bankRelatedDetails->cheque_date ?? null,
+                "ulb"           => $applicationDetails->ulb_name,
+                "paymentDate"   => $transactionDetails->tran_date
+            ];
+            return responseMsgs(true, 'payment Receipt!', remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -540,15 +559,36 @@ class PetPaymentController extends Controller
         $mPetApprovedRegistration   = new PetApprovedRegistration();
         $mPetRenewalRegistration    = new PetRenewalRegistration();
 
-        $applicationDetails = $mPetActiveRegistration->getApplicationById($transactionDetails->related_id)
+        # first level chain
+        $refApplicationDetails = $mPetActiveRegistration->getApplicationById($transactionDetails->related_id)
             ->selectRaw(
+                'ulb_masters.ulb_name',
                 'pet_active_registrations.application_no',
                 'pet_active_applicants.applicant_name'
             )->first();
-        if(!$mPetActiveRegistration)
-        {
-
+        if (!$mPetActiveRegistration) {
+            # Second level chain
+            $refApplicationDetails = $mPetApprovedRegistration->getApproveDetailById($transactionDetails->related_id)
+                ->selectRaw(
+                    'ulb_masters.ulb_name',
+                    'pet_approved_registrations.application_no',
+                    'pet_approve_applicants.applicant_name'
+                )->first();
+            if (!$refApplicationDetails) {
+                # Third level chain
+                $refApplicationDetails = $mPetRenewalRegistration->getRenewalApplicationById($transactionDetails->related_id)
+                    ->selectRaw(
+                        'ulb_masters.ulb_name',
+                        'pet_renewal_applicants.application_no',
+                        'pet_renewal_registrations.applicant_name'
+                    )->first();;
+            }
         }
-        // return $applicationDetails
+
+        # Check the existence of final data
+        if (!$refApplicationDetails) {
+            throw new Exception("application details not found!");
+        }
+        return $refApplicationDetails;
     }
 }

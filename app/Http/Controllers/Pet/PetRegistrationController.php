@@ -228,6 +228,7 @@ class PetRegistrationController extends Controller
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
+                # caution
                 $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
             }
             # Save active details 
@@ -1133,15 +1134,13 @@ class PetRegistrationController extends Controller
         if (is_null($applicationDetails)) {
             throw new Exception("Relted Data or Owner not found!");
         }
-        if ($applicationDetails->payment_status == 1) {
+        if ($applicationDetails->payment_status != 0) {
             throw new Exception("Your paymnet is done application Cannot be Deleted!");
         }
         if (!is_null($applicationDetails->current_role)) {
             throw new Exception("application is under process can't be deleted!");
         }
-        if ($applicationDetails->registrationStatus == 0) {                                             // Static
-            throw new Exception("application is allready deactivated!");
-        }
+        # for jsk and citizen
         if ($applicationDetails->apply_mode == $applyMode['1']) {
             if ($applicationDetails->citizen_id != $user->id) {
                 throw new Exception("You'r not the user of this form!");

@@ -32,7 +32,9 @@ class PetApprovedRegistration extends Model
         PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
             ->where('pet_approved_registrations.id', $registrationId)
-            ->delete();
+            ->update([
+                "status" => 2
+            ]);
     }
 
     /**
@@ -62,5 +64,16 @@ class PetApprovedRegistration extends Model
         PetApprovedRegistration::where('id', $id)
             ->where('status', 1)
             ->update($refReq);
+    }
+
+    /**
+     * | Get application details according to id
+     */
+    public function getApproveDetailById($id)
+    {
+        return PetApprovedRegistration::join('ulb_masters', 'ulb_masters.id', '=', 'pet_approved_registrations.ulb_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.application_id', $id)
+            ->where('pet_approved_registrations.status', 1);
     }
 }
