@@ -542,7 +542,6 @@ class PetPaymentController extends Controller
                 "ulb"           => $applicationDetails->ulb_name,
                 "paymentDate"   => $transactionDetails->tran_date
             ];
-            return $returnData;
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);

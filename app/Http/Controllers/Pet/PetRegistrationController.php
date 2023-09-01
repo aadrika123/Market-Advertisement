@@ -596,20 +596,6 @@ class PetRegistrationController extends Controller
             if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
                 $mPetActiveRegistration->updateUploadStatus($req->applicationId, true);
             }
-            # if the application is parked and btc 
-            // if ($getPetDetails->parked == true) {
-            //     $mWfActiveDocument->deactivateRejectedDoc($metaReqs);
-            //     $refReq = new Request([
-            //         'applicationId' => $applicationId
-            //     ]);
-            //     $documentList = $this->getUploadDocuments($refReq);
-            //     $DocList = collect($documentList)['original']['data'];
-            //     $refVerifyStatus = $DocList->where('doc_category', '!=', $req->docCategory)->pluck('verify_status');
-            //     if (!in_array(2, $refVerifyStatus->toArray())) {                                                        // Static "2" for rejected doc
-            //         $status = false;
-            //         $getPetDetails->updateParkedstatus($status, $applicationId);
-            //     }
-            // }
             DB::commit();
             return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
