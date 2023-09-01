@@ -173,7 +173,7 @@ class MarActiveDharamshala extends Model
             $a = new Request($metaReqs);
             // $mWfActiveDocument->postDocuments($a, $auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
-            $mWfActiveDocument->create($metaReqs);
+            // $mWfActiveDocument->create($metaReqs);
             foreach($metaReqs as $key=>$val)
             {
                 $mWfActiveDocument->$key = $val;

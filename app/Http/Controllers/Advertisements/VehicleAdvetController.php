@@ -104,11 +104,14 @@ class VehicleAdvetController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $advVehicle->addNew($req);                             // Apply Vehicle Application 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050301", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050301", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -156,8 +159,6 @@ class VehicleAdvetController extends Controller
                 $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
-            // $mCalculateRate = new CalculateRate;
-            // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
@@ -167,12 +168,14 @@ class VehicleAdvetController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $advVehicle->renewalApplication($req);               // Renewal Vehicle Application
             DB::commit();
-
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Applied the Application !!", ["status" => true, "ApplicationNo" => $applicationNo], "050303", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050303", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -456,12 +459,14 @@ class VehicleAdvetController extends Controller
             $track = new WorkflowTrack();
             // Vehicle Application Update Current Role Updation
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050310", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050310", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -506,13 +511,15 @@ class VehicleAdvetController extends Controller
             }
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050311", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050311", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -1126,6 +1133,7 @@ class VehicleAdvetController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -1149,11 +1157,12 @@ class VehicleAdvetController extends Controller
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
-
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050327", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050327", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1328,12 +1337,15 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             $mAdvActiveVehicle = new AdvActiveVehicle();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mAdvActiveVehicle->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050330", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
         }
     }

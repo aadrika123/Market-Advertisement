@@ -103,11 +103,14 @@ class PrivateLandController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $privateLand->addNew($req);                            // Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050401", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050401", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -164,11 +167,14 @@ class PrivateLandController extends Controller
             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             $req->request->add($WfMasterId);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $privateLand->renewalApplication($req);                            // Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050403", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050403", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -457,12 +463,14 @@ class PrivateLandController extends Controller
             $track = new WorkflowTrack();
             // Advertisment Application Update Current Role Updation
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050410", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -509,12 +517,15 @@ class PrivateLandController extends Controller
 
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050411", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050411", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -1039,7 +1050,6 @@ class PrivateLandController extends Controller
             $appDetails = AdvPrivateland::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cheque/DD");
             DB::commit();
-
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050425", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
@@ -1132,6 +1142,7 @@ class PrivateLandController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -1156,10 +1167,11 @@ class PrivateLandController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050427", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050427", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1338,13 +1350,15 @@ class PrivateLandController extends Controller
 
             $mAdvActivePrivateland = new AdvActivePrivateland();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mAdvActivePrivateland->reuploadDocument($req, $req->auth);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050430", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->beginTransaction();
             return responseMsgs(false, "Document Not Uploaded", "", "050430", 1.0, "271ms", "POST", "", "");
         }
     }
