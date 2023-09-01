@@ -409,7 +409,7 @@ class PetPaymentController extends Controller
 
             $RazorPayRequest = $mPetRazorPayRequest->getRazorpayRequest($req);
             if (!$RazorPayRequest) {
-                throw new Exception("Data Not Found");
+                throw new Exception("Payment request data Not Found!");
             }
 
             # Handel the fake data or error data 
@@ -447,7 +447,8 @@ class PetPaymentController extends Controller
                 'tranTypeId'        => $RazorPayRequest->payment_from,
                 'isJsk'             => FALSE,                                   // Static
                 'roundAmount'       => $RazorPayRequest->round_amount,
-                'refChargeId'       => $chargeDetails->id
+                'refChargeId'       => $chargeDetails->id,
+                'ip'                => $req->ip()
             ];
             $transDetails = $mPetTran->saveTranDetails($tranReq);
             $mPetTranDetail->saveTransDetails($transDetails['transactionId'], $tranReq);
