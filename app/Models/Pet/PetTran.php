@@ -37,8 +37,7 @@ class PetTran extends Model
         $mPetTran->payment_mode = $req['paymentMode'];
         $mPetTran->amount       = $req['amount'];
         $mPetTran->emp_dtl_id   = $req['empId'] ?? null;
-        $mPetTran->created_at   = $req['todayDate'];
-        $mPetTran->ip_address   = $req->ip() ?? null;
+        $mPetTran->ip_address   = $req['ip'] ?? null;
         $mPetTran->user_type    = $req['userType'];
         $mPetTran->is_jsk       = $req['isJsk'] ?? false;
         $mPetTran->citizen_id   = $req['citId'] ?? null;
