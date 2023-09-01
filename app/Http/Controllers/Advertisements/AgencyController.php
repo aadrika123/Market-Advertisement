@@ -438,7 +438,6 @@ class AgencyController extends Controller
         }
     }
 
-
     /**
      * | Post Independent Comment
      * | Function - 11
@@ -594,7 +593,6 @@ class AgencyController extends Controller
                 'status' => 'required|integer',
             ]);
             // Variable initialization
-
             // Check if the Current User is Finisher or Not         
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveAgency->workflow_id);                                 // Get Finisher using Trait
