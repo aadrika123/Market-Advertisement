@@ -18,6 +18,6 @@ class PetRenewalRegistration extends Model
         return PetRenewalRegistration::join('ulb_masters', 'ulb_masters.id', '=', 'pet_renewal_registrations.ulb_id')
             ->join('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
             ->where('pet_renewal_registrations.application_id', $id)
-            ->where('status', 1);
+            ->where('pet_renewal_registrations.status', 1);
     }
 }

@@ -409,7 +409,7 @@ class PetPaymentController extends Controller
 
             $RazorPayRequest = $mPetRazorPayRequest->getRazorpayRequest($req);
             if (!$RazorPayRequest) {
-                throw new Exception("Data Not Found");
+                throw new Exception("Payment request data Not Found!");
             }
 
             # Handel the fake data or error data 
@@ -447,7 +447,8 @@ class PetPaymentController extends Controller
                 'tranTypeId'        => $RazorPayRequest->payment_from,
                 'isJsk'             => FALSE,                                   // Static
                 'roundAmount'       => $RazorPayRequest->round_amount,
-                'refChargeId'       => $chargeDetails->id
+                'refChargeId'       => $chargeDetails->id,
+                'ip'                => $req->ip()
             ];
             $transDetails = $mPetTran->saveTranDetails($tranReq);
             $mPetTranDetail->saveTransDetails($transDetails['transactionId'], $tranReq);
@@ -516,7 +517,7 @@ class PetPaymentController extends Controller
             $confVerifyMode = $this->_offlineVerificationModes;
 
             # Get transaction details according to trans no
-            return $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
+            $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
             if (!$transactionDetails) {
                 throw new Exception("transaction details not found! for $request->transactionNo");
             }
@@ -529,20 +530,20 @@ class PetPaymentController extends Controller
             $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
 
             $returnData = [
-                "todayDate"     => $now,
+                "todayDate"     => $now->format('Y-m-d'),
                 "applicationNo" => $applicationDetails->application_no,
                 "applicantName" => $applicationDetails->applicant_name,
                 "paidAmount"    => $transactionDetails->amount,
                 "toward"        => $toward,
                 "paymentMode"   => $transactionDetails->payment_mode,
-                "bankName"      => $bankRelatedDetails->bank_name ?? null,
-                "branchName"    => $bankRelatedDetails->branch_name ?? null,
-                "chequeNo"      => $bankRelatedDetails->cheque_no ?? null,
-                "chequeDate"    => $bankRelatedDetails->cheque_date ?? null,
+                "bankName"      => $bankRelatedDetails->bank_name ?? "",
+                "branchName"    => $bankRelatedDetails->branch_name ?? "",
+                "chequeNo"      => $bankRelatedDetails->cheque_no ?? "",
+                "chequeDate"    => $bankRelatedDetails->cheque_date ?? "",
                 "ulb"           => $applicationDetails->ulb_name,
                 "paymentDate"   => $transactionDetails->tran_date
             ];
-            return responseMsgs(true, 'payment Receipt!', remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -561,15 +562,15 @@ class PetPaymentController extends Controller
 
         # first level chain
         $refApplicationDetails = $mPetActiveRegistration->getApplicationById($transactionDetails->related_id)
-            ->selectRaw(
+            ->select(
                 'ulb_masters.ulb_name',
                 'pet_active_registrations.application_no',
                 'pet_active_applicants.applicant_name'
             )->first();
-        if (!$mPetActiveRegistration) {
+        if (!$refApplicationDetails) {
             # Second level chain
             $refApplicationDetails = $mPetApprovedRegistration->getApproveDetailById($transactionDetails->related_id)
-                ->selectRaw(
+                ->select(
                     'ulb_masters.ulb_name',
                     'pet_approved_registrations.application_no',
                     'pet_approve_applicants.applicant_name'
@@ -577,7 +578,7 @@ class PetPaymentController extends Controller
             if (!$refApplicationDetails) {
                 # Third level chain
                 $refApplicationDetails = $mPetRenewalRegistration->getRenewalApplicationById($transactionDetails->related_id)
-                    ->selectRaw(
+                    ->select(
                         'ulb_masters.ulb_name',
                         'pet_renewal_applicants.application_no',
                         'pet_renewal_registrations.applicant_name'
