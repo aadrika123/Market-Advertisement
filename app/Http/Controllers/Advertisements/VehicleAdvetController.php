@@ -330,7 +330,6 @@ class VehicleAdvetController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
     /**
      * | Get Applied Applications by Logged In Citizen
      * | Function - 08
@@ -354,7 +353,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050307", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /** 
      * | Escalate Application
@@ -419,7 +417,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050309", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Forward or Backward Application
@@ -593,7 +590,6 @@ class VehicleAdvetController extends Controller
     public function viewDocumentsOnWorkflow(Request $req)
     {
         // Variable Initialization
-
         if (isset($req->type) && $req->type == 'Approve')
             $workflowId = AdvVehicle::find($req->applicationId)->workflow_id;
         else
@@ -608,7 +604,6 @@ class VehicleAdvetController extends Controller
             $value->doc_path = $appUrl . $value->doc_path;
             return $value;
         });
-
         return responseMsgs(true, "Data Fetched", remove_null($data1), "050314", "1.0", responseTime(), "POST", "");
     }
 
@@ -738,7 +733,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | Approve Application List for Citzen
      * | @param Request $req
@@ -764,7 +758,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | Reject Application List for Citizen
      * | @param Request $req
@@ -775,7 +768,6 @@ class VehicleAdvetController extends Controller
     {
         try {
             // Variable Initialization
-
             $citizenId = $req->auth['id'];
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
             $applications = $mAdvRejectedVehicle->listRejected($citizenId);
@@ -789,8 +781,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050317", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
-
 
     /**
      * | Get Applied Applications by Logged In JSK
@@ -816,7 +806,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | Approve Application List for JSK
      * | @param Request $req
@@ -840,7 +829,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050319", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Reject Application List for JSK
@@ -867,15 +855,12 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
-
     /**
      * | Generate Payment Order ID
      * | @param Request $req
      * | Function - 22
      * | API - 21
      */
-
     public function generatePaymentOrderId(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -949,7 +934,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | Payment Via Cash
      * | Function - 24
@@ -984,7 +968,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | Entry Cheque or DD
      * | Function - 25
@@ -1014,7 +997,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050324", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Clear or bounce Cheque or DD
@@ -1201,7 +1183,6 @@ class VehicleAdvetController extends Controller
         }
     }
 
-
     /**
      * | send back to citizen
      * | Function - 30
@@ -1251,7 +1232,6 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050328", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Back To Citizen Inbox
@@ -1349,6 +1329,7 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
         }
     }
+    
     /**
      * | Get Application Between Two Dates
      * | Function - 34

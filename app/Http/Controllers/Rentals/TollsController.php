@@ -439,7 +439,7 @@ class TollsController extends Controller
     public function getTollPriceList(Request $req){
         try {
             $mMarTollPriceList = new MarTollPriceList();
-            $list=$mMarTollPriceList->getTollPriceList();
+            $list=$mMarTollPriceList->getTollPriceList($req->auth['ulb_id']);
             return responseMsgs(true, "Price List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);

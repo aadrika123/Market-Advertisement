@@ -96,12 +96,14 @@ class DharamshalaController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveDharamshala->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051001", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051001", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -364,8 +366,9 @@ class DharamshalaController extends Controller
         ]);
         try {
             // Variable initialization
-            // Marriage Banqute Hall Application Update Current Role Updation
+            // Dharmashala Application Update Current Role Updation
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);
             if ($mMarActiveDharamshala->parked == NULL && $mMarActiveDharamshala->doc_upload_status == '0')
                 throw new Exception("Document Rejected Please Send Back to Citizen !!!");
@@ -386,10 +389,11 @@ class DharamshalaController extends Controller
             $track = new WorkflowTrack();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "051008", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051008", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -415,7 +419,6 @@ class DharamshalaController extends Controller
             $mMarActiveDharamshala = MarActiveDharamshala::find($request->applicationId);                // Advertisment Details
             $mModuleId = $this->_moduleIds;
             $metaReqs = array();
-            DB::beginTransaction();
             // Save On Workflow Track For Level Independent
             $metaReqs = [
                 'workflowId' => $mMarActiveDharamshala->workflow_id,
@@ -430,12 +433,15 @@ class DharamshalaController extends Controller
             }
 
             $request->request->add($metaReqs);
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "051009", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051009", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -836,6 +842,7 @@ class DharamshalaController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -860,10 +867,11 @@ class DharamshalaController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "051018", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051018", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1047,13 +1055,15 @@ class DharamshalaController extends Controller
             // Variable initialization
             $mmMarActiveDharamshala = new MarActiveDharamshala();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mmMarActiveDharamshala->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "051021", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "051021", 1.0, "271ms", "POST", "", "");
         }
     }
@@ -1210,12 +1220,14 @@ class DharamshalaController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mActiveDharamshala->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "051026", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "051026", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }

@@ -98,11 +98,14 @@ class HostelController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            DB::rollBack();
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(false, $e->getMessage(), "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -387,12 +390,14 @@ class HostelController extends Controller
 
             $track = new WorkflowTrack();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050908", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050908", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -434,11 +439,14 @@ class HostelController extends Controller
             $request->request->add($metaReqs);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050909", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050909", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -851,6 +859,7 @@ class HostelController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -874,10 +883,11 @@ class HostelController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050918", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050918", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -902,10 +912,6 @@ class HostelController extends Controller
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
-        // if($mMarActiveHostel->renew_no==NULL){
-        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // }
         if ($totalApproveDoc >= $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1057,13 +1063,15 @@ class HostelController extends Controller
 
             $mMarActiveHostel = new MarActiveHostel();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mMarActiveHostel->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050921", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050921", 1.0, "271ms", "POST", "", "");
         }
     }
@@ -1207,7 +1215,6 @@ class HostelController extends Controller
     {
         try {
             // Variable initialization
-
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
@@ -1221,12 +1228,14 @@ class HostelController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050926", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050926", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -1265,7 +1274,6 @@ class HostelController extends Controller
     {
         try {
             // Variable initialization
-
             $mMarActiveHostel = $this->_modelObj;
             DB::beginTransaction();
             $res = $mMarActiveHostel->updateApplication($req);       //<--------------- Update Banquet Hall Application
