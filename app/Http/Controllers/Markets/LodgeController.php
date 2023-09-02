@@ -100,12 +100,14 @@ class LodgeController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveLodge->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050701", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050701", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -389,12 +391,14 @@ class LodgeController extends Controller
 
             $track = new WorkflowTrack();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -436,12 +440,14 @@ class LodgeController extends Controller
 
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050709", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050709", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -837,6 +843,7 @@ class LodgeController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -847,8 +854,6 @@ class LodgeController extends Controller
                 $appDetails->doc_verify_status = 0;
                 $appDetails->save();
             }
-
-
             $reqs = [
                 'remarks' => $req->docRemarks,
                 'verify_status' => $status,
@@ -862,10 +867,11 @@ class LodgeController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050718", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050718", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -890,10 +896,6 @@ class LodgeController extends Controller
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
-        // if($mMarActiveLodge->renew_no==NULL){
-        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        // }
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1047,13 +1049,15 @@ class LodgeController extends Controller
             // Variable initialization
             $mMarActiveLodge = new MarActiveLodge();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mMarActiveLodge->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
         }
     }
@@ -1083,7 +1087,6 @@ class LodgeController extends Controller
             $appDetails = MarLodge::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
             DB::commit();
-
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050722", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
@@ -1214,12 +1217,14 @@ class LodgeController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveLodge->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050726", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050726", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }

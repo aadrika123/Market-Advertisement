@@ -101,12 +101,14 @@ class BanquetMarriageHallController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050801", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050801", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
@@ -164,7 +166,6 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050803", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Application Details
@@ -289,7 +290,6 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
     /**
      *  | Escalate
      * @param Request $request
@@ -317,7 +317,6 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050806", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      *  Special Inbox List
@@ -395,16 +394,17 @@ class BanquetMarriageHallController extends Controller
 
             $track = new WorkflowTrack();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050108", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050808", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      * Post Independent Comment
@@ -442,12 +442,14 @@ class BanquetMarriageHallController extends Controller
 
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050809", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050809", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -538,7 +540,6 @@ class BanquetMarriageHallController extends Controller
         });
         return responseMsgs(true, "Data Fetched", remove_null($data1), "050812", "1.0", responseTime(), "POST", "");
     }
-
 
     /**
      * Final Approval and Rejection of the Application
@@ -764,7 +765,6 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
     /**
      * Get application Details For Payment
      * @return void
@@ -846,6 +846,7 @@ class BanquetMarriageHallController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -869,9 +870,11 @@ class BanquetMarriageHallController extends Controller
                 $appDetails->save();
             }
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050818", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050818", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1050,13 +1053,15 @@ class BanquetMarriageHallController extends Controller
             // Variable initialization
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mMarActiveBanquteHall->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050821", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "050821", 010717, 1.0, "", "POST", "", "");
         }
     }
@@ -1095,7 +1100,6 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050822", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Entry Cheque or DD for Payment
@@ -1164,8 +1168,6 @@ class BanquetMarriageHallController extends Controller
         }
     }
 
-
-
     /**
      * | Get Application Details For Renew
      * | Function - 28
@@ -1216,16 +1218,17 @@ class BanquetMarriageHallController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $mMarActiveBanquteHall->renewApplication($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050826", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050826", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Get APplication Details For Edit

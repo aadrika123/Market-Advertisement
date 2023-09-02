@@ -159,12 +159,14 @@ class HoardingController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $LicenseNo], "050603", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(true, $e->getMessage(), "", "050603", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -420,11 +422,14 @@ class HoardingController extends Controller
             $track = new WorkflowTrack();
             // Hording  Application Update Current Role Updation
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050610", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050610", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -997,13 +1002,14 @@ class HoardingController extends Controller
             $req->request->add($WfMasterId);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $RenewNo = $mAdvActiveHoarding->renewalHording($req);       //<--------------- Model function to store 
             DB::commit();
-
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Renewal the application !!", ['status' => true, 'ApplicationNo' => $RenewNo], "050625", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(true, $e->getMessage(), "", "050625", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1032,7 +1038,6 @@ class HoardingController extends Controller
             $appDetails = AdvHoarding::find($req->applicationId);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
             DB::commit();
-
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050626", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
@@ -1167,6 +1172,7 @@ class HoardingController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -1191,10 +1197,11 @@ class HoardingController extends Controller
                 $appDetails->save();
             }
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050629", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050629", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
@@ -1310,12 +1317,15 @@ class HoardingController extends Controller
             // Variable initialization
             $mAdvActivehoarding = new AdvActivehoarding();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mAdvActivehoarding->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050632", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050632", 1.0, "271ms", "POST", "", "");
         }
     }

@@ -426,16 +426,17 @@ class AgencyController extends Controller
 
             $track = new WorkflowTrack();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $track->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050509", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050509", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-
 
     /**
      * | Post Independent Comment
@@ -478,13 +479,15 @@ class AgencyController extends Controller
             }
             $request->request->add($metaReqs);
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             // Save On Workflow Track For Level Independent
             $workflowTrack->saveTrack($request);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "You Have Commented Successfully!!", ['Comment' => $request->comment], "050510", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050510", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
@@ -590,7 +593,6 @@ class AgencyController extends Controller
                 'status' => 'required|integer',
             ]);
             // Variable initialization
-
             // Check if the Current User is Finisher or Not         
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveAgency->workflow_id);                                 // Get Finisher using Trait
@@ -610,9 +612,9 @@ class AgencyController extends Controller
                     "paramId" => $this->_paramId,
                     'ulbId' => $mAdvActiveAgency->ulb_id
                 ];
-                
+
                 $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveAgency->ulb_id);               // Generate Application No
-                $generatedId = $idGeneration->generate(); 
+                $generatedId = $idGeneration->generate();
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
@@ -724,7 +726,7 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            
+
             return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050515", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -739,7 +741,7 @@ class AgencyController extends Controller
      * | API - 16
      */
     public function listRejected(Request $req)
-    { 
+    {
         try {
             // Variable initialization
             $citizenId = $req->auth['id'];
@@ -942,12 +944,15 @@ class AgencyController extends Controller
             $req->request->add($applicationNo);
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $applicationNo = $agency->renewalAgency($req);       //<--------------- Model function to store 
             DB::commit();
+            DB::connection('pgsql_masters')->commit();
 
             return responseMsgs(true, "Successfully Submitted Application For Renewals !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050522", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050522", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1109,6 +1114,7 @@ class AgencyController extends Controller
                 throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -1132,12 +1138,12 @@ class AgencyController extends Controller
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
-
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050526", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050526", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1307,13 +1313,15 @@ class AgencyController extends Controller
 
             $mAdvActiveAgency = new AdvActiveAgency();
             DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mAdvActiveAgency->reuploadDocument($req);
             $this->checkFullUpload($appId);
             DB::commit();
-
+            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050529", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050529", 1.0, "", "POST", "", "");
         }
     }
