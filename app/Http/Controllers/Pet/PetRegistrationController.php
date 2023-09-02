@@ -1459,8 +1459,7 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
-            $user       = authUser($request);
-            $renewal    = 1;
+            $renewal = 1;
             $mPetApprovedRegistration = new PetApprovedRegistration();
 
             # Check the Registered Application existence
@@ -1468,40 +1467,41 @@ class PetRegistrationController extends Controller
             if (!$refApprovedDetails) {
                 throw new Exception("Application Detial Not found!");
             }
+
             # Check Params for renewal of Application
             $this->checkParamForRenewal($refApprovedDetails->id);
-            // $newReq = new Request([
-            //     "address"           => $refApprovedDetails->address,
-            //     "applyThrough"      => $refApprovedDetails->apply_through,
-            //     "breed"             => $refApprovedDetails->breed,
-            //     "ownerCategory"     => $refApprovedDetails->owner_type,
-            //     "color"             => $refApprovedDetails->color,
-            //     "dateOfLepVaccine"  => $request->dateOfLepVaccine,
-            //     "dateOfRabies"      => $request->dateOfRabiesVac,
-            //     "doctorName"        => $request->doctorName,
-            //     "doctorRegNo"       => $request->doctorRegNo
-            //     "petBirthDate"      => $refApprovedDetails->dob,
-            //     "petFrom"           => $refApprovedDetails->occurrence_type_id
-            //     "petGender"         => $refApprovedDetails->sex
-            //     "petIdentity"       => $refApprovedDetails->identification_mark
-            //     "petName"           => $refApprovedDetails->pet_name
-            //     "petType"           => $refApprovedDetails->pet_type
-            //     "ulbId"             => $refApprovedDetails->
-            //     "ward"              => $refApprovedDetails->
-            //     "applicantName"     => $refApprovedDetails->
-            //     "mobileNo"          => $refApprovedDetails->
-            //     "email"             => $refApprovedDetails->
-            //     "panNo"             => $refApprovedDetails->
-            //     "telephone"         => $refApprovedDetails->
-            //     "propertyNo"        => $refApprovedDetails->
+            $newReq = new Request([
+                "address"           => $refApprovedDetails->address,
+                "applyThrough"      => $refApprovedDetails->apply_through,
+                "breed"             => $refApprovedDetails->breed,
+                "ownerCategory"     => $refApprovedDetails->owner_type,
+                "color"             => $refApprovedDetails->color,
+                "dateOfLepVaccine"  => $request->dateOfLepVaccine,
+                "dateOfRabies"      => $request->dateOfRabiesVac,
+                "doctorName"        => $request->doctorName,
+                "doctorRegNo"       => $request->doctorRegNo,
+                "petBirthDate"      => $refApprovedDetails->dob,
+                "petFrom"           => $refApprovedDetails->occurrence_type_id,
+                "petGender"         => $refApprovedDetails->sex,
+                "petIdentity"       => $refApprovedDetails->identification_mark,
+                "petName"           => $refApprovedDetails->pet_name,
+                "petType"           => $refApprovedDetails->pet_type,
+                "ulbId"             => $refApprovedDetails->ulb_id,
+                "ward"              => $refApprovedDetails->ward_id,
+                "applicantName"     => $refApprovedDetails->applicant_name,
+                "mobileNo"          => $request->mobileNo ?? $refApprovedDetails->mobile_no,
+                "email"             => $request->email ?? $refApprovedDetails->email,
+                "panNo"             => $refApprovedDetails->pan_no,
+                "telephone"         => $refApprovedDetails->telephone,
+                "propertyNo"        => $refApprovedDetails->holding_no ?? $refApprovedDetails->saf_no,
 
-            //     "registrationId"    =>
-            //     "isRenewal"         =>
-            //     "auth"              => $request->auth
-            // ]);
+                "registrationId"    => $refApprovedDetails->approveId,
+                "isRenewal"         => $renewal,                                    // Static
+                "auth"              => $request->auth
+            ]);
 
             DB::beginTransaction();
-            $applyDetails = $this->applyPetRegistration($request);   // here 
+            $applyDetails = $this->applyPetRegistration($newReq);   // here 
             $this->updateRenewalDetails($refApprovedDetails);
             DB::commit();
             // $applyDetails->data;
@@ -1567,6 +1567,7 @@ class PetRegistrationController extends Controller
             $paramenter = $request->parameter;
             $pages      = $request->pages ?? 10;
             $refstring  = Str::snake($key);
+            $msg        = "Pet active appliction details according to parameter!";
 
             $mPetActiveRegistration = new PetActiveRegistration();
             $mPetActiveApplicant    = new PetActiveApplicant();
@@ -1575,38 +1576,33 @@ class PetRegistrationController extends Controller
             switch ($key) {
                 case ("mobileNo"):                                                                                                                      // Static
                     $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal) // || $checkVal == 0
-                        throw new Exception("Data according to " . $key . " not Found!");
+
                     break;
                 case ("applicationNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal)
-                        throw new Exception("Data according to " . $key . " not Found!");
+
                     break;
                 case ("applicantName"):
                     $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal)
-                        throw new Exception("Data according to " . $key . " not Found!");
+
                     break;
                 case ("holdingNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal)
-                        throw new Exception("Data according to " . $key . " not Found!");
+
                     break;
                 case ("safNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    $checkVal = collect($activeApplication)->last();
-                    if (!$checkVal)
-                        throw new Exception("Data according to " . $key . " not Found!");
+
                     break;
                 default:
                     throw new Exception("Data provided in filterBy is not valid!");
             }
-            return responseMsgs(true, "Pet active appliction details according to parameter!", remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            # Check if data not exist
+            $checkVal = collect($activeApplication)->first();
+            if (!$checkVal) {
+                $msg = "Data Not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
