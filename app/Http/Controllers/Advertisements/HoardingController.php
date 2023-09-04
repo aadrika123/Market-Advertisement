@@ -108,6 +108,7 @@ class HoardingController extends Controller
             $mAdvTypologyMstr = new AdvTypologyMstr();
             $typologyList = $mAdvTypologyMstr->listTypology1($req->ulbId);
             $typologyList = $typologyList->groupBy('type');
+            $fData=array();
             foreach ($typologyList as $key => $data) {
                 $type = [
                     'Type' => "Type " . $key,

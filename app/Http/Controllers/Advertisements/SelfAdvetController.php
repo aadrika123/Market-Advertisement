@@ -262,7 +262,7 @@ class SelfAdvetController extends Controller
     }
 
     /**
-     * | Application Details
+     * | Get Application Details By Id
      * | Function - 07
      * | API - 07
      */
@@ -748,8 +748,8 @@ class SelfAdvetController extends Controller
                 $req->request->add($data['payment_status']);
                 $req->request->add($data['demand_amount']);
 
-                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); // Generate License No
-                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveSelfadvertisement->ulb_id);
+                // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_paramId, $mAdvActiveSelfadvertisement->ulb_id); 
+                $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveSelfadvertisement->ulb_id);                      // Generate License No
                 $generatedId = $idGeneration->generate();
                 if ($mAdvActiveSelfadvertisement->renew_no == NULL) {
                     // Selfadvertisement Application replication

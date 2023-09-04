@@ -783,7 +783,7 @@ class ParamController extends Controller
     public function advertisementDashboard(Request $req)
     {
         try {
-            $dashboardReport['date']=Carbon::now()->format('d-m-Y');
+            $dashboardReport['date']=Carbon::now()->format('Y-m-d');
             $advert = $this->advertDashboard($req)->original['data'];
             $market = $this->marketDashboard($req)->original['data'];
             $dashboardReport['selfApproved']=$advert['selfApprovedApplications']->where('date',$dashboardReport['date'])->count();
