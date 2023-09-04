@@ -887,7 +887,7 @@ class VehicleAdvetController extends Controller
                 ->withToken($req->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
-            $data = json_decode($refResponse);
+            return $data = json_decode($refResponse);
             $data = $data->data;
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
