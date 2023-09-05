@@ -140,7 +140,6 @@ class LodgeController extends Controller
         }
     }
 
-
     /**
      * | Outbox List
      * | Function - 03
@@ -166,7 +165,6 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050703", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Application Details
@@ -229,6 +227,7 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050704", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
+
     /**
      * | Get Application role details
      * | Function - 05
@@ -260,7 +259,6 @@ class LodgeController extends Controller
         return responseMsgs(true, "Data Retrived", remove_null($roleDetails));
     }
 
-
     /**
      * Summary of getCitizenApplications
      * @param Request $req
@@ -287,7 +285,7 @@ class LodgeController extends Controller
     }
 
     /**
-     *  | Escalate
+     * | Escalate
      * @param Request $request
      * @return void
      * | Function - 07
@@ -350,7 +348,6 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050707", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * Forward or Backward Application
@@ -541,7 +538,6 @@ class LodgeController extends Controller
         });
         return responseMsgs(true, "Data Fetched", remove_null($data1), "050712", "1.0", responseTime(), "POST", "");
     }
-
 
     /**
      * Final Approval and Rejection of the Application
@@ -788,7 +784,6 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050717", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Verify Single Application Approve or reject
