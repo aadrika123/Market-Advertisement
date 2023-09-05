@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Pet\PetActiveRegistration;
+use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflow;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PetWorkflowController extends Controller
 {
@@ -174,7 +176,6 @@ class PetWorkflowController extends Controller
 
         try {
             $mWfRoleMaps        = new WfWorkflowrolemap();
-            $current            = Carbon::now();
             $wfLevels           = $wfLevels;
             $petApplication     = PetActiveRegistration::findOrFail($req->applicationId);
 
@@ -183,8 +184,8 @@ class PetWorkflowController extends Controller
             $ulbWorkflowId = $petApplication->workflow_id;
             $ulbWorkflowMaps = WfWorkflow::findOrFail($ulbWorkflowId);
             $roleMapsReqs = new Request([
-                'workflowId' => $ulbWorkflowMaps->id,
-                'roleId' => $senderRoleId
+                'workflowId'    => $ulbWorkflowMaps->id,
+                'roleId'        => $senderRoleId
             ]);
             $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
 
@@ -197,9 +198,9 @@ class PetWorkflowController extends Controller
                 $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
             }
             if ($req->action == 'backward') {
-                $petApplication->current_role_id   = $forwardBackwardIds->backward_role_id;
-                $metaReqs['verificationStatus'] = 0;
-                $metaReqs['receiverRoleId']     = $forwardBackwardIds->backward_role_id;
+                $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
+                $metaReqs['verificationStatus']     = 0;
+                $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
             }
             $petApplication->save();
 
@@ -468,4 +469,108 @@ class PetWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+    /**
+     * | Workflow final approvale for the application
+     * | Also adjust the renewal process
+        | Serial No : 
+        | Under Con
+     */
+    // public function finalApprovalRejection(Request $request)
+    // {
+    //     $validated = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'applicationId' => 'required|digits_between:1,9223372036854775807',
+    //             'status' => 'required'
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+
+    //     try {
+    //         $userId                 = authUser($request)->id;
+    //         $applicationId          = $request->applicationId;
+    //         $mPetActiveRegistration = new PetActiveRegistration();
+    //         $mWfRoleUsermap         = new WfRoleusermap();
+    //         $currentDateTime        = Carbon::now();
+
+    //         $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+    //         if ($application) {
+    //             throw new Exception("application Details not found!");
+    //         }
+    //         $workflowId = $application->workflow_id;
+    //         $getRoleReq = new Request([                                                 // make request to get role id of the user
+    //             'userId'        => $userId,
+    //             'workflowId'    => $workflowId
+    //         ]);
+    //         $readRoleDtls   = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
+    //         $roleId         = $readRoleDtls->wf_role_id;
+
+    //         # Validating the process
+    //         if ($roleId != $application->finisher_role_id) {
+    //             throw new Exception("You are not the Finisher!");
+    //         }
+    //         if ($application->doc_upload_status == false || $application->payment_status != 1) {
+    //             throw new Exception("Document Not Fully Uploaded or Payment in not Done!");
+    //         }                                                                      // DA Condition
+    //         if ($application->doc_verify_status == false) {
+    //             throw new Exception("Document Not Fully Verified!");
+    //         }
+
+    //         DB::beginTransaction();
+    //         # Approval of grievance application 
+    //         if ($request->status == 1) {
+    //             # Consumer no generation
+    //             $grievanceApproveNo = "GRE-APR-" . Str::random(15);
+    //             # If application is approved for the first time or renewal
+    //             if ($application->renewal == 0) {
+    //                 $ApprovedId = $this->finalApproval($request, $grievanceApproveNo, $application);
+    //             } else {
+    //                 $ApprovedId = $this->finalApprovalRenewal($request, $grievanceApproveNo, $application);
+    //             }
+    //             $msg = "Application Successfully Approved !!";
+    //         }
+    //         # Rejection of grievance application
+    //         if ($request->status == 0) {
+    //             // $this->finalRejectionOfAppication($request, $grievanceDetials);
+    //             $msg = "Application Successfully Rejected !!";
+    //         }
+    //         DB::commit();
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+    //     }
+    // }
+
+    /**
+     * | Final approval process for pet application 
+     */
+    // public function finalApproval($request, $registrationNo, $applicationDetails)
+    // {
+    //     $applicationId                  = $request->applicationId;
+    //     $waterTrack                     = new WorkflowTrack();
+    //     $mPetActiveRegistration         = new PetActiveRegistration();
+    //     $mPetApprovedRegistration       = new PetApprovedRegistration();
+
+    //     # Data formating for save the consumer details 
+    //     if($applicationDetails->renewal == 1)
+    //     {
+    //         throw new Exception("");
+    //     }
+
+    //     # dend record in the track table 
+    //     $metaReqs = [
+    //         'moduleId'          => $this->_moduleId,
+    //         'workflowId'        => $activeGrievanceDetials->workflow_id,
+    //         'refTableDotId'     => 'grievance_active_applicantions.id',                     // Static
+    //         'refTableIdValue'   => $activeGrievanceDetials->id,
+    //         'user_id'           => authUser($request)->id,
+    //     ];
+    //     $request->request->add($metaReqs);
+    //     $waterTrack->saveTrack($request);
+
+    //     # final delete
+    //     return $grievanceId;
+    // }
 }
