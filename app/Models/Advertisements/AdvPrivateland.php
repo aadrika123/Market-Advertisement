@@ -134,6 +134,8 @@ class AdvPrivateland extends Model
             'adv_privatelands.trade_license_no',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
+            'ulb_masters.toll_free_no',
+            'ulb_masters.current_website as website',
             'wn.ward_name as wardNo',
             DB::raw("'Advertisement' as module"),
         )

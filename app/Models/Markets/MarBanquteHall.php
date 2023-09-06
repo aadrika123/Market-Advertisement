@@ -229,6 +229,8 @@ class MarBanquteHall extends Model
             'wn.ward_name as wardNo',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
+            'ulb_masters.toll_free_no',
+            'ulb_masters.current_website as website',
             DB::raw("'Market' as module"),
         )
             ->leftjoin('ulb_masters', 'mar_banqute_halls.ulb_id', '=', 'ulb_masters.id')
