@@ -17,6 +17,7 @@ use App\Models\Pet\MPetOccurrenceType;
 use App\Models\Pet\PetActiveApplicant;
 use App\Models\Pet\PetActiveDetail;
 use App\Models\Pet\PetActiveRegistration;
+use App\Models\Pet\PetApproveApplicant;
 use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Pet\PetAudit;
 use App\Models\Pet\PetRegistrationCharge;
@@ -245,6 +246,23 @@ class PetRegistrationController extends Controller
                 "applicationTypeId" => $req->applicationTypeId
             ]);
             $mPetRegistrationCharge->saveRegisterCharges($metaRequest);
+
+            # Save data in track
+            //  $metaReqs = new Request(
+            //     [
+            //         'citizenId'         => null,
+            //         'moduleId'          => $this->_moduleId,
+            //         'workflowId'        => $ulbWorkflowId->id,
+            //         'refTableDotId'     => 'grievance_active_applicantions.id',                             // Static                              // Static
+            //         'refTableIdValue'   => $applicationDetails['id'],
+            //         'user_id'           => $user->id ?? null,
+            //         'ulb_id'            => $ulbId,
+            //         'senderRoleId'      => null,
+            //         'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
+            //     ]
+            // );
+            // $mWorkflowTrack->saveTrack($metaReqs);
+
             DB::commit();
 
             $returnData = [
@@ -1448,7 +1466,7 @@ class PetRegistrationController extends Controller
         $validated = Validator::make(
             $request->all(),
             [
-                'registrationId'    => 'required|In:holding,saf,ptn',
+                'registrationId'    => 'required|int',
                 'dateOfLepVaccine'  => 'required',
                 'dateOfRabiesVac'   => 'required',
                 'doctorName'        => 'required',
@@ -1470,7 +1488,7 @@ class PetRegistrationController extends Controller
 
             # Check Params for renewal of Application
             $this->checkParamForRenewal($refApprovedDetails->id);
-            $newReq = new Request([
+            $newReq = new PetRegistrationReq([
                 "address"           => $refApprovedDetails->address,
                 "applyThrough"      => $refApprovedDetails->apply_through,
                 "breed"             => $refApprovedDetails->breed,
@@ -1504,8 +1522,8 @@ class PetRegistrationController extends Controller
             $applyDetails = $this->applyPetRegistration($newReq);   // here 
             $this->updateRenewalDetails($refApprovedDetails);
             DB::commit();
-            // $applyDetails->data;
-            return responseMsgs(true, "Application applied for renewal!", $applyDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            $returnDetails = $applyDetails->original['data'];
+            return responseMsgs(true, "Application applied for renewal!", $returnDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
@@ -1576,23 +1594,18 @@ class PetRegistrationController extends Controller
             switch ($key) {
                 case ("mobileNo"):                                                                                                                      // Static
                     $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-
                     break;
                 case ("applicationNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-
                     break;
                 case ("applicantName"):
                     $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-
                     break;
                 case ("holdingNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-
                     break;
                 case ("safNo"):
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-
                     break;
                 default:
                     throw new Exception("Data provided in filterBy is not valid!");
@@ -1603,6 +1616,51 @@ class PetRegistrationController extends Controller
                 $msg = "Data Not found!";
             }
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | search approved registration application list
+        | Serial No :
+        | Under Con 
+     */
+    public function searchApprovedRegistration(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
+                'parameter' => 'required',
+                'pages'     => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            # Variable assigning
+            $key        = $request->filterBy;
+            $paramenter = $request->parameter;
+            $pages      = $request->pages ?? 10;
+            $refstring  = Str::snake($key);
+            $msg        = "Pet approved registration details according to parameter!";
+
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetApproveApplicant       = new PetApproveApplicant();
+
+            switch ($key) {
+                case ("mobileNo"):                                                                                                                      // Static
+                    $registeredApplication = $mPetApproveApplicant->getRelatedRegistrationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    break;
+                case ("applicationNo"):
+                    $registeredApplication = $mPetApprovedRegistration->getApprovedRegistrationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }

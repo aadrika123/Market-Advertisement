@@ -91,6 +91,7 @@ return [
                 PDO::ATTR_PERSISTENT => true,
             ],
         ],
+        
         # For master
         'pgsql_masters' => [
             'driver' => 'pgsql',

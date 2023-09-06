@@ -29,8 +29,8 @@ class PetApprovedRegistration extends Model
      */
     public function deactivateOldRegistration($registrationId)
     {
-        PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
-            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
+        PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.id', $registrationId)
             ->update([
                 "status" => 2
@@ -48,10 +48,10 @@ class PetApprovedRegistration extends Model
             "pet_approve_details.id AS petId",
             "pet_approved_registrations.*",
             "pet_approve_applicants.*",
-            "pet_approved_registrations.*"
+            "pet_approve_details.*"
         )
-            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
-            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.id', $id)
             ->where('pet_approved_registrations.status', 1);
     }
