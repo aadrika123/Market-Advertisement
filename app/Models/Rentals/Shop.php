@@ -77,9 +77,9 @@ class Shop extends Model
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
-      ->orderByDesc('id')
       ->where('mar_shops.ulb_id', $ulbId)
-      ->where('mar_shops.status', '1');
+      ->where('mar_shops.status', '1')
+      ->orderByDesc('mar_shops.id');
     // ->get();
   }
 
