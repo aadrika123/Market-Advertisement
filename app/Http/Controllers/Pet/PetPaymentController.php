@@ -511,7 +511,7 @@ class PetPaymentController extends Controller
             return validationError($validated);
         try {
             $now            = Carbon::now();
-            $toward         = "pet Registration";
+            $toward         = "Dog Registration Fee";
             $mPetTran       = new PetTran();
             $mPetChequeDtl  = new PetChequeDtl();
             $confVerifyMode = $this->_offlineVerificationModes;
@@ -529,8 +529,11 @@ class PetPaymentController extends Controller
             # check the transaction related details in related table
             $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
 
+            if (isset($bankRelatedDetails->cheque_date)) {
+                $bankDate = Carbon::parse($bankRelatedDetails->cheque_date)->format('d-m-Y');
+            }
             $returnData = [
-                "todayDate"     => $now->format('Y-m-d'),
+                "todayDate"     => $now->format('d-m-Y'),
                 "applicationNo" => $applicationDetails->application_no,
                 "applicantName" => $applicationDetails->applicant_name,
                 "paidAmount"    => $transactionDetails->amount,
@@ -539,9 +542,10 @@ class PetPaymentController extends Controller
                 "bankName"      => $bankRelatedDetails->bank_name ?? "",
                 "branchName"    => $bankRelatedDetails->branch_name ?? "",
                 "chequeNo"      => $bankRelatedDetails->cheque_no ?? "",
-                "chequeDate"    => $bankRelatedDetails->cheque_date ?? "",
+                "chequeDate"    => $bankDate ?? "",
                 "ulb"           => $applicationDetails->ulb_name,
-                "paymentDate"   => $transactionDetails->tran_date
+                "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
+                "address"       => $applicationDetails->address,
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -565,7 +569,8 @@ class PetPaymentController extends Controller
             ->select(
                 'ulb_masters.ulb_name',
                 'pet_active_registrations.application_no',
-                'pet_active_applicants.applicant_name'
+                'pet_active_applicants.applicant_name',
+                'pet_active_registrations.address',
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
@@ -573,7 +578,8 @@ class PetPaymentController extends Controller
                 ->select(
                     'ulb_masters.ulb_name',
                     'pet_approved_registrations.application_no',
-                    'pet_approve_applicants.applicant_name'
+                    'pet_approve_applicants.applicant_name',
+                    'pet_approved_registrations.address',
                 )->first();
             if (!$refApplicationDetails) {
                 # Third level chain
@@ -581,7 +587,8 @@ class PetPaymentController extends Controller
                     ->select(
                         'ulb_masters.ulb_name',
                         'pet_renewal_applicants.application_no',
-                        'pet_renewal_registrations.applicant_name'
+                        'pet_renewal_registrations.applicant_name',
+                        'pet_renewal_applicants.address',
                     )->first();;
             }
         }
