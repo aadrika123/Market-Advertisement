@@ -221,6 +221,8 @@ class MarDharamshala extends Model
             'mar_dharamshalas.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
+            'ulb_masters.toll_free_no',
+            'ulb_masters.current_website as website',
             'ly.string_parameter as licenseYear',
             'wn.ward_name as wardNo',
             DB::raw("'Market' as module"),

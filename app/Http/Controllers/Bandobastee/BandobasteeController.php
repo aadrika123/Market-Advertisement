@@ -529,8 +529,17 @@ class BandobasteeController extends Controller
         try {
             // Variable initialization
             $mBdSettler = new BdSettler();
-            $list = $mBdSettler->listBanquetHallSettler($ulbId);
-            return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $listSettler = $mBdSettler->listBanquetHallSettler($ulbId);
+            $list = $listSettler->map(function ($settler) {
+                $totalAmt = $this->totalInstallment($settler->id);
+                $settler->paid_amount = $totalAmt['installment_amount'];
+                $settler->performance_security_amount = $totalAmt['performance_security_amount'];
+                $settler->due_amount = $settler->total_amount - ($totalAmt['installment_amount'] + $settler->emd_amount);
+                $settler->total_penalty = $totalAmt['total_penalty'];
+                $settler->rest_performance_security = ($totalAmt['performance_security_amount'] - $totalAmt['total_penalty']);
+                return $settler;
+            });
+            return responseMsgs(true, "Banquet Hall Settler List !!!", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
         }
