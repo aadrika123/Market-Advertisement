@@ -415,7 +415,7 @@ class PetPaymentController extends Controller
             # Handel the fake data or error data 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$applicationDetails) {
-                Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+                Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
                 throw new Exception("Application Not found!");
             }
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationId)
@@ -480,15 +480,15 @@ class PetPaymentController extends Controller
     public function CheckChargeDetails($chargeDetails, $epoch, $req, $RazorPayRequest)
     {
         if (!$chargeDetails) {
-            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
             throw new Exception("Demand Not found!");
         }
         if ($chargeDetails->amount != $req->amount) {
-            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
             throw new Exception("amount Not found!");
         }
         if ($req->amount != $RazorPayRequest->amount) {
-            Storage::disk('public/suspecious')->put($epoch . '.json', json_encode($req->all()));
+            Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
             throw new Exception("Amount Not Match from request!");
         }
     }
