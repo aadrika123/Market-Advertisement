@@ -752,6 +752,7 @@ class PetRegistrationController extends Controller
                         DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
                         "pet_active_registrations.*",
                         "pet_active_applicants.applicant_name",
+                        "wf_roles.role_name"
                     )
                     ->orderByDesc('pet_active_registrations.id')
                     ->get();
