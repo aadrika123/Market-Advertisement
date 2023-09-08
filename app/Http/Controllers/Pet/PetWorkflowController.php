@@ -75,6 +75,7 @@ class PetWorkflowController extends Controller
             $ulbId  = $user->ulb_id;
             $pages  = $request->page ?? 10;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $msg = "Inbox List Details!";
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
             $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
@@ -86,8 +87,11 @@ class PetWorkflowController extends Controller
                 ->where('pet_active_registrations.is_escalate', false)
                 ->where('pet_active_registrations.parked', false)
                 ->paginate($pages);
-            $filterWaterList = collect($waterList)->unique('id')->values();
-            return responseMsgs(true, "Inbox List Details!", remove_null($filterWaterList), '', '02', '', 'Post', '');
+
+            if (collect($waterList)->last() == 0 || !$waterList) {
+                $msg = "Data not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($waterList), '', '02', '', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
@@ -137,6 +141,7 @@ class PetWorkflowController extends Controller
             $ulbId                  = $user->ulb_id;
             $pages                  = $req->page ?? 10;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
+            $msg = "Outbox List!";
 
             $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
             $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
@@ -147,8 +152,11 @@ class PetWorkflowController extends Controller
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->orderByDesc('pet_active_registrations.id')
                 ->paginate($pages);
-            $filterWaterList = collect($waterList)->unique('id')->values();
-            return responseMsgs(true, "Outbox List", remove_null($filterWaterList), '', '01', '.ms', 'Post', '');
+
+            if (collect($waterList)->last() == 0 || !$waterList) {
+                $msg = "Data not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($waterList), '', '01', '.ms', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
@@ -390,6 +398,7 @@ class PetWorkflowController extends Controller
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
             $pages  = $request->page ?? 10;
+            $msg    = "Inbox List Details!";
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -400,8 +409,10 @@ class PetWorkflowController extends Controller
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', true)
                 ->paginate($pages);
-            $filterWaterList = collect($waterList)->unique('id')->values();
-            return responseMsgs(true, "Inbox List Details!", remove_null($filterWaterList), '', '02', '', 'Post', '');
+            if (collect($waterList)->last() == 0 || !$waterList) {
+                $msg = "Data not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($waterList), '', '02', '', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
