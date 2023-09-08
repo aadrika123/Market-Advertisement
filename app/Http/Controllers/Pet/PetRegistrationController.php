@@ -1574,7 +1574,7 @@ class PetRegistrationController extends Controller
             [
                 'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
                 'parameter' => 'required',
-                'pages'     => 'nullable',
+                'page'      => 'nullable',
             ]
         );
         if ($validated->fails())
@@ -1584,7 +1584,7 @@ class PetRegistrationController extends Controller
             # Variable assigning
             $key        = $request->filterBy;
             $paramenter = $request->parameter;
-            $pages      = $request->pages ?? 10;
+            $pages      = $request->page ?? 10;
             $refstring  = Str::snake($key);
             $msg        = "Pet active appliction details according to parameter!";
 
@@ -1594,26 +1594,26 @@ class PetRegistrationController extends Controller
             # Distrubtion of search category
             switch ($key) {
                 case ("mobileNo"):                                                                                                                      // Static
-                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 case ("applicationNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 case ("applicantName"):
-                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    $activeApplication = $mPetActiveApplicant->getRelatedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 case ("holdingNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 case ("safNo"):
-                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->limit($pages)->get();
+                    $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 default:
                     throw new Exception("Data provided in filterBy is not valid!");
             }
             # Check if data not exist
-            $checkVal = collect($activeApplication)->first();
-            if (!$checkVal) {
+            $checkVal = collect($activeApplication)->last();
+            if (!$checkVal || $checkVal == 0) {
                 $msg = "Data Not found!";
             }
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);

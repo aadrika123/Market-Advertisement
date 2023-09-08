@@ -10,13 +10,13 @@ class WorkflowMap extends Model
 {
     use HasFactory;
 
-
     /**
      * | 
      */
     public function getRoleDetails($request)
     {
-        return DB::table('wf_workflowrolemaps')
+        return DB::connection('pgsql_masters')
+            ->table('wf_workflowrolemaps')
             ->select(
                 'wf_workflowrolemaps.id',
                 'wf_workflowrolemaps.workflow_id',
