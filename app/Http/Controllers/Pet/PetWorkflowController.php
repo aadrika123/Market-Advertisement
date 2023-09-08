@@ -73,7 +73,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
-            $pages  = $request->pages ?? 10;
+            $pages  = $request->page ?? 10;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -135,7 +135,7 @@ class PetWorkflowController extends Controller
             $user                   = authUser($req);
             $userId                 = $user->id;
             $ulbId                  = $user->ulb_id;
-            $pages                  = $req->pages ?? 10;
+            $pages                  = $req->page ?? 10;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
 
             $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -389,7 +389,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
-            $pages  = $request->pages ?? 10; 
+            $pages  = $request->page ?? 10;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
