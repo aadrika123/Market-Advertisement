@@ -73,6 +73,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
+            $pages  = $request->pages ?? 10;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -84,7 +85,7 @@ class PetWorkflowController extends Controller
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', false)
                 ->where('pet_active_registrations.parked', false)
-                ->get();
+                ->paginate($pages);
             $filterWaterList = collect($waterList)->unique('id')->values();
             return responseMsgs(true, "Inbox List Details!", remove_null($filterWaterList), '', '02', '', 'Post', '');
         } catch (Exception $e) {
@@ -134,6 +135,7 @@ class PetWorkflowController extends Controller
             $user                   = authUser($req);
             $userId                 = $user->id;
             $ulbId                  = $user->ulb_id;
+            $pages                  = $req->pages ?? 10;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
 
             $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -144,7 +146,7 @@ class PetWorkflowController extends Controller
                 ->whereNotIn('pet_active_registrations.current_role_id', $roleId)
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->orderByDesc('pet_active_registrations.id')
-                ->get();
+                ->paginate($pages);
             $filterWaterList = collect($waterList)->unique('id')->values();
             return responseMsgs(true, "Outbox List", remove_null($filterWaterList), '', '01', '.ms', 'Post', '');
         } catch (Exception $e) {
@@ -387,6 +389,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
+            $pages  = $request->pages ?? 10; 
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 
             $occupiedWards = $this->getWardByUserId($userId)->pluck('ward_id');
@@ -396,7 +399,7 @@ class PetWorkflowController extends Controller
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', true)
-                ->get();
+                ->paginate($pages);
             $filterWaterList = collect($waterList)->unique('id')->values();
             return responseMsgs(true, "Inbox List Details!", remove_null($filterWaterList), '', '02', '', 'Post', '');
         } catch (Exception $e) {
