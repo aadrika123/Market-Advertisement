@@ -324,7 +324,8 @@ class PetRegistrationController extends Controller
                     'user_id'           => $userId ?? null,
                     'ulb_id'            => $ulbId,
                     'senderRoleId'      => null,
-                    'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
+                    'receiverRoleId'    => $initiatorRoleId,
+                    'auth'              => $req->auth
                 ]
             );
             $mWorkflowTrack->saveTrack($metaReqs);
