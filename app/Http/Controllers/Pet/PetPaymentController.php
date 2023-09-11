@@ -45,6 +45,10 @@ class PetPaymentController extends Controller
     private $_PaymentUrl;
     private $_apiKey;
     private $_refStatus;
+    protected $_DB_NAME;
+    protected $_DB;
+    protected $_DB_NAME2;
+    protected $_DB2;
 
     # Class constructer 
     public function __construct()
@@ -67,7 +71,59 @@ class PetPaymentController extends Controller
         $this->_PaymentUrl                  = Config::get('constants.95_PAYMENT_URL');
         $this->_apiKey                      = Config::get('pet.API_KEY_PAYMENT');
         $this->_refStatus                   = Config::get('pet.REF_STATUS');
+        # Database connectivity
+        $this->_DB_NAME     = "pgsql_property";
+        $this->_DB          = DB::connection($this->_DB_NAME);
+        $this->_DB_NAME2    = "pgsql_masters";
+        $this->_DB2         = DB::connection($this->_DB_NAME2);
     }
+
+
+    /**
+     * | Database transaction connection
+     */
+    public function begin()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::beginTransaction();
+        if ($db1 != $db2)
+            $this->_DB->beginTransaction();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->beginTransaction();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function rollback()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::rollBack();
+        if ($db1 != $db2)
+            $this->_DB->rollBack();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->rollBack();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function commit()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::commit();
+        if ($db1 != $db2)
+            $this->_DB->commit();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->commit();
+    }
+
+    #------------------------------------------------------------------------------------------------------------------------------------------------#
+
 
     /**
      * | Pay the registration charges in offline mode 
@@ -100,7 +156,7 @@ class PetPaymentController extends Controller
             $tranType           = $payRelatedDetails['applicationDetails']['application_type'];
             $tranTypeId         = $payRelatedDetails['chargeCategory'];
 
-            DB::beginTransaction();
+            $this->begin();
             # Generate transaction no 
             $idGeneration   = new PrefixIdGenerator($petParamId['TRANSACTION'], $ulbId);
             $petTranNo      = $idGeneration->generate();
@@ -135,13 +191,13 @@ class PetPaymentController extends Controller
                 $this->postOtherPaymentModes($req);
             }
             $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
-            DB::commit();
+            $this->commit();
             $returnData = [
                 "transactionNo" => $petTranNo
             ];
             return responseMsgs(true, "Paymet done!", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -343,7 +399,7 @@ class PetPaymentController extends Controller
                 'auth'          => $request->auth
             ];
 
-            DB::beginTransaction();
+            $this->begin();
             # Api Calling for OrderId
             $refResponse = Http::withHeaders([
                 "api-key" => "$confApiKey"
@@ -367,7 +423,7 @@ class PetPaymentController extends Controller
                 "ip"                => $request->ip()
             ]);
             $mPetRazorPayRequest->savePetRazorpayReq($applicationId, $refPaymentRequest, $jsonIncodedData);
-            DB::commit();
+            $this->commit();
             $returnData = [
                 'name'               => $refUser->user_name,
                 'mobile'             => $refUser->mobile,
@@ -378,7 +434,7 @@ class PetPaymentController extends Controller
             $returnData = collect($returnData)->merge($orderData->data);
             return responseMsgs(true, "Order Id generated successfully", $returnData);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
     }
@@ -424,7 +480,7 @@ class PetPaymentController extends Controller
                 ->first();
             $this->CheckChargeDetails($chargeDetails, $epoch, $req, $RazorPayRequest);
 
-            DB::beginTransaction();
+            $this->begin();
             # save razorpay webhook response
             $paymentResponseId = $mPetRazorPayResponse->savePaymentResponse($RazorPayRequest, $req);
             # save the razorpay request status as 1
@@ -464,10 +520,10 @@ class PetPaymentController extends Controller
                 "last_role_id"      => $petRoles['DA']
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, "Online Payment Success!", $req, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }

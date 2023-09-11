@@ -45,6 +45,10 @@ class PetWorkflowController extends Controller
     private $_offlineVerificationModes;
     private $_paymentMode;
     private $_offlineMode;
+    protected $_DB_NAME;
+    protected $_DB;
+    protected $_DB_NAME2;
+    protected $_DB2;
     # Class constructer 
     public function __construct()
     {
@@ -63,7 +67,59 @@ class PetWorkflowController extends Controller
         $this->_offlineVerificationModes = Config::get("pet.VERIFICATION_PAYMENT_MODES");
         $this->_paymentMode             = Config::get("pet.PAYMENT_MODE");
         $this->_offlineMode             = Config::get("pet.OFFLINE_PAYMENT_MODE");
+        # Database connectivity
+        $this->_DB_NAME     = "pgsql_property";
+        $this->_DB          = DB::connection($this->_DB_NAME);
+        $this->_DB_NAME2    = "pgsql_masters";
+        $this->_DB2         = DB::connection($this->_DB_NAME2);
     }
+
+
+    /**
+     * | Database transaction connection
+     */
+    public function begin()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::beginTransaction();
+        if ($db1 != $db2)
+            $this->_DB->beginTransaction();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->beginTransaction();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function rollback()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::rollBack();
+        if ($db1 != $db2)
+            $this->_DB->rollBack();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->rollBack();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function commit()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::commit();
+        if ($db1 != $db2)
+            $this->_DB->commit();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->commit();
+    }
+
+    #-----------------------------------------------------------------------------------------------------------------------------------------------#
+
 
 
     /**
@@ -204,7 +260,7 @@ class PetWorkflowController extends Controller
             ]);
             $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
 
-            DB::beginTransaction();
+            $this->begin();
             if ($req->action == 'forward') {
                 $this->checkPostCondition($req->senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
                 $metaReqs['verificationStatus']     = 1;
@@ -243,10 +299,10 @@ class PetWorkflowController extends Controller
             //     'forward_date' => $current->format('Y-m-d'),
             //     'forward_time' => $current->format('H:i:s')
             // ]);
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -326,7 +382,7 @@ class PetWorkflowController extends Controller
             if ($ifFullDocVerified == 1)
                 throw new Exception("Document Fully Verified");
 
-            DB::beginTransaction();
+            $this->begin();
             if ($req->docStatus == "Verified") {
                 $status = 1;
             }
@@ -351,10 +407,10 @@ class PetWorkflowController extends Controller
                 $status = true;
                 $mPetActiveRegistration->updateDocStatus($applicationId, $status);
             }
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -564,7 +620,7 @@ class PetWorkflowController extends Controller
             # Check params 
             $this->checkParamForApproval($readRoleDtls, $application);
 
-            DB::beginTransaction();
+            $this->begin();
             # Approval of grievance application 
             if ($request->status == 1) {                                                                // Static
                 # If application is approved for the first time or renewal
@@ -580,10 +636,10 @@ class PetWorkflowController extends Controller
                 $this->finalRejectionOfAppication($request, $application);
                 $msg = "Application Successfully Rejected !!";
             }
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, $msg, [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }

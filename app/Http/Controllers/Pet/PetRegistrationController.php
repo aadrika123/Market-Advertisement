@@ -75,6 +75,10 @@ class PetRegistrationController extends Controller
     private $_applyMode;
     private $_tranType;
     private $_tableName;
+    protected $_DB_NAME;
+    protected $_DB;
+    protected $_DB_NAME2;
+    protected $_DB2;
     # Class constructer 
     public function __construct()
     {
@@ -93,7 +97,59 @@ class PetRegistrationController extends Controller
         $this->_applyMode           = Config::get("pet.APPLY_MODE");
         $this->_tranType            = Config::get("pet.TRANSACTION_TYPE");
         $this->_tableName           = Config::get("pet.TABLE_NAME");
+        # Database connectivity
+        $this->_DB_NAME     = "pgsql_property";
+        $this->_DB          = DB::connection($this->_DB_NAME);
+        $this->_DB_NAME2    = "pgsql_masters";
+        $this->_DB2         = DB::connection($this->_DB_NAME2);
     }
+
+
+    /**
+     * | Database transaction connection
+     */
+    public function begin()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::beginTransaction();
+        if ($db1 != $db2)
+            $this->_DB->beginTransaction();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->beginTransaction();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function rollback()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::rollBack();
+        if ($db1 != $db2)
+            $this->_DB->rollBack();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->rollBack();
+    }
+    /**
+     * | Database transaction connection
+     */
+    public function commit()
+    {
+        $db1 = DB::connection()->getDatabaseName();
+        $db2 = $this->_DB->getDatabaseName();
+        $db3 = $this->_DB2->getDatabaseName();
+        DB::commit();
+        if ($db1 != $db2)
+            $this->_DB->commit();
+        if ($db1 != $db3 && $db2 != $db3)
+            $this->_DB2->commit();
+    }
+
+    #-----------------------------------------------------------------------------------------------------------------------------------#
+
 
 
     /**
@@ -204,7 +260,7 @@ class PetRegistrationController extends Controller
             $refValidatedDetails = $this->checkParamForRegister($req);
 
             # Data Base interaction 
-            DB::beginTransaction();
+            $this->begin();
             $idGeneration = new PrefixIdGenerator($petParamId['REGISTRATION'], $ulbId);                                     // Generate the application no 
             $petApplicationNo = $idGeneration->generate();
             $refData = [
@@ -273,7 +329,7 @@ class PetRegistrationController extends Controller
             );
             $mWorkflowTrack->saveTrack($metaReqs);
 
-            DB::commit();
+            $this->commit();
             # Data structure for return
             $returnData = [
                 "id" => $applicationDetails['id'],
@@ -281,7 +337,7 @@ class PetRegistrationController extends Controller
             ];
             return responseMsgs(true, "Pet Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -337,7 +393,7 @@ class PetRegistrationController extends Controller
                 break;
 
             case ($req->applyThrough == $confApplyThrough['Saf']):
-                $refSafDetails = $mPropActiveSaf->getSafDtlBySaf()->where('s.saf_no', $req->propertyNo)
+                $refSafDetails = $mPropActiveSaf->getSafDtlBySaf()->where('prop_active_safs.saf_no', $req->propertyNo)
                     ->first();
                 if (is_null($refSafDetails)) {
                     throw new Exception("property according to $req->propertyNo not found!");
@@ -605,7 +661,7 @@ class PetRegistrationController extends Controller
                 $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
             }
 
-            DB::beginTransaction();
+            $this->begin();
             $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
             $metaReqs = new Request($metaReqs);
             if (collect($ifDocExist)->isEmpty()) {
@@ -624,10 +680,10 @@ class PetRegistrationController extends Controller
             if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
                 $mPetActiveRegistration->updateUploadStatus($req->applicationId, true);
             }
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
@@ -1129,14 +1185,14 @@ class PetRegistrationController extends Controller
             $applicantDetals = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
             $this->checkParamsForDelete($applicantDetals, $user);
 
-            DB::beginTransaction();
+            $this->begin();
             $mPetActiveRegistration->deleteApplication($applicationId);
             $mWfActiveDocument->deleteDocuments($applicationId, $applicantDetals->workflow_id, $confPetModuleId);
             $mPetRegistrationCharge->deleteCharges($applicationId);
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, "Application Successfully Deleted", "", "", "1.0", "", "POST", $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -1388,7 +1444,7 @@ class PetRegistrationController extends Controller
             $refRelatedDetails      = $this->checkParamForPetUdate($req);
             $applicationDetails     = $refRelatedDetails['applicationDetails'];
 
-            DB::beginTransaction();
+            $this->begin();
             # operate with the data from above calling function 
             $petDetails     = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
             $oldPetDetails  = json_encode($petDetails);
@@ -1401,10 +1457,10 @@ class PetRegistrationController extends Controller
                 "occurrence_type_id" => $req->petFrom ?? $applicationDetails->occurrence_type_id
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $updateReq);
-            DB::commit();
+            $this->commit();
             return responseMsgs(true, "Pet Details Updated!", [], "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
@@ -1529,14 +1585,14 @@ class PetRegistrationController extends Controller
                 "auth"              => $request->auth
             ]);
 
-            DB::beginTransaction();
+            $this->begin();
             $applyDetails = $this->applyPetRegistration($newReq);   // here 
             $this->updateRenewalDetails($refApprovedDetails);
-            DB::commit();
+            $this->commit();
             $returnDetails = $applyDetails->original['data'];
             return responseMsgs(true, "Application applied for renewal!", $returnDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
