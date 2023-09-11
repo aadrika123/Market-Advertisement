@@ -144,7 +144,7 @@ class PetWorkflowController extends Controller
 
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereIn('pet_active_registrations.current_role_id', $roleId)
-                ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+                // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', false)
                 ->where('pet_active_registrations.parked', false)
                 ->paginate($pages);
@@ -210,7 +210,7 @@ class PetWorkflowController extends Controller
 
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereNotIn('pet_active_registrations.current_role_id', $roleId)
-                ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+                // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->orderByDesc('pet_active_registrations.id')
                 ->paginate($pages);
 
@@ -467,7 +467,7 @@ class PetWorkflowController extends Controller
             $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
-                ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+                // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 ->where('pet_active_registrations.is_escalate', true)
                 ->paginate($pages);
             if (collect($waterList)->last() == 0 || !$waterList) {
