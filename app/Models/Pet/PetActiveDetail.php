@@ -62,4 +62,14 @@ class PetActiveDetail extends Model
                 "pet_type"                  => $req->petType            ?? $petDetails->pet_type
             ]);
     }
+
+    /**
+     * | Update the Status of Pet details 
+     */
+    public function updatePetStatus($id, $refDetails)
+    {
+        PetActiveDetail::where('id', $id)
+            ->where('status', 1)
+            ->update($refDetails);
+    }
 }

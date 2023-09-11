@@ -133,6 +133,7 @@ class PetActiveRegistration extends Model
 
     /**
      * | Delete the application before the payment 
+        | CAUTION
      */
     public function deleteApplication($applicationId)
     {
@@ -203,5 +204,14 @@ class PetActiveRegistration extends Model
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.id', $id)
             ->where('pet_active_registrations.status', 1);
+    }
+
+    /**
+     * | Get applcation detials by id 
+     */
+    public function getApplicationDetailsById($id)
+    {
+        return PetActiveRegistration::where('id', $id)
+            ->where('status', 1);
     }
 }

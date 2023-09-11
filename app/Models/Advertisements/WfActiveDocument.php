@@ -17,7 +17,7 @@ class WfActiveDocument extends Model
     {
         $docUrl  = Config::get("marriage.DOC_URL");
         return WfActiveDocument::select(
-            DB::raw("concat('$docUrl/',relative_path,'/',document) as ref_doc_path"),
+            DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
             '*'
         )
             ->where('active_id', $activeId)

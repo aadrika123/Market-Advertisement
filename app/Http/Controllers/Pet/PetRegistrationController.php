@@ -168,9 +168,10 @@ class PetRegistrationController extends Controller
             $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mWfWorkflow                = new WfWorkflow();
             $mMPetFee                   = new MPetFee();
+            $mWorkflowTrack             = new WorkflowTrack();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
             $user                       = authUser($req);
-            $ulbId                      = $req->ulbId ?? 2;
+            $ulbId                      = $req->ulbId ?? 2;                                                 // Static / remove
             $workflowMasterId           = $this->_workflowMasterId;
             $petParamId                 = $this->_petParamId;
             $feeId                      = $this->_fee;
@@ -186,16 +187,25 @@ class PetRegistrationController extends Controller
             if (!$registrationCharges) {
                 throw new Exception("Currently charges are not available!");
             }
+            # Save data in track
+            if ($user->user_type == $this->_userType['1']) {
+                $citzenId = $user->id;
+            } else {
+                $userId = $user->id;
+            }
+
+            # Get the Initiator and Finisher details 
             $refInitiatorRoleId = $this->getInitiatorId($ulbWorkflowId->id);
             $refFinisherRoleId  = $this->getFinisherId($ulbWorkflowId->id);
             $finisherRoleId     = collect(DB::select($refFinisherRoleId))->first()->role_id;
             $initiatorRoleId    = collect(DB::select($refInitiatorRoleId))->first()->role_id;
 
+            # check the proprty detials 
             $refValidatedDetails = $this->checkParamForRegister($req);
 
             # Data Base interaction 
             DB::beginTransaction();
-            $idGeneration = new PrefixIdGenerator($petParamId['REGISTRATION'], $ulbId);
+            $idGeneration = new PrefixIdGenerator($petParamId['REGISTRATION'], $ulbId);                                     // Generate the application no 
             $petApplicationNo = $idGeneration->generate();
             $refData = [
                 "finisherRoleId"    => $finisherRoleId,
@@ -229,7 +239,7 @@ class PetRegistrationController extends Controller
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
-                # caution
+                # Caution
                 $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
             }
             # Save active details 
@@ -247,24 +257,24 @@ class PetRegistrationController extends Controller
             ]);
             $mPetRegistrationCharge->saveRegisterCharges($metaRequest);
 
-            # Save data in track
-            //  $metaReqs = new Request(
-            //     [
-            //         'citizenId'         => null,
-            //         'moduleId'          => $this->_moduleId,
-            //         'workflowId'        => $ulbWorkflowId->id,
-            //         'refTableDotId'     => 'grievance_active_applicantions.id',                             // Static                              // Static
-            //         'refTableIdValue'   => $applicationDetails['id'],
-            //         'user_id'           => $user->id ?? null,
-            //         'ulb_id'            => $ulbId,
-            //         'senderRoleId'      => null,
-            //         'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
-            //     ]
-            // );
-            // $mWorkflowTrack->saveTrack($metaReqs);
+            # Save the data in workflow track
+            $metaReqs = new Request(
+                [
+                    'citizenId'         => $citzenId ?? null,
+                    'moduleId'          => $this->_petModuleId,
+                    'workflowId'        => $ulbWorkflowId->id,
+                    'refTableDotId'     => $this->_tableName['2'] . '.id',                             // Static                              // Static
+                    'refTableIdValue'   => $applicationDetails['id'],
+                    'user_id'           => $userId ?? null,
+                    'ulb_id'            => $ulbId,
+                    'senderRoleId'      => null,
+                    'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
+                ]
+            );
+            $mWorkflowTrack->saveTrack($metaReqs);
 
             DB::commit();
-
+            # Data structure for return
             $returnData = [
                 "id" => $applicationDetails['id'],
                 "applicationNo" => $applicationDetails['applicationNo'],
@@ -1488,7 +1498,7 @@ class PetRegistrationController extends Controller
             }
 
             # Check Params for renewal of Application
-            $this->checkParamForRenewal($refApprovedDetails->id);
+            $this->checkParamForRenewal($refApprovedDetails->id, $refApprovedDetails);
             $newReq = new PetRegistrationReq([
                 "address"           => $refApprovedDetails->address,
                 "applyThrough"      => $refApprovedDetails->apply_through,
@@ -1535,9 +1545,11 @@ class PetRegistrationController extends Controller
      * | check param for renewal of pet 
         | Serial No :
         | Under con
+        | uncomment the restriction for yearly licence check
      */
-    public function checkParamForRenewal($renewalId)
+    public function checkParamForRenewal($renewalId, $refApprovedDetails)
     {
+        $now = Carbon::now();
         $mPetActiveRegistration = new PetActiveRegistration();
         $isRenewalInProcess = $mPetActiveRegistration->getApplicationByRegId($renewalId)
             ->where('renewal', 1)
@@ -1545,6 +1557,14 @@ class PetRegistrationController extends Controller
         if ($isRenewalInProcess) {
             throw new Exception("Renewal of the Application is in process!");
         }
+
+        # Check the lecence year difference 
+        // $approveDate = Carbon::parse($refApprovedDetails->approve_date);
+        // $approveDate = $approveDate->copy()->addDays(7);
+        // $yearDifferernce = $approveDate->diffInYears($now);
+        // if ($yearDifferernce <= 0) {
+        //     throw new Exception("Application has an active licence please apply Larter!");
+        // }
     }
 
     /**

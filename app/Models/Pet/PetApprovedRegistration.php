@@ -76,4 +76,31 @@ class PetApprovedRegistration extends Model
             ->where('pet_approved_registrations.application_id', $id)
             ->where('pet_approved_registrations.status', 1);
     }
+
+    /**
+     * | Get the approve application details using 
+     */
+    public function getApproveAppByAppId($id)
+    {
+        return PetApprovedRegistration::where('pet_approved_registrations.application_id', $id)
+            ->orderByDesc('id');
+    }
+
+    /**
+     * | Get the approve application details using 
+     */
+    public function getApproveAppById($id)
+    {
+        return PetApprovedRegistration::where('id', $id)
+            ->orderByDesc('id');
+    }
+
+    /**
+     * | Update the Approve application Detials
+     */
+    public function updateApproveAppStatus($id, $refDetails)
+    {
+        PetApprovedRegistration::where('id', $id)
+            ->update($refDetails);
+    }
 }

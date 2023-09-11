@@ -4,8 +4,13 @@ namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisements\WfActiveDocument;
+use App\Models\Pet\PetActiveApplicant;
+use App\Models\Pet\PetActiveDetail;
 use App\Models\Pet\PetActiveRegistration;
+use App\Models\Pet\PetApproveApplicant;
+use App\Models\Pet\PetApproveDetail;
 use App\Models\Pet\PetApprovedRegistration;
+use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflow;
@@ -419,6 +424,40 @@ class PetWorkflowController extends Controller
     }
 
 
+    /**
+     * | Post escalte Details of Pet Application
+        | Serial No :
+        | Under Con
+     */
+    public function postEscalate(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "escalateStatus"    => "required|int",
+                "applicationId"     => "required|int",
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $userId = authUser($request)->id;
+            $applicationId = $request->applicationId;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $applicationsData = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+            if (!$applicationsData) {
+                throw new Exception("Application details not found!");
+            }
+            $applicationsData->is_escalate = $request->escalateStatus;
+            $applicationsData->escalate_by = $userId;
+            $applicationsData->save();
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Pet application is Escalated' : "Pet application is removed from Escalated", [], '', "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
 
     /**
      * | default final applroval 
@@ -490,101 +529,322 @@ class PetWorkflowController extends Controller
         | Serial No : 
         | Under Con
      */
-    // public function finalApprovalRejection(Request $request)
-    // {
-    //     $validated = Validator::make(
-    //         $request->all(),
-    //         [
-    //             'applicationId' => 'required|digits_between:1,9223372036854775807',
-    //             'status' => 'required'
-    //         ]
-    //     );
-    //     if ($validated->fails())
-    //         return validationError($validated);
+    public function finalApprovalRejection(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|digits_between:1,9223372036854775807',
+                'status' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-    //     try {
-    //         $userId                 = authUser($request)->id;
-    //         $applicationId          = $request->applicationId;
-    //         $mPetActiveRegistration = new PetActiveRegistration();
-    //         $mWfRoleUsermap         = new WfRoleusermap();
-    //         $currentDateTime        = Carbon::now();
+        try {
+            $userId                 = authUser($request)->id;
+            $applicationId          = $request->applicationId;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mWfRoleUsermap         = new WfRoleusermap();
 
-    //         $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
-    //         if ($application) {
-    //             throw new Exception("application Details not found!");
-    //         }
-    //         $workflowId = $application->workflow_id;
-    //         $getRoleReq = new Request([                                                 // make request to get role id of the user
-    //             'userId'        => $userId,
-    //             'workflowId'    => $workflowId
-    //         ]);
-    //         $readRoleDtls   = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
-    //         $roleId         = $readRoleDtls->wf_role_id;
+            # Get Application details 
+            $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+            if ($application) {
+                throw new Exception("application Details not found!");
+            }
 
-    //         # Validating the process
-    //         if ($roleId != $application->finisher_role_id) {
-    //             throw new Exception("You are not the Finisher!");
-    //         }
-    //         if ($application->doc_upload_status == false || $application->payment_status != 1) {
-    //             throw new Exception("Document Not Fully Uploaded or Payment in not Done!");
-    //         }                                                                      // DA Condition
-    //         if ($application->doc_verify_status == false) {
-    //             throw new Exception("Document Not Fully Verified!");
-    //         }
+            # Check the workflow role 
+            $workflowId = $application->workflow_id;
+            $getRoleReq = new Request([                                                 // make request to get role id of the user
+                'userId'        => $userId,
+                'workflowId'    => $workflowId
+            ]);
+            $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
 
-    //         DB::beginTransaction();
-    //         # Approval of grievance application 
-    //         if ($request->status == 1) {
-    //             # Consumer no generation
-    //             $grievanceApproveNo = "GRE-APR-" . Str::random(15);
-    //             # If application is approved for the first time or renewal
-    //             if ($application->renewal == 0) {
-    //                 $ApprovedId = $this->finalApproval($request, $grievanceApproveNo, $application);
-    //             } else {
-    //                 $ApprovedId = $this->finalApprovalRenewal($request, $grievanceApproveNo, $application);
-    //             }
-    //             $msg = "Application Successfully Approved !!";
-    //         }
-    //         # Rejection of grievance application
-    //         if ($request->status == 0) {
-    //             // $this->finalRejectionOfAppication($request, $grievanceDetials);
-    //             $msg = "Application Successfully Rejected !!";
-    //         }
-    //         DB::commit();
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-    //     }
-    // }
+            # Check params 
+            $this->checkParamForApproval($readRoleDtls, $application);
+
+            DB::beginTransaction();
+            # Approval of grievance application 
+            if ($request->status == 1) {                                                                // Static
+                # If application is approved for the first time or renewal
+                if ($application->renewal == 0) {                                                       // Static
+                    $this->finalApproval($request, $application);
+                } else {
+                    $this->finalApprovalRenewal($request, $application);
+                }
+                $msg = "Application Successfully Approved !!";
+            }
+            # Rejection of grievance application
+            if ($request->status == 0) {                                                                // Static
+                $this->finalRejectionOfAppication($request, $application);
+                $msg = "Application Successfully Rejected !!";
+            }
+            DB::commit();
+            return responseMsgs(true, $msg, [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Check param For final approval and rejection 
+        | Serial No :
+        | Working
+     */
+    public function checkParamForApproval($readRoleDtls, $application)
+    {
+        if (!$readRoleDtls) {
+            throw new Exception("Role details not found!");
+        }
+        if ($readRoleDtls->wf_role_id != $application->finisher_role_id) {
+            throw new Exception("You are not the Finisher!");
+        }
+        if ($application->doc_upload_status == false || $application->payment_status != 1) {
+            throw new Exception("Document Not Fully Uploaded or Payment in not Done!");
+        }
+        if ($application->doc_verify_status == false) {
+            throw new Exception("Document Not Fully Verified!");
+        }
+    }
+
 
     /**
      * | Final approval process for pet application 
+        | Serial No :
+        | Under Con
+        | Caution performing Deletion of active application
      */
-    // public function finalApproval($request, $registrationNo, $applicationDetails)
+    public function finalApproval($request, $applicationDetails)
+    {
+        $now                        = Carbon::now();
+        $status                     = 0;
+        $applicationId              = $request->applicationId;
+        $waterTrack                 = new WorkflowTrack();
+        $mPetActiveRegistration     = new PetActiveRegistration();
+        $mPetApprovedRegistration   = new PetApprovedRegistration();
+        $mPetActiveApplicant        = new PetActiveApplicant();
+        $mPetActiveDetail           = new PetActiveDetail();
+        $lastLicenceDate            = $now->addYear()->subDay();
+
+        # Data formating for save the consumer details 
+        $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id);
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id);
+        $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
+            ->whereNot('status', 0)
+            ->first();
+        if ($someDataExist) {
+            throw new Exception("Approve application details exist in active table ERROR!");
+        }
+
+        # Saving the data in the approved application table
+        $approvedPetRegistration = $refApplicationDetial->replicate();
+        $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
+        $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
+        $approvedPetRegistration->approve_date      = $now;
+        $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+        $approvedPetRegistration->save();
+
+        # Save the pet owner details 
+        $approvedPetApplicant = $refOwnerDetails->replicate();
+        $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
+        $approvedPetApplicant->created_at = $now;
+        $approvedPetApplicant->save();
+
+        # Save the pet detials 
+        $approvedPetDetails = $refPetDetails->replicate();
+        $approvedPetDetails->setTable('pet_approve_details');                                       // Static
+        $approvedPetDetails->created_at = $now;
+        $approvedPetDetails->save();
+
+        # dend record in the track table 
+        $metaReqs = [
+            'moduleId'          => $this->_petModuleId,
+            'workflowId'        => $applicationDetails->workflow_id,
+            'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
+            'refTableIdValue'   => $applicationDetails->ref_application_id,
+            'user_id'           => authUser($request)->id,
+        ];
+        $request->request->add($metaReqs);
+        $waterTrack->saveTrack($request);
+
+        # Delete the details form the active table
+        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $status);
+        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $status);
+        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $status);
+        return $approvedPetRegistration;
+    }
+
+    /**
+     * | Final Approval of a renewal application 
+        | Serial No :
+        | Under Con
+     */
+    public function finalApprovalRenewal($request, $applicationDetails)
+    {
+        $now                        = Carbon::now();
+        $status                     = 0;                                        // Static
+        $applicationId              = $request->applicationId;
+        $waterTrack                 = new WorkflowTrack();
+        $mPetActiveRegistration     = new PetActiveRegistration();
+        $mPetActiveApplicant        = new PetActiveApplicant();
+        $mPetActiveDetail           = new PetActiveDetail();
+        $mPetApprovedRegistration   = new PetApprovedRegistration();
+        $mPetApproveApplicant       = new PetApproveApplicant();
+        $mPetApproveDetail          = new PetApproveDetail();
+        $lastLicenceDate            = $now->addYear()->subDay();
+
+        # Data formating for save the consumer details 
+        $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id);
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id);
+
+        # Check data existence
+        $approveDataExist = $mPetApprovedRegistration->getApproveAppById($applicationDetails->registration_id)
+            ->where('status', 2)                                                // Static
+            ->first();
+        if (!$approveDataExist) {
+            throw new Exception("renewal application details dont exist, table ERROR!");
+        }
+
+        # get approve application detials 
+        $approveApplicantDetail = $mPetApproveApplicant->getApproveApplicant($approveDataExist->application_id)->first();
+        $approvePetDetail = $mPetApproveDetail->getPetDetailsById($approveDataExist->application_id)->first();
+
+        # Saving the data in the approved application table
+        $approvedPetRegistration = $refApplicationDetial->replicate();
+        $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
+        $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
+        $approvedPetRegistration->approve_date      = $now;
+        $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+        $approvedPetRegistration->save();
+
+        # Save the pet owner details 
+        $approvedPetApplicant = $refOwnerDetails->replicate();
+        $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
+        $approvedPetApplicant->created_at = $now;
+        $approvedPetApplicant->save();
+
+        # Save the pet detials 
+        $approvedPetDetails = $refPetDetails->replicate();
+        $approvedPetDetails->setTable('pet_approve_details');                                       // Static
+        $approvedPetDetails->created_at = $now;
+        $approvedPetDetails->save();
+
+        # Delete the details form the active table # updating the status
+        $activeData = [
+            "status" => $status
+        ];
+        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $activeData);
+        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $activeData);
+        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $activeData);
+
+        # Save approved renewal data in renewal table
+        $renewalPetRegistration = $approveDataExist->replicate();
+        $renewalPetRegistration->setTable('pet_renewal_registrations');                             // Static  
+        $renewalPetRegistration->created_at = $now;
+        $renewalPetRegistration->save();
+
+        # Save the approved applicant data in renewal table
+        $renewalApplicantReg = $approveApplicantDetail->replicate();
+        $renewalApplicantReg->setTable('pet_renewal_applicants');                                   // Static
+        $renewalApplicantReg->created_at = $now;
+        $renewalApplicantReg->save();
+
+        # Save the approved pet data in renewal details 
+        $renewalPetDetails = $approvePetDetail->replicate();
+        $renewalPetDetails->setTable('pet_renewal_details');                                        // Static
+        $renewalPetDetails->created_at = $now;
+        $renewalPetDetails->save();
+
+        # Delete the details form the active table # Updating the status
+        $approveData = [
+            "status" => $status
+        ];
+        $mPetApprovedRegistration->updateApproveAppStatus($applicationDetails->ref_application_id, $approveData);
+        $mPetApproveApplicant->updateAproveApplicantDetials($refOwnerDetails->id, $approveData);
+        $mPetApproveDetail->updateApprovePetStatus($refPetDetails->id, $approveData);
+
+        # Send record in the track table 
+        $metaReqs = [
+            'moduleId'          => $this->_petModuleId,
+            'workflowId'        => $applicationDetails->workflow_id,
+            'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
+            'refTableIdValue'   => $applicationDetails->ref_application_id,
+            'user_id'           => authUser($request)->id,
+        ];
+        $request->request->add($metaReqs);
+        $waterTrack->saveTrack($request);
+    }
+
+
+    /**
+     * | Fianl rejection of the application 
+        | Serial No :
+        | Under Con
+        | Create the 
+     */
+    // public function finalRejectionOfAppication($request, $applicationDetails)
     // {
-    //     $applicationId                  = $request->applicationId;
-    //     $waterTrack                     = new WorkflowTrack();
-    //     $mPetActiveRegistration         = new PetActiveRegistration();
-    //     $mPetApprovedRegistration       = new PetApprovedRegistration();
+    //     $now                        = Carbon::now();
+    //     $status                     = 0;
+    //     $applicationId              = $request->applicationId;
+    //     $waterTrack                 = new WorkflowTrack();
+    //     $mPetActiveRegistration     = new PetActiveRegistration();
+    //     $mPetRejectedRegistration   = new PetRejectedRegistration();
+    //     $mPetRejectedApplicant      = new PetRejectedApplicant();
+    //     $mPetRejectedDetail         = new PetRejectedDetail();
+    //     $lastLicenceDate            = $now->addYear()->subDay();
 
     //     # Data formating for save the consumer details 
-    //     if($applicationDetails->renewal == 1)
-    //     {
-    //         throw new Exception("");
+    //     $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+    //     $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id);
+    //     $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id);
+    //     $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
+    //         ->whereNot('status', 0)
+    //         ->first();
+    //     if ($someDataExist) {
+    //         throw new Exception("Approve application details exist in active table ERROR!");
     //     }
+
+    //     # Saving the data in the approved application table
+    //     $approvedPetRegistration = $refApplicationDetial->replicate();
+    //     $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
+    //     $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
+    //     $approvedPetRegistration->approve_date      = $now;
+    //     $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+    //     $approvedPetRegistration->save();
+
+    //     # Save the pet owner details 
+    //     $approvedPetApplicant = $refOwnerDetails->replicate();
+    //     $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
+    //     $approvedPetApplicant->created_at = $now;
+    //     $approvedPetApplicant->save();
+
+    //     # Save the pet detials 
+    //     $approvedPetDetails = $refPetDetails->replicate();
+    //     $approvedPetDetails->setTable('pet_approve_details');                                       // Static
+    //     $approvedPetDetails->created_at = $now;
+    //     $approvedPetDetails->save();
 
     //     # dend record in the track table 
     //     $metaReqs = [
-    //         'moduleId'          => $this->_moduleId,
-    //         'workflowId'        => $activeGrievanceDetials->workflow_id,
-    //         'refTableDotId'     => 'grievance_active_applicantions.id',                     // Static
-    //         'refTableIdValue'   => $activeGrievanceDetials->id,
+    //         'moduleId'          => $this->_petModuleId,
+    //         'workflowId'        => $applicationDetails->workflow_id,
+    //         'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
+    //         'refTableIdValue'   => $applicationDetails->ref_application_id,
     //         'user_id'           => authUser($request)->id,
     //     ];
     //     $request->request->add($metaReqs);
     //     $waterTrack->saveTrack($request);
 
-    //     # final delete
-    //     return $grievanceId;
+    //     # Delete the details form the active table
+    //     $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $status);
+    //     $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $status);
+    //     $mPetActiveDetail->updatePetStatus($refPetDetails->id, $status);
+    //     return $approvedPetRegistration;
     // }
 }

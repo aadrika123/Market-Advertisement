@@ -59,4 +59,15 @@ class PetActiveApplicant extends Model
             ->where('pet_active_registrations.ulb_id', authUser($req)->ulb_id)
             ->orderByDesc('pet_active_registrations.id');
     }
+
+    /**
+     * | Deletet the active applicant Detials 
+        | CAUTION
+     */
+    public function updateApplicantDetials($id, $refReq)
+    {
+        PetActiveApplicant::where('id', $id)
+            ->where('status', 1)
+            ->update($refReq);
+    }
 }

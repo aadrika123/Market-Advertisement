@@ -77,11 +77,11 @@ Route::group(['middleware' => ['json.response']], function () {
 
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
-        Route::post('post-next-level', 'postNextLevel');
-        Route::post('special-inbox', 'waterSpecialInbox');                                              // Workflow
-        // Route::post('escalate', 'postEscalate');                                                        // Workflow                     
-        // Route::post('btc-inbox', 'btcInbox');                                                           // Workflow
-        Route::post('doc-verify-reject', 'docVerifyRejects');                                           // Workflow
+        Route::post('post-next-level', 'postNextLevel');                                                        // Workflow
+        Route::post('special-inbox', 'waterSpecialInbox');                                                      // Workflow
+        Route::post('escalate', 'postEscalate');                                                                // Workflow                     
+        // Route::post('btc-inbox', 'btcInbox');                                                                // Workflow
+        Route::post('doc-verify-reject', 'docVerifyRejects');                                                   // Workflow
         Route::post('final-verify-reject', 'finalVerificationRejection');
     });
 });
