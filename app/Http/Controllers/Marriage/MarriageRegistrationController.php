@@ -62,7 +62,7 @@ class MarriageRegistrationController extends Controller
     }
 
     /**
-     * | Apply for marriage registration
+     * | Apply for marriage registration 
      */
     public function apply(Request $req)
     {

@@ -292,9 +292,9 @@ class WfActiveDocument extends Model
                 'd.remarks',
                 'd.verify_status',
                 'd.doc_code',
-                'o.owner_name'
+                // 'o.owner_name'
             )
-            ->leftJoin('prop_active_safs_owners as o', 'o.id', '=', 'd.owner_dtl_id')
+            // ->leftJoin('prop_active_safs_owners as o', 'o.id', '=', 'd.owner_dtl_id')
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
             ->where('d.module_id', $moduleId)
