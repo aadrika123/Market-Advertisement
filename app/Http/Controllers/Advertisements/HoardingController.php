@@ -157,9 +157,9 @@ class HoardingController extends Controller
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
+            return $req;
             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             $req->request->add($WfMasterId);
-            return $req;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
             $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
