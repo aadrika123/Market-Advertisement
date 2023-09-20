@@ -136,7 +136,7 @@ class HoardingController extends Controller
         
         try {
             $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
-            return $req->auth['email'];
+            return $req->auth;
             if ($checkPaymentStatus == 0)
                 throw new Exception("Agency Registration Payment Not Complete !!!");
 
