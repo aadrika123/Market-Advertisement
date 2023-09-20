@@ -108,7 +108,7 @@ class HoardingController extends Controller
             $mAdvTypologyMstr = new AdvTypologyMstr();
             $typologyList = $mAdvTypologyMstr->listTypology1($req->ulbId);
             $typologyList = $typologyList->groupBy('type');
-            $fData=array();
+            $fData = array();
             foreach ($typologyList as $key => $data) {
                 $type = [
                     'Type' => "Type " . $key,
@@ -150,7 +150,7 @@ class HoardingController extends Controller
 
             $ulbId = ['ulbId' => $req->auth['ulb_id']];
             $req->request->add($ulbId);
-            
+
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Generate Application No
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
@@ -610,7 +610,7 @@ class HoardingController extends Controller
                 $amount = $mCalculateRate->getHordingPrice($mAdvActiveHoarding->typology, $mAdvActiveHoarding->zone_id);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
-                
+
                 $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveHoarding->ulb_id);          // Generate Application No
                 $generatedId = $idGeneration->generate();
                 if ($mAdvActiveHoarding->renew_no == NULL) {
@@ -1592,7 +1592,7 @@ class HoardingController extends Controller
         if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050640", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId =$req->auth['ulb_id'] ;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
@@ -1781,5 +1781,20 @@ class HoardingController extends Controller
     public function checkPaymentCompleteOrNot($email)
     {
         return DB::table('adv_agencies')->select('payment_status')->where('email', $email)->first('payment_status');
+    }
+
+    /**
+     * | 
+     */
+    public function getAgencyDashboardData(Request $req)
+    {
+        try {
+            $data['appliedApplication'] = $this->listAppliedApplications($req);
+            $data['approvedApplication'] = $this->listAppliedApplications($req);
+            $data['rejectedApplication'] = $this->listRejected($req);
+            return responseMsgs(true, "Dashboard Data Successfully", $data, "050642", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "", $e->getMessage(), "050642", 1.0, "271ms", "POST", "", "");
+        }
     }
 }
