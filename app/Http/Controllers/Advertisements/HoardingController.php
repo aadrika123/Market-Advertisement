@@ -136,10 +136,10 @@ class HoardingController extends Controller
         
         try {
             $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
+            return $req->auth['email'];
             if ($checkPaymentStatus == 0)
                 throw new Exception("Agency Registration Payment Not Complete !!!");
 
-                return $req;
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
             if ($req->auth['user_type'] == 'JSK') {
