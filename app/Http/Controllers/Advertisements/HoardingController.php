@@ -134,7 +134,6 @@ class HoardingController extends Controller
     public function addNew(Request $req)
     {
         
-        return $req;
         try {
             $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
             if ($checkPaymentStatus == 0)
@@ -160,6 +159,7 @@ class HoardingController extends Controller
 
             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             $req->request->add($WfMasterId);
+            return $req;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
             $LicenseNo = $mAdvActiveHoarding->addNew($req);       //<--------------- Model function to store 
