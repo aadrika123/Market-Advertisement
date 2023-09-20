@@ -152,12 +152,12 @@ class HoardingController extends Controller
             $ulbId = ['ulbId' => $req->auth['ulb_id']];
             $req->request->add($ulbId);
 
+            return $req;
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Generate Application No
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 
-            return $req;
             $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             $req->request->add($WfMasterId);
             DB::beginTransaction();
