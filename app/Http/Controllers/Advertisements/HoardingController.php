@@ -139,6 +139,7 @@ class HoardingController extends Controller
             if ($checkPaymentStatus == 0)
                 throw new Exception("Agency Registration Payment Not Complete !!!");
 
+                return $req;
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
             if ($req->auth['user_type'] == 'JSK') {
@@ -152,7 +153,6 @@ class HoardingController extends Controller
             $ulbId = ['ulbId' => $req->auth['ulb_id']];
             $req->request->add($ulbId);
 
-            return $req;
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Generate Application No
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
