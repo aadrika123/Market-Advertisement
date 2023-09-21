@@ -1003,7 +1003,6 @@ class MarriageRegistrationController extends Controller
                 "gateway_type"        => $req->gatewayType,
                 "department_id"       => $req->departmentId,
             ];
-            $razorpayDtl = $mMarriageRazorpayResponse->store($razorpayReqs);
 
             $transanctionReqs = [
                 "application_id" => $req->id,
@@ -1018,15 +1017,17 @@ class MarriageRegistrationController extends Controller
                 "citizen_id"     => $req->userId,
                 "status"         => 1,
             ];
-            DB::rollBack();
-            $tranDtl = $mMarriageTransaction->store($transanctionReqs);
+
+            DB::beginTransaction();
+            $mMarriageRazorpayResponse->store($razorpayReqs);
+            $mMarriageTransaction->store($transanctionReqs);
             $marriageDetails->update(["payment_status" => 1]);
             $RazorPayRequest->update(["status" => 1]);
-            Db::beginTransaction();
+            DB::commit();
+
             return responseMsgs(true, "Data Received", "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            DB::commit();
-            // DB::rollBack();
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
