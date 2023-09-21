@@ -547,6 +547,8 @@ class PetPaymentController extends Controller
             Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
             throw new Exception("Amount Not Match from request!");
         }
+        # Save the success file
+        Storage::disk('public/Uploads/Pet/Success')->put($epoch . '.json', json_encode($req->all()));
     }
 
 

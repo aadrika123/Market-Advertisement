@@ -923,6 +923,11 @@ class MarriageRegistrationController extends Controller
             $paymentUrl         = $this->_paymentUrl;
             $mMarriageRazorpayRequest = new MarriageRazorpayRequest();
             $marriageDetails = MarriageActiveRegistration::find($applicationId);
+            if (!$marriageDetails)
+                throw new Exception("No Application Found");
+
+            if ($marriageDetails->payment_status == 1)
+                throw new Exception("Payment Already Done");
 
             $myRequest = [
                 'amount'          => $marriageDetails->payment_amount + $marriageDetails->penalty_amount,
@@ -940,14 +945,25 @@ class MarriageRegistrationController extends Controller
                 ->post($paymentUrl . 'api/payment/generate-orderid', $newRequest);               // Static
 
             $orderData = json_decode($refResponse);
-            $jsonIncodedData = $orderData->data;
+            if ($orderData->status == false) {
+                throw new Exception(collect($orderData->message)->first());
+            }
 
+            $refPaymentRequest = [
+                "order_id"       => $orderData->data->orderId,
+                "application_id" => $orderData->data->applicationId,
+                "workflow_id"    => $orderData->data->workflowId,
+                "department_id"  => $orderData->data->departmentId,
+                "total_amount"   => $orderData->data->amount,
+                "amount"         => $marriageDetails->payment_amount,
+                "penalty_amount" => $marriageDetails->penalty_amount,
+            ];
+            $mMarriageRazorpayRequest->store($refPaymentRequest);
 
-
-            return responseMsgs(true, "Order Id generated successfully", $jsonIncodedData);
+            return responseMsgs(true, "Order Id generated successfully", $orderData->data, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 
@@ -959,8 +975,16 @@ class MarriageRegistrationController extends Controller
     {
         try {
             $mMarriageTransaction = new MarriageTransaction();
+            $mMarriageRazorpayRequest = new MarriageRazorpayRequest();
             $mMarriageRazorpayResponse = new MarriageRazorpayResponse();
             $marriageDetails = MarriageActiveRegistration::find($req->id);
+            if (!$marriageDetails)
+                throw new Exception("Application Not Found");
+
+            $RazorPayRequest = $mMarriageRazorpayRequest->getRazorpayRequest($req);
+            if (!$RazorPayRequest) {
+                throw new Exception("Payment request data Not Found!");
+            }
 
             // $razorpayReqs = [
             //     "application_id"      => $req->id,
@@ -990,16 +1014,14 @@ class MarriageRegistrationController extends Controller
                 "citizen_id"     => $req->userId,
                 "status"         => 1,
             ];
-            // DB::beginTransaction();
+            DB::rollBack();
             $tranDtl = $mMarriageTransaction->store($transanctionReqs);
             // $tranDtl = $mMarriageRazorpayResponse->store($razorpayReqs);
             $marriageDetails->update(["payment_status" => 1]);
-
-            // DB::commit();
-
+            Db::beginTransaction();
             return responseMsgs(true, "Data Received", "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
+            DB::commit();
             return responseMsgs(false, $e->getMessage(), "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
