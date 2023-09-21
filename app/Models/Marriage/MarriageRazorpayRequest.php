@@ -24,7 +24,7 @@ class MarriageRazorpayRequest extends Model
     public function  getRazorpayRequest($req)
     {
         return MarriageRazorpayRequest::where('order_id', $req->orderId)
-            ->where('application_id', $req->applicationId)
+            ->where('application_id', $req->id)
             ->where('workflow_id', $req->workflowId)
             ->where('status', 2)
             ->first();

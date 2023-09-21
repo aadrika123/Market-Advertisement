@@ -981,25 +981,29 @@ class MarriageRegistrationController extends Controller
             if (!$marriageDetails)
                 throw new Exception("Application Not Found");
 
+            if ($marriageDetails->payment_status == 1)
+                throw new Exception("Payment Already Done");
+
             $RazorPayRequest = $mMarriageRazorpayRequest->getRazorpayRequest($req);
             if (!$RazorPayRequest) {
                 throw new Exception("Payment request data Not Found!");
             }
 
-            // $razorpayReqs = [
-            //     "application_id"      => $req->id,
-            //     "razorpay_request_id" => $req->tranDate,
-            //     "order_id"            => $req->orderId,
-            //     "payment_id"          => $req->paymentId,
-            //     "amount"              => $req->amount,
-            //     "workflow_id"         => $req->workflowId,
-            //     "transaction_no"      => $req->transactionNo,
-            //     "citizen_id"          => $req->userId,
-            //     "ulb_id"              => $req->ulbId,
-            //     "tran_date"           => $req->paymentMode,
-            //     "gateway_type"        => $req->gatewayType,
-            //     "department_id"       => $req->departmentId,
-            // ];
+            $razorpayReqs = [
+                "razorpay_request_id" => $RazorPayRequest->id,
+                "order_id"            => $req->orderId,
+                "payment_id"          => $req->paymentId,
+                "application_id"      => $req->id,
+                "amount"              => $req->amount,
+                "workflow_id"         => $req->workflowId,
+                "transaction_no"      => $req->transactionNo,
+                "citizen_id"          => $req->userId,
+                "ulb_id"              => $req->ulbId,
+                "tran_date"           => $req->tranDate,
+                "gateway_type"        => $req->gatewayType,
+                "department_id"       => $req->departmentId,
+            ];
+            $razorpayDtl = $mMarriageRazorpayResponse->store($razorpayReqs);
 
             $transanctionReqs = [
                 "application_id" => $req->id,
@@ -1007,21 +1011,22 @@ class MarriageRegistrationController extends Controller
                 "tran_no"        => $req->transactionNo,
                 "amount_paid"    => $req->amount,
                 "payment_mode"   => $req->paymentMode,
+                "workflow_id"    => $req->workflowId,
                 "amount"         => $marriageDetails->payment_amount,
                 "penalty_amount" => $marriageDetails->penalty_amount,
-                "workflow_id"    => $marriageDetails->workflow_id,
-                "ulb_id"         => $marriageDetails->ulb_id,
+                "ulb_id"         => $req->ulbId,
                 "citizen_id"     => $req->userId,
                 "status"         => 1,
             ];
             DB::rollBack();
             $tranDtl = $mMarriageTransaction->store($transanctionReqs);
-            // $tranDtl = $mMarriageRazorpayResponse->store($razorpayReqs);
             $marriageDetails->update(["payment_status" => 1]);
+            $RazorPayRequest->update(["status" => 1]);
             Db::beginTransaction();
             return responseMsgs(true, "Data Received", "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             DB::commit();
+            // DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
