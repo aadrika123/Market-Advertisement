@@ -583,6 +583,7 @@ class PetWorkflowController extends Controller
      * | Workflow final approvale for the application
      * | Also adjust the renewal process
         | Serial No : 
+        | Parent function
         | Under Con
      */
     public function finalApprovalRejection(Request $request)
@@ -821,8 +822,8 @@ class PetWorkflowController extends Controller
             "status" => $status
         ];
         $mPetApprovedRegistration->updateApproveAppStatus($applicationDetails->ref_application_id, $approveData);
-        $mPetApproveApplicant->updateAproveApplicantDetials($refOwnerDetails->id, $approveData);
-        $mPetApproveDetail->updateApprovePetStatus($refPetDetails->id, $approveData);
+        $mPetApproveApplicant->updateAproveApplicantDetials($refOwnerDetails->id, $approveData);  /// Not done
+        $mPetApproveDetail->updateApprovePetStatus($refPetDetails->id, $approveData);             /// Not done   
 
         # Send record in the track table 
         $metaReqs = [

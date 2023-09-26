@@ -594,6 +594,7 @@ class PetRegistrationController extends Controller
         | Common function
         | Serial No : 
         | Working
+        | Check the port for live project
      */
     public function readDocumentPath($path)
     {
@@ -1704,6 +1705,7 @@ class PetRegistrationController extends Controller
      * | search approved registration application list
         | Serial No :
         | Under Con 
+        | finish the code 
      */
     public function searchApprovedRegistration(Request $request)
     {
