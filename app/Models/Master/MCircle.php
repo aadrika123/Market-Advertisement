@@ -11,7 +11,9 @@ class MCircle extends Model
 
     protected $guarded = [];
     protected $table = 'm_circle';
-
+    /**
+     * | Get Circle List By ULB Id
+     */
     public function getCircleNameByUlbId($circleName, $ulbId)
     {
         return MCircle::select('*')
@@ -20,6 +22,9 @@ class MCircle extends Model
             ->get();
     }
 
+    /**
+     * | Get Circle By ULB Id
+     */
     public function getCircleByUlbId($ulbId)
     {
         return MCircle::select('*')
@@ -27,6 +32,9 @@ class MCircle extends Model
             ->get();
     }
 
+    /**
+     * | Get All Active Circle
+     */
     public function getAllActive()
     {
         return MCircle::select('*')

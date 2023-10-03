@@ -22,7 +22,8 @@ class ShopController extends Controller
 {
     /**
      * | Created On-14-06-2023 
-     * | Created By - Bikash Kumar
+     * | Created By - Anshu Kumar
+     * | Change By - Bikash Kumar
      */
     private $_mShops;
     private $_tranId;
@@ -34,6 +35,8 @@ class ShopController extends Controller
 
     /**
      * | Shop Payments
+     * | Function - 01
+     * | API - 01
      */
     public function shopPayment(Request $req)
     {
@@ -41,7 +44,6 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             "shopId" => "required|integer",
             "paymentTo" => "required|date|date_format:Y-m-d",
-            // "amount" => 'required|numeric'
         ]);
         $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
             $shopPmtBll->_shopDetails = $this->_mShops::findOrFail($input->shopId);
@@ -54,16 +56,19 @@ class ShopController extends Controller
         // Business Logics
         try {
             $shopPmtBll->shopPayment($req);
+            $shopDetails=Shop::find($req->shopId);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", ['shopNo'=>$shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Add Shop Records
+     * | Function - 02
+     * | API - 02
      */
     public function store(ShopRequest $req)
     {
@@ -124,27 +129,17 @@ class ShopController extends Controller
             // return $metaReqs;
             $this->_mShops->create($metaReqs);
 
-            return responseMsgs(true, "Successfully Saved", ['shopNo'=>$shopNo], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Saved", ['shopNo'=>$shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
-            return responseMsgs(false, $e->getMessage(), [], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
 
     /**
-     * | ID Generation For Shop
-     */
-    public function shopIdGeneration($marketId)
-    {
-        $idDetails = DB::table('m_market')->select('shop_counter', 'market_name')->where('id', $marketId)->first();
-        $market = strtoupper(substr($idDetails->market_name, 0, 3));
-        $counter = $idDetails->shop_counter + 1;
-        DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
-        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
-    }
-
-    /**
      * | Edit shop Records
+     * | Function - 03
+     * | API - 03
      */
     public function edit(Request $req)
     {
@@ -225,14 +220,16 @@ class ShopController extends Controller
             $Shops = $this->_mShops::findOrFail($req->id);
 
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Successfully Updated", [], "050203", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Successfully Updated", [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050203, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Shop Details By Id
+     * | Function - 04
+     * | API - 04
      */
     public function show(Request $req)
     {
@@ -246,40 +243,46 @@ class ShopController extends Controller
 
             if (collect($Shops)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
-            return responseMsgs(true, "", $Shops, 050204, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "", $Shops, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050204, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | View All Shop Data
+     * | Function - 05
+     * | API - 05
      */
     public function retrieve(Request $req)
     {
         try {
             $shops = $this->_mShops->retrieveAll();
-            return responseMsgs(true, "", $shops, 050205, "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "", $shops, "055005", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050205, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055005", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | View All Active Shops
+     * | Function - 06
+     * | API - 06
      */
     public function retrieveAllActive(Request $req)
     {
         try {
             $shops = $this->_mShops->retrieveActive();
-            return responseMsgs(true, "", $shops, 050206, "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "", $shops, "055006", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050206, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055006", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Delete Shop by Id
+     * | Function - 07
+     * | API - 07
      */
     public function delete(Request $req)
     {
@@ -302,28 +305,32 @@ class ShopController extends Controller
             ];
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Shop Deleted Successfully", [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Deleted Successfully", [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | List Ulb Wise Circle
+     * | Function - 08
+     * | API - 08
      */
     public function listUlbWiseCircle(Request $req)
     {
         try {
             $mMCircle = new MCircle();
             $list = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);
-            return responseMsgs(true, "Circle List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Circle List Featch Successfully !!!", $list, "055008", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055008", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Market list Circle wise
+     * | Function - 09
+     * | API - 09
      */
     public function listCircleWiseMarket(Request $req)
     {
@@ -337,15 +344,17 @@ class ShopController extends Controller
         try {
             $mMMarket = new MMarket();
             $list = $mMMarket->getMarketByCircleId($req->circleId);
-            return responseMsgs(true, "Market List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Market List Featch Successfully !!!", $list, "055009", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055009", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
 
     /**
      * | Get Shop list by Market Id
+     * | Function - 10
+     * | API - 10
      */
     public function listShopByMarketId(Request $req)
     {
@@ -361,16 +370,17 @@ class ShopController extends Controller
             $list = $mShop->getShop($req->marketId);
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
-            //     $list = searchRentalFilter($list, $req);
             $list = paginator($list, $req);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, "055010", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055010", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get list Shop 
+     * | Function - 11
+     * | API - 11
      */
     public function listShop(Request $req)
     {
@@ -381,14 +391,16 @@ class ShopController extends Controller
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, "055011", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055011", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Shop Details By ID
+     * | Function - 12
+     * | API - 12
      */
     public function getShopDetailtId(Request $req)
     {
@@ -402,15 +414,17 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->getShopDetailById($req->shopId);
-            return responseMsgs(true, "Shop Details Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Details Fetch Successfully !!!", $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
 
     /**
      * | Get Shop Collection Summery
+     * | Function - 13
+     * | API - 13
      */
     public function getShopCollectionSummary(Request $req)
     {
@@ -434,19 +448,19 @@ class ShopController extends Controller
             $list = $mShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
             $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
-            // $list['todayCollection']=500.02;
-            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, "055013", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get TC Collection Datewise 
+     * | Function - 14
+     * | API - 14
      */
     public function getTcCollection(Request $req)
     {
-        // return $req;
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
@@ -487,14 +501,16 @@ class ShopController extends Controller
             });
             $list1['list'] = $list->values();
             $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
-            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Shop Payment By Admin
+     * | Function - 15
+     * | API - 15
      */
     public function shopPaymentByAdmin(Request $req)
     {
@@ -539,9 +555,24 @@ class ShopController extends Controller
             $mshopDetails->last_tran_id = $paymentId;
             $mshopDetails->arrear = $req->due;
             $mshopDetails->save();
-            return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Accept Successfully !!!", '', "055015", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055015", "1.0", responseTime(), "POST", $req->deviceId);
         }
+    }
+
+    /**================================================= Support Function ============================== */
+    
+    /**
+     * | ID Generation For Shop
+     * | Function - 16
+     */
+    public function shopIdGeneration($marketId)
+    {
+        $idDetails = DB::table('m_market')->select('shop_counter', 'market_name')->where('id', $marketId)->first();
+        $market = strtoupper(substr($idDetails->market_name, 0, 3));
+        $counter = $idDetails->shop_counter + 1;
+        DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
+        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
 }

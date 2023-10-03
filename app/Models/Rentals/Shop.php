@@ -29,7 +29,9 @@ class Shop extends Model
       ->first();
   }
 
-
+  /**
+   * | Get List of All Shop
+   */
   public function retrieveAll()
   {
     return Shop::select(
@@ -47,7 +49,9 @@ class Shop extends Model
       ->get();
   }
 
-
+  /**
+   * | Get List of All Active Shop
+   */
   public function retrieveActive()
   {
     return Shop::select(
@@ -66,10 +70,11 @@ class Shop extends Model
       ->get();
   }
 
-
+  /**
+   * | Get List of All Shop ULB Wise
+   */
   public function getAllShopUlbWise($ulbId)
   {
-    // return Shop::all();
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
@@ -80,16 +85,17 @@ class Shop extends Model
       ->where('mar_shops.ulb_id', $ulbId)
       ->where('mar_shops.status', '1')
       ->orderByDesc('mar_shops.id');
-    // ->get();
   }
 
+  /**
+   * | Get Shop List Market Wise
+   */
   public function getShop($marketid)
   {
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
       'mm.market_name',
-      // 'msp.payment_date as last_payment_date',
       DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount'
     )
@@ -98,16 +104,18 @@ class Shop extends Model
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.market_id', $marketid)
       ->where('mar_shops.status', '1');
-    // ->get();
   }
 
+  /**
+   * | Get Shop Details By Shop ID
+   */
   public function getShopDetailById($id)
   {
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
-      'mm.market_name',  
-      'sc.construction_type',    
+      'mm.market_name',
+      'sc.construction_type',
       DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
       DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
