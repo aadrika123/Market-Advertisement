@@ -269,6 +269,7 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $mWorkflowTracks        = new WorkflowTrack();
             $fullDetailsData = array();
             $type = NULL;
             if (isset($req->type)) {
@@ -297,6 +298,15 @@ class SelfAdvetController extends Controller
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
             $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_selfadvertisements.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data->citizen_id;
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $metaReqs['customFor'] = 'SELF';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
@@ -821,7 +831,7 @@ class SelfAdvetController extends Controller
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";
             }
-            DB::commit(); 
+            DB::commit();
             return responseMsgs(true, $msg, "", '050119', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();

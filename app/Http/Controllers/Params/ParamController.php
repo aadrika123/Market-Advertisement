@@ -96,9 +96,10 @@ class ParamController extends Controller
     }
 
     /**
-     * | String Parameters values
+     * | Get Master Data For Advertisements
      * | @param request $req
      * | Function - 01
+     * | API - 01
      */
     public function paramStrings(Request $req)
     {
@@ -130,22 +131,66 @@ class ParamController extends Controller
     }
 
     /**
-     * | Get Document Masters from our localstorage db
+     * | Get Payment Details For Application
      * | Function - 02
+     * | API - 02
      */
-    public function documentMstrs()
+    public function getApprovalLetter(Request $req)
     {
-        $startTime = microtime(true);
-        $documents = json_decode(file_get_contents(storage_path() . "/local-db/advDocumentMstrs.json", true));
-        $documents = remove_null($documents);
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
-        return responseMsgs(true, "Document Masters", $documents, "050202", "1.0", $executionTime . " Sec", "POST");
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer',
+            'workflowId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
+            // Get Advertesement Reciept Details
+            if ($wfworkflowMasterId == $this->_selfAdvt) {
+                $mAdvSelfadvertisement = new AdvSelfadvertisement();
+                $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) {
+                $mAdvPrivateland = new AdvPrivateland();
+                $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
+                $mAdvVehicle = new AdvVehicle();
+                $recieptDetails = $mAdvVehicle->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_agency) {
+                $mAdvAgency = new AdvAgency();
+                $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_hording) {
+                $mAdvHoarding = new AdvHoarding();
+                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
+            }
+
+            //Created On : 23/6/2023,  Changes By - Anchal
+            elseif ($wfworkflowMasterId == $this->_banquetHall) {
+                $mMarBanquteHall = new MarBanquteHall();
+                $recieptDetails = $mMarBanquteHall->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
+                $mMarDharamshala = new MarDharamshala();
+                $recieptDetails = $mMarDharamshala->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_hostel) {
+                $mMarHostel = new MarHostel();
+                $recieptDetails = $mMarHostel->getApprovalLetter($req->applicationId);
+            } elseif ($wfworkflowMasterId == $this->_lodge) {
+                $mMarLodge = new MarLodge();
+                $recieptDetails = $mMarLodge->getApprovalLetter($req->applicationId);
+            }
+
+            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "050202", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0,  responseTime(), "POST", "", "");
+        }
     }
+
 
     /**
      * | All Document List
      * | Function - 03
+     * | API - 03
      */
     public function listDocument()
     {
@@ -167,41 +212,16 @@ class ParamController extends Controller
     }
 
     /**
-     * | Get Document Masters from our localstorage db
-     * | Function - 04
-     */
-    public function districtMstrs()
-    {
-        $startTime = microtime(true);
-        $districts = json_decode(file_get_contents(storage_path() . "/local-db/districtMstrs.json", true));
-        $districts = remove_null($districts);
-        $endTime = microtime(true);
-        $executionTime = $endTime - $startTime;
-        return responseMsgs(true, "District Masters", $districts, "050204", "1.0", $executionTime . " Sec", "POST");
-    }
-
-    public function metaReqs($req)
-    {
-        $metaReqs = [
-            'verified_by' => $req['roleId'],
-            'verify_status' => $req['verifyStatus'],
-            'remarks' => $req['remarks'],
-            'verified_on' => Carbon::now()->format('Y-m-d')
-        ];
-        return $metaReqs;
-    }
-
-    /**
      * Summary of payment Success Failure of all Types of Advertisment 
      * @return void
      * @param request $req
-     * | Function - 05
+     * | Function - 04
+     * | API - 04
      */
     public function paymentSuccessFailure(Request $req)
     {
         try {
             // Variable initialization
-            $startTime = microtime(true);
             DB::beginTransaction();
             $updateData = [
                 'payment_date' => Carbon::now(),
@@ -525,108 +545,18 @@ class ParamController extends Controller
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
             }
             DB::commit();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
             $msg = "Payment Accepted Successfully !!!";
-            return responseMsgs(true, $msg, "", '050205', 01, "$executionTime Sec", 'POST', $req->deviceId);
+            return responseMsgs(true, $msg, "", '050204', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", '050205', 01, "", 'POST', $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), "", '050204', 01, responseTime(), 'POST', $req->deviceId);
         }
     }
-
-    /**
-     * | Get Payment Details for all workflow
-     * | Function - 06
-     */
-    public function getPaymentDetails(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'paymentId' => 'required|string',
-            'workflowId' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $startTime = microtime(true);
-            $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
-            // Get Advertesement Payment Details
-            if ($wfworkflowMasterId == $this->_selfAdvt) {
-                $mAdvSelfadvertisement = new AdvSelfadvertisement();
-                $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Self Advertisement Tax";
-            } elseif ($wfworkflowMasterId == $this->_pvtLand) {
-                $mAdvPrivateland = new AdvPrivateland();
-                $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Private Land Tax";
-            } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
-                $mAdvVehicle = new AdvVehicle();
-                $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
-            } elseif ($wfworkflowMasterId == $this->_agency) {
-                $mAdvAgency = new AdvAgency();
-                $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Agency Tax";
-            } elseif ($wfworkflowMasterId == $this->_hording) {
-                $mAdvHoarding = new AdvHoarding();
-                $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Hoarding Tax";
-            }
-
-            // Get Market Payment Details
-            elseif ($wfworkflowMasterId == $this->_banquetHall) {
-                $mMarBanquteHall = new MarBanquteHall();
-                $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
-            } elseif ($wfworkflowMasterId == $this->_hostel) {
-                $mMarHostel = new MarHostel();
-                $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Hostel Tax";
-            } elseif ($wfworkflowMasterId == $this->_lodge) {
-                $mMarLodge = new MarLodge();
-                $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Lodge Tax";
-            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
-                $mMarDharamshala = new MarDharamshala();
-                $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
-                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
-                $paymentDetails->paymentAgainst = "Dharamshala Tax";
-            }
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            if (empty($paymentDetails)) {
-                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
-            } else {
-                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050206", "1.0", "$executionTime Sec", "POST", $req->deviceId);
-            }
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", '050206', 01, "", 'POST', $req->deviceId);
-        }
-    }
-
 
     /**
      * | Advertisement Dashboard
-     * | Function - 07
+     * | Function - 05
+     * | API - 05
      */
     public function advertDashboard(Request $req)
     {
@@ -635,8 +565,6 @@ class ParamController extends Controller
         $ulbId = $userDetails['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $pendingList = $mAdvActiveSelfadvertisement->allPendingList()->where('ulb_id', $ulbId)->values();              // Find Self Advertisement Approve Applications
             $advert['selfPendingApplications'] = $pendingList;
@@ -697,18 +625,16 @@ class ParamController extends Controller
             $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id', $ulbId)->values();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $advert, "050207", "1.0", "$executionTime Sec", "POST");
+            return responseMsgs(true, 'Data Fetched',  $advert, "050205", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", '050207', 01, "", 'POST', '');
+            return responseMsgs(false, $e->getMessage(), "", '050205', 01, responseTime(), 'POST', '');
         }
     }
 
     /**
      * | Market Dashboard
-     * | Function - 08
+     * | Function - 06
+     * | API - 06
      */
     public function marketDashboard(Request $req)
     {
@@ -716,8 +642,6 @@ class ParamController extends Controller
         $ulbId = $userDetails['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
             $pendingList = $mMarActiveBanquteHall->allPendingList()->where('ulb_id', $ulbId)->values();                              // Find Banquet Hall Approve Applications
             $market['banquetPendingApplications'] = $pendingList;
@@ -766,85 +690,16 @@ class ParamController extends Controller
             $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id', $ulbId)->values();      // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, 'Data Fetched',  $market, "050208", "1.0", "$executionTime Sec", "POST");
+            return responseMsgs(true, 'Data Fetched',  $market, "050206", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", '050208', 01, "", 'POST', '');
-        }
-    }
-
-    
-    /**
-     * | Get Advertisement Dashboard
-     * | Function - 09
-     */
-    public function advertisementDashboard(Request $req)
-    {
-        try {
-            // $dashboardReport['date']=Carbon::now()->format('Y-m-d');
-            $advert = $this->advertDashboard($req)->original['data'];
-            $market = $this->marketDashboard($req)->original['data'];
-            $dashboardReport['selfApproved']=$advert['selfApprovedApplications']->count();
-            $dashboardReport['selfPending']=$advert['selfPendingApplications']->count();
-            $dashboardReport['selfRejected']=$advert['selfRejectedApplications']->count();
-            
-            $dashboardReport['plApproved']=$advert['pvtLandApprovedApplications']->count();
-            $dashboardReport['plPending']=$advert['pvtLandPendingApplications']->count();
-            $dashboardReport['plRejected']=$advert['pvtLandRejectedApplications']->count();
-            
-            $dashboardReport['vclApproved']=$advert['vehicleApprovedApplications']->count();
-            $dashboardReport['vclPending']=$advert['vehiclePendingApplications']->count();
-            $dashboardReport['vclRejected']=$advert['vehicleRejectedApplications']->count();
-            
-            $dashboardReport['agApproved']=$advert['agencyApprovedApplications']->count();
-            $dashboardReport['agPending']=$advert['agencyPendingApplications']->count();
-            $dashboardReport['agRejected']=$advert['agencyRejectedApplications']->count();
-            
-            $dashboardReport['horApproved']=$advert['hoardingApprovedApplications']->count();
-            $dashboardReport['horPending']=$advert['hoardingPendingApplications']->count();
-            $dashboardReport['horRejected']=$advert['hoardingRejectedApplications']->count();
-            
-            $dashboardReport['bqApproved']=$market['banquetApprovedApplications']->count();
-            $dashboardReport['bqPending']=$market['banquetPendingApplications']->count();
-            $dashboardReport['bqRejected']=$market['banquetRejectedApplications']->count();
-            
-            $dashboardReport['hsApproved']=$market['hostelApprovedApplications']->count();
-            $dashboardReport['hsPending']=$market['hostelPendingApplications']->count();
-            $dashboardReport['hsRejected']=$market['hostelRejectedApplications']->count();
-            
-            $dashboardReport['ldApproved']=$market['lodgeApprovedApplications']->count();
-            $dashboardReport['ldPending']=$market['lodgePendingApplications']->count();
-            $dashboardReport['ldRejected']=$market['lodgeRejectedApplications']->count();
-            
-            $dashboardReport['dsApproved']=$market['dharamshalaApprovedApplications']->count();
-            $dashboardReport['dsPending']=$market['dharamshalaPendingApplications']->count();
-            $dashboardReport['dsRejected']=$market['dharamshalaRejectedApplications']->count();
-
-            $dashboardReport['totalAdvertApproved']=$dashboardReport['selfApproved'] + $dashboardReport['plApproved'] + $dashboardReport['vclApproved'] + $dashboardReport['agApproved'] + $dashboardReport['horApproved'];
-            $dashboardReport['totalAdvertPending']=$dashboardReport['selfPending'] + $dashboardReport['plPending'] + $dashboardReport['vclPending'] + $dashboardReport['agPending'] + $dashboardReport['horPending'];
-            $dashboardReport['totalAdvertRejected']=$dashboardReport['selfRejected'] + $dashboardReport['plRejected'] + $dashboardReport['vclRejected'] + $dashboardReport['agRejected'] + $dashboardReport['horRejected'];
-            $dashboardReport['totalAdvertApplication']=$dashboardReport['totalAdvertApproved'] + $dashboardReport['totalAdvertPending'] + $dashboardReport['totalAdvertRejected'];
-
-            $dashboardReport['totalMarketApproved']=$dashboardReport['bqApproved'] + $dashboardReport['hsApproved'] + $dashboardReport['ldApproved'] + $dashboardReport['dsApproved'];
-            $dashboardReport['totalMarketPending']=$dashboardReport['bqPending'] + $dashboardReport['hsPending'] + $dashboardReport['ldPending'] + $dashboardReport['dsPending'];
-            $dashboardReport['totalMarketRejected']=$dashboardReport['bqRejected'] + $dashboardReport['hsRejected'] + $dashboardReport['ldRejected'] + $dashboardReport['dsRejected'];
-            $dashboardReport['totalMarketApplication']=$dashboardReport['totalMarketApproved'] + $dashboardReport['totalMarketPending'] + $dashboardReport['totalMarketRejected'];
-
-            $dashboardReport['date']=getFinancialYear(Carbon::now()->format('Y-m-d'));
-
-            // $dashboardReport['advert']=$advert;
-            // $dashboardReport['market']=$market;
-            return responseMsgs(true, "Application Fetched Successfully", $dashboardReport, "050209", 1.0, responseTime(), "POST", "", "");
-        } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050209", 1.0, "", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", '050206', 01, responseTime(), 'POST', '');
         }
     }
 
     /**
      * | All Application Search application by name or mobile
-     * | Function - 10
+     * | Function - 07
+     * | API - 07
      */
     public function searchByNameorMobile(Request $req)
     {
@@ -857,8 +712,6 @@ class ParamController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
-
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = collect($madvSelfAdvertisement->allApproveList());              // Find Self Advertisement Approve Applications
 
@@ -908,24 +761,21 @@ class ParamController extends Controller
                 $merged = $merged->where('owner_name', $req->parameter);
             }
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050210", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
-            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050210", 1.0, "", "POST", "", "");
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, responseTime(), "POST", "", "");
         }
     }
 
-
     /**
-     * | Get Payment Details For Application
-     * | Function - 11
+     * | Get Payment Details for all workflow
+     * | Function - 08
+     * | API - 08
      */
-    public function getApprovalLetter(Request $req)
+    public function getPaymentDetails(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|integer',
+            'paymentId' => 'required|string',
             'workflowId' => 'required|integer'
         ]);
         if ($validator->fails()) {
@@ -933,50 +783,209 @@ class ParamController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
             $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
-            // Get Advertesement Reciept Details
+            // Get Advertesement Payment Details
             if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
-                $recieptDetails = $mAdvSelfadvertisement->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Self Advertisement Tax";
             } elseif ($wfworkflowMasterId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
-                $recieptDetails = $mAdvPrivateland->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mAdvPrivateland->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Private Land Tax";
             } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
-                $recieptDetails = $mAdvVehicle->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mAdvVehicle->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
             } elseif ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
-                $recieptDetails = $mAdvAgency->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mAdvAgency->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Agency Tax";
             } elseif ($wfworkflowMasterId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
-                $recieptDetails = $mAdvHoarding->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mAdvHoarding->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Hoarding Tax";
             }
 
-            //Created On : 23/6/2023,  Changes By - Anchal
+            // Get Market Payment Details
             elseif ($wfworkflowMasterId == $this->_banquetHall) {
                 $mMarBanquteHall = new MarBanquteHall();
-                $recieptDetails = $mMarBanquteHall->getApprovalLetter($req->applicationId);
-            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
-                $mMarDharamshala = new MarDharamshala();
-                $recieptDetails = $mMarDharamshala->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mMarBanquteHall->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
             } elseif ($wfworkflowMasterId == $this->_hostel) {
                 $mMarHostel = new MarHostel();
-                $recieptDetails = $mMarHostel->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mMarHostel->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Hostel Tax";
             } elseif ($wfworkflowMasterId == $this->_lodge) {
                 $mMarLodge = new MarLodge();
-                $recieptDetails = $mMarLodge->getApprovalLetter($req->applicationId);
+                $paymentDetails = $mMarLodge->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Lodge Tax";
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
+                $mMarDharamshala = new MarDharamshala();
+                $paymentDetails = $mMarDharamshala->getPaymentDetails($req->paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Dharamshala Tax";
             }
-
-
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "050211", 1.0, "$executionTime Sec", "POST", "", "");
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050208", "1.0", responseTime(), "POST", $req->deviceId);
+            }
         } catch (Exception $e) {
-            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050211", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", '050208', 01, responseTime(), 'POST', $req->deviceId);
         }
     }
+
+    /**
+     * | Get Financial year Master data
+     * | Function - 09
+     * | API - 09
+     */
+    public function getFinancialMasterData(Request $req)
+    {
+        try {
+            $financialYear = RefAdvParamstring::select('id', 'string_parameter')->where('param_category_id', '1017')->orderBy('string_parameter')->get();
+            return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "050209", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050209", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Advertisement Dashboard
+     * | Function - 10
+     * | API - 10
+     */
+    public function advertisementDashboard(Request $req)
+    {
+        try {
+            // $dashboardReport['date']=Carbon::now()->format('Y-m-d');
+            $advert = $this->advertDashboard($req)->original['data'];
+            $market = $this->marketDashboard($req)->original['data'];
+            $dashboardReport['selfApproved'] = $advert['selfApprovedApplications']->count();
+            $dashboardReport['selfPending'] = $advert['selfPendingApplications']->count();
+            $dashboardReport['selfRejected'] = $advert['selfRejectedApplications']->count();
+
+            $dashboardReport['plApproved'] = $advert['pvtLandApprovedApplications']->count();
+            $dashboardReport['plPending'] = $advert['pvtLandPendingApplications']->count();
+            $dashboardReport['plRejected'] = $advert['pvtLandRejectedApplications']->count();
+
+            $dashboardReport['vclApproved'] = $advert['vehicleApprovedApplications']->count();
+            $dashboardReport['vclPending'] = $advert['vehiclePendingApplications']->count();
+            $dashboardReport['vclRejected'] = $advert['vehicleRejectedApplications']->count();
+
+            $dashboardReport['agApproved'] = $advert['agencyApprovedApplications']->count();
+            $dashboardReport['agPending'] = $advert['agencyPendingApplications']->count();
+            $dashboardReport['agRejected'] = $advert['agencyRejectedApplications']->count();
+
+            $dashboardReport['horApproved'] = $advert['hoardingApprovedApplications']->count();
+            $dashboardReport['horPending'] = $advert['hoardingPendingApplications']->count();
+            $dashboardReport['horRejected'] = $advert['hoardingRejectedApplications']->count();
+
+            $dashboardReport['bqApproved'] = $market['banquetApprovedApplications']->count();
+            $dashboardReport['bqPending'] = $market['banquetPendingApplications']->count();
+            $dashboardReport['bqRejected'] = $market['banquetRejectedApplications']->count();
+
+            $dashboardReport['hsApproved'] = $market['hostelApprovedApplications']->count();
+            $dashboardReport['hsPending'] = $market['hostelPendingApplications']->count();
+            $dashboardReport['hsRejected'] = $market['hostelRejectedApplications']->count();
+
+            $dashboardReport['ldApproved'] = $market['lodgeApprovedApplications']->count();
+            $dashboardReport['ldPending'] = $market['lodgePendingApplications']->count();
+            $dashboardReport['ldRejected'] = $market['lodgeRejectedApplications']->count();
+
+            $dashboardReport['dsApproved'] = $market['dharamshalaApprovedApplications']->count();
+            $dashboardReport['dsPending'] = $market['dharamshalaPendingApplications']->count();
+            $dashboardReport['dsRejected'] = $market['dharamshalaRejectedApplications']->count();
+
+            $dashboardReport['totalAdvertApproved'] = $dashboardReport['selfApproved'] + $dashboardReport['plApproved'] + $dashboardReport['vclApproved'] + $dashboardReport['agApproved'] + $dashboardReport['horApproved'];
+            $dashboardReport['totalAdvertPending'] = $dashboardReport['selfPending'] + $dashboardReport['plPending'] + $dashboardReport['vclPending'] + $dashboardReport['agPending'] + $dashboardReport['horPending'];
+            $dashboardReport['totalAdvertRejected'] = $dashboardReport['selfRejected'] + $dashboardReport['plRejected'] + $dashboardReport['vclRejected'] + $dashboardReport['agRejected'] + $dashboardReport['horRejected'];
+            $dashboardReport['totalAdvertApplication'] = $dashboardReport['totalAdvertApproved'] + $dashboardReport['totalAdvertPending'] + $dashboardReport['totalAdvertRejected'];
+
+            $dashboardReport['totalMarketApproved'] = $dashboardReport['bqApproved'] + $dashboardReport['hsApproved'] + $dashboardReport['ldApproved'] + $dashboardReport['dsApproved'];
+            $dashboardReport['totalMarketPending'] = $dashboardReport['bqPending'] + $dashboardReport['hsPending'] + $dashboardReport['ldPending'] + $dashboardReport['dsPending'];
+            $dashboardReport['totalMarketRejected'] = $dashboardReport['bqRejected'] + $dashboardReport['hsRejected'] + $dashboardReport['ldRejected'] + $dashboardReport['dsRejected'];
+            $dashboardReport['totalMarketApplication'] = $dashboardReport['totalMarketApproved'] + $dashboardReport['totalMarketPending'] + $dashboardReport['totalMarketRejected'];
+
+            $dashboardReport['date'] = getFinancialYear(Carbon::now()->format('Y-m-d'));
+
+            // $dashboardReport['advert']=$advert;
+            // $dashboardReport['market']=$market;
+            return responseMsgs(true, "Application Fetched Successfully", $dashboardReport, "050210", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050210", 1.0, "", "POST", "", "");
+        }
+    }
+
+    /**
+     * | Get Workflow Master Id 
+     * | Function - 11
+     */
+    public function getWorkflowMasterId($workflowId)
+    {
+        return WfWorkflow::select('wf_master_id')->where('id', $workflowId)->first()->wf_master_id;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+    /************************************************************************************************************************************************************* */
+    /**
+     * | Get Document Masters from our localstorage db
+     * | Function - 02
+     */
+    public function documentMstrs()
+    {
+        $documents = json_decode(file_get_contents(storage_path() . "/local-db/advDocumentMstrs.json", true));
+        $documents = remove_null($documents);
+        return responseMsgs(true, "Document Masters", $documents, "050202", "1.0", responseTime(), "POST");
+    }
+
+    public function metaReqs($req)
+    {
+        $metaReqs = [
+            'verified_by' => $req['roleId'],
+            'verify_status' => $req['verifyStatus'],
+            'remarks' => $req['remarks'],
+            'verified_on' => Carbon::now()->format('Y-m-d')
+        ];
+        return $metaReqs;
+    }
+
 
 
     public function sendWhatsAppNotification(WhatsappServiceInterface $notification_service)
@@ -984,30 +993,17 @@ class ParamController extends Controller
         $notification_service->sendWhatsappNotification();
     }
 
-    /**
-     * | Get Financial year Master data
-     * | Function - 12
-     */
-    public function getFinancialMasterData(Request $req)
-    {
-        try {
-            $startTime = microtime(true);
-            $financialYear = RefAdvParamstring::select('id', 'string_parameter')->where('param_category_id', '1017')->orderBy('string_parameter')->get();
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-            return responseMsgs(true, "Approval Fetched Successfully !!", $financialYear, "050212", 1.0, "$executionTime Sec", "POST", "", "");
-        } catch (Exception $e) {
-            return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050212", 1.0, "271ms", "POST", "", "");
-        }
-    }
-
 
     /**
-     * | Get Workflow Master Id 
-     * | Function - 13
+     * | Get Document Masters from our localstorage db
+     * | Function - 04
      */
-    public function getWorkflowMasterId($workflowId)
+    public function districtMstrs()
     {
-        return WfWorkflow::select('wf_master_id')->where('id', $workflowId)->first()->wf_master_id;
+        $districts = json_decode(file_get_contents(storage_path() . "/local-db/districtMstrs.json", true));
+        $districts = remove_null($districts);
+
+        return responseMsgs(true, "District Masters", $districts, "050204", "1.0", responseTime(), "POST");
     }
+    /***************************************************************************************************************************************************************** */
 }

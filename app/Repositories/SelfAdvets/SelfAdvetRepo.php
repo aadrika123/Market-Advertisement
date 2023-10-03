@@ -10,19 +10,24 @@ use Exception;
 
 /**
  * | Repository for the Self Advertisements
- * | Created On-15-12-2022 
- * | Created By-Anshu Kumar
+ * | Created On - 15-12-2022 
+ * | Created By - Anshu Kumar
+ * | Change By - Bikash Kumar
  */
 
 class SelfAdvetRepo implements iSelfAdvetRepo
 {
+
+    /**
+     * | Get Special Inbox List of Self Advertisements
+     */
     public function specialInbox($workflowIds)
     {
         $specialInbox = DB::table('adv_active_selfadvertisements')
             ->select(
                 'id',
                 'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'entity_address',
@@ -36,13 +41,16 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         return $specialInbox;
     }
 
+    /**
+     * | Get Special Inbox List of Vehicle Advertisements
+     */
     public function specialVehicleInbox($workflowIds)
     {
         $specialInbox = DB::table('adv_active_vehicles')
             ->select(
                 'id',
                 'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
                 'application_type',
@@ -52,14 +60,16 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         return $specialInbox;
     }
 
-
+    /**
+     * | Get Special Inbox List of Agency
+     */
     public function specialAgencyInbox($workflowIds)
     {
         $specialInbox = DB::table('adv_active_agencies')
             ->select(
                 'id',
                 'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 'application_type',
             )
@@ -68,13 +78,16 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         return $specialInbox;
     }
 
+    /**
+     * | Get Special Inbox List of Private Land
+     */
     public function specialPrivateLandInbox($workflowIds)
     {
         $specialInbox = DB::table('adv_active_privatelands')
             ->select(
                 'id',
                 'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'entity_name',
                 'application_type',
             )
@@ -83,6 +96,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
         return $specialInbox;
     }
 
+    /**
+     * | Get Special Inbox List of Hoarding 
+     */
     public function specialAgencyLicenseInbox($workflowIds)
     {
         $specialInbox = DB::table('adv_active_agency_licenses')
@@ -90,7 +106,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 'id',
                 'application_no',
                 'license_no',
-                DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY') as application_date"),
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
                 'bank_name',
                 'account_no',

@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\DB;
 
 class MarketRepo implements iMarketRepo
 {
-    public function specialInbox($workflowIds){
+    /**
+     * | Get Special Inbox list For Banquet Marriage Hall
+     */
+    public function specialInbox($workflowIds)
+    {
         $specialInbox = DB::table('mar_active_banqute_halls')
             ->select(
                 'id',
@@ -24,11 +28,15 @@ class MarketRepo implements iMarketRepo
                 'entity_address'
             )
             ->orderByDesc('id');
-            // ->whereIn('workflow_id', $workflowIds);
+        // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
     }
 
-    public function specialInboxHostel($workflowIds){
+    /**
+     * | Get Special Inbox List For Hospital
+     */
+    public function specialInboxHostel($workflowIds)
+    {
         $specialInbox = DB::table('mar_active_hostels')
             ->select(
                 'id',
@@ -39,11 +47,15 @@ class MarketRepo implements iMarketRepo
                 'entity_address'
             )
             ->orderByDesc('id');
-            // ->whereIn('workflow_id', $workflowIds);
+        // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
     }
 
-    public function specialInboxLodge($workflowIds){
+    /**
+     * | Get Special Inbox List For Lodge
+     */
+    public function specialInboxLodge($workflowIds)
+    {
         $specialInbox = DB::table('mar_active_lodges')
             ->select(
                 'id',
@@ -54,11 +66,15 @@ class MarketRepo implements iMarketRepo
                 'entity_address'
             )
             ->orderByDesc('id');
-            // ->whereIn('workflow_id', $workflowIds);
+        // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
     }
-
-    public function specialInboxmDharamshala($workflowIds){
+    
+    /**
+     * | Get Special Inbox List For Lodge
+     */
+    public function specialInboxmDharamshala($workflowIds)
+    {
         $specialInbox = DB::table('mar_active_dharamshalas')
             ->select(
                 'id',
@@ -69,10 +85,7 @@ class MarketRepo implements iMarketRepo
                 'entity_address'
             )
             ->orderByDesc('id');
-            // ->whereIn('workflow_id', $workflowIds);
+        // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
     }
-
-
-
 }

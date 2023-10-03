@@ -35,7 +35,7 @@ use Illuminate\Http\Request;
  * | Controller - Search Controller
  * | Created By - Bikash Kumar
  * | Date - 07 Aug 2023
- * | Status - Open
+ * | Status - Closed ( 30 Sep 2023 )
  */
 class SearchController extends Controller
 {
@@ -99,9 +99,9 @@ class SearchController extends Controller
             $applications = $mAdvRejectedAgency->listRejected($citizenId);                                     //  List Rejected Application of Agency
             $data1['agency']['listRejected'] = $applications;
 
-            return responseMsgs(true, "Records Fetch Successfully !!!", $data1, "050120", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Records Fetch Successfully !!!", $data1, "051201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050120", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "051201", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -166,9 +166,9 @@ class SearchController extends Controller
             $applications = $mMarRejectedLodge->listRejected($citizenId);                                                      // List Rejected Application of Lodge
             $data1['lodge']['listRejected'] = $applications;
 
-         return responseMsgs(true, "Records Fetch Successfully !!!", $data1, "050120", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+         return responseMsgs(true, "Records Fetch Successfully !!!", $data1, "051202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050120", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "051202", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 }

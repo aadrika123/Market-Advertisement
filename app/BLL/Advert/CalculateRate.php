@@ -23,6 +23,9 @@ class CalculateRate
         $this->_baseUrl = Config::get('constants.BASE_URL');
     }
 
+    /**
+     * | Generate Application ID
+     */
     public function generateId($token, $paramId, $ulbId)
     {
         // Generate Application No
@@ -36,6 +39,9 @@ class CalculateRate
         return $idGenerateData->data;
     }
 
+    /**
+     * | Calculate Advertisements Payment According To Area
+     */
     public function getAdvertisementPayment($displayArea,$ulbId)
     {
         
@@ -46,6 +52,9 @@ class CalculateRate
         return $displayArea * $rate;   
     }
 
+    /**
+     * | Calculate Amount For Movable Vehicle
+     */
     public function getMovableVehiclePayment($typology, $zone, $license_from, $license_to)
     {
         $rate = DB::table('adv_typology_mstrs')
@@ -63,7 +72,9 @@ class CalculateRate
         return ($noOfDays * $rate);
     }
 
-
+/**
+ * | Calculate Movable Vehicle Payment
+ */
     public function getPrivateLandPayment($typology, $zone, $license_from, $license_to)
     {
         $rate = DB::table('adv_typology_mstrs')
@@ -83,7 +94,7 @@ class CalculateRate
 
 
     /**
-     * | Get Hording price
+     * | Calculate Hording price
      */
     public function getHordingPrice($typology_id, $zone = 'A')
     {

@@ -500,6 +500,8 @@ class BandobasteeController extends Controller
 
     /**
      * | Get Banquet Hall List
+     * | Function - 17
+     * | API - 16
      */
     public function listBanquetHall(Request $req)
     {
@@ -511,14 +513,16 @@ class BandobasteeController extends Controller
             // Variable initialization
             $mBdBanquetHall = new BdBanquetHall();
             $list = $mBdBanquetHall->listBanquetHall($ulbId);
-            return responseMsgs(true, "Data Fetch Successfully", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Data Fetch Successfully", $list, "051116", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "051116", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
     /**
      * | Get Banquet Hall Settler List
+     * | Function - 18
+     * | API - 17
      */
     public function listBanquetHallSettler(Request $req)
     {
@@ -539,9 +543,9 @@ class BandobasteeController extends Controller
                 $settler->rest_performance_security = ($totalAmt['performance_security_amount'] - $totalAmt['total_penalty']);
                 return $settler;
             });
-            return responseMsgs(true, "Banquet Hall Settler List !!!", $list, "050201", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Banquet Hall Settler List !!!", $list, "051117", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050201", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "051117", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 
