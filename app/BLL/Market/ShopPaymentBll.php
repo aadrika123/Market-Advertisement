@@ -50,7 +50,8 @@ class ShopPaymentBll
         $payableAmt = ($this->_shopDetails->rate * $totalMonths);
         $amount = $payableAmt;
         $arrear = $payableAmt - $amount;
-        if ($payableAmt < 1)
+        // $count=ShopPayment::where('shop_id',$req->shopId)->where('paid_to',$paymentTo)->count();
+        if ($payableAmt < 1 )
             throw new Exception("Dues Not Available");
         // Insert Payment 
         $paymentReqs = [

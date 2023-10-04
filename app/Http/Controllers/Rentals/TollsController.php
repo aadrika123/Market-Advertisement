@@ -306,22 +306,27 @@ class TollsController extends Controller
     public function delete(Request $request)
     {
         $validator = validator::make($request->all(), [
-            'id' => 'required|integer'
+            'id' => 'required|integer',
+            'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-            // if (isset($request->status)) {
-            //     $status = $request->status == false ? 0 : 1;
-
-            // }
-            $metaReqs = [
-                'status' => '0',
-            ];
+            if (isset($request->status)) {                                                          // In Case of Deactivation or Activation
+                $status = $request->status == false ? 0 : 1;
+                $metaReqs = [
+                    'status' => $status
+                ];
+            }
+            if ($request->status == '0') {
+                $message = "Toll De-Activated Successfully !!!";
+            } else {
+                $message = "Toll Activated Successfully !!!";
+            }
             $marToll = $this->_mToll::findOrFail($request->id);
             $marToll->update($metaReqs);
-            return responseMsgs(true, "Toll Deleted Successfully", [], "055107", "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(true, $message, [], "055107", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055107", "1.0", responseTime(), "POST", $request->deviceId);
         }

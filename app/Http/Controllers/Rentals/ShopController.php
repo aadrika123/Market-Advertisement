@@ -56,9 +56,9 @@ class ShopController extends Controller
         // Business Logics
         try {
             $shopPmtBll->shopPayment($req);
-            $shopDetails=Shop::find($req->shopId);
+            $shopDetails = Shop::find($req->shopId);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", ['shopNo'=>$shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
@@ -129,7 +129,7 @@ class ShopController extends Controller
             // return $metaReqs;
             $this->_mShops->create($metaReqs);
 
-            return responseMsgs(true, "Successfully Saved", ['shopNo'=>$shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Saved", ['shopNo' => $shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -287,25 +287,28 @@ class ShopController extends Controller
     public function delete(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required|integer'
+            'id' => 'required|integer',
+            'status' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-            // if (isset($req->status)) { // In Case of Deactivation or Activation
-            //     $status = $req->status == false ? 0 : 1;
-            //     $metaReqs = [
-            //         'status' => $status
-            //     ];
-            // }
-            $metaReqs = [
-                'status' => '0',
-            ];
+            if (isset($req->status)) {                                                          // In Case of Deactivation or Activation
+                $status = $req->status == false ? 0 : 1;
+                $metaReqs = [
+                    'status' => $status
+                ];
+            }
+            if ($req->status == '0') {
+                $message = "Shop De-Activated Successfully !!!";
+            } else {
+                $message = "Shop Activated Successfully !!!";
+            }
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Shop Deleted Successfully", [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, $message, [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -490,7 +493,7 @@ class ShopController extends Controller
             $userDetails = Http::withToken($req->token)
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
-            $userDetails = json_decode($userDetails);
+            return $userDetails = json_decode($userDetails);
             // $data=$data->data;
             $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
                 $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
@@ -562,7 +565,7 @@ class ShopController extends Controller
     }
 
     /**================================================= Support Function ============================== */
-    
+
     /**
      * | ID Generation For Shop
      * | Function - 16
