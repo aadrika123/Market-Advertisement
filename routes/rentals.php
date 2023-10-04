@@ -37,6 +37,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');                                      // 13  ( Get Shop Collection Summery )
         Route::post('rental/get-tc-collection', 'getTcCollection');                                                         // 14  ( Get TC Collection )
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');                                                  // 15  ( Shop Payment By Admin )
+        Route::post('rental/calculate-shop-price', 'calculateShopPrice');                                                   // 16  ( Calculate Shop Price )
     });
 
     /**

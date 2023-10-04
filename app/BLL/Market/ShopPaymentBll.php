@@ -51,7 +51,7 @@ class ShopPaymentBll
         $amount = $payableAmt;
         $arrear = $payableAmt - $amount;
         // $count=ShopPayment::where('shop_id',$req->shopId)->where('paid_to',$paymentTo)->count();
-        if ($payableAmt < 1 )
+        if ($payableAmt < 1)
             throw new Exception("Dues Not Available");
         // Insert Payment 
         $paymentReqs = [
@@ -73,5 +73,30 @@ class ShopPaymentBll
             'last_tran_id' => $createdPayment->id,
             'arrear' => $arrear
         ]);
+    }
+
+
+    /**
+     * | Calculate Shop Payments
+     * | @param Request $req
+     */
+    public function calculateShopPayment($req)
+    {
+        // Business Logics
+        $paymentTo = Carbon::parse($req->paymentTo);
+        if (!isset($this->_tranId))                                 // If Last Transaction Not Found
+        {
+            $paymentFrom = Carbon::parse($req->paymentFrom);
+            $diffInMonths = $paymentFrom->diffInMonths($paymentTo);
+            $totalMonths = $diffInMonths + 1;
+        }
+
+        if (isset($this->_tranId)) {                                // If Last Transaction ID is Available
+            $shopLastPayment = $this->_mShopPayments::findOrFail($this->_tranId);
+            $paymentFrom = Carbon::parse($shopLastPayment->paid_to);
+            $diffInMonths = $paymentFrom->diffInMonths($paymentTo);
+            $totalMonths = $diffInMonths + 1;
+        }
+        return ($this->_shopDetails->rate * $totalMonths);
     }
 }

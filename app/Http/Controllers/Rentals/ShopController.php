@@ -493,7 +493,7 @@ class ShopController extends Controller
             $userDetails = Http::withToken($req->token)
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
-            return $userDetails = json_decode($userDetails);
+            $userDetails = json_decode($userDetails);
             // $data=$data->data;
             $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
                 $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
@@ -564,11 +564,41 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Shop Payment By Admin
+     * | Function - 16
+     * | API - 16
+     */
+    public function calculateShopPrice(Request $req)
+    {
+        $shopPmtBll = new ShopPaymentBll();
+        $validator = Validator::make($req->all(), [
+            "shopId" => "required|integer",
+            "paymentTo" => "required|date|date_format:Y-m-d",
+        ]);
+        $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
+            $shopPmtBll->_shopDetails = $this->_mShops::findOrFail($input->shopId);
+            $shopPmtBll->_tranId = $shopPmtBll->_shopDetails->last_tran_id;
+            return !isset($shopPmtBll->_tranId);
+        });
+
+        if ($validator->fails())
+            return $validator->errors();
+        // Business Logics
+        try {
+            $amount=$shopPmtBll->calculateShopPayment($req);
+            return responseMsgs(true, "Shop Amount Calculate Successfully !!!", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**================================================= Support Function ============================== */
 
     /**
      * | ID Generation For Shop
-     * | Function - 16
+     * | Function - 17
      */
     public function shopIdGeneration($marketId)
     {
