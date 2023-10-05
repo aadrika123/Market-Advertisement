@@ -18,7 +18,7 @@ class MCircle extends Model
     {
         return MCircle::select('*')
             ->where('ulb_id', $ulbId)
-            ->where('circle_name', $circleName)
+            ->whereRaw('LOWER(circle_name) = (?)', [strtolower($circleName)])
             ->get();
     }
 
@@ -33,12 +33,21 @@ class MCircle extends Model
     }
 
     /**
-     * | Get All Active Circle
+     * | List ULB wise Circle
      */
-    public function getAllActive()
+    public function getListCircleByUlbId($ulbId)
     {
         return MCircle::select('*')
-            ->where('is_active', 1)
-            ->get();
+            ->where('ulb_id', $ulbId);
+    }
+
+    /**
+     * | Get Circle Details By Id
+     */
+    public function getCircleDetails($id)
+    {
+        return MCircle::select('id', 'circle_name')
+            ->where('id', $id)
+            ->first();
     }
 }

@@ -113,10 +113,12 @@ class MarToll extends Model
         'mc.circle_name',
         'mm.market_name',
         DB::raw("TO_CHAR(mar_tolls.last_payment_date, 'DD-MM-YYYY') as last_payment_date"),
+        DB::raw("TO_CHAR(mtp.to_date, 'DD-MM-YYYY') as payment_upto"),
         'mar_tolls.last_amount as last_payment_amount',      
       )
         ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
         ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
+        ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
         ->where('mar_tolls.id', $id)
         ->first();
     }

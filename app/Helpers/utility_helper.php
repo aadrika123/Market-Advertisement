@@ -366,8 +366,6 @@ if (!function_exists('getClientIpAddress')) {
             return $orm->where(function ($query) use ($key) {
                 $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
                     ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
-                // ->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
-                // ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
             });
         }
     }
@@ -378,7 +376,7 @@ if (!function_exists('getClientIpAddress')) {
      * | Search Filter for Shop Rental Data
      */
 
-    if (!function_exists("searchTollRentalFilter")) {
+     if (!function_exists("searchTollRentalFilter")) {
         function searchTollRentalFilter($orm, $req)
         {
             $key = trim($req->key);
@@ -387,6 +385,36 @@ if (!function_exists('getClientIpAddress')) {
                 // ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
                 $query->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
                     ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+            });
+        }
+    }
+
+    /**
+     * | Search Filter for Circle Data
+     */
+
+    if (!function_exists("searchCircleFilter")) {
+        function searchCircleFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                $query->orwhere("circle_name", 'ILIKE', '%' . $key . '%');
+            });
+        }
+    }
+
+
+    
+    /**
+     * | Search Filter for Market Data
+     */
+
+     if (!function_exists("searchMarketFilter")) {
+        function searchMarketFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                $query->orwhere("m_market.market_name", 'ILIKE', '%' . $key . '%');
             });
         }
     }
