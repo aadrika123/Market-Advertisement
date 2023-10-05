@@ -276,7 +276,7 @@ class SelfAdvetController extends Controller
                 $type = $req->type;
             }
             if ($req->applicationId) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);   // Find Details From Model
+               $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);   // Find Details From Model
             } else {
                 throw new Exception("Not Pass Application Id");
             }
@@ -305,7 +305,7 @@ class SelfAdvetController extends Controller
             $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
 
             #citizen comment
-            $refCitizenId = $data->citizen_id;
+            $refCitizenId = $data['citizen_id'];
             $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $metaReqs['customFor'] = 'SELF';
