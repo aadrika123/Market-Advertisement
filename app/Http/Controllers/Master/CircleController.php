@@ -33,7 +33,7 @@ class CircleController extends Controller
         try {
             $exists = $this->_mCircle->getCircleNameByUlbId($req->circleName, $req->auth['ulb_id']);
             if (collect($exists)->isNotEmpty())
-                throw new Exception("Circle According To Ulb Id Already Existing");
+                throw new Exception("Circle According To Ulb Already Existing");
 
             $metaReqs = [
                 'circle_name' => $req->circleName,
@@ -84,12 +84,15 @@ class CircleController extends Controller
      * | Function - 03
      * | API - 03
      */
-    public function getCircleByUlb(Request $req)
+    public function getListCircle(Request $req)
     {
         try {
-            $circle = $this->_mCircle->getCircleByUlbId($req->auth['ulb_id']);
+            $circle = $this->_mCircle->getListCircleByUlbId($req->auth['ulb_id']);
             if (collect($circle)->isEmpty())
                 throw new Exception("No Data Found");
+            if ($req->key)
+                $circle = searchCircleFilter($circle, $req);
+            $circle = paginator($circle, $req);
             return responseMsgs(true, "", $circle, "055203", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055203", "1.0", responseTime(), "POST", $req->deviceId);
@@ -97,26 +100,9 @@ class CircleController extends Controller
     }
 
     /**
-     * | Get List of All Circle
+     * | Delete Circle Records
      * | Function - 04
      * | API - 04
-     */
-    public function retireveAll(Request $req)
-    {
-        try {
-            $circle = $this->_mCircle->getAllActive();
-            if (collect($circle)->isEmpty())
-                throw new Exception("No Data Found");
-            return responseMsgs(true, "", $circle, "055204", "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055204", "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Delete Circle Records
-     * | Function - 05
-     * | API - 05
      */
     public function delete(Request $req)
     {
@@ -136,9 +122,44 @@ class CircleController extends Controller
             }
             $Shops = $this->_mCircle::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Status Updated Successfully", [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Status Updated Successfully", [], "055204", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055204", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Delete Circle Records
+     * | Function - 05
+     * | API - 05
+     */
+    public function getCircleDetailById(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'circleId'  => 'required|integer'
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $mMCircle = new MCircle();
+            $details = $mMCircle->getCircleDetails($req->circleId);
+            return responseMsgs(true, "Fetch Details Successfully !!!", $details, "055205", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+   /**
+     * | List All Circle Records
+     * | Function - 06
+     * | API - 06
+     */
+    public function listAllCircle(Request $req){
+        try {
+            $circle = $this->_mCircle->getListCircleByUlbId($req->auth['ulb_id'])->get();
+            return responseMsgs(true, "", $circle, "055206", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055206", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

@@ -16,7 +16,8 @@ class MMarket extends Model
     {
         return MMarket::select('*')
             ->where('circle_id', $circleId)
-            ->where('market_name', $marketName)
+            // ->where('market_name', $marketName)
+            ->whereRaw('LOWER(market_name) = (?)', [strtolower($marketName)])
             ->get();
     }
 
@@ -27,10 +28,27 @@ class MMarket extends Model
             ->get();
     }
 
-    public function getAllActive()
+    /**
+     * | Get All Market By ULB
+     */
+    public function getAllActive($ulbId)
     {
-        return MMarket::select('*')
-            ->where('is_active', 1)
-            ->get();
+        return MMarket::select('m_market.id', 'm_market.circle_id', 'm_market.market_name', 'mc.circle_name')
+            ->leftjoin('m_circle as mc', 'mc.id', '=', 'm_market.circle_id')
+            ->where('m_market.is_active', 1)
+            ->where('m_market.ulb_id', $ulbId);
+        // ->get();
+    }
+
+    /**
+     * | Get Market Details By Id
+     */
+    public function getDetailsByMarketId($id)
+    {
+        return MMarket::select('m_market.id', 'm_market.circle_id', 'm_market.market_name', 'mc.circle_name')
+            ->leftjoin('m_circle as mc', 'mc.id', '=', 'm_market.circle_id')
+            // ->where('m_market.is_active', 1)
+            ->where('m_market.id', $id)
+            ->first();
     }
 }

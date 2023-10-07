@@ -40,6 +40,7 @@ class TollsController extends Controller
             "tollId" => "required|integer",
             "dateUpto" => "required|date|date_format:Y-m-d",
             "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
+            "paymentMode" => "required|string",
             "remarks" => "nullable|string"
         ]);
 
@@ -66,15 +67,16 @@ class TollsController extends Controller
             // Payment Insert Records
             $reqTollPayment = [
                 'toll_id' => $toll->id,
-                'from_date' => $req->fromDate,
-                'to_date' => $req->toDate,
+                'from_date' =>  $dateFrom,
+                'to_date' =>  $dateUpto,
                 'amount' => $payableAmt,
                 'rate' => $rate,
                 'days' => $noOfDays,
                 'payment_date' => $todayDate,
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
-                'remarks' => $req->remarks
+                'remarks' => $req->remarks,
+                'pmt_mode' => $req->paymentMode
             ];
             $createdTran = $mTollPayment->create($reqTollPayment);
             $toll->update([
@@ -82,7 +84,7 @@ class TollsController extends Controller
                 'last_amount' => $payableAmt,
                 'last_tran_id' => $createdTran->id
             ]);
-            return responseMsgs(true, "Payment Successfully Done", ['tollNo'=>$toll->toll_no], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Successfully Done", ['tollNo' => $toll->toll_no], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -152,7 +154,7 @@ class TollsController extends Controller
         }
     }
 
-   
+
     //-------------update toll details-----------------
     /**
      * | Update Toll Records
@@ -332,7 +334,7 @@ class TollsController extends Controller
         }
     }
 
-    
+
     /**
      * | Get Toll Collection Summery
      * | Function - 08
@@ -486,8 +488,42 @@ class TollsController extends Controller
         }
     }
 
+    /**
+     * | Get Market Toll Price List
+     * | Function - 13
+     * | API - 13
+     */
+    public function calculateTollPrice(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "tollId" => "required|integer",
+            "dateUpto" => "required|date|date_format:Y-m-d",
+            "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
+        ]);
 
-     /**
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), [], 055101, "1.0", responseTime(), "POST", $req->deviceId);
+
+        try {
+            // Variable Assignments
+
+            $toll = $this->_mToll::find($req->tollId);
+            if (collect($toll)->isEmpty())
+                throw new Exception("Toll Not Available for this ID");
+            $dateFrom = Carbon::parse($req->dateFrom);
+            $dateUpto = Carbon::parse($req->dateUpto);
+            // Calculation
+            $diffInDays = $dateFrom->diffInDays($dateUpto);
+            $noOfDays = $diffInDays + 1;
+            $payableAmt = $noOfDays * $toll->rate;
+            return responseMsgs(true, "Payable Amount !!!", ['tollAmount' => $payableAmt], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
      * | ID Generation For Toll
      * | Function - 13
      */

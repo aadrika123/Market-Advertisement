@@ -54,11 +54,12 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('crud/toll/retrieve-all', 'retrieve');                                                                // 05  ( Get List of All Toll Records ) 
         Route::post('crud/toll/retrieve-all-active', 'retrieveActive');                                                   // 06  ( Get List of All Active Toll Records )
         Route::post('crud/toll/delete', 'delete');                                                                        // 07  ( Delete Toll Records )
-        Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');                                    // 09  ( Get Toll Collection Summery Reports )
-        Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');                                               // 10  ( List Toll By Market Id )
-        Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');                                                  // 11  ( Get Toll Details By Id )
-        Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');                                                // 12  ( Toll Payment By Admin )
-        Route::post('rental/get-toll-price-list', 'getTollPriceList');                                                    // 13  ( Get List of Price List)
+        Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');                                    // 08  ( Get Toll Collection Summery Reports )
+        Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');                                               // 09  ( List Toll By Market Id )
+        Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');                                                  // 10  ( Get Toll Details By Id )
+        Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');                                                // 11  ( Toll Payment By Admin )
+        Route::post('rental/get-toll-price-list', 'getTollPriceList');                                                    // 12  ( Get List of Price List)
+        Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
     });
 
 
@@ -70,30 +71,32 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Created On - 16-06-2023 
      * | Author - Ashutosh Kumar
      * | Change By - Bikash Kumar
-     * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
+    //  * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
      */
     Route::controller(CircleController::class)->group(function () {
-        Route::post('v1/crud/circle/insert', 'store');                                                                   // 01  ( Add Circle Records )
-        Route::post('v1/crud/circle/update', 'edit');                                                                    // 02  ( Edit Details of Circle )
-        Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');                                            // 03  ( Get List Circle By ULB Id )
-        Route::post('v1/crud/circle/list-all-circle', 'retireveAll');                                                    // 04  ( Get List of All Circle )
-        Route::post('v1/crud/circle/delete', 'delete');                                                                  // 05  ( Delete Circle )
+        Route::post('add-circle', 'store');                                                                     // 01  ( Add Circle Records )
+        Route::post('edit-circle', 'edit');                                                                     // 02  ( Edit Details of Circle )
+        Route::post('get-list-circle', 'getListCircle');                                                        // 03  ( Get List Circle By ULB Id )
+        // Route::post('delete-circle', 'delete');                                                              // 04  ( Delete Circle )
+        Route::post('get-circle-detail-by-id', 'getCircleDetailById');                                          // 05  ( Get Circle Details By Id)
+        Route::post('list-all-circle', 'listAllCircle');                                                        // 06  ( List All Circle )
     });
 
     /**
      * | Market(53)
      * | Author - Ashutosh Kumar
      * | Change By - Bikash Kumar
-     * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
+    //  * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
      */
 
     Route::controller(MarketController::class)->group(function () {
-        Route::post('v1/crud/market/insert', 'store');                                                                  // 01  ( Add Market Records )
-        Route::post('v1/crud/market/update', 'edit');                                                                   // 02  ( Edit Market Records )
-        Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId');                                   // 03  ( Get List of Market By Circle Id )
-        Route::post('v1/crud/market/list-all-market', 'retireveAll');                                                   // 04  ( Get List of All Market )
-        Route::post('v1/crud/market/delete', 'delete');                                                                 // 05  ( Delete Market Records )
-        Route::post('rental/list-construction', 'listConstruction');                                                    // 06  ( Get List Construction )
+        Route::post('add-market', 'store');                                                                     // 01  ( Add Market Records )
+        Route::post('edit-market', 'edit');                                                                     // 02  ( Edit Market Records )
+        Route::post('list-market-by-circleId', 'getMarketByCircleId');                                          // 03  ( Get List of Market By Circle Id )
+        Route::post('list-all-market', 'listAllMarket');                                                        // 04  ( Get List of All Market )
+        // Route::post('delete-market', 'delete');                                                              // 05  ( Delete Market Records )
+        Route::post('get-market-detail-by-id', 'getDetailByMarketId');                                          // 06  ( Get Market Records By Id )
+        Route::post('rental/list-construction', 'listConstruction');                                            // 07  ( Get List Construction )
 
     });
 });

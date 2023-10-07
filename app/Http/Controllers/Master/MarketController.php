@@ -38,7 +38,8 @@ class MarketController extends Controller
 
             $metaReqs = [
                 'circle_id' => $req->circleId,
-                'market_name' => $req->marketName
+                'market_name' => $req->marketName,
+                'ulb_id' => $req->auth['ulb_id'],
             ];
 
             $this->_mMarket->create($metaReqs);
@@ -113,13 +114,15 @@ class MarketController extends Controller
      * | Function - 04
      * | API - 04
      */
-    public function retireveAll(Request $req)
+    public function listAllMarket(Request $req)
     {
         try {
-            $circle = $this->_mMarket->getAllActive();
-            if (collect($circle)->isEmpty())
+            $market = $this->_mMarket->getAllActive($req->auth['ulb_id']);
+            if (collect($market)->isEmpty())
                 throw new Exception("No Data Found");
-            return responseMsgs(true, "", $circle, "055304", "1.0", responseTime(), "POST", $req->deviceId);
+            $market = searchMarketFilter($market, $req);
+            $market = paginator($market, $req);
+            return responseMsgs(true, "", $market, "055304", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -155,18 +158,37 @@ class MarketController extends Controller
     }
 
     /**
-     * | Update Market Records
+     * | Get Market Records By ID
      * | Function - 06
      * | API - 06
+     */
+    public function getDetailByMarketId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'marketId'  => 'required|integer',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []); //getDetailsByMarketId
+        try {
+            $market = $this->_mMarket->getDetailsByMarketId($req->marketId);
+            return responseMsgs(true, "Details Fetch Successfully", $market, "055306", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055306", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | Update Market Records
+     * | Function - 07
+     * | API - 07
      */
     public function listConstruction(Request $req)
     {
         try {
             $mShopConstruction = new ShopConstruction();
             $list = $mShopConstruction->listConstruction();
-            return responseMsgs(true, "Construction Fetch Successfully", $list, "055306", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Construction Fetch Successfully", $list, "055307", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055306", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055307", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

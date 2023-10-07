@@ -587,7 +587,7 @@ class ShopController extends Controller
         // Business Logics
         try {
             $amount=$shopPmtBll->calculateShopPayment($req);
-            return responseMsgs(true, "Shop Amount Calculate Successfully !!!", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payable Amount !!!", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
