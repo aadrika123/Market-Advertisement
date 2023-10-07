@@ -18,8 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
+
+use App\Traits\ShopDetailsTraits;
+
 class ShopController extends Controller
 {
+    use ShopDetailsTraits;
     /**
      * | Created On-14-06-2023 
      * | Created By - Anshu Kumar
@@ -233,17 +237,33 @@ class ShopController extends Controller
      */
     public function show(Request $req)
     {
+        // $validator = Validator::make($req->all(), [
+        //     'id' => 'required|numeric'
+        // ]);
+        // if ($validator->fails())
+        //     return responseMsgs(false, $validator->errors(), []);
+        // try {
+        //     $Shops = $this->_mShops->getShopDetailById($req->id);
+
+        //     if (collect($Shops)->isEmpty())
+        //         throw new Exception("Shop Does Not Exists");
+        //     return responseMsgs(true, "", $Shops, "055004", "1.0", responseTime(), "POST", $req->deviceId);
+        // } catch (Exception $e) {
+        //     return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST", $req->deviceId);
+        // }
         $validator = Validator::make($req->all(), [
             'id' => 'required|numeric'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $Shops = $this->_mShops->getShopDetailById($req->id);
-
-            if (collect($Shops)->isEmpty())
+            $details = $this->_mShops->getShopDetailById($req->id);                                             // Get Shop Details By ID
+            if (collect($details)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
-            return responseMsgs(true, "", $Shops, "055004", "1.0", responseTime(), "POST", $req->deviceId);
+            // Basic Details
+            $basicDetails = $this->generateBasicDetails($details);                                              // Generate Basic Details of Shop
+            $shop['shopDetails'] = $basicDetails;
+            return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -296,7 +316,7 @@ class ShopController extends Controller
         }
         try {
             if (isset($req->status)) {                                                          // In Case of Deactivation or Activation
-                $status = $req->status == false ? 0 : 1;
+                $status = $req->status == '0' ? 0 : 1;
                 $metaReqs = [
                     'status' => $status
                 ];
@@ -586,7 +606,7 @@ class ShopController extends Controller
             return $validator->errors();
         // Business Logics
         try {
-            $amount=$shopPmtBll->calculateShopPayment($req);
+            $amount = $shopPmtBll->calculateShopPayment($req);
             return responseMsgs(true, "Payable Amount !!!", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();

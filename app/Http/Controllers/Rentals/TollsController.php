@@ -334,7 +334,6 @@ class TollsController extends Controller
         }
     }
 
-
     /**
      * | Get Toll Collection Summery
      * | Function - 08
@@ -521,7 +520,6 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-
 
     /**
      * | ID Generation For Toll
