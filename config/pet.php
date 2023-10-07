@@ -95,7 +95,7 @@ return [
         "DOG" => 1,
         "CAT" => 2
     ],
-    "VERIFICATION_PAYMENT_MODES" => [           // The Verification payment modes which needs the verification
+    "VERIFICATION_PAYMENT_MODES" => [                           // The Verification payment modes which needs the verification
         "CHEQUE",
         "DD",
         "NEFT"
