@@ -1161,9 +1161,9 @@ class PetRegistrationController extends Controller
     /**
      * | Delete the Application before payment 
         | Serial No : 
-        | Caution 
+        | CAUTION
         | Working
-        | Cross Check
+        | Cross Check / incase of delete deactivate its status
      */
     public function deletePetApplication(Request $req)
     {
@@ -1188,6 +1188,7 @@ class PetRegistrationController extends Controller
             $this->checkParamsForDelete($applicantDetals, $user);
 
             $this->begin();
+            # Deletion process start
             $mPetActiveRegistration->deleteApplication($applicationId);
             $mWfActiveDocument->deleteDocuments($applicationId, $applicantDetals->workflow_id, $confPetModuleId);
             $mPetRegistrationCharge->deleteCharges($applicationId);
@@ -1282,6 +1283,7 @@ class PetRegistrationController extends Controller
             $refTenanted            = Config::get('property.OCCUPANCY_TYPE.TENANTED');
 
             switch ($key) {
+                    # For Property
                 case (1):
                     $application = collect($mPropProperty->getPropByHolding($request->id, $request->ulbId));
                     $checkExist = collect($application)->first();
@@ -1308,6 +1310,7 @@ class PetRegistrationController extends Controller
                     return responseMsgs(true, "related Details!", $details, "", "", "", "POST", "");
                     break;
 
+                    # For Saf
                 case (2):
                     $application = collect($mPropActiveSaf->getSafDtlBySafUlbNo($request->id, $request->ulbId));
                     $checkExist = collect($application)->first();
@@ -1470,6 +1473,7 @@ class PetRegistrationController extends Controller
     /**
      * | Check Param for update the pet Application details 
         | Serial No : 
+        | Working
      */
     public function checkParamForPetUdate($req)
     {
@@ -1546,7 +1550,7 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
-            $renewal = 1;
+            $renewal = 1;                                                                           // Static
             $mPetApprovedRegistration = new PetApprovedRegistration();
 
             # Check the Registered Application existence
@@ -1588,7 +1592,7 @@ class PetRegistrationController extends Controller
             ]);
 
             $this->begin();
-            $applyDetails = $this->applyPetRegistration($newReq);   // here 
+            $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
             $this->updateRenewalDetails($refApprovedDetails);
             $this->commit();
             $returnDetails = $applyDetails->original['data'];
