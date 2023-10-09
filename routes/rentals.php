@@ -38,6 +38,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-tc-collection', 'getTcCollection');                                                         // 14  ( Get TC Collection )
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');                                                  // 15  ( Shop Payment By Admin )
         Route::post('rental/calculate-shop-price', 'calculateShopPrice');                                                   // 16  ( Calculate Shop Price )
+        Route::post('rental/shop-reciept', 'shopReciept');                                                                  // 17  ( Get Shop Reciept )
     });
 
     /**
@@ -60,6 +61,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');                                                // 11  ( Toll Payment By Admin )
         Route::post('rental/get-toll-price-list', 'getTollPriceList');                                                    // 12  ( Get List of Price List)
         Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
+        Route::post('rental/toll-reciept', 'tollReciept');                                                                // 14  ( Get Toll Reciept )
     });
 
 

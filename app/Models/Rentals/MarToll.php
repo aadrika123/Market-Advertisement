@@ -25,7 +25,7 @@ class MarToll extends Model
         ")
         )
             ->orderBy('id', 'desc');
-            // ->get();
+        // ->get();
     }
 
     /**
@@ -81,12 +81,12 @@ class MarToll extends Model
             ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
             ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
             ->leftjoin('mar_shop_payments as msp', 'mar_tolls.last_tran_id', '=', 'msp.id')
-            ->where('mar_tolls.ulb_id', $ulbId)
-            ->where('mar_tolls.status', '1');
+            ->where('mar_tolls.ulb_id', $ulbId);
+        // ->where('mar_tolls.status', '1');
     }
-/**
- * | Get All Toll By Market Id 
- */
+    /**
+     * | Get All Toll By Market Id 
+     */
     public function getToll($marketid)
     {
         return MarToll::select(
@@ -108,18 +108,47 @@ class MarToll extends Model
      */
     public function getTallDetailById($id)
     {
-      return MarToll::select(
-        'mar_tolls.*',
-        'mc.circle_name',
-        'mm.market_name',
-        DB::raw("TO_CHAR(mar_tolls.last_payment_date, 'DD-MM-YYYY') as last_payment_date"),
-        DB::raw("TO_CHAR(mtp.to_date, 'DD-MM-YYYY') as payment_upto"),
-        'mar_tolls.last_amount as last_payment_amount',      
-      )
-        ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
-        ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
-        ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
-        ->where('mar_tolls.id', $id)
-        ->first();
+        return MarToll::select(
+            'mar_tolls.*',
+            'mc.circle_name',
+            'mm.market_name',
+            DB::raw("TO_CHAR(mar_tolls.last_payment_date, 'DD-MM-YYYY') as last_payment_date"),
+            DB::raw("TO_CHAR(mtp.to_date, 'DD-MM-YYYY') as payment_upto"),
+            'mar_tolls.last_amount as last_payment_amount',
+        )
+            ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
+            ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
+            ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
+            ->where('mar_tolls.id', $id)
+            ->first();
+    }
+
+    /**
+     * | get Toll Details By Toll Id
+     */
+    public function getTollReciept($id)
+    {
+        return MarToll::select(
+            'mar_tolls.*',
+            'mc.circle_name',
+            'mm.market_name',
+            DB::raw("TO_CHAR(mar_tolls.last_payment_date, 'DD-MM-YYYY') as last_payment_date"),
+            DB::raw("TO_CHAR(mtp.to_date, 'DD-MM-YYYY') as payment_upto"),
+            'mar_tolls.last_amount as last_payment_amount',
+            'ulb.ulb_name',
+            'ulb.toll_free_no',
+            'ulb.current_website as website',
+            'mtp.transaction_no',
+            'mtp.pmt_mode as payment_mode',
+            'user.name as reciever_name',
+            'user.mobile as reciever_mobile',
+        )
+            ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
+            ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
+            ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
+            ->join('ulb_masters as ulb', 'mar_tolls.ulb_id', '=', 'ulb.id')
+            ->join('users as user', 'mtp.user_id', '=', 'user.id')
+            ->where('mar_tolls.id', $id)
+            ->first();
     }
 }

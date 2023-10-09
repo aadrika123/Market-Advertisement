@@ -444,4 +444,24 @@ class AdvActiveHoarding extends Model
     {
         return AdvActiveVehicle::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
     }
+
+    /**
+     * | Get Last Three Applied Application
+     */
+    public function lastThreeActiveRecord($citizenId){
+        return AdvActiveHoarding::where('citizen_id', $citizenId)
+            ->select(
+                'id',
+                'application_no',
+                'license_no',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+                'license_no',
+                'application_type',
+                'parked',
+                'doc_upload_status',
+            )
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
+    }
 }

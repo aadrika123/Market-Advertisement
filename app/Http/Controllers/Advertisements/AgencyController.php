@@ -20,6 +20,7 @@ use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvCheckDtl;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvHoarding;
+use App\Models\Advertisements\AdvRejectedHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
@@ -1391,11 +1392,25 @@ class AgencyController extends Controller
     {
         try {
             $userType = $req->auth['user_type'];
-            if ($userType == "Citizen") {
+            if ($userType == "Advert-Agency") {
                 // Variable initialization
                 $citizenId = $req->auth['id'];
                 $mAdvHoarding = new AdvHoarding();
-                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId, 119);
+                $mAdvAgency=new AdvAgency();
+                $mAdvActiveHoarding=new AdvActiveHoarding();
+                $mAdvHoarding=new AdvHoarding();
+                $mAdvRejectedHoarding=new AdvRejectedHoarding();
+
+                $licenseYear = getFinancialYear(date('Y-m-d'));                                                                            // Get Current Financial Year
+                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;    // Get Current Financial Year Id
+
+                $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                // Get Count Data of Hoardings
+                $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                          // Get Agency Details
+
+                $agencyDashboard['pendingApplication']=$mAdvActiveHoarding->lastThreeActiveRecord($citizenId);                              // Get Last 3 Active Records
+                $agencyDashboard['approveApplication']=$mAdvHoarding->lastThreeApproveRecord($citizenId);                                   // Get Last Three Approve Records
+                $agencyDashboard['rejectApplication']=$mAdvRejectedHoarding->lastThreeRejectRecord($citizenId);                             // Get Last Three Reject Records
+                $agencyDashboard['unpaidApplication']=$mAdvHoarding->lastThreeUnpaidRecord($citizenId);                                     // Get Last Three Unpaid Records
                 if (empty($agencyDashboard)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {

@@ -235,6 +235,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/get-application-between-date', 'getApplicationBetweenDate');                     // 33 ( Get Application Between two date )
         Route::post('advert/agency/payment-collection', 'paymentCollection');                                       // 34 ( Get Application Financial Year Wise )
         Route::post('advert/agency/is-email-available', 'isEmailAvailable');                                        // 35 ( Check email is free for agency or not )
+
+        
+        Route::post('advert/agency/get-agency-dashboard-data', 'getAgencyDashboard');                                    // 32 ( Get Agency Dashboard)
     });
 
     /**

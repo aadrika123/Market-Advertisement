@@ -127,6 +127,8 @@ class ShopController extends Controller
                 'photo2_path_absolute' => $imageName2Absolute ?? "",
                 'remarks' => $req->remarks,
                 'last_tran_id' => $req->lastTranId,
+                'electricity_no' => $req->electricityNo,
+                'water_consumer_no' => $req->waterConsumerNo,
                 'user_id' => $req->auth['id'],
                 'ulb_id' => $req->auth['ulb_id']
             ];
@@ -607,10 +609,36 @@ class ShopController extends Controller
         // Business Logics
         try {
             $amount = $shopPmtBll->calculateShopPayment($req);
-            return responseMsgs(true, "Payable Amount !!!", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payable Amount - $amount", ['amount' => $amount], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Shop Payment By Admin
+     * | Function - 17
+     * | API - 17
+     */
+    public function shopReciept(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "shopId" => "required|integer",
+        ]);
+        if ($validator->fails())
+            return $validator->errors();
+        // Business Logics
+        try {
+            $mShop=new Shop();
+            $reciept = $mShop->getShopReciept($req->shopId);
+            if(!$reciept)
+                throw new Exception("Reciept Data Not Fetched !!!");
+            $reciept->inWords=getIndianCurrency($reciept->last_payment_amount)." Only /-";
+            return responseMsgs(true, "Reciept Data Fetch Successfully !!!",  $reciept, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
@@ -618,7 +646,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 17
+     * | Function - 18
      */
     public function shopIdGeneration($marketId)
     {

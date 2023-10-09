@@ -11,20 +11,25 @@ class MMarket extends Model
     protected $guarded = [];
     protected $table = 'm_market';
 
-
+    /**
+     * | Get Market Name By Circle Id
+     */
     public function getMarketNameByCircleId($marketName, $circleId)
     {
         return MMarket::select('*')
             ->where('circle_id', $circleId)
-            // ->where('market_name', $marketName)
             ->whereRaw('LOWER(market_name) = (?)', [strtolower($marketName)])
             ->get();
     }
 
+    /**
+     * | Get List Market By CIrcle Id
+     */
     public function getMarketByCircleId($circleId)
     {
         return MMarket::select('*')
             ->where('circle_id', $circleId)
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -36,7 +41,8 @@ class MMarket extends Model
         return MMarket::select('m_market.id', 'm_market.circle_id', 'm_market.market_name', 'mc.circle_name')
             ->leftjoin('m_circle as mc', 'mc.id', '=', 'm_market.circle_id')
             ->where('m_market.is_active', 1)
-            ->where('m_market.ulb_id', $ulbId);
+            ->where('m_market.ulb_id', $ulbId)
+            ->orderByDesc('m_market.id');
         // ->get();
     }
 
