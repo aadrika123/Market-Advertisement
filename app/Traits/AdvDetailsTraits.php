@@ -139,8 +139,8 @@ trait AdvDetailsTraits
             ['displayString' => 'Side Area', 'key' => 'sideArea', 'value' => $data['side_area']],
             ['displayString' => 'Top Area', 'key' => 'topArea', 'value' => $data['top_area']],
             ['displayString' => 'Typology', 'key' => 'typology', 'value' => $data['typology']],
-            ['displayString' => 'License From', 'key' => 'licenseFrom', 'value' => $data['license_from']],
-            ['displayString' => 'License Upto', 'key' => 'licenseUpto', 'value' => $data['license_to']],
+            ['displayString' => 'License From', 'key' => 'licenseFrom', 'value' =>  Carbon::createFromFormat('Y-m-d',  $data['license_from'])->format('d-m-Y')],
+            ['displayString' => 'License Upto', 'key' => 'licenseUpto', 'value' => Carbon::createFromFormat('Y-m-d',  $data['license_to'])->format('d-m-Y')],
             ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
         ]);
     }
