@@ -190,7 +190,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Blacklisted', 'key' => 'blacklisted', 'value' => $data['blacklisted'] == 0 ? "No" : "Yes"],
             ['displayString' => 'Pending Amount', 'key' => 'pendingAmount', 'value' => $data['pending_amount']],
             ['displayString' => 'Pending Court Case', 'key' => 'pendingCourtCase', 'value' => $data['pending_court_case'] == 0 ? "No" : "Yes"],
-            ['displayString' => 'Application Type', 'key' => 'ApplicationType', 'value' => $data['renewal'] == NULL ? "Fresh" : "Renewal"],
+            ['displayString' => 'Application Type', 'key' => 'ApplicationType', 'value' => $data['renewal'] == NULL ? "New Apply" : "Renewal"],
         ]);
     }
 
