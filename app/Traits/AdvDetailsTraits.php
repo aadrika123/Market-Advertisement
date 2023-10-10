@@ -115,6 +115,10 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
+            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
+            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
+            ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
             ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Applicantion No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
@@ -123,11 +127,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Permanent Address', 'key' => 'permanentAddress', 'value' => $data['permanent_address']],
             ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
-            ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             // ['displayString' => 'Ward ID', 'key' => 'wardId', 'value' => $data['ward_id']],
-            ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
-            ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
             ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst_no']],
             ['displayString' => 'Display Name', 'key' => 'mDisplayType', 'value' => $data['m_display_type']],
@@ -139,6 +139,8 @@ trait AdvDetailsTraits
             ['displayString' => 'Side Area', 'key' => 'sideArea', 'value' => $data['side_area']],
             ['displayString' => 'Top Area', 'key' => 'topArea', 'value' => $data['top_area']],
             ['displayString' => 'Typology', 'key' => 'typology', 'value' => $data['typology']],
+            ['displayString' => 'License From', 'key' => 'licenseFrom', 'value' => $data['license_from']],
+            ['displayString' => 'License Upto', 'key' => 'licenseUpto', 'value' => $data['license_to']],
             ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
         ]);
     }
