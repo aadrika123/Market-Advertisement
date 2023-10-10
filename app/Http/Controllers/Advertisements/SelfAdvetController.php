@@ -625,10 +625,15 @@ class SelfAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+        $status=1;
+        $data1['data'] = collect($data)->map(function ($value) use ($appUrl,$status) {
             $value->doc_path = $appUrl . $value->doc_path;
+            if($value->verify_status==0){
+                $status='0';
+            }
             return $value;
         });
+        $data1['verify_status']=$status;
         return $data1;
     }
 
