@@ -705,23 +705,23 @@ class SelfAdvetController extends Controller
         }
         // Variable initialization
         if (isset($req->type) && $req->type == 'Approve') {
-            // $workflowId = AdvSelfadvertisement::find($req->applicationId)->workflow_id;
             $details = AdvSelfadvertisement::find($req->applicationId);
         } else {
-            // $workflowId = AdvActiveSelfadvertisement::find($req->applicationId)->workflow_id;
             $details = AdvActiveSelfadvertisement::find($req->applicationId);
         }
+        if (!$details)
+            throw new Exception("Application Not Found !!!!");
         $workflowId = $details->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $appUrl = $this->_fileUrl;
         $data = array();
-        $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);
-        $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;
+        $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
+        $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
         if ($roleId == $wfLevel['DA']){
-            $data = $data->get();
+            $data = $data->get();                                                                                           // If DA Then show all docs
         }else{
-            $data = $data->where('current_status','1')->get();
+            $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
         }
         $data1 = collect($data)->map(function ($value) use ($appUrl) {
             $value->doc_path = $appUrl . $value->doc_path;
