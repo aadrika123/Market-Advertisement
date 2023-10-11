@@ -246,6 +246,7 @@ class PrivateLandController extends Controller
         try {
             // Variable initialization
             $mAdvActivePrivateland = new AdvActivePrivateland();
+            $mWorkflowTracks        = new WorkflowTrack();
             $fullDetailsData = array();
             if (isset($req->type)) {
                 $type = $req->type;
@@ -282,6 +283,15 @@ class PrivateLandController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_privatelands.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $req->request->add($metaReqs);
 

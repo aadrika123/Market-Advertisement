@@ -173,6 +173,7 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $mMarActiveDharamshala = $this->_modelObj;
+            $mWorkflowTracks        = new WorkflowTrack();
             $fullDetailsData = array();
             if (isset($req->type)) {
                 $type = $req->type;
@@ -208,6 +209,15 @@ class DharamshalaController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
+            
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "mar_active_banqute_halls.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);

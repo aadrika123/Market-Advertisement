@@ -218,6 +218,7 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $mAdvActiveAgency = new AdvActiveAgency();
+            $mWorkflowTracks        = new WorkflowTrack();
             // $data = array();
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -253,6 +254,17 @@ class AgencyController extends Controller
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
             // return $metaReqs;
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_agencies.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
+
             $req->request->add($metaReqs);
 
             $forwardBackward = $this->getRoleDetails($req);
@@ -1396,10 +1408,10 @@ class AgencyController extends Controller
                 // Variable initialization
                 $citizenId = $req->auth['id'];
                 $mAdvHoarding = new AdvHoarding();
-                $mAdvAgency=new AdvAgency();
-                $mAdvActiveHoarding=new AdvActiveHoarding();
-                $mAdvHoarding=new AdvHoarding();
-                $mAdvRejectedHoarding=new AdvRejectedHoarding();
+                $mAdvAgency = new AdvAgency();
+                $mAdvActiveHoarding = new AdvActiveHoarding();
+                $mAdvHoarding = new AdvHoarding();
+                $mAdvRejectedHoarding = new AdvRejectedHoarding();
 
                 $licenseYear = getFinancialYear(date('Y-m-d'));                                                                            // Get Current Financial Year
                 $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;    // Get Current Financial Year Id
@@ -1407,10 +1419,10 @@ class AgencyController extends Controller
                 $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                // Get Count Data of Hoardings
                 $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                          // Get Agency Details
 
-                $agencyDashboard['pendingApplication']=$mAdvActiveHoarding->lastThreeActiveRecord($citizenId);                              // Get Last 3 Active Records
-                $agencyDashboard['approveApplication']=$mAdvHoarding->lastThreeApproveRecord($citizenId);                                   // Get Last Three Approve Records
-                $agencyDashboard['rejectApplication']=$mAdvRejectedHoarding->lastThreeRejectRecord($citizenId);                             // Get Last Three Reject Records
-                $agencyDashboard['unpaidApplication']=$mAdvHoarding->lastThreeUnpaidRecord($citizenId);                                     // Get Last Three Unpaid Records
+                $agencyDashboard['pendingApplication'] = $mAdvActiveHoarding->lastThreeActiveRecord($citizenId);                              // Get Last 3 Active Records
+                $agencyDashboard['approveApplication'] = $mAdvHoarding->lastThreeApproveRecord($citizenId);                                   // Get Last Three Approve Records
+                $agencyDashboard['rejectApplication'] = $mAdvRejectedHoarding->lastThreeRejectRecord($citizenId);                             // Get Last Three Reject Records
+                $agencyDashboard['unpaidApplication'] = $mAdvHoarding->lastThreeUnpaidRecord($citizenId);                                     // Get Last Three Unpaid Records
                 if (empty($agencyDashboard)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {

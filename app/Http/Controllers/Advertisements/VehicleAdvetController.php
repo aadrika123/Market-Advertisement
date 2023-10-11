@@ -244,6 +244,7 @@ class VehicleAdvetController extends Controller
         try {
             // Variable Initialization
             $mvehicleAdvets = new AdvActiveVehicle();
+            $mWorkflowTracks        = new WorkflowTrack();
             // $data = array();
             $type = NULL;
             $fullDetailsData = array();
@@ -278,6 +279,16 @@ class VehicleAdvetController extends Controller
             $metaReqs['wfRoleId'] = $data['current_roles'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_vehicles.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);
             $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
@@ -1329,7 +1340,7 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
         }
     }
-    
+
     /**
      * | Get Application Between Two Dates
      * | Function - 34

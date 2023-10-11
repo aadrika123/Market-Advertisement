@@ -133,7 +133,7 @@ class HoardingController extends Controller
      */
     public function addNew(Request $req)
     {
-        
+
         try {
             // $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
             // return $req->auth;
@@ -237,6 +237,7 @@ class HoardingController extends Controller
         try {
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
+            $mWorkflowTracks        = new WorkflowTrack();
             // $data = array();
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -274,6 +275,16 @@ class HoardingController extends Controller
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
             // return $metaReqs;
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_hoardings.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
             $req->request->add($metaReqs);
 
             $forwardBackward = $this->getRoleDetails($req);

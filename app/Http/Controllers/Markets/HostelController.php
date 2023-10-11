@@ -178,6 +178,7 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
+            $mWorkflowTracks        = new WorkflowTrack();
             $fullDetailsData = array();
             $type = NULL;
             if (isset($req->type)) {
@@ -210,6 +211,15 @@ class HostelController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
+             
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "mar_active_banqute_halls.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);
