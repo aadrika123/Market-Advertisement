@@ -573,7 +573,7 @@ class BanquetMarriageHallController extends Controller
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
-        $wfLevel = Config::get('constants.SELF-LABEL');
+        $wfLevel = Config::get('constants.MARKET-LABEL');
         if ($roleId == $wfLevel['DA']) {
             $data = $data->get();                                                                                           // If DA Then show all docs
         } else {
