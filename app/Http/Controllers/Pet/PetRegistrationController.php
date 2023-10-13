@@ -1480,7 +1480,6 @@ class PetRegistrationController extends Controller
         $user                   = authUser($req);
         $applicationId          = $req->id;
         $confRoles              = $this->_petWfRoles;
-        $wfMasterId             = $this->_workflowMasterId;
         $mPetActiveRegistration = new PetActiveRegistration();
         $mWfRoleusermap         = new WfRoleusermap();
         $mPetTran               = new PetTran();
@@ -1493,7 +1492,7 @@ class PetRegistrationController extends Controller
             case (is_null($applicationdetails->citizen_id) && !is_null($applicationdetails->user_id)):
                 $getRoleReq = new Request([                                                 // make request to get role id of the user
                     'userId'        => $user->id,
-                    'workflowId'    => $wfMasterId
+                    'workflowId'    => $applicationdetails->workflow_id
                 ]);
                 $readRoleDtls = $mWfRoleusermap->getRoleByUserWfId($getRoleReq);
                 if (!$readRoleDtls) {

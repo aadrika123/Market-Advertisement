@@ -534,15 +534,15 @@ class PetWorkflowController extends Controller
         try {
             $userId                 = authUser($req)->id;
             $applicationId          = $req->applicationId;
-            $workflowId             = $this->_workflowMasterId;
             $mPetActiveRegistration = new PetActiveRegistration();
             $mWfRoleUsermap         = new WfRoleusermap();
             $currentDateTime        = Carbon::now();
 
             $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $workflowId = $application->workflow_id;
             $getRoleReq = new Request([                                                 // make request to get role id of the user
-                'userId'        => $userId,
-                'workflowId'    => $workflowId
+                'userId' => $userId,
+                'workflowId' => $workflowId
             ]);
             $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
             $roleId = $readRoleDtls->wf_role_id;
@@ -601,7 +601,6 @@ class PetWorkflowController extends Controller
         try {
             $userId                 = authUser($request)->id;
             $applicationId          = $request->applicationId;
-            $workflowId             = $this->_workflowMasterId;
             $mPetActiveRegistration = new PetActiveRegistration();
             $mWfRoleUsermap         = new WfRoleusermap();
 
@@ -612,6 +611,7 @@ class PetWorkflowController extends Controller
             }
 
             # Check the workflow role 
+            $workflowId = $application->workflow_id;
             $getRoleReq = new Request([                                                 // make request to get role id of the user
                 'userId'        => $userId,
                 'workflowId'    => $workflowId
