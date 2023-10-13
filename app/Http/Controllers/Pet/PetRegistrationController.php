@@ -518,7 +518,7 @@ class PetRegistrationController extends Controller
                     ->where('owner_dtl_id', $ownerId)
                     ->first();
                 if ($uploadedDoc) {
-                    $path = $this->readDocumentPath($uploadedDoc->doc_path);
+                    $path = $uploadedDoc->doc_path; //$this->readDocumentPath($uploadedDoc->doc_path);
                     $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
                     $response = [
                         "uploadedDocId" => $uploadedDoc->id ?? "",
@@ -551,7 +551,7 @@ class PetRegistrationController extends Controller
                 $strLower = strtolower($doc);
                 $strReplace = str_replace('_', ' ', $strLower);
                 if (isset($uploadedDoc)) {
-                    $path =  $this->readDocumentPath($uploadedDoc->doc_path);
+                    $path =  $uploadedDoc->doc_path; //$this->readDocumentPath($uploadedDoc->doc_path);
                     $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
                 }
                 $arr = [
