@@ -71,7 +71,7 @@ class WfRoleusermap extends Model
      */
     public function getRoleByUserWfAndId($req)
     {
-        return DB::table('wf_roleusermaps as r')
+        return DB::connection('pgsql_masters')->table('wf_roleusermaps as r')
             ->select(
                 'r.wf_role_id',
                 'w.forward_role_id',
