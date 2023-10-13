@@ -10,7 +10,7 @@ class WfRoleusermap extends Model
 {
     use HasFactory;
 
-    protected $connection='pgsql_masters';
+    protected $connection = 'pgsql_masters';
 
     /**
      * | get Role By User Id
@@ -44,7 +44,7 @@ class WfRoleusermap extends Model
      */
     public function getRoleByUserWfId($req)
     {
-        return DB::table('wf_roleusermaps as r')
+        return DB::connection('pgsql_masters')->table('wf_roleusermaps as r')
             ->select('r.wf_role_id')
             ->join('wf_workflowrolemaps as w', 'w.wf_role_id', '=', 'r.wf_role_id')
             ->where('r.user_id', $req->userId)
@@ -71,7 +71,7 @@ class WfRoleusermap extends Model
      */
     public function getRoleByUserWfAndId($req)
     {
-        return DB::table('wf_roleusermaps as r')
+        return DB::connection('pgsql_masters')->table('wf_roleusermaps as r')
             ->select(
                 'r.wf_role_id',
                 'w.forward_role_id',
