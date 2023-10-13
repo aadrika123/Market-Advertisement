@@ -134,7 +134,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
-            $pages  = $request->page ?? 10;
+            $pages  = $request->perPage ?? 10;
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
             $msg = "Inbox List Details!";
 
@@ -200,7 +200,7 @@ class PetWorkflowController extends Controller
             $user                   = authUser($req);
             $userId                 = $user->id;
             $ulbId                  = $user->ulb_id;
-            $pages                  = $req->page ?? 10;
+            $pages                  = $req->perPage ?? 10;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
             $msg = "Outbox List!";
 
@@ -458,7 +458,7 @@ class PetWorkflowController extends Controller
             $user   = authUser($request);
             $userId = $user->id;
             $ulbId  = $user->ulb_id;
-            $pages  = $request->page ?? 10;
+            $pages  = $request->perPage ?? 10;
             $msg    = "Inbox List Details!";
             $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
 

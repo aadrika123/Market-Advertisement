@@ -1498,6 +1498,8 @@ class PetRegistrationController extends Controller
                 if (!$readRoleDtls) {
                     throw new Exception("User Dont have any role!");
                 }
+
+                # Check for jsk 
                 $roleId = $readRoleDtls->wf_role_id;
                 if ($roleId != $confRoles['JSK']) {
                     throw new Exception("You are not Permited to edit the application!");
