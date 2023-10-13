@@ -24,7 +24,7 @@ class AdvRejectedHoarding extends Model
                 'rejected_date',
             )
             ->orderByDesc('id');
-            // ->get();
+        // ->get();
     }
 
     /**
@@ -67,5 +67,23 @@ class AdvRejectedHoarding extends Model
     public function rejectListForReport()
     {
         return AdvRejectedHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"));
+    }
+
+    /**
+     * | Get Last 3 Rejected Application
+     */
+    public function lastThreeRejectRecord($citizenId)
+    {
+        return AdvRejectedHoarding::where('citizen_id', $citizenId)
+            ->select(
+                'id',
+                'application_no',
+                'license_no',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+                'rejected_date',
+            )
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
     }
 }

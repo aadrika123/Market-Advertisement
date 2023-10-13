@@ -45,7 +45,7 @@ class TollValidationRequest extends FormRequest
             'mobile'                =>   'numeric|digits:10',
             'remarks'               =>   'nullable|string',
             'photograph1'           =>   'required|image|mimes:jpeg,png,jpg',
-            'photograph2'           =>   'required|image|mimes:jpeg,png,jpg',
+            'photograph2'           =>   'nullable|image|mimes:jpeg,png,jpg',
             'longitude'             =>   'nullable|string',
             'latitude'              =>   'nullable|string',
             'userId'                =>   'nullable|numeric',

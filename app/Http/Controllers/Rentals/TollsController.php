@@ -73,6 +73,7 @@ class TollsController extends Controller
                 'rate' => $rate,
                 'days' => $noOfDays,
                 'payment_date' => $todayDate,
+                'transaction_no' => "TRAN-".time().$toll->ulb_id.$toll->id,
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
                 'remarks' => $req->remarks,
@@ -334,7 +335,6 @@ class TollsController extends Controller
         }
     }
 
-
     /**
      * | Get Toll Collection Summery
      * | Function - 08
@@ -484,7 +484,7 @@ class TollsController extends Controller
             $list = $mMarTollPriceList->getTollPriceList($req->auth['ulb_id']);
             return responseMsgs(true, "Price List Fetch Successfully !!!", $list, "055112", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "0551112", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055112", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
@@ -502,30 +502,54 @@ class TollsController extends Controller
         ]);
 
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), [], 055101, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
 
         try {
             // Variable Assignments
-
             $toll = $this->_mToll::find($req->tollId);
             if (collect($toll)->isEmpty())
                 throw new Exception("Toll Not Available for this ID");
             $dateFrom = Carbon::parse($req->dateFrom);
             $dateUpto = Carbon::parse($req->dateUpto);
-            // Calculation
+            // Amount Calculation
             $diffInDays = $dateFrom->diffInDays($dateUpto);
             $noOfDays = $diffInDays + 1;
             $payableAmt = $noOfDays * $toll->rate;
-            return responseMsgs(true, "Payable Amount !!!", ['tollAmount' => $payableAmt], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payable Amount - $payableAmt", ['tollAmount' => $payableAmt], "055113", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+    
+    /**
+     * | Get Market Toll Price List
+     * | Function - 14
+     * | API - 14
+     */
+    public function tollReciept(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "tollId" => "required|integer",
+        ]);
 
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
+            try {
+                // Variable Assignments
+                $mMarToll = new MarToll();
+                $reciept = $mMarToll->getTollReciept($req->tollId);
+                if(!$reciept)
+                    throw new Exception("Reciept Not Found !!!");
+                $reciept->inWords=trim(getIndianCurrency($reciept->last_payment_amount))." only /-";
+                return responseMsgs(true, "Reciept Fetch Successfully !!!", $reciept, "055114", "1.0", responseTime(), "POST", $req->deviceId);
+            } catch (Exception $e) {
+                return responseMsgs(false, $e->getMessage(), [], "055114", "1.0", responseTime(), "POST", $req->deviceId);
+            }
+    }
 
     /**
      * | ID Generation For Toll
-     * | Function - 13
+     * | Function - 15
      */
     public function tollIdGeneration($marketId)
     {
@@ -535,4 +559,5 @@ class TollsController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['toll_counter' => $counter]);
         return $id = "TOLL-" . $market . "-" . (1000 + $idDetails->toll_counter);
     }
+
 }

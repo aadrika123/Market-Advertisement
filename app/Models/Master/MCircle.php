@@ -38,7 +38,8 @@ class MCircle extends Model
     public function getListCircleByUlbId($ulbId)
     {
         return MCircle::select('*')
-            ->where('ulb_id', $ulbId);
+            ->where('ulb_id', $ulbId)
+            ->orderByDesc('id');
     }
 
     /**

@@ -65,6 +65,7 @@ class ShopPaymentBll
             'payment_date' => Carbon::now(),
             'user_id' => $req->auth['id'] ?? 0,
             'ulb_id' => $this->_shopDetails->ulb_id,
+            'transaction_no' => "TRAN-".time().$this->_shopDetails->ulb_id.$req->shopId,
             'remarks' => $req->remarks
         ];
         DB::beginTransaction();

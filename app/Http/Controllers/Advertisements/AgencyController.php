@@ -20,6 +20,7 @@ use App\Models\Advertisements\AdvAgencyLicense;
 use App\Models\Advertisements\AdvCheckDtl;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\AdvHoarding;
+use App\Models\Advertisements\AdvRejectedHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
@@ -217,6 +218,7 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $mAdvActiveAgency = new AdvActiveAgency();
+            $mWorkflowTracks        = new WorkflowTrack();
             // $data = array();
             $fullDetailsData = array();
             if (isset($req->type)) {
@@ -252,6 +254,17 @@ class AgencyController extends Controller
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
             // return $metaReqs;
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_agencies.id";                         // Static
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
+
             $req->request->add($metaReqs);
 
             $forwardBackward = $this->getRoleDetails($req);
@@ -559,24 +572,60 @@ class AgencyController extends Controller
      * | Function - 14
      * | API - 13
      */
+    // public function viewDocumentsOnWorkflow(Request $req)
+    // {
+    //     if (isset($req->type) && $req->type == 'Approve')
+    //         $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
+    //     else
+    //         $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
+    //     $mWfActiveDocument = new WfActiveDocument();
+    //     $data = array();
+    //     if ($req->applicationId) {
+    //         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
+    //     }
+    //     $appUrl = $this->_fileUrl;
+    //     $data1 = collect($data)->map(function ($value) use ($appUrl) {
+    //         $value->doc_path = $appUrl . $value->doc_path;
+    //         return $value;
+    //     });
+    //     return responseMsgs(true, "Data Fetched", remove_null($data1), "050513", "1.0", responseTime(), "POST", "");
+    // }
+
     public function viewDocumentsOnWorkflow(Request $req)
     {
-        if (isset($req->type) && $req->type == 'Approve')
-            $workflowId = AdvAgency::find($req->applicationId)->workflow_id;
-        else
-            $workflowId = AdvActiveAgency::find($req->applicationId)->workflow_id;
-        $mWfActiveDocument = new WfActiveDocument();
-        $data = array();
-        if ($req->applicationId) {
-            $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
         }
+        // Variable initialization
+        if (isset($req->type) && $req->type == 'Approve') {
+            $details = AdvAgency::find($req->applicationId);
+        } else {
+            $details = AdvActiveAgency::find($req->applicationId);
+        }
+        if (!$details)
+            throw new Exception("Application Not Found !!!!");
+        $workflowId = $details->workflow_id;
+        $mWfActiveDocument = new WfActiveDocument();
         $appUrl = $this->_fileUrl;
+        $data = array();
+        $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
+        $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
+        $wfLevel = Config::get('constants.SELF-LABEL');
+        if ($roleId == $wfLevel['DA']) {
+            $data = $data->get();                                                                                           // If DA Then show all docs
+        } else {
+            $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
+        }
         $data1 = collect($data)->map(function ($value) use ($appUrl) {
             $value->doc_path = $appUrl . $value->doc_path;
             return $value;
         });
-        return responseMsgs(true, "Data Fetched", remove_null($data1), "050513", "1.0", responseTime(), "POST", "");
+        return responseMsgs(true, "Data Fetched", remove_null($data1), "050118", "1.0", responseTime(), "POST", "");
     }
+
 
     /**
      * | Final Approval and Rejection of the Application
@@ -1391,11 +1440,25 @@ class AgencyController extends Controller
     {
         try {
             $userType = $req->auth['user_type'];
-            if ($userType == "Citizen") {
+            if ($userType == "Advert-Agency") {
                 // Variable initialization
                 $citizenId = $req->auth['id'];
                 $mAdvHoarding = new AdvHoarding();
-                $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId, 119);
+                $mAdvAgency = new AdvAgency();
+                $mAdvActiveHoarding = new AdvActiveHoarding();
+                $mAdvHoarding = new AdvHoarding();
+                $mAdvRejectedHoarding = new AdvRejectedHoarding();
+
+                $licenseYear = getFinancialYear(date('Y-m-d'));                                                                            // Get Current Financial Year
+                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;    // Get Current Financial Year Id
+
+                $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                // Get Count Data of Hoardings
+                $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                          // Get Agency Details
+
+                $agencyDashboard['pendingApplication'] = $mAdvActiveHoarding->lastThreeActiveRecord($citizenId);                              // Get Last 3 Active Records
+                $agencyDashboard['approveApplication'] = $mAdvHoarding->lastThreeApproveRecord($citizenId);                                   // Get Last Three Approve Records
+                $agencyDashboard['rejectApplication'] = $mAdvRejectedHoarding->lastThreeRejectRecord($citizenId);                             // Get Last Three Reject Records
+                $agencyDashboard['unpaidApplication'] = $mAdvHoarding->lastThreeUnpaidRecord($citizenId);                                     // Get Last Three Unpaid Records
                 if (empty($agencyDashboard)) {
                     throw new Exception("You Have Not Agency !!");
                 } else {

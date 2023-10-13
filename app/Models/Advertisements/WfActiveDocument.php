@@ -86,6 +86,18 @@ class WfActiveDocument extends Model
     }
 
     /**
+     * | view Uploaded documents for Work flow
+     */
+    public function uploadDocumentsOnWorkflowViewById($appId, $workflowId)
+    {
+        return $data = WfActiveDocument::select('*', DB::raw("replace(doc_code,'_',' ') as doc_val"), DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
+            ->where(['active_id' => $appId, 'workflow_id' => $workflowId]);
+            // ->where('current_status', '1')
+        //     ->get();
+        // return $data;
+    }
+
+    /**
      * | view Uploaded documents Active
      */
     public function uploadedActiveDocumentsViewById($appId, $workflowId)

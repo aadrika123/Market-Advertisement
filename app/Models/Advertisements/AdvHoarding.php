@@ -79,8 +79,8 @@ class AdvHoarding extends Model
      * | Get Application Approve List by Role Ids
      */
     public function listApproved($citizenId, $usertype)
-    { 
-       $allApproveList = $this->allApproveList1();
+    {
+        $allApproveList = $this->allApproveList1();
         // foreach ($allApproveList as $key => $list) { 
         //     $current_date = Carbon::now()->format('Y-m-d');
         //     $notify_date = carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
@@ -201,7 +201,7 @@ class AdvHoarding extends Model
     {
         //Approved Application
         $data['approvedAppl'] = AdvHoarding::select('*')
-            ->where(['payment_status' => 1, 'citizen_id' => $citizenId, 'is_archived' => false, 'is_blacklist' => false,'license_year'=>$licenseYear])
+            ->where(['payment_status' => 1, 'citizen_id' => $citizenId, 'is_archived' => false, 'is_blacklist' => false, 'license_year' => $licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -215,7 +215,7 @@ class AdvHoarding extends Model
 
         // Unpaid Application
         $data['unpaideAppl'] = AdvHoarding::select('*')
-            ->where(['payment_status' => 0, 'citizen_id' => $citizenId,'license_year'=>$licenseYear])
+            ->where(['payment_status' => 0, 'citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -245,7 +245,7 @@ class AdvHoarding extends Model
 
         // Rejected Application
         $data['rejectAppl'] = AdvRejectedHoarding::select('*')
-            ->where(['citizen_id' => $citizenId,'license_year'=>$licenseYear])
+            ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get()
             ->groupBy(function ($date) {
                 return Carbon::parse($date->created_at)->format('MY'); // grouping by months
@@ -259,9 +259,12 @@ class AdvHoarding extends Model
 
         // $data['ulb_id'] = AdvAgency::select('ulb_id')->where(['citizen_id' => $citizenId])->first()->ulb_id;
         // $data['ulbId']=;
-
+        $data['totalYearlyHoarding'] = $data['countRejectAppl']['totalRejected'] + $data['countPendindAppl']['totalPending'] + $data['countApprovedAppl']['totalApproved'];
+        $data['totalYearlyRenewalHoarding'] = $this->getRenewalApplication($citizenId, $licenseYear);
+        $data['getMonthallyTotalApplication']=$this->getMonthallyTotalApplication($citizenId, $licenseYear);
+        $data['getMonthallyRenewApplication']=$this->getMonthallyRenewApplication($citizenId,$licenseYear);
         $data3['payment'] = AdvHoardingRenewal::select('payment_date', 'payment_amount', 'application_type')
-            ->where(['citizen_id' => $citizenId,'license_year'=>$licenseYear])
+            ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get();
         // ->groupBy(function ($val) {
         //     return Carbon::parse($val->payment_date)->format('M');
@@ -277,11 +280,45 @@ class AdvHoarding extends Model
                 $renewPayment->push($item->payment_amount);
         });
         $currentFYear = DB::table('ref_adv_paramstrings')->select('string_parameter')->where('id', $licenseYear)->first()->string_parameter;
-        $data['newPayment'] = $newPayment->sum();
-        $data['renewPayment'] = $renewPayment->sum();
+        $data['newCollection'] = $newPayment->sum();
+        $data['renewalCollection'] = $renewPayment->sum();
         $data['financialYear'] = $currentFYear;
-        $data['totalPayment'] = $newPayment->sum() + $renewPayment->sum();
+        $data['totalCollection'] = $newPayment->sum() + $renewPayment->sum();
         return $data;
+    }
+
+    /**
+     * | Get Applied Yearly Renewal Application By Agency
+     */
+    public function getRenewalApplication($citizenId, $licenseYear)
+    {
+        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_type', 'Renew')->count();
+        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_type', 'Renew')->count();
+        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_type', 'Renew')->count();
+        return ($activeAppl + $approveAppl + $rejectAppl);
+    }
+
+    /**
+     * | Get Applied Monthally  Application By Agency
+     */
+    public function getMonthallyTotalApplication($citizenId, $licenseYear)
+    {
+        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
+        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
+        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
+        return ($activeAppl + $approveAppl + $rejectAppl);
+    }
+
+    
+    /**
+     * | Get Applied Yearly Renewal Application By Agency
+     */
+    public function getMonthallyRenewApplication($citizenId, $licenseYear)
+    {
+        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        return ($activeAppl + $approveAppl + $rejectAppl);
     }
 
     /**
@@ -608,5 +645,74 @@ class AdvHoarding extends Model
     public function approveListForReport()
     {
         return AdvHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Approve' as application_status"));
+    }
+
+    /**
+     * | Get Last Three Approve records
+     */
+    public function lastThreeApproveRecord($citizenId)
+    {
+        return AdvHoarding::select(
+            'id',
+            'application_no',
+            'license_no',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'citizen_id',
+            'valid_upto',
+            'property_owner_mobile_no as mobile_no',
+            'property_owner_name as owner_name',
+            'user_id',
+            'ulb_id',
+            'valid_upto',
+            'valid_from',
+            'is_archived',
+            'is_blacklist',
+            'workflow_id',
+            'payment_id',
+            DB::raw("'hoarding' as type"),
+            DB::raw("'' as entity_name")
+        )
+            ->where('citizen_id', $citizenId)
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
+    }
+
+    /**
+     * | Get Last Three Unpaid records
+     */
+    public function lastThreeUnpaidRecord($citizenId)
+    {
+        return AdvHoarding::select(
+            'id',
+            'application_no',
+            'license_no',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'citizen_id',
+            'valid_upto',
+            'property_owner_mobile_no as mobile_no',
+            'property_owner_name as owner_name',
+            'user_id',
+            'ulb_id',
+            'valid_upto',
+            'valid_from',
+            'is_archived',
+            'is_blacklist',
+            'workflow_id',
+            'payment_id',
+            DB::raw("'hoarding' as type"),
+            DB::raw("'' as entity_name")
+        )
+            ->where('citizen_id', $citizenId)
+            ->where('payment_status', '0')
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
     }
 }
