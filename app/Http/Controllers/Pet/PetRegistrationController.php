@@ -701,6 +701,7 @@ class PetRegistrationController extends Controller
      */
     public function checkParamForDocUpload($isCitizen, $applicantDetals, $user)
     {
+        $mWfRoleusermap = new WfRoleusermap();
         $refWorkFlowMaster = Config::get('workflow-constants.WATER_MASTER_ID');
         switch ($isCitizen) {
             case (true): # For citizen 
@@ -712,9 +713,12 @@ class PetRegistrationController extends Controller
                 }
                 break;
             case (false): # For user
-                $userId = $user->id;
-                $ulbId = $applicantDetals->ulb_id;
-                $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
+                $refReq = new Request([
+                    "userId"        => $user->id,
+                    "workflowId"    => $applicantDetals->workflow_id,
+                ]);
+                $role =  $mWfRoleusermap->getRoleByUserWfId($refReq);
+                // $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
                 if (!$role) {
                     throw new Exception("You dont have any role!");
                 }
