@@ -715,7 +715,7 @@ class PetRegistrationController extends Controller
                 $userId = $user->id;
                 $ulbId = $applicantDetals->ulb_id;
                 $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
-                if (is_null($role)) {
+                if (!$role) {
                     throw new Exception("You dont have any role!");
                 }
                 if ($role->can_upload_document != true) {

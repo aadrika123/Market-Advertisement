@@ -57,17 +57,17 @@ trait Workflow
             $data = WfRole::select(
                 DB::raw(
                     "wf_roles.id as role_id,wf_roles.role_name,
-                                            wf_workflowrolemaps.is_initiator, wf_workflowrolemaps.is_finisher,
-                                            wf_workflowrolemaps.forward_role_id,forword.role_name as forword_name,
-                                            wf_workflowrolemaps.backward_role_id,backword.role_name as backword_name,
-                                            wf_workflowrolemaps.allow_full_list,wf_workflowrolemaps.can_escalate,
-                                            wf_workflowrolemaps.serial_no,wf_workflowrolemaps.is_btc,
-                                            wf_workflowrolemaps.can_upload_document,
-                                            wf_workflowrolemaps.can_verify_document,
-                                            wf_workflowrolemaps.can_backward,
-                                            wf_workflows.id as workflow_id,wf_masters.workflow_name,
-                                            ulb_masters.id as ulb_id, ulb_masters.ulb_name,
-                                            ulb_masters.ulb_type"
+                    wf_workflowrolemaps.is_initiator, wf_workflowrolemaps.is_finisher,
+                    wf_workflowrolemaps.forward_role_id,forword.role_name as forword_name,
+                    wf_workflowrolemaps.backward_role_id,backword.role_name as backword_name,
+                    wf_workflowrolemaps.allow_full_list,wf_workflowrolemaps.can_escalate,
+                    wf_workflowrolemaps.serial_no,wf_workflowrolemaps.is_btc,
+                    wf_workflowrolemaps.can_upload_document,
+                    wf_workflowrolemaps.can_verify_document,
+                    wf_workflowrolemaps.can_backward,
+                    wf_workflows.id as workflow_id,wf_masters.workflow_name,
+                    ulb_masters.id as ulb_id, ulb_masters.ulb_name,
+                    ulb_masters.ulb_type"
                 )
             )
                 ->join("wf_roleusermaps", function ($join) {
