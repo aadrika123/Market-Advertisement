@@ -235,12 +235,14 @@ class WfActiveDocument extends Model
                 'd.doc_code',
                 'd.doc_category',
                 'd.status',
-                // 'o.applicant_name as owner_name'
+                'o.applicant_name as owner_name'
             )
-            // ->leftJoin('pet_active_applicants as o', 'o.id', '=', 'd.owner_dtl_id')
+            ->leftJoin('pet_active_applicants as o', 'o.id', '=', 'd.owner_dtl_id')
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
-            ->where('d.module_id', $moduleId);
+            ->where('d.module_id', $moduleId)
+            ->where('d.status', '!=', 0)
+            ->get();
     }
 
     /**
