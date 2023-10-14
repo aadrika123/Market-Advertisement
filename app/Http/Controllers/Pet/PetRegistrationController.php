@@ -598,7 +598,8 @@ class PetRegistrationController extends Controller
      */
     public function readDocumentPath($path)
     {
-        $path = (config('app.url') . ":8001" . "/" . $path);
+        $docUrl = Config::get("marriage.DOC_URL");
+        $path   = ($docUrl . "/" . $path);
         return $path;
     }
 
