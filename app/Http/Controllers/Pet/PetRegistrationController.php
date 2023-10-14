@@ -785,12 +785,9 @@ class PetRegistrationController extends Controller
                 throw new Exception("Application Not Found for this ($applicationId) application Id!");
 
             $workflowId = $petDetails->workflow_id;
-            DB::enableQueryLog();
-            $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId);
-            // ->where('d.status', '!=', 0)
-            // ->get();
-            $thi['querry'] = DB::getQueryLog();
-            return $thi;
+            $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
+                ->where('d.status', '!=', 0)
+                ->get();
             $returnData = collect($documents)->map(function ($value) {
                 $path =  $this->readDocumentPath($value->ref_doc_path);
                 $value->doc_path = !empty(trim($value->ref_doc_path)) ? $path : null;

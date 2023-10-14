@@ -240,9 +240,7 @@ class WfActiveDocument extends Model
             ->leftJoin('pet_active_applicants as o', 'o.id', '=', 'd.owner_dtl_id')
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
-            ->where('d.module_id', $moduleId)
-            ->where('d.status', '!=', 0)
-            ->get();
+            ->where('d.module_id', $moduleId);
     }
 
     /**
