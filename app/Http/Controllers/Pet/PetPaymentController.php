@@ -145,6 +145,7 @@ class PetPaymentController extends Controller
             # Variable declaration
             $user                       = authUser($req);
             $todayDate                  = Carbon::now();
+            $epoch                      = strtotime($todayDate);
             $petParamId                 = $this->_petParamId;
             $offlineVerificationModes   = $this->_offlineVerificationModes;
             $mPetTran                   = new PetTran();
@@ -173,7 +174,8 @@ class PetPaymentController extends Controller
                 'tranType'      => $tranType,                                                              // Static
                 'tranTypeId'    => $tranTypeId,
                 'amount'        => $payRelatedDetails['refRoundAmount'],
-                'roundAmount'   => $payRelatedDetails['regAmount']
+                'roundAmount'   => $payRelatedDetails['regAmount'],
+                'tokenNo'       => $payRelatedDetails['applicationDetails']['ref_application_id'] . $epoch              // Here 
             ]);
 
             # Save the Details of the transaction
@@ -504,7 +506,8 @@ class PetPaymentController extends Controller
                 'isJsk'             => FALSE,                                   // Static
                 'roundAmount'       => $RazorPayRequest->round_amount,
                 'refChargeId'       => $chargeDetails->id,
-                'ip'                => $req->ip()
+                'ip'                => $req->ip(),
+                'tokenNo'           => $applicationId . $epoch
             ];
             $transDetails = $mPetTran->saveTranDetails($tranReq);
             $mPetTranDetail->saveTransDetails($transDetails['transactionId'], $tranReq);
@@ -604,6 +607,7 @@ class PetPaymentController extends Controller
                 "ulb"           => $applicationDetails->ulb_name,
                 "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
                 "address"       => $applicationDetails->address,
+                "tokenNo"       => $transactionDetails->token_no
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {

@@ -43,6 +43,7 @@ class PetTran extends Model
         $mPetTran->citizen_id   = $req['citId'] ?? null;
         $mPetTran->tran_type_id = $req['tranTypeId'];
         $mPetTran->round_amount = $req['roundAmount'];
+        $mPetTran->token_no     = $req['tokenNo'];
 
         # For online payment
         if ($req['paymentMode'] == $paymentMode['1']) {
