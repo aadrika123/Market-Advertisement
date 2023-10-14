@@ -606,7 +606,7 @@ class PetWorkflowController extends Controller
 
             # Get Application details 
             $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
-            if ($application) {
+            if (!$application) {
                 throw new Exception("application Details not found!");
             }
 
@@ -677,7 +677,7 @@ class PetWorkflowController extends Controller
     public function finalApproval($request, $applicationDetails)
     {
         $now                        = Carbon::now();
-        $status                     = 0;
+        $status                     = 2;
         $applicationId              = $request->applicationId;
         $waterTrack                 = new WorkflowTrack();
         $mPetActiveRegistration     = new PetActiveRegistration();
@@ -688,8 +688,8 @@ class PetWorkflowController extends Controller
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
-        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id);
-        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id);
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id)->first();
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id)->first();
         $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
             ->whereNot('status', 0)
             ->first();
@@ -729,9 +729,12 @@ class PetWorkflowController extends Controller
         $waterTrack->saveTrack($request);
 
         # Delete the details form the active table
-        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $status);
-        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $status);
-        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $status);
+        $refAppReq = [
+            "status" => $status
+        ];
+        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $refAppReq);
+        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
+        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
         return $approvedPetRegistration;
     }
 
