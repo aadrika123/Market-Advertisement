@@ -225,7 +225,7 @@ class WfActiveDocument extends Model
      */
     public function getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
     {
-        return DB::connection('pgsql_masters')->table('wf_active_documents as d')
+        return DB::table('wf_active_documents as d')
             ->select(
                 'd.id',
                 'd.document',

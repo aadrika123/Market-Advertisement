@@ -784,7 +784,7 @@ class PetRegistrationController extends Controller
                 throw new Exception("Application Not Found for this ($req->applicationId) application Id!");
 
             $workflowId = $petDetails->workflow_id;
-            $documents = $mWfActiveDocument->getWaterDocsByAppNo($req->applicationId, $workflowId, $moduleId)
+            $documents  = $mWfActiveDocument->getWaterDocsByAppNo($req->applicationId, $workflowId, $moduleId)
                 ->where('d.status', '!=', 0)
                 ->get();
             $returnData = collect($documents)->map(function ($value) {
