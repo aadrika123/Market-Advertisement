@@ -202,7 +202,7 @@ class BanquetMarriageHallController extends Controller
 
             $cardDetails = $this->generateCardDetails($data);                       // Trait function to get Card Details
             $cardElement = [
-                'headerTitle' => "Banqute/Marriage Hall",
+                'headerTitle' => "Banquet/Marriage Hall",
                 'data' => $cardDetails
             ];
             $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
