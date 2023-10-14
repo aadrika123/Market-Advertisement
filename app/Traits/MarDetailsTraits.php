@@ -16,7 +16,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
+            ['displayString' => 'Licence No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Father Name', 'key' => 'fatherName', 'value' => $data['father']],
             ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
@@ -195,7 +195,7 @@ trait MarDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'Appication No', 'key' => 'appicationNo', 'value' => $data['application_no']],
+            ['displayString' => 'Application No', 'key' => 'appicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
