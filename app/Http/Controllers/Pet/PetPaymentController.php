@@ -337,7 +337,7 @@ class PetPaymentController extends Controller
         $mTempTransaction   = new TempTransaction();
         $mPetChequeDtl      = new PetChequeDtl();
 
-        if ($req['paymentMode'] != $paymentMode[4]) {                                   // Not Cash
+        if ($req['paymentMode'] != $paymentMode[3]) {                                   // Not Cash
             $chequeReqs = [
                 'user_id'           => $req['userId'],
                 'application_id'    => $req['id'],

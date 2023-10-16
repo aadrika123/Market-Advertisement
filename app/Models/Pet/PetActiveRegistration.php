@@ -70,6 +70,7 @@ class PetActiveRegistration extends Model
     {
         return PetActiveRegistration::select(
             'pet_active_registrations.id as ref_application_id',
+            // DB::raw("TO_CHAR(application_apply_date, 'DD-MM-YYYY') as ref-application_apply_date"),
             'pet_active_details.id as ref_pet_id',
             'pet_active_applicants.id as ref_applicant_id',
             'pet_active_registrations.*',
@@ -80,7 +81,8 @@ class PetActiveRegistration extends Model
             'pet_active_applicants.status as applicantsStatus',
             'ulb_ward_masters.ward_name',
             'ulb_masters.ulb_name',
-            'm_pet_occurrence_types.occurrence_types'
+            'm_pet_occurrence_types.occurrence_types',
+
         )
             ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
