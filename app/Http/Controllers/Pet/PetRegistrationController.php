@@ -295,7 +295,7 @@ class PetRegistrationController extends Controller
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
-                # Caution
+                # ❗❗ Caution
                 $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
             }
             # Save active details 
@@ -1594,7 +1594,7 @@ class PetRegistrationController extends Controller
                 "telephone"         => $refApprovedDetails->telephone,
                 "propertyNo"        => $refApprovedDetails->holding_no ?? $refApprovedDetails->saf_no,
 
-                "registrationId"    => $refApprovedDetails->approveId,
+                "registrationId"    => $refApprovedDetails->registration_id,        // Important
                 "isRenewal"         => $renewal,                                    // Static
                 "auth"              => $request->auth
             ]);
@@ -1816,4 +1816,62 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
+
+    /**
+     * | Get Approved application details by application id
+     * | collective data with registration charges
+        | Serial No :
+        | Under construction
+     */
+    // public function getApprovedApplicationDetails(Request $req)
+    // {
+    //     $validated = Validator::make(
+    //         $req->all(),
+    //         [
+    //             'applicationId' => 'required|numeric'
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+
+    //     try {
+    //         $applicationId              = $req->applicationId;
+    //         $mPetApprovedRegistration   = new PetApprovedRegistration();
+    //         $mPetActiveRegistration     = new PetActiveRegistration();          // here
+    //         $mPetRegistrationCharge     = new PetRegistrationCharge();
+    //         $mPetTran                   = new PetTran();
+
+    //         $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+    //         if (is_null($applicationDetails)) {
+    //             throw new Exception("application Not found!");
+    //         }
+    //         $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationDetails->ref_application_id)
+    //             ->select(
+    //                 'id AS chargeId',
+    //                 'amount',
+    //                 'registration_fee',
+    //                 'paid_status',
+    //                 'charge_category',
+    //                 'charge_category_name'
+    //             )
+    //             ->first();
+    //         if (is_null($chargeDetails)) {
+    //             throw new Exception("Charges for respective application not found!");
+    //         }
+    //         if ($chargeDetails->paid_status == 1) {
+    //             # Get Transaction details 
+    //             $tranDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
+    //             if (!$tranDetails) {
+    //                 throw new Exception("Transaction details not found there is some error in data !");
+    //             }
+    //             $applicationDetails['transactionDetails'] = $tranDetails;
+    //         }
+    //         $chargeDetails['roundAmount'] = round($chargeDetails['amount']);
+    //         $applicationDetails['charges'] = $chargeDetails;
+    //         return responseMsgs(true, "Listed application details!", remove_null($applicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+    //     }
+    // }
 }

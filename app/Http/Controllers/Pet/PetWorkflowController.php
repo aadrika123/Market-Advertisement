@@ -685,6 +685,8 @@ class PetWorkflowController extends Controller
         $mPetActiveApplicant        = new PetActiveApplicant();
         $mPetActiveDetail           = new PetActiveDetail();
         $lastLicenceDate            = $now->addYear()->subDay();
+        $key                        = "REG-";                                           // Static
+        $registrationId             = $this->getUniqueId($key);
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
@@ -702,6 +704,7 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
         $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
         $approvedPetRegistration->approve_date      = $now;
+        $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
         $approvedPetRegistration->save();
 
@@ -756,6 +759,8 @@ class PetWorkflowController extends Controller
         $mPetApproveApplicant       = new PetApproveApplicant();
         $mPetApproveDetail          = new PetApproveDetail();
         $lastLicenceDate            = $now->addYear()->subDay();
+        $key                        = "REG-";                                           // Static
+        $registrationId             = $this->getUniqueId($key);
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
@@ -779,6 +784,7 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
         $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
         $approvedPetRegistration->approve_date      = $now;
+        $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
         $approvedPetRegistration->save();
 
@@ -907,4 +913,21 @@ class PetWorkflowController extends Controller
     //     $mPetActiveDetail->updatePetStatus($refPetDetails->id, $status);
     //     return $approvedPetRegistration;
     // }
+
+
+    /**
+     * | Generate Order Id
+     */
+    protected function getUniqueId($key)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $randomString = '';
+        for ($i = 0; $i < 10; $i++) {
+            $index = rand(0, strlen($characters) - 1);
+            $randomString .= $characters[$index];
+        }
+        $uniqueId = (($key . date('dmyhism') . $randomString));
+        $uniqueId = explode("=", chunk_split($uniqueId, 26, "="))[0];
+        return $uniqueId;
+    }
 }
