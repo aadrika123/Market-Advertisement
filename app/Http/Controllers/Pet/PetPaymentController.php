@@ -263,7 +263,7 @@ class PetPaymentController extends Controller
         $mPetRegistrationCharge = new PetRegistrationCharge();
         $mPetTran               = new PetTran();
 
-        # Application details 
+        # Application details and Validation
         $applicationDetail = $mPetActiveRegistration->getPetApplicationById($applicationId)
             ->where('pet_active_details.status', 1)
             ->where('pet_active_applicants.status', 1)
@@ -274,13 +274,15 @@ class PetPaymentController extends Controller
         if ($applicationDetail->payment_status != 0) {
             throw new Exception("payment is updated for application");
         }
+        if ($applicationDetail->citizen_id && $applicationDetail->doc_upload_status == false) {
+            throw new Exception("All application related document not uploaded!");
+        }
 
         # Application type hence the charge type
         switch ($applicationDetail->renewal) {
             case (0):
                 $chargeCategory = $confApplicationType['NEW_APPLY'];
                 break;
-
             case (1):
                 $chargeCategory = $confApplicationType['RENEWAL'];
                 break;

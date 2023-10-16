@@ -32,6 +32,7 @@ class PetApproveApplicant extends Model
             'pet_approved_registrations.application_apply_date',
             'pet_approved_registrations.doc_upload_status',
             'pet_approved_registrations.renewal',
+            'pet_approved_registrations.registration_id',
             'pet_approve_applicants.mobile_no',
             'pet_approve_applicants.applicant_name',
         )
