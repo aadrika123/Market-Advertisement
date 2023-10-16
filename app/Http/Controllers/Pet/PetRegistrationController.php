@@ -1148,7 +1148,7 @@ class PetRegistrationController extends Controller
             if (is_null($chargeDetails)) {
                 throw new Exception("Charges for respective application not found!");
             }
-            if ($chargeDetails->paid_status == 1) {
+            if ($chargeDetails->paid_status != 0) {
                 # Get Transaction details 
                 $tranDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
                 if (!$tranDetails) {
