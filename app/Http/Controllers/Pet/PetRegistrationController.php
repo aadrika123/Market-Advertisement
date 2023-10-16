@@ -1568,7 +1568,7 @@ class PetRegistrationController extends Controller
             }
 
             # Check Params for renewal of Application
-            $this->checkParamForRenewal($refApprovedDetails->id, $refApprovedDetails);
+            $this->checkParamForRenewal($refApprovedDetails->registration_id, $refApprovedDetails);
             $newReq = new PetRegistrationReq([
                 "address"           => $refApprovedDetails->address,
                 "applyThrough"      => $refApprovedDetails->apply_through,
@@ -1619,7 +1619,7 @@ class PetRegistrationController extends Controller
      */
     public function checkParamForRenewal($renewalId, $refApprovedDetails)
     {
-        $now = Carbon::now();
+        // $now = Carbon::now();
         $mPetActiveRegistration = new PetActiveRegistration();
         $isRenewalInProcess = $mPetActiveRegistration->getApplicationByRegId($renewalId)
             ->where('renewal', 1)
@@ -1781,7 +1781,7 @@ class PetRegistrationController extends Controller
             $paramenter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring  = Str::snake($key);
-            $msg        = "Pet active appliction details according to parameter!";
+            $msg        = "Pet approved appliction details according to $key!";
 
             $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mPetApproveApplicant       = new PetApproveApplicant();
@@ -1824,54 +1824,54 @@ class PetRegistrationController extends Controller
         | Serial No :
         | Under construction
      */
-    // public function getApprovedApplicationDetails(Request $req)
-    // {
-    //     $validated = Validator::make(
-    //         $req->all(),
-    //         [
-    //             'applicationId' => 'required|numeric'
-    //         ]
-    //     );
-    //     if ($validated->fails())
-    //         return validationError($validated);
+    public function getApprovedApplicationDetails(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'registrationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-    //     try {
-    //         $applicationId              = $req->applicationId;
-    //         $mPetApprovedRegistration   = new PetApprovedRegistration();
-    //         $mPetActiveRegistration     = new PetActiveRegistration();          // here
-    //         $mPetRegistrationCharge     = new PetRegistrationCharge();
-    //         $mPetTran                   = new PetTran();
+        try {
+            $applicationId              = $req->registrationId;
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetRegistrationCharge     = new PetRegistrationCharge();
+            $mPetTran                   = new PetTran();
 
-    //         $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
-    //         if (is_null($applicationDetails)) {
-    //             throw new Exception("application Not found!");
-    //         }
-    //         $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationDetails->ref_application_id)
-    //             ->select(
-    //                 'id AS chargeId',
-    //                 'amount',
-    //                 'registration_fee',
-    //                 'paid_status',
-    //                 'charge_category',
-    //                 'charge_category_name'
-    //             )
-    //             ->first();
-    //         if (is_null($chargeDetails)) {
-    //             throw new Exception("Charges for respective application not found!");
-    //         }
-    //         if ($chargeDetails->paid_status == 1) {
-    //             # Get Transaction details 
-    //             $tranDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
-    //             if (!$tranDetails) {
-    //                 throw new Exception("Transaction details not found there is some error in data !");
-    //             }
-    //             $applicationDetails['transactionDetails'] = $tranDetails;
-    //         }
-    //         $chargeDetails['roundAmount'] = round($chargeDetails['amount']);
-    //         $applicationDetails['charges'] = $chargeDetails;
-    //         return responseMsgs(true, "Listed application details!", remove_null($applicationDetails), "", "01", ".ms", "POST", $req->deviceId);
-    //     } catch (Exception $e) {
-    //         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-    //     }
-    // }
+            $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)->first();
+            if (is_null($approveApplicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($approveApplicationDetails->application_id)
+                ->select(
+                    'id AS chargeId',
+                    'amount',
+                    'registration_fee',
+                    'paid_status',
+                    'charge_category',
+                    'charge_category_name'
+                )
+                ->where('paid_status', 1)
+                ->first();
+            if (is_null($chargeDetails)) {
+                throw new Exception("Charges for respective application not found!");
+            }
+            # Get Transaction details 
+            $tranDetails = $mPetTran->getTranByApplicationId($approveApplicationDetails->application_id)->first();
+            if (!$tranDetails) {
+                throw new Exception("Transaction details not found there is some error in data !");
+            }
+
+            # return Details 
+            $approveApplicationDetails['transactionDetails']    = $tranDetails;
+            $chargeDetails['roundAmount']                       = round($chargeDetails['amount']);
+            $approveApplicationDetails['charges']               = $chargeDetails;
+            return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
 }

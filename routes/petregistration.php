@@ -53,6 +53,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('registration/apply-renewal', 'applyPetRenewal');
         Route::post('application/searh-application', 'searchApplication');                                      // Admin
         Route::post('search-approved-applications', 'searchApprovedApplication');                               // Admin
+        Route::post('get-approve-registration-list', 'getApprovedApplicationDetails');
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen

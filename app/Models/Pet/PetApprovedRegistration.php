@@ -110,7 +110,7 @@ class PetApprovedRegistration extends Model
      */
     public function getApprovedApplicationDetails($req, $key, $refNo)
     {
-        return PetActiveRegistration::select(
+        return PetApprovedRegistration::select(
             'pet_approved_registrations.id',
             'pet_approved_registrations.application_no',
             'pet_approved_registrations.application_type',
@@ -118,6 +118,7 @@ class PetApprovedRegistration extends Model
             'pet_approved_registrations.application_apply_date',
             'pet_approved_registrations.doc_upload_status',
             'pet_approved_registrations.renewal',
+            'pet_approved_registrations.registration_id',
             'pet_approve_applicants.mobile_no',
             'pet_approve_applicants.applicant_name',
         )
@@ -126,5 +127,34 @@ class PetApprovedRegistration extends Model
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', authUser($req)->ulb_id)
             ->orderByDesc('pet_approved_registrations.id');
+    }
+
+
+    /**
+     * | Get Approved Application by applicationId
+     */
+    public function getPetApprovedApplicationById($registrationId)
+    {
+        return PetApprovedRegistration::select(
+            'pet_approved_registrations.id as approve_id',
+            'pet_approve_details.id as ref_pet_id',
+            'pet_approve_applicants.id as ref_applicant_id',
+            'pet_approved_registrations.*',
+            'pet_approve_details.*',
+            'pet_approve_applicants.*',
+            'pet_approved_registrations.status as registrationStatus',
+            'pet_approve_details.status as petStatus',
+            'pet_approve_applicants.status as applicantsStatus',
+            'ulb_ward_masters.ward_name',
+            'ulb_masters.ulb_name',
+            'm_pet_occurrence_types.occurrence_types'
+        )
+            ->join('ulb_masters', 'ulb_masters.id', 'pet_approved_registrations.ulb_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
+            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.id', $registrationId)
+            ->where('pet_approved_registrations.status', 1);
     }
 }
