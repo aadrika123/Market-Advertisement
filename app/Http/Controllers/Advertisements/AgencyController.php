@@ -1448,11 +1448,11 @@ class AgencyController extends Controller
                 $mAdvHoarding = new AdvHoarding();
                 $mAdvRejectedHoarding = new AdvRejectedHoarding();
 
-                $licenseYear = getFinancialYear(date('Y-m-d'));                                                                            // Get Current Financial Year
-                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first('id');    // Get Current Financial Year Id
+                $licenseYear = getFinancialYear(date('Y-m-d'));                                                                               // Get Current Financial Year
+                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first('id');       // Get Current Financial Year Id
 
-                $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                // Get Count Data of Hoardings
-                $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                          // Get Agency Details
+                $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                   // Get Count Data of Hoardings
+                $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                             // Get Agency Details
 
                 $agencyDashboard['pendingApplication'] = $mAdvActiveHoarding->lastThreeActiveRecord($citizenId);                              // Get Last 3 Active Records
                 $agencyDashboard['approveApplication'] = $mAdvHoarding->lastThreeApproveRecord($citizenId);                                   // Get Last Three Approve Records

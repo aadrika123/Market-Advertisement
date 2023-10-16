@@ -1337,7 +1337,6 @@ class HoardingController extends Controller
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
                 ->orderByDesc('adv_active_hoardings.id');
-            // ->get();
 
             if (trim($req->key))
                 $btcList =  searchFilter($btcList, $req);
@@ -1391,7 +1390,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $userType = $req->auth['user_type'];
             $AdvHoarding = new AdvHoarding();
@@ -1416,7 +1414,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
@@ -1424,7 +1421,6 @@ class HoardingController extends Controller
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);
-
 
             return responseMsgs(true, "Approved Application List", $list, "050634", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -1450,7 +1446,6 @@ class HoardingController extends Controller
             $mAdvHoarding = AdvHoarding::find($req->applicationId);
             $mAdvHoarding->is_archived = 1;
             $mAdvHoarding->save();
-
             return responseMsgs(true, "Archived Application Successfully", "", "050635", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050635", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1467,7 +1462,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
@@ -1497,11 +1491,9 @@ class HoardingController extends Controller
         }
         try {
             // Variable initialization
-
             $mmAdvHoarding = AdvHoarding::find($req->applicationId);
             $mmAdvHoarding->is_blacklist = 1;
             $mmAdvHoarding->save();
-
             return responseMsgs(true, "Blacklist Application Successfully", "", "050637", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050637", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -1518,7 +1510,6 @@ class HoardingController extends Controller
     {
         try {
             // Variable initialization
-
             $citizenId = $req->auth['id'];
             $userId = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
@@ -1765,7 +1756,6 @@ class HoardingController extends Controller
         }
         try {
             // Variable initialization
-
             $approveList = DB::table('adv_hoarding_renewals')
                 ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
@@ -1784,14 +1774,11 @@ class HoardingController extends Controller
                 $data = $approveList->where('payment_mode', $req->payMode);
             }
             $data = $data->paginate($req->perPage);
-
             $ap = $data->toArray();
-
             $amounts = collect();
             $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
                 $amounts->push($item->payment_amount);
             });
-
             return responseMsgs(true, "Application Fetched Successfully", $data, "050642", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050642", 1.0, "271ms", "POST", "", "");
@@ -1834,7 +1821,7 @@ class HoardingController extends Controller
     }
 
     /**
-     * | 
+     * | Get Agency All Applied, Approve and Rejected Application
      */
     public function getAgencyDashboardData(Request $req)
     {
