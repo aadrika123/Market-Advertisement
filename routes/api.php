@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Route;
  * | Status - Closed By Bikash on 25 Apr 2023  , Re-Open For Bandobastee on 26 Apr 2023
  */
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
-
+Route::get('advert/get-payment-reciept/{tranId}/{workflowId}', [ParamController::class,'getPaymentDetailsForReciept']);                                         // 08 ( Application Details For Payment Reciept )
 
 // Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
 // Route::group(['middleware' => ['auth:sanctum', 'request_logger']], function () {

@@ -141,6 +141,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.valid_upto',
             'adv_selfadvertisements.payment_mode',
             'adv_selfadvertisements.holding_no',
+            'adv_selfadvertisements.workflow_id',
             'adv_selfadvertisements.application_date as applyDate',
             'adv_selfadvertisements.trade_license_no',
             'ulb_masters.ulb_name as ulbName',

@@ -1240,7 +1240,6 @@ class AgencyController extends Controller
         ]);
         try {
             // Variable initialization
-
             $redis = Redis::connection();
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             if ($mAdvActiveAgency->doc_verify_status == 1)
@@ -1450,7 +1449,7 @@ class AgencyController extends Controller
                 $mAdvRejectedHoarding = new AdvRejectedHoarding();
 
                 $licenseYear = getFinancialYear(date('Y-m-d'));                                                                            // Get Current Financial Year
-                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;    // Get Current Financial Year Id
+                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first('id');    // Get Current Financial Year Id
 
                 $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                // Get Count Data of Hoardings
                 $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                          // Get Agency Details

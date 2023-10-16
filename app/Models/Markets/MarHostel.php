@@ -228,6 +228,7 @@ class MarHostel extends Model
             'mar_hostels.no_of_beds',
             'mar_hostels.rule',
             'mar_hostels.license_no',
+            'mar_hostels.workflow_id',
             'mar_hostels.application_no',
             'mar_hostels.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',

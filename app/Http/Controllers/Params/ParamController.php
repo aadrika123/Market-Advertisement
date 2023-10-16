@@ -945,6 +945,88 @@ class ParamController extends Controller
     }
 
 
+    
+    
+    /**
+     * | Get Payment Details for all workflow
+     * | Function - 12
+     * | API - 12
+     */
+    public function getPaymentDetailsForReciept($paymentId,$workflowId,Request $req)
+    {
+        try {
+            // Variable initialization
+            $wfworkflowMasterId = $this->getWorkflowMasterId($workflowId);
+            // Get Advertesement Payment Details
+            if ($wfworkflowMasterId == $this->_selfAdvt) {
+                $mAdvSelfadvertisement = new AdvSelfadvertisement();
+                $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Self Advertisement Tax";
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) {
+                $mAdvPrivateland = new AdvPrivateland();
+                $paymentDetails = $mAdvPrivateland->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Private Land Tax";
+            } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
+                $mAdvVehicle = new AdvVehicle();
+                $paymentDetails = $mAdvVehicle->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
+            } elseif ($wfworkflowMasterId == $this->_agency) {
+                $mAdvAgency = new AdvAgency();
+                $paymentDetails = $mAdvAgency->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Agency Tax";
+            } elseif ($wfworkflowMasterId == $this->_hording) {
+                $mAdvHoarding = new AdvHoarding();
+                $paymentDetails = $mAdvHoarding->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Hoarding Tax";
+            }
+
+            // Get Market Payment Details
+            elseif ($wfworkflowMasterId == $this->_banquetHall) {
+                $mMarBanquteHall = new MarBanquteHall();
+                $paymentDetails = $mMarBanquteHall->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Marriage / Banquet Hall Tax";
+            } elseif ($wfworkflowMasterId == $this->_hostel) {
+                $mMarHostel = new MarHostel();
+                $paymentDetails = $mMarHostel->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Hostel Tax";
+            } elseif ($wfworkflowMasterId == $this->_lodge) {
+                $mMarLodge = new MarLodge();
+                $paymentDetails = $mMarLodge->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Lodge Tax";
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) {
+                $mMarDharamshala = new MarDharamshala();
+                $paymentDetails = $mMarDharamshala->getPaymentDetails($paymentId);
+                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
+                $paymentDetails->paymentAgainst = "Dharamshala Tax";
+            }
+            if (empty($paymentDetails)) {
+                throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
+            } else {
+                return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050012", "1.0", responseTime(), "POST", $req->deviceId);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", '050012', 01, responseTime(), 'POST', $req->deviceId);
+        }
+    }
+
+
 
 
 
