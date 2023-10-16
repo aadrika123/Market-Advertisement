@@ -684,20 +684,23 @@ class PetWorkflowController extends Controller
         $mPetApprovedRegistration   = new PetApprovedRegistration();
         $mPetActiveApplicant        = new PetActiveApplicant();
         $mPetActiveDetail           = new PetActiveDetail();
-        $lastLicenceDate            = $now->addYear()->subDay();
+        $lastLicenceDate            = $now->copy()->addYear()->subDay();
         $key                        = "REG-";                                           // Static
         $registrationId             = $this->getUniqueId($key);
 
-        # Data formating for save the consumer details 
-        $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
-        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id)->first();
-        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id)->first();
+
+        # Check if the approve application exist
         $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
             ->whereNot('status', 0)
             ->first();
         if ($someDataExist) {
             throw new Exception("Approve application details exist in active table ERROR!");
         }
+
+        # Data formating for save the consumer details 
+        $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id)->first();
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id)->first();
 
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
