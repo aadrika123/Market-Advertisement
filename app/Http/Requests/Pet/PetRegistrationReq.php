@@ -54,7 +54,7 @@ class PetRegistrationReq extends FormRequest
             $rules['propertyNo'] = 'required|';
         }
         if (isset($this->isRenewal) && $this->isRenewal == 1) {
-            $rules['registrationId'] = 'required|int';
+            $rules['registrationId'] = 'required|';
             $rules['isRenewal'] = 'int|in:1,0';
         }
         return $rules;
