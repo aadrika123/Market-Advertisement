@@ -222,6 +222,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.valid_from',
             'mar_banqute_halls.valid_upto',
             'mar_banqute_halls.license_no',
+            'mar_banqute_halls.workflow_id',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.rule',
             'ly.string_parameter as licenseYear',

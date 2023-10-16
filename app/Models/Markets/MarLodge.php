@@ -222,6 +222,7 @@ class MarLodge extends Model
             'mar_lodges.application_date as applyDate',
             'mar_lodges.license_no',
             'mar_lodges.rule',
+            'mar_lodges.workflow_id',
             'mar_lodges.valid_from',
             'mar_lodges.valid_upto',
             'ulb_masters.ulb_name as ulbName',

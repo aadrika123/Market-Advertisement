@@ -215,6 +215,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.holding_no',
             'mar_dharamshalas.trade_license_no',
             'mar_dharamshalas.rule',
+            'mar_dharamshalas.workflow_id',
             'mar_dharamshalas.payment_details',
             'mar_dharamshalas.payment_mode',
             'mar_dharamshalas.floor_area',

@@ -135,6 +135,7 @@ class AdvVehicle extends Model
             'adv_vehicles.license_to as valid_upto',
             'adv_vehicles.vehicle_name',
             'adv_vehicles.vehicle_no',
+            'adv_vehicles.workflow_id',
             'adv_vehicles.trade_license_no',
             'adv_vehicles.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',

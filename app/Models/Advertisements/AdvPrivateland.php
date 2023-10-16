@@ -129,6 +129,7 @@ class AdvPrivateland extends Model
             'adv_privatelands.license_from as valid_from',
             'adv_privatelands.license_to as valid_upto',
             'adv_privatelands.holding_no',
+            'adv_privatelands.workflow_id',
             'adv_privatelands.payment_mode',
             'adv_privatelands.application_date as applyDate',
             'adv_privatelands.trade_license_no',

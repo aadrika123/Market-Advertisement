@@ -169,6 +169,7 @@ class AdvAgency extends Model
             'adv_agencies.entity_name',
             'adv_agencies.application_no',
             'adv_agencies.license_no',
+            'adv_agencies.workflow_id',
             'adv_agencies.payment_details',
             'adv_agencies.payment_mode',
             'adv_agencies.valid_from',

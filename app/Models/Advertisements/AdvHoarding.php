@@ -448,6 +448,7 @@ class AdvHoarding extends Model
             'adv_hoardings.valid_upto',
             'adv_hoardings.application_no',
             'adv_hoardings.license_no',
+            'adv_hoardings.workflow_id',
             'adv_hoardings.display_area',
             'adv_hoardings.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
