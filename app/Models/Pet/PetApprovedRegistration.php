@@ -103,4 +103,28 @@ class PetApprovedRegistration extends Model
         PetApprovedRegistration::where('id', $id)
             ->update($refDetails);
     }
+
+
+    /**
+     * | Get Approved Application details according to the related details in request 
+     */
+    public function getApprovedApplicationDetails($req, $key, $refNo)
+    {
+        return PetActiveRegistration::select(
+            'pet_approved_registrations.id',
+            'pet_approved_registrations.application_no',
+            'pet_approved_registrations.application_type',
+            'pet_approved_registrations.payment_status',
+            'pet_approved_registrations.application_apply_date',
+            'pet_approved_registrations.doc_upload_status',
+            'pet_approved_registrations.renewal',
+            'pet_approve_applicants.mobile_no',
+            'pet_approve_applicants.applicant_name',
+        )
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.' . $key, 'LIKE', '%' . $refNo . '%')
+            ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.ulb_id', authUser($req)->ulb_id)
+            ->orderByDesc('pet_approved_registrations.id');
+    }
 }

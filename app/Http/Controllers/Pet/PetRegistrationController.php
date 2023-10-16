@@ -1664,7 +1664,6 @@ class PetRegistrationController extends Controller
             [
                 'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
                 'parameter' => 'required',
-                'page'      => 'nullable',
             ]
         );
         if ($validated->fails())
@@ -1674,7 +1673,7 @@ class PetRegistrationController extends Controller
             # Variable assigning
             $key        = $request->filterBy;
             $paramenter = $request->parameter;
-            $pages      = $request->page ?? 10;
+            $pages      = $request->perPage ?? 10;
             $refstring  = Str::snake($key);
             $msg        = "Pet active appliction details according to parameter!";
 
@@ -1753,6 +1752,66 @@ class PetRegistrationController extends Controller
                 default:
                     throw new Exception("Data provided in filterBy is not valid!");
             }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Search approved applications according to certain search category
+        | Serial No :
+        | Working
+     */
+    public function searchApprovedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'required',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            # Variable assigning
+            $key        = $request->filterBy;
+            $paramenter = $request->parameter;
+            $pages      = $request->perPage ?? 10;
+            $refstring  = Str::snake($key);
+            $msg        = "Pet active appliction details according to parameter!";
+
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetApproveApplicant       = new PetApproveApplicant();
+
+            # Distrubtion of search category  ❗❗ Static
+            switch ($key) {
+                case ("mobileNo"):
+                    $activeApplication = $mPetApproveApplicant->getRelatedApproveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("applicationNo"):
+                    $activeApplication = $mPetApprovedRegistration->getApprovedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("applicantName"):
+                    $activeApplication = $mPetApproveApplicant->getRelatedApproveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("holdingNo"):
+                    $activeApplication = $mPetApprovedRegistration->getApprovedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("safNo"):
+                    $activeApplication = $mPetApprovedRegistration->getApprovedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
+            # Check if data not exist
+            $checkVal = collect($activeApplication)->last();
+            if (!$checkVal || $checkVal == 0) {
+                $msg = "Data Not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }

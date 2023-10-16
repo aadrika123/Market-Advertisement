@@ -52,6 +52,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
         Route::post('registration/apply-renewal', 'applyPetRenewal');
         Route::post('application/searh-application', 'searchApplication');                                      // Admin
+        Route::post('search-approved-applications', 'searchApprovedApplication');                               // Admin
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
