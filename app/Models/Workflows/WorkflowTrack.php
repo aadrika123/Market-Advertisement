@@ -63,7 +63,7 @@ class WorkflowTrack extends Model
      */
     public function getTracksByRefId($mRefTable, $tableId)
     {
-        return WorkflowTrack::select(
+      return WorkflowTrack::select(
             'workflow_tracks.ref_table_dot_id AS referenceTable',
             'workflow_tracks.ref_table_id_value AS applicationId',
             'workflow_tracks.message',

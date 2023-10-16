@@ -71,7 +71,7 @@ class SelfAdvetController extends Controller
     //Constructor
     public function __construct(iSelfAdvetRepo $self_repo)
     {
-        DB::enableQueryLog();
+        // DB::enableQueryLog();
         $this->_modelObj = new AdvActiveSelfadvertisement();
         // $this->_workflowIds = Config::get('workflow-constants.ADVERTISEMENT_WORKFLOWS');
         $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -296,13 +296,16 @@ class SelfAdvetController extends Controller
                 'headerTitle' => "Self Advertisement Details",
                 'data' => $cardDetails
             ];
-            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
-            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+            // $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
+            // $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "adv_active_selfadvertisements.id";                         // Static
+            
+        // DB::connection('pgsql_masters')->enableQueryLog();
             $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+        //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
@@ -479,7 +482,7 @@ class SelfAdvetController extends Controller
 
             $metaReqs['moduleId'] = $this->_moduleIds;
             $metaReqs['workflowId'] = $adv->workflow_id;
-            $metaReqs['refTableDotId'] = "adv_active_selfadvertisments.id";
+            $metaReqs['refTableDotId'] = "adv_active_selfadvertisements.id";
             $metaReqs['refTableIdValue'] = $request->applicationId;
             $request->request->add($metaReqs);
 
@@ -522,7 +525,7 @@ class SelfAdvetController extends Controller
             $metaReqs = [
                 'workflowId' => $adv->workflow_id,
                 'moduleId' => $mModuleId,
-                'refTableDotId' => "adv_active_selfadvertisments.id",
+                'refTableDotId' => "adv_active_selfadvertisements.id",
                 'refTableIdValue' => $adv->id,
                 'message' => $request->comment
             ];
@@ -1333,7 +1336,7 @@ class SelfAdvetController extends Controller
 
             $metaReqs['moduleId'] = $this->_moduleIds;
             $metaReqs['workflowId'] = $mAdvActiveSelfadvertisement->workflow_id;
-            $metaReqs['refTableDotId'] = "adv_active_selfadvertisments.id";
+            $metaReqs['refTableDotId'] = "adv_active_selfadvertisements.id";
             $metaReqs['refTableIdValue'] = $req->applicationId;
             $metaReqs['verificationStatus'] = $req->verificationStatus;
             $metaReqs['senderRoleId'] = $req->currentRoleId;
