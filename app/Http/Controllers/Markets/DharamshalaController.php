@@ -212,7 +212,7 @@ class DharamshalaController extends Controller
             
             # Level comment
             $mtableId = $req->applicationId;
-            $mRefTable = "mar_active_banqute_halls.id";                         // Static
+            $mRefTable = "mar_active_dharamshalas.id";                         // Static
             $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
 
             #citizen comment
