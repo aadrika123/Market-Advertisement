@@ -32,7 +32,7 @@ class PetApprovedRegistration extends Model
     {
         PetApprovedRegistration::join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
-            ->where('pet_approved_registrations.id', $registrationId)
+            ->where('pet_approved_registrations.registration_id', $registrationId)
             ->update([
                 "pet_approved_registrations.status" => 2
             ]);
