@@ -1449,7 +1449,7 @@ class AgencyController extends Controller
                 $mAdvRejectedHoarding = new AdvRejectedHoarding();
 
                 $licenseYear = getFinancialYear(date('Y-m-d'));                                                                               // Get Current Financial Year
-                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first('id');       // Get Current Financial Year Id
+                $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;       // Get Current Financial Year Id
 
                 $agencyDashboard['countData'] = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);                                   // Get Count Data of Hoardings
                 $agencyDashboard['profile'] = $mAdvAgency->getagencyDetails($req->auth['email']);                                             // Get Agency Details
@@ -1555,7 +1555,6 @@ class AgencyController extends Controller
         }
         try {
             // Variable initialization
-
             $approveList = DB::table('adv_agency_renewals')
                 ->select('id', 'application_no', 'entity_name', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
