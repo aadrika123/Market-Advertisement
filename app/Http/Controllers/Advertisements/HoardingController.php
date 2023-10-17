@@ -759,9 +759,9 @@ class HoardingController extends Controller
         try {
             // Variable initialization
             $citizenId = $req->auth['id'];
-            $userId = $req->auth['user_type'];
+            $userType = $req->auth['user_type'];
             $mAdvHoarding = new AdvHoarding();
-            $applications = $mAdvHoarding->listApproved($citizenId, $userId);
+            $applications = $mAdvHoarding->listApproved($citizenId, $userType);
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $allApproveList = paginator($applications, $req);
@@ -776,7 +776,7 @@ class HoardingController extends Controller
                     $allApproveList['data'][$key]['renew_option'] = '0';      // Renew option Not Show
                 }
                 if ($list['valid_upto'] < $current_date) {
-                    $allApproveList['data']['renew_option'] = 'Expired';    // Renew Expired
+                    $allApproveList['data'][$key]['renew_option'] = 'Expired';    // Renew Expired
                 }
             }
 
