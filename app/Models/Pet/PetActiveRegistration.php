@@ -82,6 +82,18 @@ class PetActiveRegistration extends Model
             'ulb_ward_masters.ward_name',
             'ulb_masters.ulb_name',
             'm_pet_occurrence_types.occurrence_types',
+            DB::raw("CASE 
+            WHEN pet_active_registrations.apply_through = '1' THEN 'Holding'
+            WHEN pet_active_registrations.apply_through = '2' THEN 'Saf'
+            END AS apply_through_name"),
+            DB::raw("CASE 
+            WHEN pet_active_details.sex = '1' THEN 'Male'
+            WHEN pet_active_details.sex = '2' THEN 'Female'
+            END AS ref_gender"),
+            DB::raw("CASE 
+            WHEN pet_active_details.pet_type = '1' THEN 'Dog'
+            WHEN pet_active_details.pet_type = '2' THEN 'Cat'
+            END AS ref_pet_type"),
 
         )
             ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
