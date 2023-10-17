@@ -1495,10 +1495,16 @@ class PetRegistrationController extends Controller
         $mWfRoleusermap         = new WfRoleusermap();
         $mPetTran               = new PetTran();
 
+        # Collecting application detials
         $applicationdetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
         if (!$applicationdetails) {
             throw new Exception("Application details not found!");
         }
+        if ($applicationdetails->renewal == 1) {
+            throw new Exception("application cannot be edited in case of renewal!");
+        }
+
+        # Validation diff btw citizen and user
         switch ($applicationdetails) {
             case (is_null($applicationdetails->citizen_id) && !is_null($applicationdetails->user_id)):
                 $getRoleReq = new Request([                                                 // make request to get role id of the user
@@ -1532,6 +1538,8 @@ class PetRegistrationController extends Controller
                 }
                 break;
         }
+
+        # Checking the transaction details 
         $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
         if ($transactionDetails) {
             throw new Exception("Transaction data exist application cannot be updated!");
