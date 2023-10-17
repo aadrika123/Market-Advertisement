@@ -592,7 +592,7 @@ class PetWorkflowController extends Controller
             $request->all(),
             [
                 'applicationId' => 'required|digits_between:1,9223372036854775807',
-                'status' => 'required'
+                'status'        => 'required'
             ]
         );
         if ($validated->fails())
@@ -611,8 +611,9 @@ class PetWorkflowController extends Controller
             }
 
             # Check the workflow role 
-            $workflowId = $application->workflow_id;
-            $getRoleReq = new Request([                                                 // make request to get role id of the user
+            $workflowId     = $application->workflow_id;
+            $applicationNo  = $application->application_no;
+            $getRoleReq = new Request([                                                                 // make request to get role id of the user
                 'userId'        => $userId,
                 'workflowId'    => $workflowId
             ]);
@@ -638,7 +639,10 @@ class PetWorkflowController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             $this->commit();
-            return responseMsgs(true, $msg, [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            $returnData = [
+                "applicationNo" => $applicationNo
+            ];
+            return responseMsgs(true, $msg, $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);

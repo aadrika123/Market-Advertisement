@@ -4,6 +4,7 @@ namespace App\Models\Pet;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PetApprovedRegistration extends Model
 {
@@ -147,7 +148,19 @@ class PetApprovedRegistration extends Model
             'pet_approve_applicants.status as applicantsStatus',
             'ulb_ward_masters.ward_name',
             'ulb_masters.ulb_name',
-            'm_pet_occurrence_types.occurrence_types'
+            'm_pet_occurrence_types.occurrence_types',
+            DB::raw("CASE 
+            WHEN pet_approved_registrations.apply_through = '1' THEN 'Holding'
+            WHEN pet_approved_registrations.apply_through = '2' THEN 'Saf'
+            END AS apply_through_name"),
+            DB::raw("CASE 
+            WHEN pet_approve_details.sex = '1' THEN 'Male'
+            WHEN pet_approve_details.sex = '2' THEN 'Female'
+            END AS ref_gender"),
+            DB::raw("CASE 
+            WHEN pet_approve_details.pet_type = '1' THEN 'Dog'
+            WHEN pet_approve_details.pet_type = '2' THEN 'Cat'
+            END AS ref_pet_type"),
         )
             ->join('ulb_masters', 'ulb_masters.id', 'pet_approved_registrations.ulb_id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
@@ -155,6 +168,19 @@ class PetApprovedRegistration extends Model
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.id', $registrationId)
+            ->where('pet_approved_registrations.status', 1);
+    }
+
+
+    /**
+     * | Get all details according to key 
+     */
+    public function getAllApprovdApplicationDetails()
+    {
+        return DB::table('pet_approved_registrations')
+            ->leftJoin('wf_roles', 'wf_roles.id', 'pet_approved_registrations.current_role_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.status', 1);
     }
 }

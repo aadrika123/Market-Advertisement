@@ -50,41 +50,41 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('application/edit-pet-details', 'editPetDetails');                                          // Admin / Citizen
         Route::post('application/edit-applicant-details', 'editApplicantDetails');                              // Not Used
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
-        Route::post('registration/apply-renewal', 'applyPetRenewal');
+        Route::post('registration/apply-renewal', 'applyPetRenewal');                                           // Admin / Citizen
         Route::post('application/searh-application', 'searchApplication');                                      // Admin
         Route::post('search-approved-applications', 'searchApprovedApplication');                               // Admin
-        Route::post('get-approve-registration-list', 'getApprovedApplicationDetails');
+        Route::post('get-approve-registration-list', 'getApprovedApplicationDetails');                          // Admin
+        Route::post('get-approve-registrations', 'getApproveRegistration');                                     // Citizen
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
         Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
         Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
-        # Approved application list  // Caution remove
-        Route::post('approved-registrations', 'getApproveRegistration');
+
     });
 
     /**
      * | Pet Module payment Operations
      */
     Route::controller(PetPaymentController::class)->group(function () {
-        Route::post("application/offline-payment", "offlinePayment");
-        Route::post("application/initiate-online-payment", "handelOnlinePayment");                                           // Admin
-        Route::post("application/payment-receipt", "generatePaymentReceipt");
+        Route::post("application/offline-payment", "offlinePayment");                                           // Admin
+        Route::post("application/initiate-online-payment", "handelOnlinePayment");                              // Admin
+        Route::post("application/payment-receipt", "generatePaymentReceipt");                                   // Admin / Citizen
     });
 
     /**
      * | Pet Workflow 
      */
     Route::controller(PetWorkflowController::class)->group(function () {
-
         Route::post('inbox', 'inbox');                                                                          // Workflow
         Route::post('outbox', 'outbox');                                                                        // Workflow
         Route::post('post-next-level', 'postNextLevel');                                                        // Workflow
         Route::post('special-inbox', 'waterSpecialInbox');                                                      // Workflow
         Route::post('escalate', 'postEscalate');                                                                // Workflow                     
-        // Route::post('btc-inbox', 'btcInbox');                                                                // Workflow
         Route::post('doc-verify-reject', 'docVerifyRejects');                                                   // Workflow
-        Route::post('final-verify-reject', 'finalApprovalRejection');
+        Route::post('final-verify-reject', 'finalApprovalRejection');                                           // Workflow
+        // Route::post('btc-inbox', 'btcInbox');                                                                // Workflow
+
     });
 });
 
@@ -92,5 +92,5 @@ Route::group(['middleware' => ['json.response']], function () {
  * | Pet Module payment Operations
  */
 Route::controller(PetPaymentController::class)->group(function () {
-    Route::post("webhook/end-online-payment", "endOnlinePayment");                                   // Admin
+    Route::post("webhook/end-online-payment", "endOnlinePayment");                                              // Admin
 });

@@ -1112,7 +1112,7 @@ class PetRegistrationController extends Controller
      * | Get application details by application id
      * | collective data with registration charges
         | Serial No :
-        | Under construction
+        | Working
      */
     public function getApplicationDetails(Request $req)
     {
@@ -1169,7 +1169,7 @@ class PetRegistrationController extends Controller
         | Serial No : 
         | CAUTION
         | Working
-        | Cross Check / incase of delete deactivate its status
+        | ❗❗❗ Cross Check / incase of delete deactivate its status ❗❗❗
      */
     public function deletePetApplication(Request $req)
     {
@@ -1264,6 +1264,7 @@ class PetRegistrationController extends Controller
      * | @param request
      * | 01
         | Serial No : 
+        | Working
      */
     public function getSafHoldingDetails(Request $request)
     {
@@ -1335,8 +1336,8 @@ class PetRegistrationController extends Controller
                         ];
                     }
                     # collecting all data 
-                    $occupancyOwnerType         = collect($mPropActiveSafsFloor->getOccupancyType($application['id'], $refTenanted));
-                    $owners['owners']           = collect($mPropActiveSafOwners->getOwnerDtlsBySafId($application['id']));
+                    $occupancyOwnerType = collect($mPropActiveSafsFloor->getOccupancyType($application['id'], $refTenanted));
+                    $owners['owners']   = collect($mPropActiveSafOwners->getOwnerDtlsBySafId($application['id']));
 
                     # merge all data for return 
                     $details = $application->merge($owners)->merge($occupancyOwnerType);
@@ -1351,6 +1352,8 @@ class PetRegistrationController extends Controller
 
     /**
      * | Logged in citizen Holding & Saf
+        | Serial No :
+        | Working
      */
     public function citizenHoldingSaf(Request $req)
     {
@@ -1403,35 +1406,37 @@ class PetRegistrationController extends Controller
 
 
     /**
-     * | Show approved appliction 
-        | Demo Remove
+     * | Show approved appliction for citizen side
+        | Serial No :
+        | Working
      */
     public function getApproveRegistration(Request $req)
     {
         try {
-            $user                   = authUser($req);
-            $confUserType           = $this->_userType;
-            $confDbKey              = $this->_dbKey;
-            $mPetActiveRegistration = new PetActiveRegistration();
+            $user                       = authUser($req);
+            $confUserType               = $this->_userType;
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
 
             if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
                 throw new Exception("You are not an autherised Citizen!");
             }
             # Collect querry Exceptions 
             try {
-                $refAppDetails = $mPetActiveRegistration->dummyApplicationDetails($user->id, $confDbKey['1'])
+                $refApproveDetails = $mPetApprovedRegistration->getAllApprovdApplicationDetails()
                     ->select(
-                        DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
-                        DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
-                        "pet_active_registrations.*",
-                        "pet_active_applicants.applicant_name",
+                        DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_approved_registrations.*",
+                        "pet_approve_applicants.applicant_name",
+                        "wf_roles.role_name"
                     )
-                    ->orderByDesc('pet_active_registrations.id')
+                    ->where('pet_approved_registrations.citizen_id', $user->id)
+                    ->orderByDesc('pet_approved_registrations.id')
                     ->get();
-            } catch (QueryException $q) {
-                return responseMsgs(false, "An error occurred during the query!", $q->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
+            } catch (QueryException $qurry) {
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
             }
-            return responseMsgs(true, "list of active registration!", remove_null($refAppDetails), "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(true, "list of active registration!", remove_null($refApproveDetails), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
@@ -1441,7 +1446,7 @@ class PetRegistrationController extends Controller
     /**
      * | Edit the application pet details
         | Serial No :
-        | Under Con
+        | Working
         | CAUTION
      */
     public function editPetDetails(PetEditReq $req)
@@ -1541,6 +1546,7 @@ class PetRegistrationController extends Controller
      * | registered pet renewal process
         | Serial No :
         | Under Con 
+        | Check
      */
     public function applyPetRenewal(Request $request)
     {
@@ -1615,7 +1621,7 @@ class PetRegistrationController extends Controller
      * | check param for renewal of pet 
         | Serial No :
         | Under con
-        | uncomment the restriction for yearly licence check
+        | Uncomment the restriction for yearly licence check
      */
     public function checkParamForRenewal($renewalId, $refApprovedDetails)
     {
@@ -1641,15 +1647,17 @@ class PetRegistrationController extends Controller
      * | Update the status for the renewal process in approved table and to other related table
         | Serial No :
         | Under con
-        | do same for the applicants and the pet details
+        | ❗❗❗ Do same for the applicants and the pet details ❗❗❗
      */
-    public function updateRenewalDetails($previousAppDetils)
+    public function updateRenewalDetails($previousApproveDetils)
     {
+        $mPetActiveDetail = new PetActiveDetail();
+        $mPetActiveApplicant = new PetActiveApplicant();
         $mPetApprovedRegistration = new PetApprovedRegistration();
         $updateReq = [
-            'status' => 2                                   // Static
+            'status' => 2                                                                       // Static
         ];
-        $mPetApprovedRegistration->updateRelatedStatus($previousAppDetils->approveId, $updateReq);
+        $mPetApprovedRegistration->updateRelatedStatus($previousApproveDetils->id, $updateReq);
     }
 
     /**
@@ -1706,52 +1714,6 @@ class PetRegistrationController extends Controller
                 $msg = "Data Not found!";
             }
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-        }
-    }
-
-
-    /**
-     * | search approved registration application list
-        | Serial No :
-        | Under Con 
-        | finish the code 
-     */
-    public function searchApprovedRegistration(Request $request)
-    {
-        $validated = Validator::make(
-            $request->all(),
-            [
-                'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
-                'parameter' => 'required',
-                'pages'     => 'nullable',
-            ]
-        );
-        if ($validated->fails())
-            return validationError($validated);
-
-        try {
-            # Variable assigning
-            $key        = $request->filterBy;
-            $paramenter = $request->parameter;
-            $pages      = $request->pages ?? 10;
-            $refstring  = Str::snake($key);
-            $msg        = "Pet approved registration details according to parameter!";
-
-            $mPetApprovedRegistration   = new PetApprovedRegistration();
-            $mPetApproveApplicant       = new PetApproveApplicant();
-
-            switch ($key) {
-                case ("mobileNo"):                                                                                                                      // Static
-                    $registeredApplication = $mPetApproveApplicant->getRelatedRegistrationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    break;
-                case ("applicationNo"):
-                    $registeredApplication = $mPetApprovedRegistration->getApprovedRegistrationDetails($request, $refstring, $paramenter)->limit($pages)->get();
-                    break;
-                default:
-                    throw new Exception("Data provided in filterBy is not valid!");
-            }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -1822,7 +1784,7 @@ class PetRegistrationController extends Controller
      * | Get Approved application details by application id
      * | collective data with registration charges
         | Serial No :
-        | Under construction
+        | Working
      */
     public function getApprovedApplicationDetails(Request $req)
     {
