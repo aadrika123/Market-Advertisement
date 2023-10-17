@@ -1579,7 +1579,7 @@ class PetRegistrationController extends Controller
                 "address"           => $refApprovedDetails->address,
                 "applyThrough"      => $refApprovedDetails->apply_through,
                 "breed"             => $refApprovedDetails->breed,
-                "ownerCategory"     => $refApprovedDetails->owner_type,
+                "ownerCategory"     => $refApprovedDetails->ref_owner_type,
                 "color"             => $refApprovedDetails->color,
                 "dateOfLepVaccine"  => $request->dateOfLepVaccine,
                 "dateOfRabies"      => $request->dateOfRabiesVac,
@@ -1607,6 +1607,7 @@ class PetRegistrationController extends Controller
 
             $this->begin();
             $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
+            return $applyDetails;
             $this->updateRenewalDetails($refApprovedDetails);
             $this->commit();
             $returnDetails = $applyDetails->original['data'];

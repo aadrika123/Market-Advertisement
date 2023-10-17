@@ -45,6 +45,7 @@ class PetApprovedRegistration extends Model
     {
         return PetApprovedRegistration::select(
             "pet_approved_registrations.id AS approveId",
+            "pet_approved_registrations.owner_type as ref_owner_type",
             "pet_approve_applicants.id AS applicantId",
             "pet_approve_details.id AS petId",
             "pet_approved_registrations.*",
