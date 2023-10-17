@@ -333,7 +333,7 @@ class PetRegistrationController extends Controller
             $this->commit();
             # Data structure for return
             $returnData = [
-                "id" => $applicationDetails['id'],
+                "id"            => $applicationDetails['id'],
                 "applicationNo" => $applicationDetails['applicationNo'],
             ];
             return responseMsgs(true, "Pet Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
@@ -1607,7 +1607,9 @@ class PetRegistrationController extends Controller
 
             $this->begin();
             $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
-            return $applyDetails;
+            if ($applyDetails->original['status'] == false) {
+                throw new Exception($applyDetails->original['message'] ?? "Renewal Process cnnot be done!");
+            };
             $this->updateRenewalDetails($refApprovedDetails);
             $this->commit();
             $returnDetails = $applyDetails->original['data'];
@@ -1658,7 +1660,7 @@ class PetRegistrationController extends Controller
         $updateReq = [
             'status' => 2                                                                       // Static
         ];
-        $mPetApprovedRegistration->updateRelatedStatus($previousApproveDetils->id, $updateReq);
+        $mPetApprovedRegistration->updateRelatedStatus($previousApproveDetils->approveId, $updateReq);
     }
 
     /**
