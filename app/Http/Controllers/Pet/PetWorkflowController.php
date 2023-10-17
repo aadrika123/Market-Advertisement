@@ -703,13 +703,13 @@ class PetWorkflowController extends Controller
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
-        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id)->first();
-        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id)->first();
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationId)->first();
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
 
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
-        $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
+        $approvedPetRegistration->application_id    = $applicationId;
         $approvedPetRegistration->approve_date      = $now;
         $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
@@ -732,7 +732,7 @@ class PetWorkflowController extends Controller
             'moduleId'          => $this->_petModuleId,
             'workflowId'        => $applicationDetails->workflow_id,
             'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
-            'refTableIdValue'   => $applicationDetails->ref_application_id,
+            'refTableIdValue'   => $applicationId,
             'user_id'           => authUser($request)->id,
         ];
         $request->request->add($metaReqs);
@@ -742,7 +742,7 @@ class PetWorkflowController extends Controller
         $refAppReq = [
             "status" => $status
         ];
-        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $refAppReq);
+        $mPetActiveRegistration->saveApplicationStatus($applicationId, $refAppReq);
         $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
         $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
         return $approvedPetRegistration;
