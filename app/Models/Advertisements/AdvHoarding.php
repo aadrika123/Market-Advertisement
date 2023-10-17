@@ -256,9 +256,7 @@ class AdvHoarding extends Model
             return $data[$key] = $item->count();
         });
         $data['countRejectAppl']['totalRejected'] = $allRejected->sum();
-
-        // $data['ulb_id'] = AdvAgency::select('ulb_id')->where(['citizen_id' => $citizenId])->first()->ulb_id;
-        // $data['ulbId']=;
+        
         $data['totalYearlyHoarding'] = $data['countRejectAppl']['totalRejected'] + $data['countPendindAppl']['totalPending'] + $data['countApprovedAppl']['totalApproved'];
         $data['totalYearlyRenewalHoarding'] = $this->getRenewalApplication($citizenId, $licenseYear);
         $data['getMonthallyTotalApplication']=$this->getMonthallyTotalApplication($citizenId, $licenseYear);
@@ -266,9 +264,6 @@ class AdvHoarding extends Model
         $data3['payment'] = AdvHoardingRenewal::select('payment_date', 'payment_amount', 'application_type')
             ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get();
-        // ->groupBy(function ($val) {
-        //     return Carbon::parse($val->payment_date)->format('M');
-        // });
 
         $newPayment = collect();
         $renewPayment = collect();

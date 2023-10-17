@@ -159,7 +159,7 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(PrivateLandController::class)->group(function () {
-        Route::post('advert/pvt-land/add-new', 'addNew');                                                           // 01   ( Save Application )  
+        Route::post('advert/pvt-land/add-new', 'addNew');                                                           // 01 ( Save Application )  
         Route::post('advert/pvt-land/get-application-details-for-renew', 'applicationDetailsForRenew');             // 02 ( Renew Application )
         Route::post('advert/pvt-land/renewal-application', 'renewalApplication');                                   // 03 ( Renew Application ) 
         Route::post('advert/pvt-land/list-inbox', 'listInbox');                                                     // 04 ( Application Inbox Lists )
@@ -189,9 +189,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/back-to-citizen', 'backToCitizen');                                            // 28 ( Application Back to Citizen )
         Route::post('advert/pvt-land/list-btc-inbox', 'listBtcInbox');                                              // 29 ( list BTC Inbox )
         Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');                                       // 30 ( Reupload Rejected Documents )
-        Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');                   //35 ( Get Application Between two date )
-        Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');                   //36 ( Get Application Financial Year Wise )
-        Route::post('advert/pvt-land/payment-collection', 'paymentCollection');                                     //37 ( Get Application Financial Year Wise )
+        Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');                   // 35 ( Get Application Between two date )
+        Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');                   // 36 ( Get Application Financial Year Wise )
+        Route::post('advert/pvt-land/payment-collection', 'paymentCollection');                                     // 37 ( Get Application Financial Year Wise )
     });
 
     /**
@@ -237,7 +237,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/is-email-available', 'isEmailAvailable');                                        // 35 ( Check email is free for agency or not )
 
         
-        Route::post('advert/agency/get-agency-dashboard-data', 'getAgencyDashboard');                                    // 32 ( Get Agency Dashboard)
+        Route::post('advert/agency/get-agency-dashboard-data', 'getAgencyDashboard');                               // 36 ( Get Agency Dashboard)
     });
 
     /**
