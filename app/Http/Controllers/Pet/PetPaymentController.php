@@ -215,6 +215,7 @@ class PetPaymentController extends Controller
         $mPetTranDetail         = new PetTranDetail();
         $mPetActiveRegistration = new PetActiveRegistration();
         $mPetTran               = new PetTran();
+        $applicationId          = $activeConRequest->ref_application_id;
 
         if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
             $charges->paid_status = 2;
@@ -225,19 +226,19 @@ class PetPaymentController extends Controller
                 "verify_status" => 2
             ];                                                              // Update Demand Paid Status // Static
             $mPetTran->saveStatusInTrans($waterTransId, $tranReq);
-            $mPetActiveRegistration->saveApplicationStatus($activeConRequest->id, $refReq);
+            $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
         } else {
             $charges->paid_status = 1;                                      // Update Demand Paid Status // Static
             $refReq = [
                 "payment_status"    => 1,
                 "current_role_id"   => $activeConRequest->initiator_role_id
             ];
-            $mPetActiveRegistration->saveApplicationStatus($activeConRequest->id, $refReq);
+            $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
         }
         $charges->save();                                                                   // Save Demand
 
         $refTranDetails = [
-            "id"            => $activeConRequest->id,
+            "id"            => $applicationId,
             "refChargeId"   => $charges->id,
             "roundAmount"   => $request->roundAmount,
             "tranTypeId"    => $request->tranType
