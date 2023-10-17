@@ -1602,7 +1602,7 @@ class PetRegistrationController extends Controller
                 "ulbId"             => $refApprovedDetails->ulb_id,
                 "ward"              => $refApprovedDetails->ward_id,
                 "applicantName"     => $refApprovedDetails->applicant_name,
-                "mobileNo"          => $request->mobileNo ?? $refApprovedDetails->mobile_no,
+                "mobileNo"          => $refApprovedDetails->mobile_no,
                 "email"             => $request->email ?? $refApprovedDetails->email,
                 "panNo"             => $refApprovedDetails->pan_no,
                 "telephone"         => $refApprovedDetails->telephone,

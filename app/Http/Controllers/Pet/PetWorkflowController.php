@@ -727,7 +727,7 @@ class PetWorkflowController extends Controller
         $approvedPetDetails->created_at = $now;
         $approvedPetDetails->save();
 
-        # dend record in the track table 
+        # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
             'workflowId'        => $applicationDetails->workflow_id,
@@ -771,11 +771,11 @@ class PetWorkflowController extends Controller
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
-        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_applicant_id);
-        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_pet_id);
+        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_application_id)->first();
+        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_application_id)->first();
 
         # Check data existence
-        $approveDataExist = $mPetApprovedRegistration->getApproveAppById($applicationDetails->registration_id)
+        $approveDataExist = $mPetApprovedRegistration->getApproveAppByRegId($applicationDetails->registration_id)
             ->where('status', 2)                                                // Static
             ->first();
         if (!$approveDataExist) {
@@ -837,9 +837,9 @@ class PetWorkflowController extends Controller
         $approveData = [
             "status" => $status
         ];
-        $mPetApprovedRegistration->updateApproveAppStatus($applicationDetails->ref_application_id, $approveData);
-        $mPetApproveApplicant->updateAproveApplicantDetials($refOwnerDetails->id, $approveData);  /// Not done
-        $mPetApproveDetail->updateApprovePetStatus($refPetDetails->id, $approveData);             /// Not done   
+        $mPetApprovedRegistration->updateApproveAppStatus($approveDataExist->id, $approveData);
+        $mPetApproveApplicant->updateAproveApplicantDetials($approveApplicantDetail->id, $approveData);  /// Not done
+        $mPetApproveDetail->updateApprovePetStatus($approvePetDetail->id, $approveData);             /// Not done   
 
         # Send record in the track table 
         $metaReqs = [

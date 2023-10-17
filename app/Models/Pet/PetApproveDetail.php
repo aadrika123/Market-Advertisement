@@ -17,4 +17,13 @@ class PetApproveDetail extends Model
         return PetApproveDetail::where('application_id', $applicationId)
             ->where('status', 1);
     }
+
+    /**
+     * | Update the approved pet details 
+     */
+    public function updateApprovePetStatus($id, $refReq)
+    {
+        PetApproveDetail::where('id', $id)
+            ->update($refReq);
+    }
 }

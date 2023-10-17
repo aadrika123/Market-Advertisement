@@ -42,4 +42,13 @@ class PetApproveApplicant extends Model
             ->where('pet_approved_registrations.ulb_id', authUser($req)->ulb_id)
             ->orderByDesc('pet_approved_registrations.id');
     }
+
+    /**
+     * | Update the approved applicant details 
+     */
+    public function updateAproveApplicantDetials($id, $refReq)
+    {
+        PetApproveApplicant::where('id', $id)
+            ->update($refReq);
+    }
 }

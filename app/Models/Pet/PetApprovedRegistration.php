@@ -91,9 +91,9 @@ class PetApprovedRegistration extends Model
     /**
      * | Get the approve application details using 
      */
-    public function getApproveAppById($id)
+    public function getApproveAppByRegId($id)
     {
-        return PetApprovedRegistration::where('id', $id)
+        return PetApprovedRegistration::where('registration_id', $id)
             ->orderByDesc('id');
     }
 
