@@ -96,10 +96,10 @@ class AdvHoarding extends Model
         // }
         // echo $usertype; die;
         // return $allApproveList;
-        if ($usertype == 'Citizen') {
-            return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false);
+        if ($usertype == 'Advert-Agency') {
+            return $allApproveList->where('citizen_id', $citizenId)->where('is_archived', false)->where('is_blacklist', false);
         } else {
-            return $allApproveList->where('payment_status', '1')->where('is_archived', false)->where('is_blacklist', false);
+            return $allApproveList->where('is_archived', false)->where('is_blacklist', false);
         }
     }
 
@@ -256,7 +256,7 @@ class AdvHoarding extends Model
             return $data[$key] = $item->count();
         });
         $data['countRejectAppl']['totalRejected'] = $allRejected->sum();
-        
+
         $data['totalYearlyHoarding'] = $data['countRejectAppl']['totalRejected'] + $data['countPendindAppl']['totalPending'] + $data['countApprovedAppl']['totalApproved'];
         $data['totalYearlyRenewalHoarding'] = $this->getRenewalApplication($citizenId, $licenseYear);
         $data['getMonthallyTotalApplication']=$this->getMonthallyTotalApplication($citizenId, $licenseYear);
