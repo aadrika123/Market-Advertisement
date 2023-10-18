@@ -134,9 +134,7 @@ class PetPaymentController extends Controller
     {
         $validated = Validator::make(
             $req->all(),
-            [
-                'remarks' => 'nullable',
-            ]
+            ['remarks' => 'nullable',]
         );
         if ($validated->fails())
             return validationError($validated);
@@ -224,11 +222,11 @@ class PetPaymentController extends Controller
             ];
             $tranReq = [
                 "verify_status" => 2
-            ];                                                              // Update Demand Paid Status // Static
+            ];                                                                              // Update Demand Paid Status // Static
             $mPetTran->saveStatusInTrans($waterTransId, $tranReq);
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
         } else {
-            $charges->paid_status = 1;                                      // Update Demand Paid Status // Static
+            $charges->paid_status = 1;                                                      // Update Demand Paid Status // Static
             $refReq = [
                 "payment_status"    => 1,
                 "current_role_id"   => $activeConRequest->initiator_role_id
@@ -241,7 +239,7 @@ class PetPaymentController extends Controller
             "id"            => $applicationId,
             "refChargeId"   => $charges->id,
             "roundAmount"   => $request->roundAmount,
-            "tranTypeId"    => $request->tranType
+            "tranTypeId"    => $request->tranTypeId
         ];
         # Save Trans Details                                                   
         $mPetTranDetail->saveTransDetails($waterTransId, $refTranDetails);

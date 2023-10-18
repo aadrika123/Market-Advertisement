@@ -221,7 +221,6 @@ class PetRegistrationController extends Controller
             $mPetActiveDetail           = new PetActiveDetail();
             $mPetActiveRegistration     = new PetActiveRegistration();
             $mPetActiveApplicant        = new PetActiveApplicant();
-            $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mWfWorkflow                = new WfWorkflow();
             $mMPetFee                   = new MPetFee();
             $mWorkflowTrack             = new WorkflowTrack();
@@ -295,8 +294,6 @@ class PetRegistrationController extends Controller
                     "applicationTypeId" => $confApplicationType['RENEWAL']
                 ];
                 $req->merge($refData);
-                # ❗❗ Caution
-                $mPetApprovedRegistration->deactivateOldRegistration($req->registrationId);
             }
             # Save active details 
             $applicationDetails = $mPetActiveRegistration->saveRegistration($req, $user);
@@ -1632,7 +1629,7 @@ class PetRegistrationController extends Controller
      * | check param for renewal of pet 
         | Serial No :
         | Under con
-        | Uncomment the restriction for yearly licence check
+        | ❗❗ Uncomment the restriction for yearly licence check ❗❗
      */
     public function checkParamForRenewal($renewalId, $refApprovedDetails)
     {
@@ -1657,13 +1654,10 @@ class PetRegistrationController extends Controller
     /**
      * | Update the status for the renewal process in approved table and to other related table
         | Serial No :
-        | Under con
-        | ❗❗❗ Do same for the applicants and the pet details ❗❗❗
+        | Working
      */
     public function updateRenewalDetails($previousApproveDetils)
     {
-        $mPetActiveDetail = new PetActiveDetail();
-        $mPetActiveApplicant = new PetActiveApplicant();
         $mPetApprovedRegistration = new PetApprovedRegistration();
         $updateReq = [
             'status' => 2                                                                       // Static
