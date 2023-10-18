@@ -124,7 +124,7 @@ class MarToll extends Model
     }
 
     /**
-     * | get Toll Details By Toll Id
+     * | get Toll Last Reciept By Toll Id
      */
     public function getTollReciept($id)
     {
