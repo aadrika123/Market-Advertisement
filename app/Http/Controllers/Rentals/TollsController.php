@@ -45,7 +45,7 @@ class TollsController extends Controller
         ]);
 
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), [], 055101, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $validator->errors(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
 
         try {
             // Variable Assignments
@@ -169,7 +169,7 @@ class TollsController extends Controller
             "status" => 'nullable|bool'
         ]);
         if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), [], 055103, "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(false, $validator->errors(), [], "055103", "1.0", responseTime(), "POST", $request->deviceId);
 
         try {
             $relativePath = Config::get('constants.TOLL_PATH');
@@ -294,7 +294,7 @@ class TollsController extends Controller
     {
         try {
             $mtoll = $this->_mToll->retrieveActive();                       // Get List of All Active toll
-            return responseMsgs(true, "", $mtoll, 55107, "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(true, "", $mtoll, "55107", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055106", "1.0", responseTime(), "POST", $request->deviceId);
         }
@@ -361,7 +361,7 @@ class TollsController extends Controller
             $mMarTollPayment = new MarTollPayment();
             $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
-            // $list['todayCollection']=500.02;
+
             $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055108", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
