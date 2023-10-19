@@ -394,7 +394,7 @@ class AdvActiveHoarding extends Model
     public function getHoardingList($ulbId)
     {
         return AdvActiveHoarding::select('*')
-            ->where('adv_active_Hoardings.ulb_id', $ulbId);
+            ->where('adv_active_hoardings.ulb_id', $ulbId);
     }
 
     /**
