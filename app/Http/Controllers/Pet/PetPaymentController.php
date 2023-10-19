@@ -619,7 +619,7 @@ class PetPaymentController extends Controller
     /**
      * | Serch application from every registration table
         | Serial No 
-        | Under Con
+        | Working
      */
     public function getApplicationRelatedDetails($transactionDetails)
     {
@@ -649,10 +649,10 @@ class PetPaymentController extends Controller
                 $refApplicationDetails = $mPetRenewalRegistration->getRenewalApplicationById($transactionDetails->related_id)
                     ->select(
                         'ulb_masters.ulb_name',
-                        'pet_renewal_applicants.application_no',
-                        'pet_renewal_registrations.applicant_name',
-                        'pet_renewal_applicants.address',
-                    )->first();;
+                        'pet_renewal_registrations.application_no',
+                        'pet_renewal_applicants.applicant_name',
+                        'pet_renewal_registrations.address',
+                    )->first();
             }
         }
 

@@ -1426,6 +1426,7 @@ class PetRegistrationController extends Controller
                         "pet_approved_registrations.*",
                         "pet_approve_applicants.applicant_name",
                         "wf_roles.role_name",
+                        "pet_approved_registrations.status as registrationSatus",
                         DB::raw("CASE 
                         WHEN pet_approved_registrations.status = 1 THEN 'Approved'
                         WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
