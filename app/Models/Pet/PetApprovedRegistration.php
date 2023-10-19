@@ -138,6 +138,7 @@ class PetApprovedRegistration extends Model
     public function getPetApprovedApplicationById($registrationId)
     {
         return PetApprovedRegistration::select(
+            DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
             'pet_approved_registrations.id as approve_id',
             'pet_approve_details.id as ref_pet_id',
             'pet_approve_applicants.id as ref_applicant_id',
@@ -168,8 +169,7 @@ class PetApprovedRegistration extends Model
             ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
-            ->where('pet_approved_registrations.id', $registrationId)
-            ->where('pet_approved_registrations.status', 1);
+            ->where('pet_approved_registrations.id', $registrationId);
     }
 
 
@@ -181,7 +181,6 @@ class PetApprovedRegistration extends Model
         return DB::table('pet_approved_registrations')
             ->leftJoin('wf_roles', 'wf_roles.id', 'pet_approved_registrations.current_role_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
-            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
-            ->where('pet_approved_registrations.status', 1);
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id');
     }
 }

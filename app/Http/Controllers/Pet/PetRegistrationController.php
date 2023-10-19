@@ -1425,8 +1425,13 @@ class PetRegistrationController extends Controller
                         DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
                         "pet_approved_registrations.*",
                         "pet_approve_applicants.applicant_name",
-                        "wf_roles.role_name"
+                        "wf_roles.role_name",
+                        DB::raw("CASE 
+                        WHEN pet_approved_registrations.status = 1 THEN 'Approved'
+                        WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
+                        END as current_status")
                     )
+                    ->where('pet_approved_registrations.status', '<>', 0)
                     ->where('pet_approved_registrations.citizen_id', $user->id)
                     ->orderByDesc('pet_approved_registrations.id')
                     ->get();
@@ -1808,7 +1813,9 @@ class PetRegistrationController extends Controller
             $mPetRegistrationCharge     = new PetRegistrationCharge();
             $mPetTran                   = new PetTran();
 
-            $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)->first();
+            $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)
+                ->where('pet_approved_registrations.status', '<>', 0)                                                       // Static
+                ->first();
             if (is_null($approveApplicationDetails)) {
                 throw new Exception("application Not found!");
             }
@@ -1821,7 +1828,7 @@ class PetRegistrationController extends Controller
                     'charge_category',
                     'charge_category_name'
                 )
-                ->where('paid_status', 1)
+                ->where('paid_status', 1)                                                                                   // Static
                 ->first();
             if (is_null($chargeDetails)) {
                 throw new Exception("Charges for respective application not found!");

@@ -70,7 +70,7 @@ class PetActiveRegistration extends Model
     {
         return PetActiveRegistration::select(
             'pet_active_registrations.id as ref_application_id',
-            // DB::raw("TO_CHAR(application_apply_date, 'DD-MM-YYYY') as ref-application_apply_date"),
+            DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
             'pet_active_details.id as ref_pet_id',
             'pet_active_applicants.id as ref_applicant_id',
             'pet_active_registrations.*',
