@@ -296,8 +296,8 @@ class SelfAdvetController extends Controller
                 'headerTitle' => "Self Advertisement Details",
                 'data' => $cardDetails
             ];
-            // $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
-            // $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
+            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
             # Level comment
             $mtableId = $req->applicationId;
