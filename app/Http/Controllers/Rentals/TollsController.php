@@ -147,7 +147,6 @@ class TollsController extends Controller
                 'ulb_id'                  => $request->auth['ulb_id'],
                 'last_tran_id'            => $request->lastTranId,
             ];
-            // return $marToll;
             $this->_mToll->create($marToll);
             return responseMsgs(true, "Successfully Saved", ['tollNo' => $tollNo], "055102", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
@@ -293,7 +292,7 @@ class TollsController extends Controller
     public function retrieveActive(Request $request)
     {
         try {
-            $mtoll = $this->_mToll->retrieveActive();                       // Get List of All Active toll
+            $mtoll = $this->_mToll->retrieveActive();                                               // Get List of All Active toll
             return responseMsgs(true, "", $mtoll, "55107", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055106", "1.0", responseTime(), "POST", $request->deviceId);

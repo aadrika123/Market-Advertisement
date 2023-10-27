@@ -179,7 +179,6 @@ class ParamController extends Controller
                 $mMarLodge = new MarLodge();
                 $recieptDetails = $mMarLodge->getApprovalLetter($req->applicationId);
             }
-
             return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "050202", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0,  responseTime(), "POST", "", "");
@@ -231,10 +230,8 @@ class ParamController extends Controller
             ];
             $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
 
-            if ($wfworkflowMasterId == $this->_selfAdvt) { // Self Advertisement Payment
-
+            if ($wfworkflowMasterId == $this->_selfAdvt) {                                          // Self Advertisement Payment
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
-
                 $mAdvSelfadvertisement->payment_date = Carbon::now();
                 $mAdvSelfadvertisement->payment_mode = "Online";
                 $mAdvSelfadvertisement->payment_status = 1;
@@ -267,7 +264,7 @@ class ParamController extends Controller
                 $appDetails = AdvSelfadvertisement::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($wfworkflowMasterId == $this->_movableVehicle) { // Movable Vechicles Payment
+            } elseif ($wfworkflowMasterId == $this->_movableVehicle) {                                              // Movable Vechicles Payment
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
                 $mAdvVehicle->payment_date = Carbon::now();
@@ -301,7 +298,7 @@ class ParamController extends Controller
                 $appDetails = AdvVehicle::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($wfworkflowMasterId ==  $this->_agency) { // Agency Apply Payment
+            } elseif ($wfworkflowMasterId ==  $this->_agency) {                                                     // Agency Apply Payment
 
                 $mAdvAgency = AdvAgency::find($req->id);
 
@@ -337,7 +334,7 @@ class ParamController extends Controller
                 $appDetails = AdvAgency::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($wfworkflowMasterId == $this->_pvtLand) { // Private Land Payment
+            } elseif ($wfworkflowMasterId == $this->_pvtLand) {                                                             // Private Land Payment
 
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
                 $mAdvPrivateland->payment_date = Carbon::now();
@@ -371,7 +368,7 @@ class ParamController extends Controller
                 $appDetails = AdvPrivateland::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($wfworkflowMasterId == $this->_hording) { // Hording Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_hording) {                                                 // Hording Apply Payment
 
                 $mAdvHoarding = AdvHoarding::find($req->id);
                 $mAdvHoarding->payment_date = Carbon::now();
@@ -405,7 +402,7 @@ class ParamController extends Controller
                 $appDetails = AdvHoarding::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
-            } elseif ($wfworkflowMasterId == $this->_banquetHall) { // Hording Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_banquetHall) {                                         // Hording Apply Payment
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
                 $mMarBanquteHall->payment_date = Carbon::now();
@@ -423,7 +420,6 @@ class ParamController extends Controller
                         ->orderByDesc('id')
                         ->skip(1)->first();
                     $mMarBanquteHall->valid_from = $details->valid_upto;
-                    // $mMarBanquteHall->valid_upto = date("Y-m-d",strtotime("+1 Years -1 days", $details->valid_upto));
                     $mMarBanquteHall->valid_upto = Carbon::createFromFormat('Y-m-d', $details->valid_upto)->addYears(1)->subDay(1);
                 }
                 $mMarBanquteHall->save();
@@ -441,7 +437,7 @@ class ParamController extends Controller
                 $appDetails = MarBanquteHall::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($wfworkflowMasterId == $this->_hostel) { // Hostel Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_hostel) {                                              // Hostel Apply Payment
 
                 $mMarHostel = MarHostel::find($req->id);
                 $mMarHostel->payment_date = Carbon::now();
@@ -475,7 +471,7 @@ class ParamController extends Controller
                 $appDetails = MarHostel::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($wfworkflowMasterId == $this->_lodge) { // Lodge Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_lodge) {                                                       // Lodge Apply Payment
 
                 $mMarLodge = MarLodge::find($req->id);
                 $mMarLodge->payment_date = Carbon::now();
@@ -510,7 +506,7 @@ class ParamController extends Controller
                 $appDetails = MarLodge::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
                 $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
-            } elseif ($wfworkflowMasterId == $this->_dharamshala) { // Dharamshala Apply Payment
+            } elseif ($wfworkflowMasterId == $this->_dharamshala) {                                                 // Dharamshala Apply Payment
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date = Carbon::now();
                 $mMarDharamshala->payment_status = 1;
@@ -560,7 +556,6 @@ class ParamController extends Controller
      */
     public function advertDashboard(Request $req)
     {
-        // return $req;
         $userDetails = authUserDetails($req);
         $ulbId = $userDetails['ulb_id'];
         try {
@@ -570,61 +565,60 @@ class ParamController extends Controller
             $advert['selfPendingApplications'] = $pendingList;
 
             $madvSelfAdvertisement = new AdvSelfadvertisement();
-            $approveList = $madvSelfAdvertisement->allApproveList()->where('ulb_id', $ulbId)->values();              // Find Self Advertisement Approve Applications
+            $approveList = $madvSelfAdvertisement->allApproveList()->where('ulb_id', $ulbId)->values();                     // Find Self Advertisement Approve Applications
             $advert['selfApprovedApplications'] = $approveList;
 
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication()->where('ulb_id', $ulbId)->values();  // Find Self Advertisement Rejected Applications
+            $rejectList = $mAdvRejectedSelfadvertisement->rejectedApplication()->where('ulb_id', $ulbId)->values();         // Find Self Advertisement Rejected Applications
             $advert['selfRejectedApplications'] = $rejectList;
 
             $mAdvActivePrivateland = new AdvActivePrivateland();
-            $pendingList = $mAdvActivePrivateland->allPendingList()->where('ulb_id', $ulbId)->values();                 // Find Pvt Land Approve Applications
+            $pendingList = $mAdvActivePrivateland->allPendingList()->where('ulb_id', $ulbId)->values();                     // Find Pvt Land Approve Applications
             $advert['pvtLandPendingApplications'] = $pendingList;
 
             $mAdvPrivateland = new AdvPrivateland();
-            $pvtapproveList = $mAdvPrivateland->allApproveList()->where('ulb_id', $ulbId)->values();                 // Find Pvt Land Approve Applications
+            $pvtapproveList = $mAdvPrivateland->allApproveList()->where('ulb_id', $ulbId)->values();                        // Find Pvt Land Approve Applications
             $advert['pvtLandApprovedApplications'] = $pvtapproveList;
 
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication()->where('ulb_id', $ulbId)->values();     // Find Pvt Land Rejected Applications
+            $pvtRejectList = $mAdvRejectedPrivateland->rejectedApplication()->where('ulb_id', $ulbId)->values();            // Find Pvt Land Rejected Applications
             $advert['pvtLandRejectedApplications'] = $pvtRejectList;
 
             $mAdvActiveVehicle = new AdvActiveVehicle();
-            $pendingList = $mAdvActiveVehicle->allPendingList()->where('ulb_id', $ulbId)->values();                // Find Vehicle Approve Applications
+            $pendingList = $mAdvActiveVehicle->allPendingList()->where('ulb_id', $ulbId)->values();                         // Find Vehicle Approve Applications
             $advert['vehiclePendingApplications'] = $pendingList;
 
             $mAdvVehicle = new AdvVehicle();
-            $vehicleApproveList = $mAdvVehicle->allApproveList()->where('ulb_id', $ulbId)->values();                // Find Vehicle Approve Applications
+            $vehicleApproveList = $mAdvVehicle->allApproveList()->where('ulb_id', $ulbId)->values();                        // Find Vehicle Approve Applications
             $advert['vehicleApprovedApplications'] = $vehicleApproveList;
 
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication()->where('ulb_id', $ulbId)->values();    // Find Vehicle Rejected Applications
+            $vehicleRejectList = $mAdvRejectedVehicle->rejectedApplication()->where('ulb_id', $ulbId)->values();            // Find Vehicle Rejected Applications
             $advert['vehicleRejectedApplications'] = $vehicleRejectList;
 
             $mAdvActiveAgency = new AdvActiveAgency();
-            $pendingList = $mAdvActiveAgency->allPendingList()->where('ulb_id', $ulbId)->values();                  // Find Agency Approve Applications
+            $pendingList = $mAdvActiveAgency->allPendingList()->where('ulb_id', $ulbId)->values();                          // Find Agency Approve Applications
             $advert['agencyPendingApplications'] = $pendingList;
 
             $mAdvAgency = new AdvAgency();
-            $agencyApproveList = $mAdvAgency->allApproveList()->where('ulb_id', $ulbId)->values();                  // Find Agency Approve Applications
+            $agencyApproveList = $mAdvAgency->allApproveList()->where('ulb_id', $ulbId)->values();                          // Find Agency Approve Applications
             $advert['agencyApprovedApplications'] = $agencyApproveList;
 
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication()->where('ulb_id', $ulbId)->values();      // Find Agency Rejected Applications
+            $agencyRejectList = $mAdvRejectedAgency->rejectedApplication()->where('ulb_id', $ulbId)->values();              // Find Agency Rejected Applications
             $advert['agencyRejectedApplications'] = $agencyRejectList;
 
             $mAdvActiveHoarding = new AdvActiveHoarding();
-            $hoardingPendingList = $mAdvActiveHoarding->allPendingList()->where('ulb_id', $ulbId)->values();              // Find Hoarding Approve Applications
+            $hoardingPendingList = $mAdvActiveHoarding->allPendingList()->where('ulb_id', $ulbId)->values();                // Find Hoarding Approve Applications
             $advert['hoardingPendingApplications'] = $hoardingPendingList;
 
             $mAdvHoarding = new AdvHoarding();
-            $hoardingApproveList = $mAdvHoarding->allApproveList()->where('ulb_id', $ulbId)->values();              // Find Hoarding Approve Applications
+            $hoardingApproveList = $mAdvHoarding->allApproveList()->where('ulb_id', $ulbId)->values();                      // Find Hoarding Approve Applications
             $advert['hoardingApprovedApplications'] = $hoardingApproveList;
 
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
-            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id', $ulbId)->values();  // Find Hoarding Rejected Applications
+            $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id', $ulbId)->values();          // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
-
             return responseMsgs(true, 'Data Fetched',  $advert, "050205", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", '050205', 01, responseTime(), 'POST', '');
@@ -643,39 +637,39 @@ class ParamController extends Controller
         try {
             // Variable initialization
             $mMarActiveBanquteHall = new MarActiveBanquteHall();
-            $pendingList = $mMarActiveBanquteHall->allPendingList()->where('ulb_id', $ulbId)->values();                              // Find Banquet Hall Approve Applications
+            $pendingList = $mMarActiveBanquteHall->allPendingList()->where('ulb_id', $ulbId)->values();                             // Find Banquet Hall Approve Applications
             $market['banquetPendingApplications'] = $pendingList;
 
             $mMarBanquteHall = new MarBanquteHall();
-            $approveList = $mMarBanquteHall->allApproveList()->where('ulb_id', $ulbId)->values();                              // Find Banquet Hall Approve Applications
+            $approveList = $mMarBanquteHall->allApproveList()->where('ulb_id', $ulbId)->values();                                   // Find Banquet Hall Approve Applications
             $market['banquetApprovedApplications'] = $approveList;
 
             $mMarRejectedBanquteHall = new MarRejectedBanquteHall();
-            $rejectList = $mMarRejectedBanquteHall->rejectedApplication()->where('ulb_id', $ulbId)->values();                  // Find Banquet Hall Rejected Applications
+            $rejectList = $mMarRejectedBanquteHall->rejectedApplication()->where('ulb_id', $ulbId)->values();                       // Find Banquet Hall Rejected Applications
             $market['banquetRejectedApplications'] = $rejectList;
 
             $mMarActiveHostel = new MarActiveHostel();
-            $hostelPendingList = $mMarActiveHostel->allPendingList()->where('ulb_id', $ulbId)->values();                             // Find Hostel Approve Applications
+            $hostelPendingList = $mMarActiveHostel->allPendingList()->where('ulb_id', $ulbId)->values();                            // Find Hostel Approve Applications
             $market['hostelPendingApplications'] = $hostelPendingList;
 
             $mMarHostel = new MarHostel();
-            $hostelapproveList = $mMarHostel->allApproveList()->where('ulb_id', $ulbId)->values();                             // Find Hostel Approve Applications
+            $hostelapproveList = $mMarHostel->allApproveList()->where('ulb_id', $ulbId)->values();                                  // Find Hostel Approve Applications
             $market['hostelApprovedApplications'] = $hostelapproveList;
 
             $mMarRejectedHostel = new MarRejectedHostel();
-            $hostelRejectList = $mMarRejectedHostel->rejectedApplication()->where('ulb_id', $ulbId)->values();                 // Find Hostel Rejected Applications
+            $hostelRejectList = $mMarRejectedHostel->rejectedApplication()->where('ulb_id', $ulbId)->values();                      // Find Hostel Rejected Applications
             $market['hostelRejectedApplications'] = $hostelRejectList;
 
             $mMarActiveLodge = new MarActiveLodge();
-            $lodgePendingList = $mMarActiveLodge->allPendingList()->where('ulb_id', $ulbId)->values();                               // Find Lodge Approve Applications
+            $lodgePendingList = $mMarActiveLodge->allPendingList()->where('ulb_id', $ulbId)->values();                              // Find Lodge Approve Applications
             $market['lodgePendingApplications'] = $lodgePendingList;
 
             $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList()->where('ulb_id', $ulbId)->values();                               // Find Lodge Approve Applications
+            $lodgeApproveList = $mMarLodge->allApproveList()->where('ulb_id', $ulbId)->values();                                    // Find Lodge Approve Applications
             $market['lodgeApprovedApplications'] = $lodgeApproveList;
 
             $mMarRejectedLodge = new MarRejectedLodge();
-            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication()->where('ulb_id', $ulbId)->values();                   // Find Lodge Rejected Applications
+            $lodgeRejectList = $mMarRejectedLodge->rejectedApplication()->where('ulb_id', $ulbId)->values();                        // Find Lodge Rejected Applications
             $market['lodgeRejectedApplications'] = $lodgeRejectList;
 
             $mMarActiveDharamshala = new MarActiveDharamshala();
@@ -683,11 +677,11 @@ class ParamController extends Controller
             $market['dharamshalaPendingApplications'] = $dharamshalaPendingList;
 
             $mMarDharamshala = new MarDharamshala();
-            $dharamshalaApproveList = $mMarDharamshala->allApproveList()->where('ulb_id', $ulbId)->values();                  // Find Dharamshala Approve Applications
+            $dharamshalaApproveList = $mMarDharamshala->allApproveList()->where('ulb_id', $ulbId)->values();                        // Find Dharamshala Approve Applications
             $market['dharamshalaApprovedApplications'] = $dharamshalaApproveList;
 
             $mMarRejectedDharamshala = new MarRejectedDharamshala();
-            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id', $ulbId)->values();      // Find Dharamshala Rejected Applications
+            $dharamshalaRejectList = $mMarRejectedDharamshala->rejectedApplication()->where('ulb_id', $ulbId)->values();            // Find Dharamshala Rejected Applications
             $market['dharamshalaRejectedApplications'] = $dharamshalaRejectList;
 
             return responseMsgs(true, 'Data Fetched',  $market, "050206", "1.0", responseTime(), "POST");
@@ -715,7 +709,6 @@ class ParamController extends Controller
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = collect($madvSelfAdvertisement->allApproveList());              // Find Self Advertisement Approve Applications
 
-
             $mAdvPrivateland = new AdvPrivateland();
             $pvtapproveList = collect($mAdvPrivateland->allApproveList());                 // Find Pvt Land Approve Applications
             $merged = $approveList->merge($pvtapproveList);
@@ -723,7 +716,6 @@ class ParamController extends Controller
             $mAdvVehicle = new AdvVehicle();
             $vehicleApproveList = $mAdvVehicle->allApproveList();                // Find Vehicle Approve Applications
             $merged = $merged->merge($vehicleApproveList);
-
 
             $mAdvAgency = new AdvAgency();
             $agencyApproveList = $mAdvAgency->allApproveList();                  // Find Agency Approve Applications
@@ -749,7 +741,6 @@ class ParamController extends Controller
             $dharamshalaApproveList = $mMarDharamshala->allApproveList();              // Find Dharamshala Approve Applications
             $merged = $merged->merge($dharamshalaApproveList);
 
-
             // $merged = $merged->where('payment_staus', '0');
             if ($req->filterBy == 'mobileNo') {
                 $merged = $merged->where('mobile_no', $req->parameter);
@@ -760,7 +751,6 @@ class ParamController extends Controller
             if ($req->filterBy == 'ownerName') {
                 $merged = $merged->where('owner_name', $req->parameter);
             }
-
             return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, responseTime(), "POST", "", "");
@@ -926,7 +916,6 @@ class ParamController extends Controller
             $dashboardReport['totalMarketApplication'] = $dashboardReport['totalMarketApproved'] + $dashboardReport['totalMarketPending'] + $dashboardReport['totalMarketRejected'];
 
             $dashboardReport['date'] = getFinancialYear(Carbon::now()->format('Y-m-d'));
-
             // $dashboardReport['advert']=$advert;
             // $dashboardReport['market']=$market;
             return responseMsgs(true, "Application Fetched Successfully", $dashboardReport, "050210", 1.0, responseTime(), "POST", "", "");

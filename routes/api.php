@@ -83,11 +83,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/list-btc-inbox', 'listBtcInbox');                                              // 32 ( list Back to citizen )
         // Route::post('advert/self/check-full-upload', 'checkFullUpload');                                     // 19 ( Application Details For Payments )
         Route::post('advert/self/reupload-document', 'reuploadDocument');                                       // 33 ( Reupload Rejected Document )
-        Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');                            //34 ( Search application by name and mobile no )
-        Route::post('advert/self/get-application-between-date', 'getApplicationBetweenDate');                   //35 ( Get Application Between two date )
-        Route::post('advert/self/get-application-financial-year-wise', 'getApplicationFinancialYearWise');      //36 ( Get Application Financial Year Wise )
-        Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');                   //37 ( Get Application Financial Year Wise )
-        Route::post('advert/self/payment-collection', 'paymentCollection');                                     //38 ( Get Application Financial Year Wise )
+        Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');                            // 34 ( Search application by name and mobile no )
+        Route::post('advert/self/get-application-between-date', 'getApplicationBetweenDate');                   // 35 ( Get Application Between two date )
+        Route::post('advert/self/get-application-financial-year-wise', 'getApplicationFinancialYearWise');      // 36 ( Get Application Financial Year Wise )
+        Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');                   // 37 ( Get Application Financial Year Wise )
+        Route::post('advert/self/payment-collection', 'paymentCollection');                                     // 38 ( Get Application Financial Year Wise )
     });
 
     /**
@@ -106,7 +106,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/get-payment-details', 'getPaymentDetails');                                         // 08 ( Application Details For Payments )
         Route::post('advert/get-financial-year-master-data', 'getFinancialMasterData');                         // 09 ( Get Financial Year For Search )
         Route::post('advert/advertisement-dashboard', 'advertisementDashboard');                                // 10 ( Advertisement Dashboard )
-        // Route::post('crud/district-mstrs', 'districtMstrs');                                                 // 11 
+        // Route::post('crud/district-mstrs', 'districtMstrs');                                                 // 11 ( Get District List )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');                                  // 12 ( Application Details For Payments )
     });
 
@@ -200,8 +200,8 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Status - Closed By Bikash on 24 Apr 2023
      */
     Route::controller(AgencyController::class)->group(function () {
-        Route::post('advert/agency/add-new', 'addNew');                                                             // 01   ( Save Application )
-        Route::post('advert/agency/get-agency-details', 'getAgencyDetails');                                        // 02  ( Agency Details )
+        Route::post('advert/agency/add-new', 'addNew');                                                             // 01 ( Save Application )
+        Route::post('advert/agency/get-agency-details', 'getAgencyDetails');                                        // 02 ( Agency Details )
         Route::post('advert/agency/list-inbox', 'listInbox');                                                       // 03 ( Application Inbox Lists )
         Route::post('advert/agency/list-outbox', 'listOutbox');                                                     // 04 ( Application Outbox Lists )
         Route::post('advert/agency/get-details-by-id', 'getDetailsById');                                           // 05 ( Get Application Details By Application ID )
@@ -235,8 +235,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/get-application-between-date', 'getApplicationBetweenDate');                     // 33 ( Get Application Between two date )
         Route::post('advert/agency/payment-collection', 'paymentCollection');                                       // 34 ( Get Application Financial Year Wise )
         Route::post('advert/agency/is-email-available', 'isEmailAvailable');                                        // 35 ( Check email is free for agency or not )
-
-        
         Route::post('advert/agency/get-agency-dashboard-data', 'getAgencyDashboard');                               // 36 ( Get Agency Dashboard)
     });
 
@@ -290,7 +288,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/hording/payment-collection', 'paymentCollection');                                      // 42 ( Get Payment Collection )
         Route::post('advert/hoarding/get-agency-dashboard', 'getAgencyDashboard');                                  // 43 ( Get Agency Dashboard )
         Route::post('advert/hoarding/get-agency-dashboard-data', 'getAgencyDashboardData');                         // 32 ( Get Agency Dashboard Data )
-
     });
 
     /**
@@ -502,7 +499,7 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Search Controller
      * | Controller-12
      * | Created By - Bikash Kumar
-     * | Date - 07 Aug 2023
+     * | Date - 29 Sep 2023
      * | Status - Closed By Bikash Kumar ( 30 Sep 2023 )
      */
     Route::controller(SearchController::class)->group(function () {

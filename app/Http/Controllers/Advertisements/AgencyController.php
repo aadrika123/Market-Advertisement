@@ -1496,26 +1496,26 @@ class AgencyController extends Controller
             // Variable initialization
             #=============================================================
             $mAdvAgency = new AdvAgency();
-            $approveList = $mAdvAgency->approveListForReport();
+            $approveList = $mAdvAgency->approveListForReport();                                                             // Get Approve Applications
 
             $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $mAdvActiveAgency = new AdvActiveAgency();
-            $pendingList = $mAdvActiveAgency->pendingListForReport();
+            $pendingList = $mAdvActiveAgency->pendingListForReport();                                                       // Get Pending Applications
 
             $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $rejectList = $mAdvRejectedAgency->rejectListForReport();
+            $rejectList = $mAdvRejectedAgency->rejectListForReport();                                                       // Get Rejected Applications
 
             $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
-                $data = $approveList->union($pendingList)->union($rejectList);
+                $data = $approveList->union($pendingList)->union($rejectList);                                              // Get All Type of Applications
             }
             if ($req->applicationStatus == 'Reject') {
                 $data = $rejectList;
