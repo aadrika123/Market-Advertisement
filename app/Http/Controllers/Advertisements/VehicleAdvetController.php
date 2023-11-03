@@ -185,6 +185,8 @@ class VehicleAdvetController extends Controller
      * | @param Request $req
      * | Function - 04
      * | API - 04
+     * | Query Cost - 24.12 ms
+     * | Max Records - 4
      */
     public function listInbox(Request $req)
     {
@@ -211,6 +213,8 @@ class VehicleAdvetController extends Controller
      * | Outbox List
      * | Function - 05
      * | API - 05
+     * | Query Cost - 26.8 ms
+     * | Max Records - 2
      */
     public function listOutbox(Request $req)
     {
@@ -345,6 +349,8 @@ class VehicleAdvetController extends Controller
      * | Get Applied Applications by Logged In Citizen
      * | Function - 08
      * | API - 07
+     * | Query Cost 23.3 ms
+     * | Max Records - 4
      */
     public function listAppliedApplications(Request $req)
     {
@@ -396,6 +402,8 @@ class VehicleAdvetController extends Controller
      * | Escalated Application List
      * | Function - 10
      * | API - 09
+     * | Query Cost - 44.93 ms
+     * | Max Records - 1
      */
     public function listEscalated(Request $req)
     {
@@ -783,6 +791,8 @@ class VehicleAdvetController extends Controller
      * | @param Request $req
      * | Function - 17
      * | API - 16
+     * | Query Cost - 33.02 ms
+     * | Max Records - 3
      */
     public function listApproved(Request $req)
     {
@@ -808,6 +818,8 @@ class VehicleAdvetController extends Controller
      * | @param Request $req
      * | Function - 18
      * | API - 17
+     * | Query Cost - 23 ms
+     * | Max Records - 2
      */
     public function listRejected(Request $req)
     {
@@ -1282,6 +1294,8 @@ class VehicleAdvetController extends Controller
      * | Back To Citizen Inbox
      * | Function - 31
      * | API - 29
+     * | Query Cost - 43.56 ms
+     * | Max Records - 2
      */
     public function listBtcInbox(Request $req)
     {
@@ -1382,10 +1396,10 @@ class VehicleAdvetController extends Controller
      */
     public function getApplicationBetweenDate(Request $req)
     {
-        if (authUser()->ulb_id < 1)
+        if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050331", 1.0, "271ms", "POST", "", "");
         else
-            $ulbId = authUser()->ulb_id;
+            $ulbId = $req->auth['ulb_id'];
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',

@@ -222,7 +222,6 @@ class BandobasteeController extends Controller
         $mBdSettlerTransaction = new BdSettlerTransaction();
         $priceList['performance_security_amount'] = $mBdSettlerTransaction->performanceSecurity($id, "false");
         $priceList['total_penalty'] = $mBdSettlerTransaction->performanceSecurity($id, "true");
-        // print_r($priceList); die;
         return $priceList;
     }
 
@@ -234,7 +233,6 @@ class BandobasteeController extends Controller
     public function installmentPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            // 'ulbId' => 'required|integer',
             'settlerId' => 'required|integer',
             'installmentAmount' => 'required|numeric',
         ]);
@@ -255,7 +253,6 @@ class BandobasteeController extends Controller
 
             $installmentDate = ['installmentDate' => Carbon::now()->format('Y-m-d')];
             $req->request->add($installmentDate);
-            // return $req;
             $listSettler = $mBdPayment->installmentPayment($req);
             return responseMsgs(true, "Payment Successfully", '', "051107", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -406,7 +403,6 @@ class BandobasteeController extends Controller
         try {
             // Variable initialization
             $mBdParking = new BdParking();
-
             $list = $mBdParking->listParking($ulbId);
             return responseMsgs(true, "Parking List", $list, "051112", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
