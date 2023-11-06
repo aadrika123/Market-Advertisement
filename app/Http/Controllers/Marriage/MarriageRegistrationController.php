@@ -657,10 +657,13 @@ class MarriageRegistrationController extends Controller
      */
     public function approvalRejection(Request $req)
     {
-        $req->validate([
+        $validator =  Validator::make($req->all(), [
             "applicationId" => "required",
             "status" => "required"
         ]);
+        if ($validator->fails())
+            return validationError($validator);
+
         try {
 
             // Check if the Current User is Finisher or Not
@@ -706,7 +709,7 @@ class MarriageRegistrationController extends Controller
                 $approvedMarriage = $details->replicate();
                 $approvedMarriage->setTable('marriage_approved_registrations');
                 $approvedMarriage->id = $details->id;
-                $approvedMarriage->id = $todayDate;
+                $approvedMarriage->marriage_registration_date = $todayDate;
                 $approvedMarriage->save();
                 $details->delete();
 
@@ -733,6 +736,7 @@ class MarriageRegistrationController extends Controller
             $metaReqs['senderRoleId'] = $senderRoleId;
             $metaReqs['user_id'] = $userId;
             $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
+            $metaReqs['auth'] = $req->auth;
             $req->request->add($metaReqs);
             $track->saveTrack($req);
 
