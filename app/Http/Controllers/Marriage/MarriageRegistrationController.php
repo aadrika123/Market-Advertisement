@@ -1127,6 +1127,8 @@ class MarriageRegistrationController extends Controller
             $marriageDetails = MarriageActiveRegistration::find($tranDtls->application_id);
             $ulbDtl = $mUlbMaster->getUlbDetails($marriageDetails->ulb_id);
 
+            $totalAmountInWord = getIndianCurrency($tranDtls->amount_paid);
+
             $receiptDtls = [
                 "tran_date"           => $tranDtls->tran_date,
                 "tran_no"             => $tranDtls->tran_no,
@@ -1139,6 +1141,7 @@ class MarriageRegistrationController extends Controller
                 "application_no"      => $marriageDetails->application_no,
                 "registration_amount" => $marriageDetails->payment_amount,
                 "penalty_amount"      => $marriageDetails->penalty_amount,
+                "amount_in_words"     => $totalAmountInWord,
                 "ulbDetails"          => $ulbDtl
             ];
 
