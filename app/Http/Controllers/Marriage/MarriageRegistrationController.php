@@ -1003,14 +1003,14 @@ class MarriageRegistrationController extends Controller
                 "transaction_no"      => $req->transactionNo,
                 "citizen_id"          => $req->userId,
                 "ulb_id"              => $req->ulbId,
-                "tran_date"           => $req->tranDate,
+                "tran_date"           => date("Y-m-d", $req->tranDate),
                 "gateway_type"        => $req->gatewayType,
                 "department_id"       => $req->departmentId,
             ];
 
             $transanctionReqs = [
                 "application_id" => $req->id,
-                "tran_date"      => $req->tranDate,
+                "tran_date"      => date("Y-m-d", $req->tranDate),
                 "tran_no"        => $req->transactionNo,
                 "amount_paid"    => $req->amount,
                 "payment_mode"   => $req->paymentMode,
