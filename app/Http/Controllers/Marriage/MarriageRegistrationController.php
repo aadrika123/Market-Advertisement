@@ -1141,7 +1141,7 @@ class MarriageRegistrationController extends Controller
                 "application_no"      => $marriageDetails->application_no,
                 "registration_amount" => $marriageDetails->payment_amount,
                 "penalty_amount"      => $marriageDetails->penalty_amount,
-                "amount_in_word"     => $totalAmountInWord . 'Only',
+                "amount_in_words"     => $totalAmountInWord . 'only',
                 "ulbDetails"          => $ulbDtl
             ];
 

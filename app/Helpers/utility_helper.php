@@ -180,7 +180,7 @@ if (!function_exists('getIndianCurrency')) {
         $Rupees = implode('', array_reverse($str));
         $paise = implode('', array_reverse($str2));
         $paise = ($decimal_part > 0) ? $paise . ' Paise' : '';
-        return ucfirst(($Rupees ?'Rupees ' .$Rupees: '')) . $paise;
+        return ucfirst(($Rupees ? 'Rupees ' . $Rupees : '')) . $paise;
     }
 }
 
@@ -376,7 +376,7 @@ if (!function_exists('getClientIpAddress')) {
      * | Search Filter for Shop Rental Data
      */
 
-     if (!function_exists("searchTollRentalFilter")) {
+    if (!function_exists("searchTollRentalFilter")) {
         function searchTollRentalFilter($orm, $req)
         {
             $key = trim($req->key);
@@ -404,12 +404,12 @@ if (!function_exists('getClientIpAddress')) {
     }
 
 
-    
+
     /**
      * | Search Filter for Market Data
      */
 
-     if (!function_exists("searchMarketFilter")) {
+    if (!function_exists("searchMarketFilter")) {
         function searchMarketFilter($orm, $req)
         {
             $key = trim($req->key);
