@@ -1125,6 +1125,9 @@ class MarriageRegistrationController extends Controller
             if (!$tranDtls)
                 throw new Exception("Transaction Not Found");
             $marriageDetails = MarriageActiveRegistration::find($tranDtls->application_id);
+            if (!$marriageDetails)
+                $marriageDetails = MarriageApprovedRegistration::find($tranDtls->application_id);
+
             $ulbDtl = $mUlbMaster->getUlbDetails($marriageDetails->ulb_id);
 
             $totalAmountInWord = getIndianCurrency($tranDtls->amount_paid);
