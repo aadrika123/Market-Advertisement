@@ -28,7 +28,6 @@ class TollValidationRequest extends FormRequest
         return [
             'circleId'              =>   'required|integer',
             'tollNo'                =>   'nullable|string',
-            // 'tollType'              =>   'required|regex:/^[A-Za-z ]+$/',
             'vendorName'            =>   'required|regex:/^[A-Za-z ]+$/',
             'address'               =>   'required|string|max:255',
             'rate'                  =>   'required|numeric',

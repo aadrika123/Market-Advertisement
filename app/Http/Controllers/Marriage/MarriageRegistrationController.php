@@ -657,10 +657,13 @@ class MarriageRegistrationController extends Controller
      */
     public function approvalRejection(Request $req)
     {
-        $req->validate([
+        $validator =  Validator::make($req->all(), [
             "applicationId" => "required",
             "status" => "required"
         ]);
+        if ($validator->fails())
+            return validationError($validator);
+
         try {
 
             // Check if the Current User is Finisher or Not
@@ -706,7 +709,7 @@ class MarriageRegistrationController extends Controller
                 $approvedMarriage = $details->replicate();
                 $approvedMarriage->setTable('marriage_approved_registrations');
                 $approvedMarriage->id = $details->id;
-                $approvedMarriage->id = $todayDate;
+                $approvedMarriage->marriage_registration_date = $todayDate;
                 $approvedMarriage->save();
                 $details->delete();
 
@@ -733,6 +736,7 @@ class MarriageRegistrationController extends Controller
             $metaReqs['senderRoleId'] = $senderRoleId;
             $metaReqs['user_id'] = $userId;
             $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
+            $metaReqs['auth'] = $req->auth;
             $req->request->add($metaReqs);
             $track->saveTrack($req);
 
@@ -999,14 +1003,14 @@ class MarriageRegistrationController extends Controller
                 "transaction_no"      => $req->transactionNo,
                 "citizen_id"          => $req->userId,
                 "ulb_id"              => $req->ulbId,
-                "tran_date"           => $req->tranDate,
+                "tran_date"           => date("Y-m-d", $req->tranDate),
                 "gateway_type"        => $req->gatewayType,
                 "department_id"       => $req->departmentId,
             ];
 
             $transanctionReqs = [
                 "application_id" => $req->id,
-                "tran_date"      => $req->tranDate,
+                "tran_date"      => date("Y-m-d", $req->tranDate),
                 "tran_no"        => $req->transactionNo,
                 "amount_paid"    => $req->amount,
                 "payment_mode"   => $req->paymentMode,
@@ -1121,7 +1125,12 @@ class MarriageRegistrationController extends Controller
             if (!$tranDtls)
                 throw new Exception("Transaction Not Found");
             $marriageDetails = MarriageActiveRegistration::find($tranDtls->application_id);
+            if (!$marriageDetails)
+                $marriageDetails = MarriageApprovedRegistration::find($tranDtls->application_id);
+
             $ulbDtl = $mUlbMaster->getUlbDetails($marriageDetails->ulb_id);
+
+            $totalAmountInWord = getIndianCurrency($tranDtls->amount_paid);
 
             $receiptDtls = [
                 "tran_date"           => $tranDtls->tran_date,
@@ -1135,6 +1144,7 @@ class MarriageRegistrationController extends Controller
                 "application_no"      => $marriageDetails->application_no,
                 "registration_amount" => $marriageDetails->payment_amount,
                 "penalty_amount"      => $marriageDetails->penalty_amount,
+                "amount_in_words"     => $totalAmountInWord . 'only',
                 "ulbDetails"          => $ulbDtl
             ];
 

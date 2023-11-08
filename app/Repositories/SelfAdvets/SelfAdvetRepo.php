@@ -12,7 +12,7 @@ use Exception;
  * | Repository for the Self Advertisements
  * | Created On - 15-12-2022 
  * | Created By - Anshu Kumar
- * | Change By - Bikash Kumar
+ * | Change By - Bikash specialAgencyLicenseInbox
  */
 
 class SelfAdvetRepo implements iSelfAdvetRepo
@@ -101,17 +101,13 @@ class SelfAdvetRepo implements iSelfAdvetRepo
      */
     public function specialAgencyLicenseInbox($workflowIds)
     {
-        $specialInbox = DB::table('adv_active_agency_licenses')
+        $specialInbox = DB::table('adv_active_hoardings')
             ->select(
                 'id',
                 'application_no',
                 'license_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
-                'bank_name',
-                'account_no',
-                'ifsc_code',
-                'total_charge'
             )
             ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);

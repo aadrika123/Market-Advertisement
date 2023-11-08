@@ -184,6 +184,8 @@ class PrivateLandController extends Controller
      * | @param Request $req
      * | Function - 04
      * | API - 04
+     * | Query Cost - 35.65 ms
+     * | Max Records - 3
      */
     public function listInbox(Request $req)
     {
@@ -211,6 +213,8 @@ class PrivateLandController extends Controller
      * | Outbox List
      * | Function - 05
      * | API - 05
+     * | Query Cost - 35.65 ms
+     * | Max Records - 3
      */
     public function listOutbox(Request $req)
     {
@@ -351,6 +355,8 @@ class PrivateLandController extends Controller
      * | Get Applied Applications by Logged In Citizen
      * | Function - 08
      * | API - 07
+     * | Query Cost - 35.55 ms
+     * | Max Records - 2
      */
     public function listAppliedApplications(Request $req)
     {
@@ -900,8 +906,7 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
-
-            $userId = authUser()->id;
+            $userId = $req->auth['id'];
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
             $totalApplication = $applications->count();
@@ -1316,9 +1321,6 @@ class PrivateLandController extends Controller
     {
         try {
             // Variable initialization
-            // $startTime = microtime(true);
-
-            // $auth = auth()->user();
             $userId = $req->auth['id'];
             $ulbId = $req->auth['ulb_id'];
             $wardId = $this->getWardByUserId($userId);

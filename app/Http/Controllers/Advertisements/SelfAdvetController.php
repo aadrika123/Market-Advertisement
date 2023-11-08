@@ -207,6 +207,8 @@ class SelfAdvetController extends Controller
      * | @param Request $req
      * | Function - 05
      * | API - 05
+     * | Query Cost - 70 ms
+     * | Max Records - 10
      */
     public function listInbox(Request $req)
     {
@@ -223,8 +225,6 @@ class SelfAdvetController extends Controller
             if (trim($req->key))
                 $inboxList =  searchFilter($inboxList, $req);
             $list = paginator($inboxList, $req);
-            // dd(DB::getQueryLog());
-
             return responseMsgs(true, "Inbox Applications", $list, "050105", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050105", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -234,6 +234,8 @@ class SelfAdvetController extends Controller
     /**
      * | Outbox List
      * | Function - 06
+     * | Query Cost - 65 ms
+     * | Max Records - 4
      * | API - 06
      */
     public function listOutbox(Request $req)
@@ -242,6 +244,7 @@ class SelfAdvetController extends Controller
             // Variable initialization
             $mAdvActiveSelfadvertisement = $this->_modelObj;
             $ulbId = $req->auth['ulb_id'];
+            // DB::enableQueryLog();
             $workflowRoles = collect($this->getRoleByUserId($req->auth['id']));             // <----- Get Workflow Roles roles 
             $roleIds = collect($workflowRoles)->map(function ($workflowRole) {          // <----- Filteration Role Ids
                 return $workflowRole['wf_role_id'];
@@ -251,7 +254,7 @@ class SelfAdvetController extends Controller
             if (trim($req->key))
                 $outboxList =  searchFilter($outboxList, $req);
             $list = paginator($outboxList, $req);
-
+            // return [(DB::getQueryLog())];
             return responseMsgs(true, "Outbox Lists", $list, "050106", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050106", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -296,8 +299,8 @@ class SelfAdvetController extends Controller
                 'headerTitle' => "Self Advertisement Details",
                 'data' => $cardDetails
             ];
-            // $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
-            // $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
+            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
 
             # Level comment
             $mtableId = $req->applicationId;
@@ -369,6 +372,8 @@ class SelfAdvetController extends Controller
     /**
      * | Get Applied Applications by Logged In Citizen
      * | Function - 09
+     * | Query Cost - 45 ms
+     * | Max Record - 6 
      * | API - 08
      */
     public function listAppliedApplications(Request $req)
@@ -378,8 +383,7 @@ class SelfAdvetController extends Controller
             $citizenId = $req->auth['id'];
             $selfAdvets = new AdvActiveSelfadvertisement();
 
-            $applications = $selfAdvets->listAppliedApplications($citizenId);             //<-------  Get Applied Applications
-
+            $applications = $selfAdvets->listAppliedApplications($citizenId);             //<-------  Get Applied Application
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -422,6 +426,8 @@ class SelfAdvetController extends Controller
      * | Escalate Application List
      * | Function - 11
      * | API - 10
+     * | Query Cost - 38 ms
+     * | Max Record - 1
      */
     public function listEscalated(Request $req)
     {
@@ -437,6 +443,7 @@ class SelfAdvetController extends Controller
             });
 
             $mWfWorkflow = new WfWorkflow();
+            // DB::enableQueryLog();
             $workflowId = $mWfWorkflow->getulbWorkflowId($this->_wfMasterId, $ulbId);      // get workflow Id
 
             $advData = $this->_repository->specialInbox($workflowId)                      // Repository function to get Advertiesment Details
@@ -447,6 +454,7 @@ class SelfAdvetController extends Controller
             if (trim($req->key))
                 $advData =  searchFilter($advData, $req);
             $list = paginator($advData, $req);
+            // return [(DB::getQueryLog())];
             return responseMsgs(true, "Data Fetched",  $list, "050110", "1.0", responseTime(), "POST", "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050110", "1.0", "", "POST", $req->deviceId ?? "");
@@ -864,6 +872,8 @@ class SelfAdvetController extends Controller
      * | @param Request $req
      * |  Function - 21
      * |  API - 20
+     * |  Query Cost - 27.10 ms
+     * |  Max Record - 11
      */
     public function listApproved(Request $req)
     {
@@ -889,6 +899,8 @@ class SelfAdvetController extends Controller
      * | @param Request $req
      * |  Function - 22
      * |  API - 21
+     * |  Query Cost - 23 ms
+     * |  Max Records - 4
      */
     public function listRejected(Request $req)
     {
@@ -1356,6 +1368,8 @@ class SelfAdvetController extends Controller
      * | Back To Citizen Inbox
      * | Function - 34
      * | API - 32
+     * | Query Cost - 51 ms
+     * | Max Records - 2
      */
     public function listBtcInbox(Request $req)
     {

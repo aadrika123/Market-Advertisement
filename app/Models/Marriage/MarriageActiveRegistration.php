@@ -20,9 +20,5 @@ class MarriageActiveRegistration extends Model
     {
         $mMarriageActiveRegistration = new MarriageActiveRegistration();
         return $registrationDtl = $mMarriageActiveRegistration->create($request);
-        // return [
-        //     "id" => $registrationDtl->id,
-        //     "applicationNo" => $registrationDtl->application_no,
-        // ];
     }
 }

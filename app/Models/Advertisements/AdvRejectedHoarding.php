@@ -24,7 +24,6 @@ class AdvRejectedHoarding extends Model
                 'rejected_date',
             )
             ->orderByDesc('id');
-        // ->get();
     }
 
     /**
