@@ -84,6 +84,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('doc-verify-reject', 'docVerifyRejects');                                                   // Workflow
         Route::post('final-verify-reject', 'finalApprovalRejection');                                           // Workflow
         Route::post('list-approved-application', 'listfinisherApproveApplications');                            // Workflow
+        Route::post('list-rejected-application', 'listfinisherRejectApplications');                             // Workflow
     });
 });
 

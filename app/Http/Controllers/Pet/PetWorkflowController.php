@@ -10,6 +10,7 @@ use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetApproveApplicant;
 use App\Models\Pet\PetApproveDetail;
 use App\Models\Pet\PetApprovedRegistration;
+use App\Models\Pet\PetRejectedRegistration;
 use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
@@ -1001,11 +1002,10 @@ class PetWorkflowController extends Controller
     }
 
 
-
     /**
      * | Get the rejected application list 
         | Serial No :
-        | Under Con
+        | Working
      */
     public function listfinisherRejectApplications(Request $request)
     {
@@ -1027,35 +1027,35 @@ class PetWorkflowController extends Controller
             $paramenter                 = $request->parameter;
             $pages                      = $request->perPage ?? 10;
             $refstring                  = Str::snake($key);
-            $msg                        = "Approve application list!";
-            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $msg                        = "Rejected application list!";
+            $mPetRejectedRegistration   = new PetRejectedRegistration();
 
             # Check params for role user 
             $roleDetails = $this->getUserRollV2($userId, $user->ulb_id, $confWorkflowMasterId);
             $this->checkParamForUser($user, $roleDetails);
 
             try {
-                $baseQuerry = $mPetApprovedRegistration->getAllApprovdApplicationDetails()
+                $baseQuerry = $mPetRejectedRegistration->getAllRejectedApplicationDetails()
                     ->select(
-                        DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
-                        DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
-                        "pet_approved_registrations.*",
-                        "pet_approve_applicants.applicant_name",
-                        "pet_approve_applicants.mobile_no",
+                        DB::raw("REPLACE(pet_rejected_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_rejected_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_rejected_registrations.*",
+                        "pet_rejected_applicants.applicant_name",
+                        "pet_rejected_applicants.mobile_no",
                         "wf_roles.role_name",
-                        "pet_approved_registrations.status as registrationSatus",
+                        "pet_rejected_registrations.status as registrationSatus",
                         DB::raw("CASE 
-                        WHEN pet_approved_registrations.status = 1 THEN 'Approved'
-                        WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
+                        WHEN pet_rejected_registrations.status = 1 THEN 'Approved'
+                        WHEN pet_rejected_registrations.status = 2 THEN 'Under Renewal Process'
                         END as current_status")
                     )
-                    ->where('pet_approved_registrations.status', '<>', 0)
-                    ->where('pet_approve_applicants.status', '<>', 0)
-                    ->where('pet_approve_details.status', '<>', 0)
-                    ->where('pet_approved_registrations.approve_user_id', $userId)
-                    ->where('pet_approved_registrations.finisher_role_id', $roleDetails->role_id)
-                    ->where('pet_approved_registrations.current_role_id', $roleDetails->role_id)
-                    ->orderByDesc('pet_approved_registrations.id');
+                    ->where('pet_rejected_registrations.status', '<>', 0)
+                    ->where('pet_rejected_applicants.status', '<>', 0)
+                    ->where('pet_rejected_details.status', '<>', 0)
+                    ->where('pet_rejected_registrations.approve_user_id', $userId)
+                    ->where('pet_rejected_registrations.finisher_role_id', $roleDetails->role_id)
+                    ->where('pet_rejected_registrations.current_role_id', $roleDetails->role_id)
+                    ->orderByDesc('pet_rejected_registrations.id');
 
                 # Collect querry Exceptions 
             } catch (QueryException $qurry) {
@@ -1063,27 +1063,27 @@ class PetWorkflowController extends Controller
             }
 
             if ($request->filterBy && $request->parameter) {
-                $msg = "Pet approved appliction details according to $key!";
+                $msg = "Pet rejected appliction details according to $key!";
                 # Distrubtion of search category  ❗❗ Static
                 switch ($key) {
                     case ("mobileNo"):
-                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.' . $refstring, 'LIKE', '%' . $paramenter . '%')
                             ->paginate($pages);
                         break;
                     case ("applicationNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
                             ->paginate($pages);
                         break;
                     case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
                             ->paginate($pages);
                         break;
                     case ("holdingNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
                             ->paginate($pages);
                         break;
                     case ("safNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
                             ->paginate($pages);
                         break;
                     default:
@@ -1098,7 +1098,7 @@ class PetWorkflowController extends Controller
             }
 
             # Get the latest data for Finisher
-            $returnData = $baseQuerry->orderBy('pet_approved_registrations.approve_date')->paginate($pages);
+            $returnData = $baseQuerry->orderBy('pet_rejected_registrations.approve_date')->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);

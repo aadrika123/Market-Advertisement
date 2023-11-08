@@ -1809,6 +1809,8 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            $user                       = authUser($req);
+            $viewRenewButton            = false;
             $applicationId              = $req->registrationId;
             $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
@@ -1839,11 +1841,16 @@ class PetRegistrationController extends Controller
             if (!$tranDetails) {
                 throw new Exception("Transaction details not found there is some error in data !");
             }
+            # Check for jsk for renewal button
+            if ($user->user_type == 'JSK') {
+                $viewRenewButton = true;
+            }
 
             # return Details 
             $approveApplicationDetails['transactionDetails']    = $tranDetails;
             $chargeDetails['roundAmount']                       = round($chargeDetails['amount']);
             $approveApplicationDetails['charges']               = $chargeDetails;
+            $approveApplicationDetails['viewRenewalButton']     = $viewRenewButton;
             return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
