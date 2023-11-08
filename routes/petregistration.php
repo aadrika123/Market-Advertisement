@@ -83,8 +83,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('escalate', 'postEscalate');                                                                // Workflow                     
         Route::post('doc-verify-reject', 'docVerifyRejects');                                                   // Workflow
         Route::post('final-verify-reject', 'finalApprovalRejection');                                           // Workflow
-        // Route::post('btc-inbox', 'btcInbox');                                                                // Workflow
-
+        Route::post('list-approved-application', 'listfinisherApproveApplications');                            // Workflow
     });
 });
 

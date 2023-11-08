@@ -19,6 +19,7 @@ use App\Models\Workflows\WorkflowTrack;
 use App\Traits\Workflow\Workflow;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -161,7 +162,7 @@ class PetWorkflowController extends Controller
     /**
      * | Common function
         | Move the function in trait 
-        | Caution remove the function 
+        | Caution move the function 
      */
     public function getPetApplicatioList($workflowIds, $ulbId)
     {
@@ -227,6 +228,7 @@ class PetWorkflowController extends Controller
     /**
      * | Post next level in workflow 
         | Serial No :
+        | Working
         | Check for forward date and backward date
      */
     public function postNextLevel(Request $req)
@@ -311,7 +313,7 @@ class PetWorkflowController extends Controller
     /**
      * | Check the condition before forward
         | Serial No :
-        | Under Construction
+        | Working
      */
     public function checkPostCondition($senderRoleId, $wfLevels, $application)
     {
@@ -331,7 +333,9 @@ class PetWorkflowController extends Controller
 
 
     /**
-     * | Verify, Reject document 
+     * | Verify, Reject document in workflow
+        | Serial No :
+        | Working
      */
     public function docVerifyRejects(Request $req)
     {
@@ -450,7 +454,7 @@ class PetWorkflowController extends Controller
     /**
      * | Get details for the pet special inbox
         | Serial No :
-        | Under Con
+        | Working
      */
     public function waterSpecialInbox(Request $request)
     {
@@ -483,7 +487,7 @@ class PetWorkflowController extends Controller
     /**
      * | Post escalte Details of Pet Application
         | Serial No :
-        | Under Con
+        | Working
      */
     public function postEscalate(Request $request)
     {
@@ -516,75 +520,11 @@ class PetWorkflowController extends Controller
 
 
     /**
-     * | default final applroval 
-        | remove
-     */
-    public function finalVerificationRejection(Request $req)
-    {
-        $validated = Validator::make(
-            $req->all(),
-            [
-                'applicationId' => 'required|digits_between:1,9223372036854775807',
-                'status' => 'required'
-            ]
-        );
-        if ($validated->fails())
-            return validationError($validated);
-
-        try {
-            $userId                 = authUser($req)->id;
-            $applicationId          = $req->applicationId;
-            $mPetActiveRegistration = new PetActiveRegistration();
-            $mWfRoleUsermap         = new WfRoleusermap();
-            $currentDateTime        = Carbon::now();
-
-            $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
-            $workflowId = $application->workflow_id;
-            $getRoleReq = new Request([                                                 // make request to get role id of the user
-                'userId' => $userId,
-                'workflowId' => $workflowId
-            ]);
-            $readRoleDtls = $mWfRoleUsermap->getRoleByUserWfId($getRoleReq);
-            $roleId = $readRoleDtls->wf_role_id;
-            if ($roleId != $application->finisher_role_id) {
-                throw new Exception("You are not the Finisher!");
-            }
-            if ($application->doc_upload_status == false || $application->payment_status != 1)
-                throw new Exception("Document Not Fully Uploaded or Payment in not Done!");                                                                      // DA Condition
-            if ($application->doc_verify_status == false)
-                throw new Exception("Document Not Fully Verified!");
-
-            # Change the concept 
-            if ($req->status == 1) {
-                $regNo = "PET" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
-                PetActiveRegistration::where('id', $applicationId)
-                    ->update([
-                        "status" => 2,
-                        "registration_no" => $regNo
-                    ]);
-                $returnData = [
-                    "applicationId" => $application->application_no,
-                    "registration_no" => $regNo
-                ];
-                return responseMsgs(true, 'Pet registration Application Approved!', $returnData);
-            } else {
-                PetActiveRegistration::where('id', $applicationId)
-                    ->update([
-                        "status" => 0,
-                    ]);
-                return responseMsgs(true, 'Pet registration Application Rejected!', $application->application_no);
-            }
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-
-    /**
      * | Workflow final approvale for the application
      * | Also adjust the renewal process
         | Serial No : 
         | Parent function
-        | Under Con
+        | Working
      */
     public function finalApprovalRejection(Request $request)
     {
@@ -675,7 +615,7 @@ class PetWorkflowController extends Controller
     /**
      * | Final approval process for pet application 
         | Serial No :
-        | Under Con
+        | Working
         | Caution performing Deletion of active application
      */
     public function finalApproval($request, $applicationDetails)
@@ -713,6 +653,7 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->approve_date      = $now;
         $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+        $approvedPetRegistration->approve_user_id   = authUser($request)->id;
         $approvedPetRegistration->save();
 
         # Save the pet owner details 
@@ -751,7 +692,7 @@ class PetWorkflowController extends Controller
     /**
      * | Final Approval of a renewal application 
         | Serial No :
-        | Under Con
+        | Working
      */
     public function finalApprovalRenewal($request, $applicationDetails)
     {
@@ -793,6 +734,7 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->approve_date      = $now;
         $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+        $approvedPetRegistration->approve_user_id   = authUser($request)->id;
         $approvedPetRegistration->save();
 
         # Save the pet owner details 
@@ -924,6 +866,8 @@ class PetWorkflowController extends Controller
 
     /**
      * | Generate Order Id
+        | Serial No :
+        | Working
      */
     protected function getUniqueId($key)
     {
@@ -936,5 +880,228 @@ class PetWorkflowController extends Controller
         $uniqueId = (($key . date('dmyhism') . $randomString));
         $uniqueId = explode("=", chunk_split($uniqueId, 26, "="))[0];
         return $uniqueId;
+    }
+
+    /**
+     * | Get approved and rejected application list by the finisher
+        | Serial No :
+        | Working
+     */
+    public function listfinisherApproveApplications(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                       = authUser($request);
+            $userId                     = $user->id;
+            $confWorkflowMasterId       = $this->_workflowMasterId;
+            $key                        = $request->filterBy;
+            $paramenter                 = $request->parameter;
+            $pages                      = $request->perPage ?? 10;
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+
+            # Check params for role user 
+            $roleDetails = $this->getUserRollV2($userId, $user->ulb_id, $confWorkflowMasterId);
+            $this->checkParamForUser($user, $roleDetails);
+
+            try {
+                $baseQuerry = $mPetApprovedRegistration->getAllApprovdApplicationDetails()
+                    ->select(
+                        DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_approved_registrations.*",
+                        "pet_approve_applicants.applicant_name",
+                        "pet_approve_applicants.mobile_no",
+                        "wf_roles.role_name",
+                        "pet_approved_registrations.status as registrationSatus",
+                        DB::raw("CASE 
+                        WHEN pet_approved_registrations.status = 1 THEN 'Approved'
+                        WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
+                        END as current_status")
+                    )
+                    ->where('pet_approved_registrations.status', '<>', 0)
+                    ->where('pet_approve_applicants.status', '<>', 0)
+                    ->where('pet_approve_details.status', '<>', 0)
+                    ->where('pet_approved_registrations.approve_user_id', $userId)
+                    ->where('pet_approved_registrations.finisher_role_id', $roleDetails->role_id)
+                    ->where('pet_approved_registrations.current_role_id', $roleDetails->role_id)
+                    ->orderByDesc('pet_approved_registrations.id');
+
+                # Collect querry Exceptions 
+            } catch (QueryException $qurry) {
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $request->deviceId);
+            }
+
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Pet approved appliction details according to $key!";
+                # Distrubtion of search category  ❗❗ Static
+                switch ($key) {
+                    case ("mobileNo"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("applicantName"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("holdingNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("safNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+                # Check if data not exist
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            }
+
+            # Get the latest data for Finisher
+            $returnData = $baseQuerry->orderBy('pet_approved_registrations.approve_date')->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    /**
+     * | Check the user details 
+        | Serial No:
+        | Working
+     */
+    public function checkParamForUser($user, $roleDetails)
+    {
+        if (!$roleDetails) {
+            throw new Exception("user Dont have role in Pet workflow!");
+        }
+        if ($roleDetails->is_finisher == false) {
+            throw new Exception("You are not the finisher!");
+        }
+    }
+
+
+
+    /**
+     * | Get the rejected application list 
+        | Serial No :
+        | Under Con
+     */
+    public function listfinisherRejectApplications(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                       = authUser($request);
+            $userId                     = $user->id;
+            $confWorkflowMasterId       = $this->_workflowMasterId;
+            $key                        = $request->filterBy;
+            $paramenter                 = $request->parameter;
+            $pages                      = $request->perPage ?? 10;
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+
+            # Check params for role user 
+            $roleDetails = $this->getUserRollV2($userId, $user->ulb_id, $confWorkflowMasterId);
+            $this->checkParamForUser($user, $roleDetails);
+
+            try {
+                $baseQuerry = $mPetApprovedRegistration->getAllApprovdApplicationDetails()
+                    ->select(
+                        DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_approved_registrations.*",
+                        "pet_approve_applicants.applicant_name",
+                        "pet_approve_applicants.mobile_no",
+                        "wf_roles.role_name",
+                        "pet_approved_registrations.status as registrationSatus",
+                        DB::raw("CASE 
+                        WHEN pet_approved_registrations.status = 1 THEN 'Approved'
+                        WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
+                        END as current_status")
+                    )
+                    ->where('pet_approved_registrations.status', '<>', 0)
+                    ->where('pet_approve_applicants.status', '<>', 0)
+                    ->where('pet_approve_details.status', '<>', 0)
+                    ->where('pet_approved_registrations.approve_user_id', $userId)
+                    ->where('pet_approved_registrations.finisher_role_id', $roleDetails->role_id)
+                    ->where('pet_approved_registrations.current_role_id', $roleDetails->role_id)
+                    ->orderByDesc('pet_approved_registrations.id');
+
+                # Collect querry Exceptions 
+            } catch (QueryException $qurry) {
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $request->deviceId);
+            }
+
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Pet approved appliction details according to $key!";
+                # Distrubtion of search category  ❗❗ Static
+                switch ($key) {
+                    case ("mobileNo"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("applicantName"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("holdingNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    case ("safNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+                # Check if data not exist
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            }
+
+            # Get the latest data for Finisher
+            $returnData = $baseQuerry->orderBy('pet_approved_registrations.approve_date')->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
     }
 }
