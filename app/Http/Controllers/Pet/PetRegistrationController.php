@@ -578,8 +578,8 @@ class PetRegistrationController extends Controller
         $confPetModuleId        = $this->_petModuleId;
         $confOwnerType          = $this->_masterDetails['OWNER_TYPE_MST'];
 
-        $type = ["PET_VACCINATION", "ADDRESS PROOF", "LEPTOSPIROSIS_VACCINATION"];
-        if ($application->owner_type == $confOwnerType['Tenant'])         // Holding No, SAF No // Static
+        $type = ["PET_VACCINATION", "LEPTOSPIROSIS_VACCINATION", "PET_PHOTO"];      // "ADDRESS PROOF"
+        if ($application->owner_type == $confOwnerType['Tenant'])                   // Holding No, SAF No // Static
         {
             $type = ["TENANTED", "NOC"];
         }
@@ -1617,10 +1617,12 @@ class PetRegistrationController extends Controller
             ]);
 
             $this->begin();
+            # Apply so that appliction get to workflow
             $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
             if ($applyDetails->original['status'] == false) {
                 throw new Exception($applyDetails->original['message'] ?? "Renewal Process cnnot be done!");
             };
+            # Update the details for renewal
             $this->updateRenewalDetails($refApprovedDetails);
             $this->commit();
             $returnDetails = $applyDetails->original['data'];
@@ -1842,7 +1844,7 @@ class PetRegistrationController extends Controller
                 throw new Exception("Transaction details not found there is some error in data !");
             }
             # Check for jsk for renewal button
-            if ($user->user_type == 'JSK') {
+            if ($user->user_type == 'JSK') {                                                                                // Static
                 $viewRenewButton = true;
             }
 

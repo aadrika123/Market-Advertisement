@@ -55,6 +55,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('search-approved-applications', 'searchApprovedApplication');                               // Admin
         Route::post('get-approve-registration-list', 'getApprovedApplicationDetails');                          // Admin
         Route::post('get-approve-registrations', 'getApproveRegistration');                                     // Citizen
+        // Route::post();
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen

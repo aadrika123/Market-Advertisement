@@ -20,4 +20,13 @@ class PetRejectedRegistration extends Model
             ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.application_id')
             ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.application_id');
     }
+
+    /**
+     * | Get the rejected application details using 
+     */
+    public function getRejectedAppByAppId($id)
+    {
+        return PetRejectedRegistration::where('pet_rejected_registrations.application_id', $id)
+            ->orderByDesc('id');
+    }
 }
