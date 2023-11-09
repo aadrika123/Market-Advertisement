@@ -1940,20 +1940,19 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
-            $user                       = authUser($req);
             $viewRenewButton            = false;
             $applicationId              = $req->registrationId;
-            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetRejectedRegistration   = new PetRejectedRegistration();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
             $mPetTran                   = new PetTran();
 
-            $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)
-                ->where('pet_approved_registrations.status', '<>', 0)                                                       // Static
+            $rejectedApplicationDetails = $mPetRejectedRegistration->getPetRejectedApplicationById($applicationId)
+                ->where('pet_rejected_registrations.status', '<>', 0)                                                       // Static
                 ->first();
-            if (is_null($approveApplicationDetails)) {
+            if (is_null($rejectedApplicationDetails)) {
                 throw new Exception("application Not found!");
             }
-            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($approveApplicationDetails->application_id)
+            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($rejectedApplicationDetails->application_id)
                 ->select(
                     'id AS chargeId',
                     'amount',
@@ -1968,21 +1967,17 @@ class PetRegistrationController extends Controller
                 throw new Exception("Charges for respective application not found!");
             }
             # Get Transaction details 
-            $tranDetails = $mPetTran->getTranByApplicationId($approveApplicationDetails->application_id)->first();
+            $tranDetails = $mPetTran->getTranByApplicationId($rejectedApplicationDetails->application_id)->first();
             if (!$tranDetails) {
                 throw new Exception("Transaction details not found there is some error in data !");
             }
-            # Check for jsk for renewal button
-            if ($user->user_type == 'JSK') {                                                                                // Static
-                $viewRenewButton = true;
-            }
 
             # return Details 
-            $approveApplicationDetails['transactionDetails']    = $tranDetails;
+            $rejectedApplicationDetails['transactionDetails']    = $tranDetails;
             $chargeDetails['roundAmount']                       = round($chargeDetails['amount']);
-            $approveApplicationDetails['charges']               = $chargeDetails;
-            $approveApplicationDetails['viewRenewalButton']     = $viewRenewButton;
-            return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+            $rejectedApplicationDetails['charges']               = $chargeDetails;
+            $rejectedApplicationDetails['viewRenewalButton']     = $viewRenewButton;
+            return responseMsgs(true, "Listed application details!", remove_null($rejectedApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
