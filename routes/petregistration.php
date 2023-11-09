@@ -52,10 +52,13 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('citizen-holding-saf', 'citizenHoldingSaf');
         Route::post('registration/apply-renewal', 'applyPetRenewal');                                           // Admin / Citizen
         Route::post('application/searh-application', 'searchApplication');                                      // Admin
+        
         Route::post('search-approved-applications', 'searchApprovedApplication');                               // Admin
         Route::post('get-approve-registration-list', 'getApprovedApplicationDetails');                          // Admin
         Route::post('get-approve-registrations', 'getApproveRegistration');                                     // Citizen
-        // Route::post();
+        
+        Route::post('search-rejected-applications', 'searchRejectedApplication');                               // Admin
+        Route::post('get-rejected-registration-list', 'getRejectedApplicationDetails');                         // Admin
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen

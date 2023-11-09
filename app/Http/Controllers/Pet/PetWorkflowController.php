@@ -570,6 +570,7 @@ class PetWorkflowController extends Controller
                 # If application is approved for the first time or renewal
                 if ($application->renewal == 0) {                                                       // Static
                     $approveDetails = $this->finalApproval($request, $application);
+                    $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
                 } else {
                     $this->finalApprovalRenewal($request, $application);
                 }
@@ -581,10 +582,7 @@ class PetWorkflowController extends Controller
                 $msg = "Application Successfully Rejected !!";
             }
             $this->commit();
-            $returnData = [
-                "applicationNo" => $applicationNo,
-                "uniqueTokenId" => $approveDetails['registrationId'] ?? null
-            ];
+            $returnData["applicationNo"] = $applicationNo;
             return responseMsgs(true, $msg, $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
@@ -1061,7 +1059,7 @@ class PetWorkflowController extends Controller
                     ->where('pet_rejected_registrations.status', '<>', 0)
                     ->where('pet_rejected_applicants.status', '<>', 0)
                     ->where('pet_rejected_details.status', '<>', 0)
-                    ->where('pet_rejected_registrations.approve_user_id', $userId)
+                    ->where('pet_rejected_registrations.rejected_user_id', $userId)
                     ->where('pet_rejected_registrations.finisher_role_id', $roleDetails->role_id)
                     ->where('pet_rejected_registrations.current_role_id', $roleDetails->role_id)
                     ->orderByDesc('pet_rejected_registrations.id');

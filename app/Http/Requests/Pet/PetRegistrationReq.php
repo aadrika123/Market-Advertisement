@@ -38,7 +38,7 @@ class PetRegistrationReq extends FormRequest
             'petBirthDate'          => 'required|date|date_format:Y-m-d',
             'petFrom'               => 'required|',
             'petGender'             => 'required|int|in:1,2',
-            'petIdentity'           => 'required|',
+            'petIdentity'           => 'nullable|',
             'petName'               => 'required|',
             'petType'               => 'required|',
             'ulbId'                 => 'required|int',

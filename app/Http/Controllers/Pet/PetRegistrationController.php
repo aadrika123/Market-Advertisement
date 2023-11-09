@@ -21,6 +21,8 @@ use App\Models\Pet\PetApproveApplicant;
 use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Pet\PetAudit;
 use App\Models\Pet\PetRegistrationCharge;
+use App\Models\Pet\PetRejectedApplicant;
+use App\Models\Pet\PetRejectedRegistration;
 use App\Models\Pet\PetRenewalApplicant;
 use App\Models\Pet\PetRenewalDetail;
 use App\Models\Pet\PetRenewalRegistration;
@@ -1800,6 +1802,133 @@ class PetRegistrationController extends Controller
         | Working
      */
     public function getApprovedApplicationDetails(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'registrationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                       = authUser($req);
+            $viewRenewButton            = false;
+            $applicationId              = $req->registrationId;
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+            $mPetRegistrationCharge     = new PetRegistrationCharge();
+            $mPetTran                   = new PetTran();
+
+            $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)
+                ->where('pet_approved_registrations.status', '<>', 0)                                                       // Static
+                ->first();
+            if (is_null($approveApplicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            $chargeDetails = $mPetRegistrationCharge->getChargesbyId($approveApplicationDetails->application_id)
+                ->select(
+                    'id AS chargeId',
+                    'amount',
+                    'registration_fee',
+                    'paid_status',
+                    'charge_category',
+                    'charge_category_name'
+                )
+                ->where('paid_status', 1)                                                                                   // Static
+                ->first();
+            if (is_null($chargeDetails)) {
+                throw new Exception("Charges for respective application not found!");
+            }
+            # Get Transaction details 
+            $tranDetails = $mPetTran->getTranByApplicationId($approveApplicationDetails->application_id)->first();
+            if (!$tranDetails) {
+                throw new Exception("Transaction details not found there is some error in data !");
+            }
+            # Check for jsk for renewal button
+            if ($user->user_type == 'JSK') {                                                                                // Static
+                $viewRenewButton = true;
+            }
+
+            # return Details 
+            $approveApplicationDetails['transactionDetails']    = $tranDetails;
+            $chargeDetails['roundAmount']                       = round($chargeDetails['amount']);
+            $approveApplicationDetails['charges']               = $chargeDetails;
+            $approveApplicationDetails['viewRenewalButton']     = $viewRenewButton;
+            return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Search rejected applications 
+        | Serial No :
+        | Working
+     */
+    public function searchRejectedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'required',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            # Variable assigning
+            $key        = $request->filterBy;
+            $paramenter = $request->parameter;
+            $pages      = $request->perPage ?? 10;
+            $refstring  = Str::snake($key);
+            $msg        = "Pet rejected appliction details according to $key!";
+
+            $mPetRejectedRegistration   = new PetRejectedRegistration();
+            $mPetRejectedApplicant      = new PetRejectedApplicant();
+
+            # Distrubtion of search category  ❗❗ Static
+            switch ($key) {
+                case ("mobileNo"):
+                    $rejectedApplications = $mPetRejectedApplicant->getRelatedRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("applicationNo"):
+                    $rejectedApplications = $mPetRejectedRegistration->getRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("applicantName"):
+                    $rejectedApplications = $mPetRejectedApplicant->getRelatedRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("holdingNo"):
+                    $rejectedApplications = $mPetRejectedRegistration->getRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                case ("safNo"):
+                    $rejectedApplications = $mPetRejectedRegistration->getRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
+            # Check if data not exist
+            $checkVal = collect($rejectedApplications)->last();
+            if (!$checkVal || $checkVal == 0) {
+                $msg = "Data Not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($rejectedApplications), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Get the rejected application details 
+        | Serial No :
+        | Under Con
+        | Changes for rejected details 
+     */
+    public function getRejectedApplicationDetails(Request $req)
     {
         $validated = Validator::make(
             $req->all(),
