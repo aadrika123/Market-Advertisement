@@ -1105,7 +1105,7 @@ class PetWorkflowController extends Controller
             }
 
             # Get the latest data for Finisher
-            $returnData = $baseQuerry->orderBy('pet_rejected_registrations.approve_date')->paginate($pages);
+            $returnData = $baseQuerry->orderBy('pet_rejected_registrations.rejected_date')->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
