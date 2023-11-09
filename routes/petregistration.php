@@ -59,6 +59,7 @@ Route::group(['middleware' => ['json.response']], function () {
 
         Route::post('search-rejected-applications', 'searchRejectedApplication');                               // Admin
         Route::post('get-rejected-registration-list', 'getRejectedApplicationDetails');                         // Admin
+        Route::post('get-rejected-registrations', 'getRejectedRegistration');
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen

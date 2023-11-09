@@ -1982,4 +1982,48 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
+
+
+    /**
+     * | get the rejected applications for respective user
+        | Serial No :
+        | Under Con 
+     */
+    public function getRejectedRegistration(Request $req)
+    {
+        try {
+            $user                       = authUser($req);
+            $confUserType               = $this->_userType;
+            $mPetRejectedRegistration   = new PetRejectedRegistration();
+
+            if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
+                throw new Exception("You are not an autherised Citizen!");
+            }
+            # Collect querry Exceptions 
+            try {
+                $refRejectedDetails = $mPetRejectedRegistration->getAllRejectedApplicationDetails()
+                    ->select(
+                        DB::raw("REPLACE(pet_rejected_registrations.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(pet_rejected_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "pet_rejected_registrations.*",
+                        "pet_rejected_applicants.applicant_name",
+                        "wf_roles.role_name",
+                        "pet_rejected_registrations.status as registrationSatus",
+                        DB::raw("CASE 
+                        WHEN pet_rejected_registrations.status = 1 THEN 'Approved'
+                        WHEN pet_rejected_registrations.status = 2 THEN 'Under Renewal Process'
+                        END as current_status")
+                    )
+                    ->where('pet_rejected_registrations.status', '<>', 0)
+                    ->where('pet_rejected_registrations.citizen_id', $user->id)
+                    ->orderByDesc('pet_rejected_registrations.id')
+                    ->get();
+            } catch (QueryException $qurry) {
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
+            }
+            return responseMsgs(true, "list of active registration!", remove_null($refRejectedDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
 }
