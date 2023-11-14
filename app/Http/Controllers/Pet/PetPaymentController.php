@@ -13,6 +13,7 @@ use App\Models\Pet\PetChequeDtl;
 use App\Models\Pet\PetRazorPayRequest;
 use App\Models\Pet\PetRazorPayResponse;
 use App\Models\Pet\PetRegistrationCharge;
+use App\Models\Pet\PetRejectedRegistration;
 use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Pet\PetTran;
 use App\Models\Pet\PetTranDetail;
@@ -625,6 +626,7 @@ class PetPaymentController extends Controller
     {
         $mPetActiveRegistration     = new PetActiveRegistration();
         $mPetApprovedRegistration   = new PetApprovedRegistration();
+        $mPetRejectedRegistration   = new PetRejectedRegistration();
         $mPetRenewalRegistration    = new PetRenewalRegistration();
 
         # first level chain
@@ -644,16 +646,26 @@ class PetPaymentController extends Controller
                     'pet_approve_applicants.applicant_name',
                     'pet_approved_registrations.address',
                 )->first();
-            if (!$refApplicationDetails) {
-                # Third level chain
-                $refApplicationDetails = $mPetRenewalRegistration->getRenewalApplicationById($transactionDetails->related_id)
-                    ->select(
-                        'ulb_masters.ulb_name',
-                        'pet_renewal_registrations.application_no',
-                        'pet_renewal_applicants.applicant_name',
-                        'pet_renewal_registrations.address',
-                    )->first();
-            }
+        }
+        if (!$refApplicationDetails) {
+            # Third level chain
+            $refApplicationDetails = $mPetRenewalRegistration->getRenewalApplicationById($transactionDetails->related_id)
+                ->select(
+                    'ulb_masters.ulb_name',
+                    'pet_renewal_registrations.application_no',
+                    'pet_renewal_applicants.applicant_name',
+                    'pet_renewal_registrations.address',
+                )->first();
+        }
+        if (!$refApplicationDetails) {
+            # Fourth level chain
+            $refApplicationDetails = $mPetRejectedRegistration->getRejectedApplicationById($transactionDetails->related_id)
+                ->select(
+                    'ulb_masters.ulb_name',
+                    'pet_rejected_registrations.application_no',
+                    'pet_rejected_applicants.applicant_name',
+                    'pet_rejected_registrations.address',
+                )->first();
         }
 
         # Check the existence of final data

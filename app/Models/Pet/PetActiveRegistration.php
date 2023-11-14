@@ -94,13 +94,14 @@ class PetActiveRegistration extends Model
             WHEN pet_active_details.pet_type = '1' THEN 'Dog'
             WHEN pet_active_details.pet_type = '2' THEN 'Cat'
             END AS ref_pet_type"),
-
+            'wf_roles.role_name AS roleName'
         )
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
             ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
+            ->leftjoin('wf_roles', 'wf_roles.id', 'pet_active_registrations.current_role_id')
             ->where('pet_active_registrations.id', $applicationId)
             ->where('pet_active_registrations.status', 1);
     }

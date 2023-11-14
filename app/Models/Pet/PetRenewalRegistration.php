@@ -9,7 +9,6 @@ class PetRenewalRegistration extends Model
 {
     use HasFactory;
 
-
     /**
      * | Get pet renewal application details by id
      */

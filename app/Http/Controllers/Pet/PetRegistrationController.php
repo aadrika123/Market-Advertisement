@@ -1925,8 +1925,7 @@ class PetRegistrationController extends Controller
     /**
      * | Get the rejected application details 
         | Serial No :
-        | Under Con
-        | Changes for rejected details 
+        | Working
      */
     public function getRejectedApplicationDetails(Request $req)
     {
@@ -1987,7 +1986,7 @@ class PetRegistrationController extends Controller
     /**
      * | get the rejected applications for respective user
         | Serial No :
-        | Under Con 
+        | Working
      */
     public function getRejectedRegistration(Request $req)
     {
