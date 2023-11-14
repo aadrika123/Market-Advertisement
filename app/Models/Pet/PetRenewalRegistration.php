@@ -19,4 +19,15 @@ class PetRenewalRegistration extends Model
             ->where('pet_renewal_registrations.application_id', $id)
             ->where('pet_renewal_registrations.status', '<>', 0);
     }
+
+    /**
+     * | Get pet renewal application list by registration id
+     */
+    public function getRenewalApplicationByRegId($regId)
+    {
+        return PetRenewalRegistration::join('ulb_masters', 'ulb_masters.id', '=', 'pet_renewal_registrations.ulb_id')
+            ->join('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
+            ->where('pet_renewal_registrations.registration_id', $regId)
+            ->where('pet_renewal_registrations.status', '<>', 0);
+    }
 }

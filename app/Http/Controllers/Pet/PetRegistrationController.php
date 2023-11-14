@@ -1623,7 +1623,7 @@ class PetRegistrationController extends Controller
             # Apply so that appliction get to workflow
             $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
             if ($applyDetails->original['status'] == false) {
-                throw new Exception($applyDetails->original['message'] ?? "Renewal Process cnnot be done!");
+                throw new Exception($applyDetails->original['message'] ?? "Renewal Process can't be done!");
             };
             # Update the details for renewal
             $this->updateRenewalDetails($refApprovedDetails);
@@ -2019,11 +2019,51 @@ class PetRegistrationController extends Controller
                     ->orderByDesc('pet_rejected_registrations.id')
                     ->get();
             } catch (QueryException $qurry) {
-                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $req->deviceId);
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
             }
-            return responseMsgs(true, "list of active registration!", remove_null($refRejectedDetails), "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(true, "list of active registration!", remove_null($refRejectedDetails), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Get the renewal application list / history
+        | Srial No :
+        | Under con
+     */
+    public function getRenewalHistory(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'registrationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mPetRenewalRegistration = new PetRenewalRegistration();
+            $registrationId = $request->registrationId;
+            $msg = "Renewal application list!";
+            $renewalList = $mPetRenewalRegistration->getRenewalApplicationByRegId($registrationId)
+                ->select(
+                    'pet_renewal_registrations.id',
+                    'ulb_masters.ulb_name',
+                    'pet_renewal_registrations.application_no',
+                    'pet_renewal_applicants.applicant_name',
+                    'pet_renewal_registrations.address',
+                    'pet_renewal_registrations.approve_date AS validFrom',
+                    'pet_renewal_registrations.approve_end_date AS validUpto'
+                )->get();
+            if (!$renewalList->first()) {
+                $msg = "Data not found!";
+            }
+            return responseMsgs(true, $msg, remove_null($renewalList), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 }

@@ -711,8 +711,7 @@ class PetWorkflowController extends Controller
         $mPetApproveApplicant       = new PetApproveApplicant();
         $mPetApproveDetail          = new PetApproveDetail();
         $lastLicenceDate            = $now->addYear()->subDay();
-        $key                        = "REG-";                                           // Static
-        $registrationId             = $this->getUniqueId($key);
+        $registrationId             = $applicationDetails->registration_id;
 
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
