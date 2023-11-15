@@ -48,7 +48,7 @@ class ShopRequest extends FormRequest
             'tradeLicense'             =>   'nullable|string',
             'construction'             =>   'required|integer',
             'electricity'              =>   'required|in:1,0',
-            'electricityNo'            =>   $this->water=='1'?'required|string':'nullable|string',
+            'electricityNo'            =>   $this->electricity=='1'?'required|string':'nullable|string',
             'water'                    =>   'required|in:1,0',
             'waterConsumerNo'          =>   $this->water=='1'?'required|string':'nullable|string',
             'salePurchase'             =>   'nullable|string',

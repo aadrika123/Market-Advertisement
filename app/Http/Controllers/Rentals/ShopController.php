@@ -516,11 +516,9 @@ class ShopController extends Controller
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
             $userDetails = json_decode($userDetails);
-            // $data=$data->data;
             $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
                 $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
                 $ref['userId'] = $values;
-                // $ref['tcName'] = "ANCTC";
                 $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
                 return $ref;
             });
