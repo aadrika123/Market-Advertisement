@@ -472,7 +472,7 @@ class ShopController extends Controller
             $mShopPayment = new ShopPayment();
             $list = $mShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
-            $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
+            $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get()->sum('amount');
             return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, "055013", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST", $req->deviceId);
