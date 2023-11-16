@@ -36,7 +36,7 @@ class ShopPayment extends Model
   public function todayShopCollection($ulbId)
   {
     return self::select('amount')
-      ->where('ulb_id', $ulbId)
+      ->where('ulb_id', $ulbId);
       // ->where('payment_date', $date);
     //  ->sum('amount');
   }
