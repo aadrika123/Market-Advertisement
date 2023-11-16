@@ -1050,7 +1050,7 @@ class PrivateLandController extends Controller
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  id of Application
+            'applicationId' => 'required|integer',               //  id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
