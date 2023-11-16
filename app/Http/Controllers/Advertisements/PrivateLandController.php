@@ -378,7 +378,6 @@ class PrivateLandController extends Controller
         }
     }
 
-
     /**
      * | Escalate Application
      * | Function - 09
