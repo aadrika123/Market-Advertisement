@@ -1060,11 +1060,11 @@ class PrivateLandController extends Controller
         }
         try {
             // Variable initialization
-            $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvChequeDtl = new AdvChequeDtl();
             $wfId = AdvPrivateland::find($req->applicationId)->workflow_id;
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);                        // Entry Cheque Or DD
+            $transNo = $mAdvChequeDtl->entryChequeDd($req);                        // Entry Cheque Or DD
 
             return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050424", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {

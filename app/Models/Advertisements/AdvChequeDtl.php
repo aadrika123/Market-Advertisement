@@ -367,7 +367,7 @@ class AdvChequeDtl extends Model
                         'payment_details' => "By CHEQUE/DD",
                         'payment_status' => "1",
                         'payment_date' => Carbon::now(),
-                        'payment_amount' => $amount,,
+                        'payment_amount' => $amount,
                         'payment_mode' => "Cheque/DD",
                     ],
                 );
