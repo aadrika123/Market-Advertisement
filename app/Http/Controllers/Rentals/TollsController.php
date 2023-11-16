@@ -361,7 +361,7 @@ class TollsController extends Controller
             $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
 
-            $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
+            $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get()->sum('amount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055108", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055108", "1.0", responseTime(), "POST", $req->deviceId);

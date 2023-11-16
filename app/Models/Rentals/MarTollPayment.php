@@ -40,11 +40,11 @@ class MarTollPayment extends Model
   /**
    * | Get Current Date Collection List
    */
-  public function todayTallCollection($ulbId, $date)
+  public function todayTallCollection($ulbId)
   {
     return self::select('amount')
-      ->where('ulb_id', $ulbId)
-      ->where('payment_date', $date);
+      ->where('ulb_id', $ulbId);
+      // ->where('payment_date', $date);
   }
 
   /**
