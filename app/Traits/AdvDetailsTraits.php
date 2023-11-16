@@ -251,7 +251,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Resident Ward No', 'key' => 'residentWardNo', 'value' => $data['resident_ward_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
-            ['displayString' => 'Dispay Type', 'key' => 'dispayType', 'value' => $data['dispayType']],
+            ['displayString' => 'Display Type', 'key' => 'dispayType', 'value' => $data['dispayType']],
             ['displayString' => 'Installation Location', 'key' => 'installationLocation', 'value' => $data['installationLocation']],
             ['displayString' => 'Typology', 'key' => 'typology', 'value' => $data['typology']],
             ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':"N/A"))],
