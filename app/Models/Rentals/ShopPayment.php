@@ -23,6 +23,8 @@ class ShopPayment extends Model
       'mc.circle_name',
       'mm.market_name',
       DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+      DB::raw("TO_CHAR(mar_shop_payments.paid_from, 'DD-MM-YYYY') as paid_from"),
+      DB::raw("TO_CHAR(mar_shop_payments.paid_to, 'DD-MM-YYYY') as paid_to"),
     )
       ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
       ->join('m_circle as mc', 'mc.id', '=', 'ms.circle_id')
@@ -33,11 +35,11 @@ class ShopPayment extends Model
   /**
    * | Get TOday Shop Collection
    */
-  public function todayShopCollection($ulbId, $date)
+  public function todayShopCollection($ulbId)
   {
     return self::select('amount')
-      ->where('ulb_id', $ulbId)
-      ->where('payment_date', $date);
+      ->where('ulb_id', $ulbId);
+      // ->where('payment_date', $date);
     //  ->sum('amount');
   }
 

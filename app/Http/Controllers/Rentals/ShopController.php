@@ -472,7 +472,7 @@ class ShopController extends Controller
             $mShopPayment = new ShopPayment();
             $list = $mShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
-            $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
+            $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get()->sum('amount');
             return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, "055013", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST", $req->deviceId);
@@ -505,10 +505,12 @@ class ShopController extends Controller
             }
             $mShopPayment = new ShopPayment();
             $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
-            $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            // $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
             $mMarTollPayment = new MarTollPayment();
             $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
-            $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            // $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
+            $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
             $totalCollection = collect($shopPayment)->merge($tollPayment);
             $refValues = collect($totalCollection)->pluck('user_id')->unique();
             $ids['ids'] = $refValues;
@@ -516,11 +518,9 @@ class ShopController extends Controller
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
             $userDetails = json_decode($userDetails);
-            // $data=$data->data;
             $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
                 $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
                 $ref['userId'] = $values;
-                // $ref['tcName'] = "ANCTC";
                 $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
                 return $ref;
             });

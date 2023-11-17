@@ -26,6 +26,7 @@ class Shop extends Model
           ")
     )
       ->where('id', $id)
+      ->orderBy('id','desc')
       ->first();
   }
 

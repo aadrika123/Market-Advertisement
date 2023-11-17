@@ -378,7 +378,6 @@ class PrivateLandController extends Controller
         }
     }
 
-
     /**
      * | Escalate Application
      * | Function - 09
@@ -1051,7 +1050,7 @@ class PrivateLandController extends Controller
     public function entryChequeDd(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',               //  id of Application
+            'applicationId' => 'required|integer',               //  id of Application
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
@@ -1061,11 +1060,11 @@ class PrivateLandController extends Controller
         }
         try {
             // Variable initialization
-            $mAdvCheckDtl = new AdvChequeDtl();
+            $mAdvChequeDtl = new AdvChequeDtl();
             $wfId = AdvPrivateland::find($req->applicationId)->workflow_id;
             $workflowId = ['workflowId' => $wfId];
             $req->request->add($workflowId);
-            $transNo = $mAdvCheckDtl->entryChequeDd($req);                        // Entry Cheque Or DD
+            $transNo = $mAdvChequeDtl->entryChequeDd($req);                        // Entry Cheque Or DD
 
             return responseMsgs(true, "Check Entry Successfully !!", ['status' => true, 'TransactionNo' => $transNo], "050424", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {

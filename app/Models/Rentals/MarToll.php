@@ -81,6 +81,7 @@ class MarToll extends Model
             ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
             ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
             ->leftjoin('mar_shop_payments as msp', 'mar_tolls.last_tran_id', '=', 'msp.id')
+            ->orderByDesc('mar_tolls.id')
             ->where('mar_tolls.ulb_id', $ulbId);
         // ->where('mar_tolls.status', '1');
     }
@@ -93,14 +94,15 @@ class MarToll extends Model
             'mar_tolls.*',
             'mc.circle_name',
             'mm.market_name',
-            DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
-            'msp.amount as last_payment_amount'
+            DB::raw("TO_CHAR(mtp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+            'mtp.amount as last_payment_amount'
         )
             ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
             ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
-            ->leftjoin('mar_shop_payments as msp', 'mar_tolls.last_tran_id', '=', 'msp.id')
+            ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
             ->where('mar_tolls.market_id', $marketid)
-            ->where('mar_tolls.status', '1');
+            ->where('mar_tolls.status', '1')
+            ->orderByDesc('mar_tolls.id');
     }
 
     /**
