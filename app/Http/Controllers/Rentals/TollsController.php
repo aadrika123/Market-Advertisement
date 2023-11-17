@@ -512,11 +512,11 @@ class TollsController extends Controller
             return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
 
         try {
-            // $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
-            // if($paymentUpto != NULL){
-            //     if($paymentUpto >= $req->dateFrom)
-            //         throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
-            // }
+            $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
+            if($paymentUpto != NULL){
+                if($paymentUpto >= $req->dateFrom)
+                    throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
+            }
             // Variable Assignments
             $toll = $this->_mToll::find($req->tollId);
             if (collect($toll)->isEmpty())
