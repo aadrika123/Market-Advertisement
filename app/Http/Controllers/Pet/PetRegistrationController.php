@@ -2066,4 +2066,49 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
+
+    /**
+     * | get the renewal application details according to registration Id
+        | Serial No :
+        | Under Con
+     */
+    public function getRenewalApplicationDetails(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'registrationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $viewRenewButton            = false;
+            $applicationId              = $req->registrationId;
+            $mPetRenewalRegistration    = new PetRenewalRegistration();
+            $mPetTran                   = new PetTran();
+
+            # Application detial 
+            $renewalApplicationDetails = $mPetRenewalRegistration->getPetRenewalApplicationById($applicationId)
+                ->where('pet_renewal_registrations.status', '<>', 0)                                                       // Static
+                ->first();
+            if (is_null($renewalApplicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            # Get Transaction details 
+            $tranDetails = $mPetTran->getTranByApplicationId($renewalApplicationDetails->application_id)->first();
+            if (!$tranDetails) {
+                throw new Exception("Transaction details not found there is some error in data !");
+            }
+
+            # Return Details 
+            $renewalApplicationDetails['transactionDetails']    = $tranDetails;
+            $renewalApplicationDetails['viewRenewalButton']     = $viewRenewButton;
+            return responseMsgs(true, "Listed application details!", remove_null($renewalApplicationDetails), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01",  responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 }

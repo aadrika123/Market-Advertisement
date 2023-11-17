@@ -60,7 +60,9 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('search-rejected-applications', 'searchRejectedApplication');                               // Admin
         Route::post('get-rejected-registration-list', 'getRejectedApplicationDetails');                         // Admin
         Route::post('get-rejected-registrations', 'getRejectedRegistration');
+
         Route::post('get-renewal-history', 'getRenewalHistory');
+        Route::post('get-renewal-registration-details', 'getRenewalApplicationDetails');
 
         # Document Api
         Route::post('application/get-doc-to-upload', 'getDocToUpload');                                         // Admin/ Citizen
