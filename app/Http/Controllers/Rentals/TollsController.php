@@ -48,6 +48,13 @@ class TollsController extends Controller
             return responseMsgs(false, $validator->errors(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
 
         try {
+            // Check Paymentupto Date For next Payment 
+            $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
+            if($paymentUpto != NULL){
+                if($paymentUpto >= $req->dateFrom)
+                    throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
+            }
+
             // Variable Assignments
             $todayDate = Carbon::now()->format('Y-m-d');
             $mTollPayment = new MarTollPayment();
