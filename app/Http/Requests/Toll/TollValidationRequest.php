@@ -30,7 +30,7 @@ class TollValidationRequest extends FormRequest
             'tollNo'                =>   'nullable|string',
             'vendorName'            =>   'required|regex:/^[A-Za-z ]+$/',
             'address'               =>   'required|string|max:255',
-            'rate'                  =>   'required|numeric',
+            'rate'                  =>   'required|integer',
             'lastPaymentDate'       =>   'nullable|date',
             'lastAmount'            =>   'nullable|numeric',
             'marketId'              =>   'required|integer',

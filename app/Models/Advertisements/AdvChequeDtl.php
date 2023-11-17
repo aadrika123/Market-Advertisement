@@ -70,7 +70,6 @@ class AdvChequeDtl extends Model
                 'transaction_no' => $financial_year
             ],
         );
-        // return $metaReqs;
         $id = AdvChequeDtl::create($metaReqs)->id;
         return $financial_year . "-" . $id;
     }
@@ -81,9 +80,9 @@ class AdvChequeDtl extends Model
     public function getFinancialYear($inputDate, $format = "Y")
     {
         $date = date_create($inputDate);
-        if (date_format($date, "m") >= 4) { //On or After April (FY is current year - next year)
+        if (date_format($date, "m") >= 4) {                                                                     // On or After April (FY is current year - next year)
             $financial_year = (date_format($date, $format)) . '-' . (date_format($date, $format) + 1);
-        } else { //On or Before March (FY is previous year - current year)
+        } else {                                                                                                // On or Before March (FY is previous year - current year)
             $financial_year = (date_format($date, $format) - 1) . '-' . date_format($date, $format);
         }
 
@@ -109,12 +108,9 @@ class AdvChequeDtl extends Model
         $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
 
         if ($req->status == '1') {   // Paid Case
-
             if ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = AdvAgency::find($applicationId);
-
                 $payDetails = array('paymentMode' => 'CHEQUE/DD', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $payment_id);
-
                 if ($mAdvAgency->renew_no == NULL) {
                     $valid_from = Carbon::now();
                     $valid_upto = Carbon::now()->addYears(1)->subDay(1);

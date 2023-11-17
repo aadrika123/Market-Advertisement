@@ -118,13 +118,14 @@ class TollsController extends Controller
                 $imageName2Absolute = $absolutePath;
             }
             $tollNo = $this->tollIdGeneration($request->marketId);
+            $rate=MarTollPriceList::select('rate')->where('id','=',$request->rate)->first()->rate;
             $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
                 // 'toll_type'               => $request->tollType,
                 'vendor_name'             => $request->vendorName,
                 'address'                 => $request->address,
-                'rate'                    => $request->rate,
+                'rate'                    => $rate,
                 'last_payment_date'       => $request->lastPaymentDate,
                 'last_amount'             => $request->lastAmount,
                 'market_id'               => $request->marketId,
