@@ -101,7 +101,8 @@ class MarToll extends Model
             ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
             ->leftjoin('mar_shop_payments as msp', 'mar_tolls.last_tran_id', '=', 'msp.id')
             ->where('mar_tolls.market_id', $marketid)
-            ->where('mar_tolls.status', '1');
+            ->where('mar_tolls.status', '1')
+            ->orderByDesc('mar_tolls.id');
     }
 
     /**
