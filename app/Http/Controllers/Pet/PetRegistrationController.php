@@ -1190,7 +1190,10 @@ class PetRegistrationController extends Controller
             $mWfActiveDocument          = new WfActiveDocument();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
 
-            $applicantDetals = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+            $applicantDetals = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
+            if (!$applicantDetals) {
+                throw new Exception("Application details not found!");
+            }
             $this->checkParamsForDelete($applicantDetals, $user);
 
             $this->begin();

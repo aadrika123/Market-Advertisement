@@ -148,7 +148,7 @@ class PetActiveRegistration extends Model
 
     /**
      * | Delete the application before the payment 
-        | CAUTION
+        | CAUTION ❗❗❗
      */
     public function deleteApplication($applicationId)
     {

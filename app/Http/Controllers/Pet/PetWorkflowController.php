@@ -147,7 +147,7 @@ class PetWorkflowController extends Controller
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereIn('pet_active_registrations.current_role_id', $roleId)
                 // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
-                ->where('pet_active_registrations.is_escalate', false)
+                // ->where('pet_active_registrations.is_escalate', false)
                 ->where('pet_active_registrations.parked', false)
                 ->paginate($pages);
 

@@ -280,7 +280,7 @@ class WfActiveDocument extends Model
 
     /**
      * | Delete the document for the application before payment
-        | CAUTION
+        | CAUTION ❗❗❗
      */
     public function deleteDocuments($applicationId, $workflowId, $moduleId)
     {

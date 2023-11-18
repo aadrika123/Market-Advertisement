@@ -41,7 +41,7 @@ class PetRegistrationCharge extends Model
 
     /**
      * | Delete the application cherges before payment 
-        | CAUTION 
+        | CAUTION ❗❗❗
      */
     public function deleteCharges($applicationId)
     {
