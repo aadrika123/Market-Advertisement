@@ -104,7 +104,8 @@ class Shop extends Model
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.market_id', $marketid)
-      ->where('mar_shops.status', '1');
+      ->where('mar_shops.status', '1')
+      ->orderByDesc('mar_shops.id');
   }
 
   /**
