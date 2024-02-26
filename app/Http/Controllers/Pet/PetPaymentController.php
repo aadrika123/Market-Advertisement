@@ -478,6 +478,8 @@ class PetPaymentController extends Controller
                 Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
                 throw new Exception("Application Not found!");
             }
+            if (!$refUlbId)
+                $refUlbId  = $applicationDetails->ulb_id;
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationId)
                 ->where('charge_category', $RazorPayRequest->payment_from)
                 ->where('paid_status', 0)
