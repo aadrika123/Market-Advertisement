@@ -192,6 +192,8 @@ class PetPaymentController extends Controller
                 $this->postOtherPaymentModes($req);
             }
             $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+            // $payRelatedDetails['applicationDetails']->payment_status = 1;
+            // $payRelatedDetails['applicationDetails']->save();
             $this->commit();
             $returnData = [
                 "transactionNo" => $petTranNo

@@ -67,6 +67,8 @@ class WfActiveDocument extends Model
         $mWfActiveDocument->doc_code          = $req->docCode;
         $mWfActiveDocument->owner_dtl_id      = $req->ownerDtlId;
         $mWfActiveDocument->doc_category      = $req->docCategory ?? null;
+        $mWfActiveDocument->unique_id      = $req->unique_id ?? null;
+        $mWfActiveDocument->reference_no      = $req->reference_no ?? null;
         if (isset($req->verifyStatus)) {
             $mWfActiveDocument->verify_status = $req->verifyStatus;
         }
@@ -196,7 +198,10 @@ class WfActiveDocument extends Model
             'remarks'           => $req->remarks ?? null,
             'doc_code'          => $req->docCode,
             'owner_dtl_id'      => $req->ownerDtlId,
-            'doc_category'      => $req->docCategory ?? null
+            'doc_category'      => $req->docCategory ?? null,
+            'unique_id'      =>$req->unique_id ,
+            'reference_no'      =>$req->reference_no 
+
         ]);
     }
 
@@ -225,14 +230,16 @@ class WfActiveDocument extends Model
      */
     public function getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
     {
+        $upload_url = Config::get('dms_constants.UPLOAD_URL');
         return DB::table('wf_active_documents as d')
             ->select(
                 'd.id',
                 'd.document',
-                DB::raw("concat(relative_path,'/',document) as ref_doc_path"),
+                DB::raw("concat('$upload_url/',relative_path,'/',document) as ref_doc_path"),
                 'd.remarks',
                 'd.verify_status',
                 'd.doc_code',
+                'd.reference_no',
                 'd.doc_category',
                 'd.status',
                 'o.applicant_name as owner_name'

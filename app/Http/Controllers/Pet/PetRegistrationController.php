@@ -48,6 +48,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -627,6 +628,7 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            //$user                       = $req->auth?authUser($req):collect();
             $user                       = authUser($req);
             $metaReqs                   = array();
             $applicationId              = $req->applicationId;
@@ -641,20 +643,26 @@ class PetRegistrationController extends Controller
             $getPetDetails  = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
             $refImageName   = $req->docCode;
             $refImageName   = $getPetDetails->ref_application_id . '-' . str_replace(' ', '_', $refImageName);
-            $imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['REGISTRATION']);
-
+            //$imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['REGISTRATION']);
+            $docDetail      = $refDocUpload->upload($req);
             $metaReqs = [
                 'moduleId'      => $refmoduleId,
                 'activeId'      => $getPetDetails->ref_application_id,
                 'workflowId'    => $getPetDetails->workflow_id,
                 'ulbId'         => $getPetDetails->ulb_id,
                 'relativePath'  => $relativePath['REGISTRATION'],
-                'document'      => $imageName,
+                //'document'      => $docDetail[],
                 'docCode'       => $req->docCode,
                 'ownerDtlId'    => $req->ownerId ?? null,
                 'docCategory'   => $req->docCategory,
                 'auth'          => $req->auth
             ];
+                      
+
+            $metaReqs['unique_id'] = $docDetail['data']['uniqueId'];
+            $metaReqs['reference_no'] = $docDetail['data']['ReferenceNo'];
+            // $metaReqs['document'] = $docDetail['data']['document'];
+
 
             if ($user->user_type == $confUserType['1']) {
                 $isCitizen = true;
@@ -778,6 +786,7 @@ class PetRegistrationController extends Controller
         try {
             $mWfActiveDocument      = new WfActiveDocument();
             $mPetActiveRegistration = new PetActiveRegistration();
+            $refDocUpload               = new DocumentUpload;
             $moduleId               = $this->_petModuleId;
             $applicationId          = $req->applicationId;
 
@@ -789,12 +798,13 @@ class PetRegistrationController extends Controller
             $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
                 ->where('d.status', '!=', 0)
                 ->get();
-            $returnData = collect($documents)->map(function ($value) {
-                $path =  $this->readDocumentPath($value->ref_doc_path);
-                $value->doc_path = !empty(trim($value->ref_doc_path)) ? $path : null;
-                return $value;
-            });
-            return responseMsgs(true, "Uploaded Documents", remove_null($returnData), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+            // $returnData = collect($documents)->map(function ($value) {
+            //     $path =  $this->getDocUrl($value->refDocUpload);
+            //     $value->doc_path = !empty(trim($value->refDocUpload)) ? $path : null;
+            //     return $value;
+            // });
+            $data = $refDocUpload->getDocUrl($documents);
+            return responseMsgs(true, "Uploaded Documents", remove_null($data), "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
@@ -1738,6 +1748,73 @@ class PetRegistrationController extends Controller
         }
     }
 
+    #written by prity pandey
+//     public function searchApplication(Request $request)
+//     {
+//     $validator = Validator::make(
+//         $request->all(),
+//         [
+//             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+//             'parameter' => 'nullable'
+//         ]
+//     );
+
+//     if ($validator->fails()) {
+//         return response()->json([
+//             'status' => false,
+//             'message' => 'Validation error',
+//             'errors' => $validator->errors()
+//         ], 200);
+//     }
+
+//     try {
+//         $query = PetActiveApplicant::select(
+//             'pet_active_registrations.id',
+//             'pet_active_registrations.application_no',
+//             'pet_active_registrations.application_type',
+//             'pet_active_registrations.payment_status',
+//             'pet_active_registrations.application_apply_date',
+//             'pet_active_registrations.doc_upload_status',
+//             'pet_active_registrations.renewal',
+//             'pet_active_applicants.mobile_no',
+//             'pet_active_applicants.applicant_name'
+//         )
+//         ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+//         ->where('pet_active_registrations.status', 1)
+//         ->orderByDesc('pet_active_registrations.id');
+
+//         if ($request->filled('filterBy') && $request->filled('parameter')) {
+//             $filterBy = $request->input('filterBy');
+//             $parameter = $request->input('parameter');
+
+//             switch ($filterBy) {
+//                 case 'mobileNo':
+//                     $query->where('pet_active_applicants.mobile_no', $parameter);
+//                     break;
+//                 case 'applicantName':
+//                     $query->where('pet_active_applicants.applicant_name', $parameter);
+//                     break;
+//                 case 'applicationNo':
+//                     $query->where('pet_active_registrations.application_no', $parameter);
+//                     break;
+//                 case 'holdingNo':
+//                     $query->where('pet_approved_registrations.holding_no', $request->parameter);
+//                     break;
+//                 case 'safNo':
+//                     $query->where('pet_approved_registrations.saf_no', $request->parameter);
+//                     break;
+//             }
+//         }
+
+//         $data = $query->get();
+
+//         return responseMsgs(true, "Pending Apllications", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+//         } catch (Exception $e) {
+//             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+//         }
+// }
+
+
 
     /**
      * | Search approved applications according to certain search category
@@ -1797,6 +1874,75 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
+    
+    #writen by prity pandey
+    // public function searchApprovedApplication(Request $request)
+    // {
+    //     $validator = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
+    //             'parameter' => 'nullable'
+    //         ]
+    //     );
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $validator->errors()
+    //         ], 200);
+    //     }
+
+    //     try {
+    //         $query = DB::table('pet_approved_registrations')
+    //             ->select(
+    //                 'pet_approved_registrations.id',
+    //                 'pet_approved_registrations.holding_no',
+    //                 'pet_approved_registrations.application_no',
+    //                 'pet_approved_registrations.application_type',
+    //                 'pet_approved_registrations.payment_status',
+    //                 'pet_approved_registrations.saf_no',
+    //                 'pet_approved_registrations.application_apply_date',
+    //                 'pet_approved_registrations.doc_upload_status',
+    //                 'pet_approved_registrations.renewal',
+    //                 'pet_approved_registrations.registration_id',
+    //                 'pet_approve_applicants.mobile_no',
+    //                 'pet_approve_applicants.applicant_name',
+    //             )
+    //             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+    //             ->where('pet_approved_registrations.status', 1)
+    //             ->orderByDesc('pet_approved_registrations.id');
+
+    //         if ($request->filled('filterBy') && $request->filled('parameter')) {
+    //             switch ($request->filterBy) {
+    //                 case 'mobileNo':
+    //                     $query->where('pet_approve_applicants.mobile_no', $request->parameter);
+    //                     break;
+    //                 case 'applicantName':
+    //                     $query->where('pet_approve_applicants.applicant_name', $request->parameter);
+    //                     break;
+    //                 case 'applicationNo':
+    //                     $query->where('pet_approved_registrations.application_no', $request->parameter);
+    //                     break;
+    //                 case 'holdingNo':
+    //                     $query->where('pet_approved_registrations.holding_no', $request->parameter);
+    //                     break;
+    //                 case 'safNo':
+    //                     $query->where('pet_approved_registrations.saf_no', $request->parameter);
+    //                     break;
+    //             }
+    //         }
+
+          
+    //         $data = $query->get();
+
+    //         return responseMsgs(true, "Approved list", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+    //     }
+    // }
 
 
     /**
@@ -1925,6 +2071,75 @@ class PetRegistrationController extends Controller
         }
     }
 
+    # written by prity pandey
+//     public function searchRejectedApplication(Request $request)
+//     {
+//     $validator = Validator::make(
+//         $request->all(),
+//         [
+//             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
+//             'parameter' => 'nullable'
+//         ]
+//     );
+
+//     if ($validator->fails()) {
+//         return response()->json([
+//             'status' => false,
+//             'message' => 'Validation error',
+//             'errors' => $validator->errors()
+//         ], 200);
+//     }
+
+//     try {
+//         $query = DB::table('pet_rejected_registrations')
+//             ->select(
+//                 'pet_rejected_registrations.id',
+//                 'pet_rejected_registrations.holding_no',
+//                 'pet_rejected_registrations.saf_no',
+//                 'pet_rejected_registrations.application_no',
+//                 'pet_rejected_registrations.application_type',
+//                 'pet_rejected_registrations.payment_status',
+//                 'pet_rejected_registrations.application_apply_date',
+//                 'pet_rejected_registrations.doc_upload_status',
+//                 'pet_rejected_registrations.renewal',
+//                 'pet_rejected_registrations.registration_id',
+//                 'pet_rejected_applicants.mobile_no',
+//                 'pet_rejected_applicants.applicant_name'
+//             )
+//             ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
+//             ->where('pet_rejected_registrations.status', 1)
+//             ->orderByDesc('pet_rejected_registrations.id');
+
+//         if ($request->filled('filterBy') && $request->filled('parameter')) {
+//             $filterBy = $request->input('filterBy');
+//             $parameter = $request->input('parameter');
+
+//             switch ($filterBy) {
+//                 case 'mobileNo':
+//                     $query->where('pet_rejected_applicants.mobile_no', $parameter);
+//                     break;
+//                 case 'applicantName':
+//                     $query->where('pet_rejected_applicants.applicant_name', $parameter);
+//                     break;
+//                 case 'applicationNo':
+//                     $query->where('pet_rejected_registrations.application_no', $parameter);
+//                     break;
+//                 case 'holdingNo':
+//                     $query->where('pet_rejected_registrations.holding_no', $parameter);
+//                     break;
+//                 case 'safNo':
+//                     $query->where('pet_rejected_registrations.saf_no', $parameter);
+//                     break;
+//             }
+//         }
+
+//         $data = $query->get();
+
+//         return responseMsgs(true, "Rejected Applications", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+//     } catch (Exception $e) {
+//         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+//     }
+// }
 
     /**
      * | Get the rejected application details 
@@ -2114,4 +2329,6 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01",  responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
+
+
 }
