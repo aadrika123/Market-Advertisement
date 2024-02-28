@@ -18,7 +18,7 @@ class WfActiveDocument extends Model
         $docUrl  = Config::get("dms_constants.DMS_URL");
         return WfActiveDocument::select(
             DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
-            '*'
+            '*',"reference_no"
         )
             ->where('active_id', $activeId)
             ->where('workflow_id', $workflowId)

@@ -175,6 +175,7 @@ class MarriageRegistrationController extends Controller
         try {
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $applicationId               = $req->applicationId;
+            
 
             $refMarriageApplication = MarriageActiveRegistration::find($applicationId);                      // Get Marriage Details
             if (is_null($refMarriageApplication)) {
@@ -202,11 +203,12 @@ class MarriageRegistrationController extends Controller
     public function filterDocument($documentList, $refSafs, $witnessId = null)
     {
         $mWfActiveDocument = new WfActiveDocument();
-
+        $docUpload = new DocumentUpload;
         $safId = $refSafs->id;
         $workflowId = $refSafs->workflow_id;
         $moduleId = $this->_marriageModuleId;
         $uploadedDocs = $mWfActiveDocument->getDocByRefIds($safId, $workflowId, $moduleId);
+        $uploadedDocs = $docUpload->getDocUrl($uploadedDocs);           #_Calling BLL for Document Path from DMS
         $explodeDocs = collect(explode('#', $documentList));
 
         $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $witnessId, $refSafs) {
@@ -220,15 +222,18 @@ class MarriageRegistrationController extends Controller
                     // ->where('Witness_dtl_id', $witnessId)
                     ->first();
 
-                if ($uploadedDoc) {
-                    $response = [
-                        "uploadedDocId" => $uploadedDoc->id ?? "",
-                        "documentCode" => $item,
-                        // "WitnessId" => $uploadedDoc->Witness_dtl_id ?? "",
-                        "docPath" => $uploadedDoc->doc_path ?? "",
-                        "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc->verify_status ?? "") : 0,
-                        "remarks" => $uploadedDoc->remarks ?? "",
-                    ];
+                    if ($uploadedDoc) {
+                        $strLower = strtolower($item);
+                        $strReplace = str_replace('_', ' ', $strLower);
+                        $response = [
+                            "documentCode" => $item,
+                            "docPath" =>  $uploadedDoc['doc_path'] ?? "",
+                            "docVal"  => ucwords($strReplace) ?? "",
+                            "ownerId" => $uploadedDoc['owner_dtl_id'] ?? "",
+                            "remarks" => $uploadedDoc['remarks'] ?? "",
+                            "uploadedDocId" => $uploadedDoc['id'] ?? "",
+                            "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
+                        ];
                     $documents->push($response);
                 }
             });
@@ -251,10 +256,10 @@ class MarriageRegistrationController extends Controller
                 $arr = [
                     "documentCode" => $doc,
                     "docVal" => ucwords($strReplace),
-                    "uploadedDoc" => $uploadedDoc->doc_path ?? "",
-                    "uploadedDocId" => $uploadedDoc->id ?? "",
-                    "verifyStatus'" => $refSafs->payment_status == 1 ? ($uploadedDoc->verify_status ?? "") : 0,
-                    "remarks" => $uploadedDoc->remarks ?? "",
+                    "uploadedDoc" => $uploadedDoc['doc_path'] ?? "",
+                    "uploadedDocId" => $uploadedDoc['id'] ?? "",
+                    "verifyStatus'" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
+                    "remarks" => $uploadedDoc['remarks'] ?? "",
                 ];
                 return $arr;
             });
