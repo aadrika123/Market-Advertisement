@@ -15,7 +15,7 @@ class WfActiveDocument extends Model
 
     public function getDocByRefIds($activeId, $workflowId, $moduleId)
     {
-        $docUrl  = Config::get("marriage.DOC_URL");
+        $docUrl  = Config::get("dms_constants.DMS_URL");
         return WfActiveDocument::select(
             DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
             '*'
