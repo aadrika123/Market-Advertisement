@@ -420,6 +420,8 @@ class MarriageRegistrationController extends Controller
 
             $marriageDetails = MarriageActiveRegistration::find($req->applicationId);
             if (!$marriageDetails)
+                $marriageDetails = MarriageApprovedRegistration::find($req->applicationId);
+            if (!$marriageDetails)
                 throw new Exception("Application Not Found for this application Id");
 
             $workflowId = $marriageDetails->workflow_id;
@@ -483,6 +485,8 @@ class MarriageRegistrationController extends Controller
             // $mCustomDetails = new CustomDetail();
             // $mForwardBackward = new WorkflowMap();
             $details = MarriageActiveRegistration::find($req->applicationId);
+            if (!$details)
+                $details = MarriageApprovedRegistration::find($req->applicationId);
             if (!$details)
                 throw new Exception("Application Not Found");
             $witnessDetails = array();
