@@ -533,7 +533,7 @@ class MarriageRegistrationController extends Controller
             // Table Array
             $witnessElement = [
                 'headerTitle' => 'Witness Details',
-                'tableHead' => ["#", "Witness Name", "Witness Mobile No", "Address"],
+                'tableHead' => ["#", "Witness Name",  "Address"],
                 'tableData' => $witnessDetails
             ];
 

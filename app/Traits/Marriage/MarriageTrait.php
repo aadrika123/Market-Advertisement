@@ -108,7 +108,7 @@ trait MarriageTrait
             return [
                 $key + 1,
                 $witnessDetail['withnessName'],
-                $witnessDetail['withnessMobile'],
+                // $witnessDetail['withnessMobile'],
                 $witnessDetail['withnessAddress'],
             ];
         });
