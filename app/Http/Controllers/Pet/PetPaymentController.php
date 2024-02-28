@@ -578,7 +578,7 @@ class PetPaymentController extends Controller
             return validationError($validated);
         try {
             $now            = Carbon::now();
-            $toward         = "Dog Registration Fee";
+            $toward         = "Pet Registration Fee";
             $mPetTran       = new PetTran();
             $mPetChequeDtl  = new PetChequeDtl();
             $confVerifyMode = $this->_offlineVerificationModes;
@@ -613,7 +613,11 @@ class PetPaymentController extends Controller
                 "ulb"           => $applicationDetails->ulb_name,
                 "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
                 "address"       => $applicationDetails->address,
-                "tokenNo"       => $transactionDetails->token_no
+                "tokenNo"       => $transactionDetails->token_no,
+                "typeOfAnimal"  =>$applicationDetails->animal,
+                "typeOfBreed"   =>$applicationDetails->breed,
+                'type'          =>$applicationDetails->type
+               
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -640,6 +644,12 @@ class PetPaymentController extends Controller
                 'pet_active_registrations.application_no',
                 'pet_active_applicants.applicant_name',
                 'pet_active_registrations.address',
+                DB::raw("CASE 
+                WHEN pet_active_details.pet_type = 1 THEN 'Dog'
+                WHEN pet_active_details.pet_type = 2 THEN 'cat'
+                        END as animal"),
+                'pet_active_details.breed',
+                'pet_active_details.pet_type as type' 
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
