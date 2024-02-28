@@ -1749,71 +1749,77 @@ class PetRegistrationController extends Controller
     }
 
     #written by prity pandey
-    public function searchApplication(Request $request)
+
+public function searchApplication(Request $request)
     {
-    $validator = Validator::make(
-        $request->all(),
-        [
-            'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
-            'parameter' => 'nullable'
-        ]
-    );
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Validation error',
-            'errors' => $validator->errors()
-        ], 200);
-    }
+        try {
+            $key        = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages      = $request->perPage ?? 10;
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $baseQuerry = PetActiveApplicant::select(
+                'pet_active_registrations.id',
+                'pet_active_registrations.application_no',
+                'pet_active_registrations.application_type',
+                'pet_active_registrations.payment_status',
+                'pet_active_registrations.application_apply_date',
+                'pet_active_registrations.doc_upload_status',
+                'pet_active_registrations.renewal',
+                'pet_active_applicants.mobile_no',
+                'pet_active_applicants.applicant_name'
+            )
+            ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+            ->where('pet_active_registrations.status', 1)
+            ->orderByDesc('pet_active_registrations.id');
 
-    try {
-        $query = PetActiveApplicant::select(
-            'pet_active_registrations.id',
-            'pet_active_registrations.application_no',
-            'pet_active_registrations.application_type',
-            'pet_active_registrations.payment_status',
-            'pet_active_registrations.application_apply_date',
-            'pet_active_registrations.doc_upload_status',
-            'pet_active_registrations.renewal',
-            'pet_active_applicants.mobile_no',
-            'pet_active_applicants.applicant_name'
-        )
-        ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
-        ->where('pet_active_registrations.status', 1)
-        ->orderByDesc('pet_active_registrations.id');
-
-        if ($request->filled('filterBy') && $request->filled('parameter')) {
-            $filterBy = $request->input('filterBy');
-            $parameter = $request->input('parameter');
-
-            switch ($filterBy) {
-                case 'mobileNo':
-                    $query->where('pet_active_applicants.mobile_no', $parameter);
-                    break;
-                case 'applicantName':
-                    $query->where('pet_active_applicants.applicant_name', $parameter);
-                    break;
-                case 'applicationNo':
-                    $query->where('pet_active_registrations.application_no', $parameter);
-                    break;
-                case 'holdingNo':
-                    $query->where('pet_approved_registrations.holding_no', $request->parameter);
-                    break;
-                case 'safNo':
-                    $query->where('pet_approved_registrations.saf_no', $request->parameter);
-                    break;
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Pet appliction details according to $key!";
+                switch ($key) {
+                    case ("mobileNo"):
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.mobile_no', $parameter)->paginate($pages);
+                        break;
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('pet_active_registrations.application_no', $parameter)->paginate($pages);
+                        break;
+                    case ("applicantName"):
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name', $parameter)
+                            ->paginate($pages);
+                        break;
+                    case ("holdingNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', $request->parameter)
+                            ->paginate($pages);
+                        break;
+                    case ("safNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', $request->parameter)
+                            ->paginate($pages);
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
-        }
+            $returnData = $baseQuerry->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
 
-        $data = $query->get();
-
-        return responseMsgs(true, "Pending Apllications", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
-}
-
+    }
 
 
     /**
@@ -1877,26 +1883,27 @@ class PetRegistrationController extends Controller
 
     
     #writen by prity pandey
-    public function searchApprovedApplication(Request $request)
+public function searchApprovedApplication(Request $request)
     {
-        $validator = Validator::make(
+        $validated = Validator::make(
             $request->all(),
             [
-                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
-                'parameter' => 'nullable'
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
             ]
         );
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 200);
-        }
+        if ($validated->fails())
+            return validationError($validated);
 
         try {
-            $query = DB::table('pet_approved_registrations')
+            $key        = $request->filterBy;
+            $paramenter = $request->parameter;
+            $pages      = $request->perPage ?? 10;
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
+
+            $baseQuerry = DB::table('pet_approved_registrations')
                 ->select(
                     'pet_approved_registrations.id',
                     'pet_approved_registrations.holding_no',
@@ -1914,36 +1921,45 @@ class PetRegistrationController extends Controller
                 ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
                 ->where('pet_approved_registrations.status', 1)
                 ->orderByDesc('pet_approved_registrations.id');
+        
 
-            if ($request->filled('filterBy') && $request->filled('parameter')) {
-                switch ($request->filterBy) {
-                    case 'mobileNo':
-                        $query->where('pet_approve_applicants.mobile_no', $request->parameter);
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Pet approved appliction details according to $key!";
+                switch ($key) {
+                    case ("mobileNo"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.mobile_no', $request->parameter)->paginate($pages);
                         break;
-                    case 'applicantName':
-                        $query->where('pet_approve_applicants.applicant_name', $request->parameter);
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.applicant_name', $request->parameter)->paginate($pages);
                         break;
-                    case 'applicationNo':
-                        $query->where('pet_approved_registrations.application_no', $request->parameter);
+                    case ("applicantName"):
+                        $activeApplication = $baseQuerry->where('pet_approve_applicants.applicant_name', $request->parameter)
+                            ->paginate($pages);
                         break;
-                    case 'holdingNo':
-                        $query->where('pet_approved_registrations.holding_no', $request->parameter);
+                    case ("holdingNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', $request->parameter)
+                            ->paginate($pages);
                         break;
-                    case 'safNo':
-                        $query->where('pet_approved_registrations.saf_no', $request->parameter);
+                    case ("safNo"):
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', $request->parameter)
+                            ->paginate($pages);
                         break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
                 }
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
+            $returnData = $baseQuerry->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
 
-          
-            $data = $query->get();
-
-            return responseMsgs(true, "Approved list", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
-
 
     /**
      * | Get Approved application details by application id
@@ -2072,26 +2088,29 @@ class PetRegistrationController extends Controller
     }
 
     # written by prity pandey
-    public function searchRejectedApplication(Request $request)
+
+
+public function searchRejectedApplication(Request $request)
     {
-    $validator = Validator::make(
-        $request->all(),
-        [
-            'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
-            'parameter' => 'nullable'
-        ]
-    );
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Validation error',
-            'errors' => $validator->errors()
-        ], 200);
-    }
+        try {
+            $key        = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages      = $request->perPage ?? 10;
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $mPetApprovedRegistration   = new PetApprovedRegistration();
 
-    try {
-        $query = DB::table('pet_rejected_registrations')
+            $baseQuerry =  DB::table('pet_rejected_registrations')
             ->select(
                 'pet_rejected_registrations.id',
                 'pet_rejected_registrations.holding_no',
@@ -2109,37 +2128,45 @@ class PetRegistrationController extends Controller
             ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
             ->where('pet_rejected_registrations.status', 1)
             ->orderByDesc('pet_rejected_registrations.id');
+        
 
-        if ($request->filled('filterBy') && $request->filled('parameter')) {
-            $filterBy = $request->input('filterBy');
-            $parameter = $request->input('parameter');
-
-            switch ($filterBy) {
-                case 'mobileNo':
-                    $query->where('pet_rejected_applicants.mobile_no', $parameter);
-                    break;
-                case 'applicantName':
-                    $query->where('pet_rejected_applicants.applicant_name', $parameter);
-                    break;
-                case 'applicationNo':
-                    $query->where('pet_rejected_registrations.application_no', $parameter);
-                    break;
-                case 'holdingNo':
-                    $query->where('pet_rejected_registrations.holding_no', $parameter);
-                    break;
-                case 'safNo':
-                    $query->where('pet_rejected_registrations.saf_no', $parameter);
-                    break;
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Pet rejected appliction details according to $key!";
+                switch ($key) {
+                    case ("mobileNo"):
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.mobile_no', $parameter)->paginate($pages);
+                        break;
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.application_no', $parameter)->paginate($pages);
+                        break;
+                    case ("applicantName"):
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.applicant_name', $parameter)
+                            ->paginate($pages);
+                        break;
+                    case ("holdingNo"):
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.holding_no', $parameter)
+                            ->paginate($pages);
+                        break;
+                    case ("safNo"):
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.saf_no', $parameter)
+                            ->paginate($pages);
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
+            $returnData = $baseQuerry->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
-
-        $data = $query->get();
-
-        return responseMsgs(true, "Rejected Applications", remove_null($data), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-    } catch (Exception $e) {
-        return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
     }
-}
 
     /**
      * | Get the rejected application details 
