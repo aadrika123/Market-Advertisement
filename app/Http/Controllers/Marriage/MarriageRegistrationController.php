@@ -316,15 +316,17 @@ class MarriageRegistrationController extends Controller
             $refImageName = $req->docCode;
             $refImageName = $marriageRegitrationDtl->id . '-' . $refImageName;
             $document = $req->document;
-            $imageName = $docUpload->upload($refImageName, $document, $relativePath);
-
+            //$imageName = $docUpload->upload($refImageName, $document, $relativePath);
+            $docDetail      = $docUpload->upload($req);
             $metaReqs['moduleId']     = $this->_marriageModuleId;
             $metaReqs['activeId']     = $marriageRegitrationDtl->id;
             $metaReqs['workflowId']   = $marriageRegitrationDtl->workflow_id;
             $metaReqs['ulbId']        = $marriageRegitrationDtl->ulb_id;
             $metaReqs['relativePath'] = $relativePath;
-            $metaReqs['document']     = $imageName;
+            //$metaReqs['document']     = $imageName;
             $metaReqs['docCode']      = $req->docCode;
+            $metaReqs['unique_id'] = $docDetail['data']['uniqueId'];
+            $metaReqs['reference_no'] = $docDetail['data']['ReferenceNo'];
 
             $metaReqs = new Request($metaReqs);
             $mWfActiveDocument->postDocuments($metaReqs, $user);
@@ -417,6 +419,7 @@ class MarriageRegistrationController extends Controller
             $mWfActiveDocument = new WfActiveDocument();
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $moduleId = $this->_marriageModuleId;
+            $docUpload = new DocumentUpload;
 
             $marriageDetails = MarriageActiveRegistration::find($req->applicationId);
             if (!$marriageDetails)
@@ -426,7 +429,8 @@ class MarriageRegistrationController extends Controller
 
             $workflowId = $marriageDetails->workflow_id;
             $documents = $mWfActiveDocument->getDocsByAppId($req->applicationId, $workflowId, $moduleId);
-            return responseMsgs(true, "Uploaded Documents", remove_null($documents), "100104", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            $data = $docUpload->getDocUrl($documents);
+            return responseMsgs(true, "Uploaded Documents", remove_null($data), "100104", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "100104", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }

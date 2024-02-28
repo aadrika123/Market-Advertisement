@@ -213,9 +213,9 @@ class DocumentUpload
                    $key['id'] =  $document->id;
                    $key['doc_code'] =  $document->doc_code;
                    $key['verify_status'] =  $document->verify_status;
-                   $key['owner_name'] =  $document->owner_name;
+                   //$key['owner_name'] =  $document->owner_name;
                    $key['remarks'] =  $document->remarks;
-                   $key['owner_dtl_id'] =  $document->owner_dtl_id ?? null;
+                   //$key['owner_dtl_id'] =  $document->owner_dtl_id ?? null;
                    $key['doc_path'] = $responseData['data']['fullPath'] ?? null;
                    $key['responseData'] = $responseData;
                    $data->push($key);

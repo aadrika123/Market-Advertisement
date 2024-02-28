@@ -45,6 +45,9 @@ class WfActiveDocument extends Model
         $metaReqs->remarks              = $req->remarks ?? null;
         $metaReqs->doc_code             = $req->docCode;
         $metaReqs->owner_dtl_id         = $req->ownerDtlId;
+        $metaReqs->unique_id            = $req->unique_id ?? null;
+        $metaReqs->reference_no         = $req->reference_no ?? null;
+
         $metaReqs->save();
     }
 
@@ -302,15 +305,16 @@ class WfActiveDocument extends Model
      */
     public function getDocsByAppId($applicationId, $workflowId, $moduleId)
     {
-        $docUrl  = Config::get("marriage.DOC_URL");
+        $upload_url = Config::get('dms_constants.UPLOAD_URL');
 
         return DB::table('wf_active_documents as d')
             ->select(
                 'd.id',
                 'd.document',
-                DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
+                DB::raw("concat('$upload_url/',relative_path,'/',document) as doc_path"),
                 'd.remarks',
                 'd.verify_status',
+                'd.reference_no',
                 'd.doc_code',
                 // 'o.owner_name'
             )
