@@ -125,8 +125,8 @@ trait MarriageTrait
             ['displayString' => 'Marriage Place', 'key' => 'marriagePlace', 'value' => $data->marriage_place],
             ['displayString' => 'Groom Name', 'key' => 'groom_name', 'value' => $data->groom_name,],
             ['displayString' => 'Bride Name', 'key' => 'bride_name', 'value' => $data->bride_name,],
-            ['displayString' => 'Either of the Bride or Groom belongs to BPL category', 'key' => 'bpl', 'value' => ($data->is_bpl == false) ? 'No' : 'Yes'],
             ['displayString' => 'Appointment Date', 'key' => 'appointmentDate', 'value' => $data->appointment_date],
+            ['displayString' => 'Either of the Bride or Groom belongs to BPL category', 'key' => 'bpl', 'value' => ($data->is_bpl == false) ? 'No' : 'Yes'],
         ]);
 
         $cardElement = [
