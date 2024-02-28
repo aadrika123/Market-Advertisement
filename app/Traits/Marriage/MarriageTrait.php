@@ -122,9 +122,10 @@ trait MarriageTrait
 
         $marriageDetails = new Collection([
             ['displayString' => 'Marriage Date', 'key' => 'marriageDate', 'value' => $data->marriage_date],
-            ['displayString' => 'Marriage Place', 'key' => 'marriagePlace', 'value' => $data->marriage_place],
             ['displayString' => 'Groom Name', 'key' => 'groom_name', 'value' => $data->groom_name,],
             ['displayString' => 'Bride Name', 'key' => 'bride_name', 'value' => $data->bride_name,],
+            ['displayString' => 'Appointment Date', 'key' => 'appointmentDate', 'value' => $data->appointment_date],
+            ['displayString' => 'Marriage Place', 'key' => 'marriagePlace', 'value' => $data->marriage_place],
             ['displayString' => 'Either of the Bride or Groom belongs to BPL category', 'key' => 'bpl', 'value' => ($data->is_bpl == false) ? 'No' : 'Yes'],
         ]);
 
