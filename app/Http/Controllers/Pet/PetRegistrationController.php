@@ -1767,7 +1767,7 @@ public function searchApplication(Request $request)
             $parameter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring                  = Str::snake($key);
-            $msg                        = "Approve application list!";
+            $msg                        = "Pending application list!";
             $baseQuerry = PetActiveApplicant::select(
                 'pet_active_registrations.id',
                 'pet_active_registrations.application_no',
@@ -1783,25 +1783,25 @@ public function searchApplication(Request $request)
             ->where('pet_active_registrations.status', 1)
             ->orderByDesc('pet_active_registrations.id');
 
-            if ($request->filterBy && $request->parameter) {
+            if ($key && $request->parameter) {
                 $msg = "Pet appliction details according to $key!";
                 switch ($key) {
                     case ("mobileNo"):
-                        $activeApplication = $baseQuerry->where('pet_active_applicants.mobile_no', $parameter)->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicationNo"):
-                        $activeApplication = $baseQuerry->where('pet_active_registrations.application_no', $parameter)->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_active_registrations.application_no','LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name', $parameter)
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name','LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     case ("holdingNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', $request->parameter)
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     case ("safNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', $request->parameter)
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     default:
@@ -1883,7 +1883,9 @@ public function searchApplication(Request $request)
 
     
     #writen by prity pandey
-public function searchApprovedApplication(Request $request)
+
+
+    public function searchApprovedApplication(Request $request)
     {
         $validated = Validator::make(
             $request->all(),
@@ -1897,13 +1899,13 @@ public function searchApprovedApplication(Request $request)
 
         try {
             $key        = $request->filterBy;
-            $paramenter = $request->parameter;
+            $parameter  = $request->parameter;
             $pages      = $request->perPage ?? 10;
-            $refstring                  = Str::snake($key);
-            $msg                        = "Approve application list!";
+            $refstring  = Str::snake($key);
+            $msg        = "Approve application list!";
             $mPetApprovedRegistration   = new PetApprovedRegistration();
 
-            $baseQuerry = DB::table('pet_approved_registrations')
+            $baseQuery = DB::table('pet_approved_registrations')
                 ->select(
                     'pet_approved_registrations.id',
                     'pet_approved_registrations.holding_no',
@@ -1922,44 +1924,40 @@ public function searchApprovedApplication(Request $request)
                 ->where('pet_approved_registrations.status', 1)
                 ->orderByDesc('pet_approved_registrations.id');
         
-
-            if ($request->filterBy && $request->parameter) {
-                $msg = "Pet approved appliction details according to $key!";
+            if ($key && $parameter) {
+                $msg = "Pet approved application details according to $key!";
                 switch ($key) {
-                    case ("mobileNo"):
-                        $activeApplication = $baseQuerry->where('pet_approve_applicants.mobile_no', $request->parameter)->paginate($pages);
+                    case "mobileNo":
+                        $activeApplication = $baseQuery->where('pet_approve_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
-                    case ("applicationNo"):
-                        $activeApplication = $baseQuerry->where('pet_approve_applicants.applicant_name', $request->parameter)->paginate($pages);
+                        case ("applicationNo"):
+                        $activeApplication = $baseQuery->where('pet_approved_registrations.application_no', 'LIKE', "%$parameter%")->paginate($pages);
+                            break;
+                    case "applicantName":
+                        $activeApplication = $baseQuery->where('pet_approve_applicants.applicant_name', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
-                    case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_approve_applicants.applicant_name', $request->parameter)
-                            ->paginate($pages);
+                    case "holdingNo":
+                        $activeApplication = $baseQuery->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
-                    case ("holdingNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', $request->parameter)
-                            ->paginate($pages);
-                        break;
-                    case ("safNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', $request->parameter)
-                            ->paginate($pages);
+                    case "safNo":
+                        $activeApplication = $baseQuery->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     default:
                         throw new Exception("Data provided in filterBy is not valid!");
                 }
-                $checkVal = collect($activeApplication)->last();
-                if (!$checkVal || $checkVal == 0) {
+                if ($activeApplication->isEmpty()) {
                     $msg = "Data Not found!";
                 }
                 return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
-            $returnData = $baseQuerry->paginate($pages);
+            $returnData = $baseQuery->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
 
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
 
     /**
      * | Get Approved application details by application id
@@ -2107,7 +2105,7 @@ public function searchRejectedApplication(Request $request)
             $parameter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring                  = Str::snake($key);
-            $msg                        = "Approve application list!";
+            $msg                        = "Rejected application list!";
             $mPetApprovedRegistration   = new PetApprovedRegistration();
 
             $baseQuerry =  DB::table('pet_rejected_registrations')
@@ -2130,25 +2128,25 @@ public function searchRejectedApplication(Request $request)
             ->orderByDesc('pet_rejected_registrations.id');
         
 
-            if ($request->filterBy && $request->parameter) {
+            if ($key && $request->parameter) {
                 $msg = "Pet rejected appliction details according to $key!";
                 switch ($key) {
                     case ("mobileNo"):
-                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.mobile_no', $parameter)->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicationNo"):
-                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.application_no', $parameter)->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.application_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.applicant_name', $parameter)
+                        $activeApplication = $baseQuerry->where('pet_rejected_applicants.applicant_name', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     case ("holdingNo"):
-                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.holding_no', $parameter)
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.holding_no', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     case ("safNo"):
-                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.saf_no', $parameter)
+                        $activeApplication = $baseQuerry->where('pet_rejected_registrations.saf_no', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     default:
