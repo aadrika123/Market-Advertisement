@@ -659,6 +659,12 @@ class PetPaymentController extends Controller
                     'pet_approved_registrations.application_no',
                     'pet_approve_applicants.applicant_name',
                     'pet_approved_registrations.address',
+                    DB::raw("CASE 
+                    WHEN pet_approve_details.pet_type = 1 THEN 'Dog'
+                    WHEN pet_approve_details.pet_type = 2 THEN 'cat'
+                            END as animal"),
+                    'pet_approve_details.breed',
+                    'pet_approve_details.pet_type as type' 
                 )->first();
         }
         if (!$refApplicationDetails) {
@@ -669,6 +675,12 @@ class PetPaymentController extends Controller
                     'pet_renewal_registrations.application_no',
                     'pet_renewal_applicants.applicant_name',
                     'pet_renewal_registrations.address',
+                    DB::raw("CASE 
+                    WHEN pet_rejected_details.pet_type = 1 THEN 'Dog'
+                    WHEN pet_rejected_details.pet_type = 2 THEN 'cat'
+                            END as animal"),
+                    'pet_rejected_details.breed',
+                    'pet_rejected_details.pet_type as type' 
                 )->first();
         }
         if (!$refApplicationDetails) {
