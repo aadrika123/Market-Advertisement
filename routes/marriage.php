@@ -27,6 +27,7 @@ Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post('final-approval-rejection', 'approvalRejection');               #API_ID=100110
     Route::post('doc-verify-reject', 'docVerifyReject');                        #API_ID=100111
     Route::post('approved-application', 'approvedApplication');                 #API_ID=100112
+    Route::post('rejected-application', 'rejectedApplication');
     Route::post('edit-application', 'editApplication');                         #API_ID=100113
     Route::post("generate-order-id", "generateOrderId");                        #API_ID=100114
     Route::post("offline-payment", "offlinePayment");                           #API_ID=100115

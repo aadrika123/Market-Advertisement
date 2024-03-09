@@ -13,6 +13,7 @@ use App\Models\Marriage\MarriageActiveRegistration;
 use App\Models\Marriage\MarriageApprovedRegistration;
 use App\Models\Marriage\MarriageRazorpayRequest;
 use App\Models\Marriage\MarriageRazorpayResponse;
+use App\Models\Marriage\MarriageRejectedRegistration;
 use App\Models\Marriage\MarriageTransaction;
 use App\Models\UlbMaster;
 use App\Models\Workflows\WfRoleusermap;
@@ -999,34 +1000,180 @@ class MarriageRegistrationController extends Controller
     }
 
     /**
-     * | 
+     * | written by prity pandey
+     * function for approved marriage list
      */
-    public function approvedApplication(Request $req)
-    {
-        try {
-            $perPage = $req->perPage ?? 10;
-            $ulbId = authUser($req)->ulb_id;
-            $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
-                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
-                ->where('marriage_approved_registrations.ulb_id', $ulbId)
-                ->orderByDesc('marriage_approved_registrations.id');
+        // public function approvedApplication(Request $req)
+        // {
+        //     $validated = Validator::make(
+        //         $req->all(),
+        //         [
+        //             'filterBy'  => 'required|in:mobileNo,applicantName,applicationNo',
+        //             'parameter' => 'required'
+        //         ]
+        //     );
+        //     if ($validated->fails())
+        //         return validationError($validated);
 
-            $approvedList = app(Pipeline::class)
-                ->send(
-                    $list
-                )
-                ->through([
-                    SearchByApplicationNo::class,
-                    SearchByName::class
-                ])
-                ->thenReturn()
-                ->paginate($perPage);
+        //     try {
+        //         $key        = $req->filterBy;
+        //         $parameter  = $req->parameter;
+        //         $perPage = $req->perPage ?? 10;
+        //         $ulbId = authUser($req)->ulb_id;
+        //         $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
+        //             ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
+        //             ->where('marriage_approved_registrations.ulb_id', $ulbId)
+        //             ->orderByDesc('marriage_approved_registrations.id');
 
-            return responseMsgs(true, "Approved Application", $approvedList, 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
-        }
+        //         if ($req->has('filterBy') && $req->has('parameter'))  {
+        //             $msg = "Marriage approved application details according to $key!";
+        //             switch ($key) {
+        //                 case "applicationNo":
+        //                     $list->where('marriage_approved_registrations.application_no', 'LIKE', "%$parameter%");
+        //                     break;
+        //                 case "applicantName":
+        //                     $list->where(function ($query) use ($parameter) {
+        //                         $query->where('marriage_approved_registrations.bride_name', 'like', '%' . $parameter . '%')
+        //                             ->orWhere('marriage_approved_registrations.groom_name', 'like', '%' . $parameter . '%');
+        //                     });
+        //                     break;
+        //                 case "mobileNo":
+        //                     $list->where(function ($query) use ($parameter) {
+        //                         $query->where('marriage_approved_registrations.bride_mobile', 'like', '%' . $parameter . '%')
+        //                             ->orWhere('marriage_approved_registrations.groom_mobile', 'like', '%' . $parameter . '%');
+        //                     });
+        //                     break;
+        //                     default:
+        //                     throw new Exception("Data provided in filterBy is not valid!");
+        //             }
+        //         }
+
+        //         $returnData = $list->paginate($perPage);
+        //         $msg = $returnData->isEmpty() ? "Data Not found!" : "Approved Applications";
+        //         return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        //     } catch (Exception $e) {
+        //         return responseMsgs(false, $e->getMessage(), "", 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        //     }
+        // }
+
+        public function approvedApplication(Request $req)
+{
+    $validated = Validator::make(
+        $req->all(),
+        [
+            'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+            'parameter' => 'nullable'
+        ]
+    );
+
+    if ($validated->fails()) {
+        return validationError($validated);
     }
+
+    try {
+        $perPage = $req->perPage ?? 10;
+        $ulbId = authUser($req)->ulb_id;
+        $key = $req->filterBy;
+        $parameter = $req->parameter;
+        $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
+            ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
+            ->where('marriage_approved_registrations.ulb_id', $ulbId)
+            ->orderByDesc('marriage_approved_registrations.id');
+
+        if ($req->filled('filterBy') && $req->filled('parameter')) {
+            
+            
+            $msg = "Marriage approved application details according to $key!";
+
+            switch ($key) {
+                case "applicationNo":
+                    $list->where('marriage_approved_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case "applicantName":
+                    $list->where(function ($query) use ($parameter) {
+                        $query->where('marriage_approved_registrations.bride_name', 'like', '%' . $parameter . '%')
+                            ->orWhere('marriage_approved_registrations.groom_name', 'like', '%' . $parameter . '%');
+                    });
+                    break;
+                case "mobileNo":
+                    $list->where(function ($query) use ($parameter) {
+                        $query->where('marriage_approved_registrations.bride_mobile', 'like', '%' . $parameter . '%')
+                            ->orWhere('marriage_approved_registrations.groom_mobile', 'like', '%' . $parameter . '%');
+                    });
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
+        } else {
+            $msg = "Approved Applications";
+        }
+
+        $returnData = $list->paginate($perPage);
+
+        return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+    } catch (Exception $e) {
+        return responseMsgs(false, $e->getMessage(), "", 100112, 01, responseTime(), $req->getMethod(), $req->deviceId);
+    }
+}
+
+
+    /**
+     * | written by prity pandey
+     * function for rejected marriage list
+     */
+    public function rejectedApplication(Request $req)
+        {
+            $validated = Validator::make(
+                $req->all(),
+                [
+                    'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                    'parameter' => 'nullable'
+                ]
+            );
+            if ($validated->fails())
+                return validationError($validated);
+
+            try {
+                $perPage = $req->perPage ?? 10;
+                $ulbId = authUser($req)->ulb_id;
+                $key = $req->filterBy;
+                $parameter = $req->parameter;
+                $list = MarriageRejectedRegistration::select('marriage_rejected_registrations.*', 'tran_no')
+                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_rejected_registrations.id')
+                ->where('marriage_rejected_registrations.ulb_id', $ulbId)
+                ->orderByDesc('marriage_rejected_registrations.id');
+                if ($req->has('filterBy') && $req->has('parameter')) {
+                    switch ($key) {
+                        case "applicationNo":
+                            $list->where('marriage_rejected_registrations.application_no', 'LIKE', "%$parameter%");
+                            break;
+                        case "applicantName":
+                            $list->where(function ($query) use ($parameter) {
+                                $query->where('marriage_rejected_registrations.bride_name', 'like', '%' . $parameter . '%')
+                                    ->orWhere('marriage_rejected_registrations.groom_name', 'like', '%' . $parameter . '%');
+                            });
+                            break;
+                        case "mobileNo":
+                            $list->where(function ($query) use ($parameter) {
+                                $query->where('marriage_rejected_registrations.bride_mobile', 'like', '%' . $parameter . '%')
+                                    ->orWhere('marriage_rejected_registrations.groom_mobile', 'like', '%' . $parameter . '%');
+                            });
+                            break;
+                        default:
+                            throw new Exception("Data provided in filterBy is not valid!");
+                    }
+                }
+
+                $returnData = $list->paginate($perPage);
+                $msg = $returnData->isEmpty() ? "Data Not found!" : "Rejected Applications";
+
+                return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            } catch (Exception $e) {
+                return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+            }
+    }
+
+
 
 
     /**
