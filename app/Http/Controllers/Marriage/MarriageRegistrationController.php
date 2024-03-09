@@ -478,6 +478,40 @@ class MarriageRegistrationController extends Controller
         }
     }
 
+    #written by prity pandey
+    public function outbox(Request $req)
+    {
+        try {
+            $user = authUser($req);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $perPage = $req->perPage ?? 10;
+
+            $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $list = MarriageActiveRegistration::whereIn('workflow_id', $workflowIds)
+                ->where('marriage_active_registrations.ulb_id', $ulbId)
+                ->whereNotIn('marriage_active_registrations.current_role', $roleId)
+                ->orderByDesc('marriage_active_registrations.id');
+
+            $outbox = app(Pipeline::class)
+                ->send(
+                    $list
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByName::class
+                ])
+                ->thenReturn()
+                ->paginate($perPage);
+
+            return responseMsgs(true, "Outbox List", remove_null($outbox), "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
     /**
      * | Get details by id
      */
