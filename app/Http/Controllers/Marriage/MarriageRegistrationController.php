@@ -175,7 +175,7 @@ class MarriageRegistrationController extends Controller
         try {
             $mMarriageActiveRegistration = new MarriageActiveRegistration();
             $applicationId               = $req->applicationId;
-            
+
 
             $refMarriageApplication = MarriageActiveRegistration::find($applicationId);                      // Get Marriage Details
             if (is_null($refMarriageApplication)) {
@@ -222,18 +222,18 @@ class MarriageRegistrationController extends Controller
                     // ->where('Witness_dtl_id', $witnessId)
                     ->first();
 
-                    if ($uploadedDoc) {
-                        $strLower = strtolower($item);
-                        $strReplace = str_replace('_', ' ', $strLower);
-                        $response = [
-                            "documentCode" => $item,
-                            "docPath" =>  $uploadedDoc['doc_path'] ?? "",
-                            "docVal"  => ucwords($strReplace) ?? "",
-                            "ownerId" => $uploadedDoc['owner_dtl_id'] ?? "",
-                            "remarks" => $uploadedDoc['remarks'] ?? "",
-                            "uploadedDocId" => $uploadedDoc['id'] ?? "",
-                            "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
-                        ];
+                if ($uploadedDoc) {
+                    $strLower = strtolower($item);
+                    $strReplace = str_replace('_', ' ', $strLower);
+                    $response = [
+                        "documentCode" => $item,
+                        "docPath" =>  $uploadedDoc['doc_path'] ?? "",
+                        "docVal"  => ucwords($strReplace) ?? "",
+                        "ownerId" => $uploadedDoc['owner_dtl_id'] ?? "",
+                        "remarks" => $uploadedDoc['remarks'] ?? "",
+                        "uploadedDocId" => $uploadedDoc['id'] ?? "",
+                        "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
+                    ];
                     $documents->push($response);
                 }
             });
@@ -478,7 +478,8 @@ class MarriageRegistrationController extends Controller
         }
     }
 
-    #written by prity pandey
+    //written by prity pandey
+    //function for outbox appliaction list
     public function outbox(Request $req)
     {
         try {
@@ -508,6 +509,73 @@ class MarriageRegistrationController extends Controller
                 ->paginate($perPage);
 
             return responseMsgs(true, "Outbox List", remove_null($outbox), "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    //written by prity pandey
+    //function for escalate appliaction list
+    public function postEscalate(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "escalateStatus"    => "required|int",
+                "applicationId"     => "required|int",
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $userId = authUser($request)->id;
+            $applicationId = $request->applicationId;
+            $mMarriageActiveRegistration = new MarriageActiveRegistration();
+            $applicationsData = $mMarriageActiveRegistration->where('id', $applicationId)
+                ->where('status', 1)->first();
+            if (!$applicationsData) {
+                throw new Exception("Application details not found!");
+            }
+            $applicationsData->is_escalate = $request->escalateStatus;
+            $applicationsData->escalate_by = $userId;
+            $applicationsData->save();
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Pet application is Escalated' : "Pet application is removed from Escalated", [], '', "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    //written by prity pandey
+    //function for special inbox appliaction list
+    public function specialInbox(Request $req)
+    {
+        try {
+            $user = authUser($req);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $perPage = $req->perPage ?? 10;
+
+            $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $list = MarriageActiveRegistration::whereIn('workflow_id', $workflowIds)
+                ->where('marriage_active_registrations.ulb_id', $ulbId)
+                ->where('marriage_active_registrations.is_escalate', 1)
+                ->orderByDesc('marriage_active_registrations.id');
+            $outbox = app(Pipeline::class)
+                ->send(
+                    $list
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByName::class
+                ])
+                ->thenReturn()
+                ->paginate($perPage);
+
+            return responseMsgs(true, "Special Inbox List", remove_null($outbox), "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "100107", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }

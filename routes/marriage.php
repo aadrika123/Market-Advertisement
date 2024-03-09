@@ -20,6 +20,8 @@ Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post('applied-application', 'listApplications');                     #API_ID=100106
     Route::post('inbox', 'inbox');                                              #API_ID=100107
     Route::post('outbox', 'outbox');
+    Route::post('special-inbox', 'specialInbox');                                                      // Workflow
+    Route::post('escalate', 'postEscalate'); 
     Route::post('details', 'details');                                          #API_ID=100108
     Route::post('set-appiontment-date', 'appointmentDate');                     #API_ID=100109
     Route::post('final-approval-rejection', 'approvalRejection');               #API_ID=100110
