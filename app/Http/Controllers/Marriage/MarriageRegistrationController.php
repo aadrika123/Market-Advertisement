@@ -724,8 +724,11 @@ class MarriageRegistrationController extends Controller
             if (!$details)
                 throw new Exception("Application Not Found");
             if (isset($details->appointment_date)) {
-                if ($details->appointment_date != $todayDate)
-                    throw new Exception("Today is not the appointment date. You can't approve the application today");
+                /**
+                 This Is commented because you can approve it now. for testing
+                 */
+                // if ($details->appointment_date != $todayDate)
+                //     throw new Exception("Today is not the appointment date. You can't approve the application today");
             } else
                 throw new Exception('Appointment Date is not set');
             $userId = authUser($req)->id;
