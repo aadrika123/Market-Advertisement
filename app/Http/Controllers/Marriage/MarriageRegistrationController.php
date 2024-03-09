@@ -540,7 +540,7 @@ class MarriageRegistrationController extends Controller
             $applicationsData->is_escalate = $request->escalateStatus;
             $applicationsData->escalate_by = $userId;
             $applicationsData->save();
-            return responseMsgs(true, $request->escalateStatus == 1 ? 'Pet application is Escalated' : "Pet application is removed from Escalated", [], '', "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(true, $request->escalateStatus == 1 ? 'Marriage application is Escalated' : "Pet application is removed from Escalated", [], '', "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
