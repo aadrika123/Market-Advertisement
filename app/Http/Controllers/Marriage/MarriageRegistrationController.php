@@ -1000,22 +1000,32 @@ class MarriageRegistrationController extends Controller
     }
 
     /**
-     * | 
+     * | updated by prity pandey
      */
+
     public function approvedApplication(Request $req)
     {
         try {
             $perPage = $req->perPage ?? 10;
-            $ulbId = authUser($req)->ulb_id;
-            $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
-                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
-                ->where('marriage_approved_registrations.ulb_id', $ulbId)
-                ->orderByDesc('marriage_approved_registrations.id');
+            $userType = authUser($req)->user_type;
+            $userId = authUser($req)->id;
+            $ulbId = "";
+
+            if ($userType == 'Citizen') {
+                $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
+                    ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
+                    ->where('marriage_approved_registrations.citizen_id', $userId)
+                    ->orderByDesc('marriage_approved_registrations.id');
+            } else {
+                $ulbId = authUser($req)->ulb_id;
+                $list = MarriageApprovedRegistration::select('marriage_approved_registrations.*', 'tran_no')
+                    ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_approved_registrations.id')
+                    ->where('marriage_approved_registrations.ulb_id', $ulbId)
+                    ->orderByDesc('marriage_approved_registrations.id');
+            }
 
             $approvedList = app(Pipeline::class)
-                ->send(
-                    $list
-                )
+                ->send($list)
                 ->through([
                     SearchByApplicationNo::class,
                     SearchByName::class
@@ -1029,6 +1039,7 @@ class MarriageRegistrationController extends Controller
         }
     }
 
+
     /**
      * |written by prity pandey
      * |function for marriage reject list 
@@ -1037,12 +1048,22 @@ class MarriageRegistrationController extends Controller
     {
         try {
             $perPage = $req->perPage ?? 10;
-            $ulbId = authUser($req)->ulb_id;
+            $userType = authUser($req)->user_type;
+            $userId = authUser($req)->id;
+            $ulbId = "";
+            if ($userType == 'Citizen') {
             $list = MarriageRejectedRegistration::select('marriage_rejected_registrations.*', 'tran_no')
                 ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_rejected_registrations.id')
-                ->where('marriage_rejected_registrations.ulb_id', $ulbId)
+                ->where('marriage_rejected_registrations.citizen_id', $userId)
                 ->orderByDesc('marriage_rejected_registrations.id');
-
+            }
+            else{
+                $ulbId = authUser($req)->ulb_id;
+                $list = MarriageRejectedRegistration::select('marriage_rejected_registrations.*', 'tran_no')
+                ->leftjoin('marriage_transactions', 'marriage_transactions.application_id', 'marriage_rejected_registrations.id')
+                ->where('marriage_rejected_registrations.citizen_id', $ulbId)
+                ->orderByDesc('marriage_rejected_registrations.id');
+            }
             $approvedList = app(Pipeline::class)
                 ->send(
                     $list
