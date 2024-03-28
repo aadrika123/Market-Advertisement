@@ -28,8 +28,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Pipeline\Pipeline;
 use App\Pipelines\Pet\SearchByApplicationNo;
-use App\Pipelines\Pet\SearchByName;
-
 class PetWorkflowController extends Controller
 {
 
@@ -162,8 +160,7 @@ class PetWorkflowController extends Controller
                 $waterList
             )
             ->through([
-                SearchByApplicationNo::class,
-                SearchByName::class
+                SearchByApplicationNo::class
             ])
             ->thenReturn()
             ->paginate($pages);
