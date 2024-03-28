@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Pipeline\Pipeline;
+use App\Pipelines\Pet\SearchByApplicationNo;
+use App\Pipelines\Pet\SearchByName;
 
 class PetWorkflowController extends Controller
 {
@@ -148,13 +151,23 @@ class PetWorkflowController extends Controller
                 ->whereIn('pet_active_registrations.current_role_id', $roleId)
                 // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 // ->where('pet_active_registrations.is_escalate', false)
-                ->where('pet_active_registrations.parked', false)
-                ->paginate($pages);
+                ->where('pet_active_registrations.parked', false);
+                //->paginate($pages);
 
             if (collect($waterList)->last() == 0 || !$waterList) {
                 $msg = "Data not found!";
             }
-            return responseMsgs(true, $msg, remove_null($waterList), '', '02', '', 'Post', '');
+            $inbox = app(Pipeline::class)
+            ->send(
+                $waterList
+            )
+            ->through([
+                SearchByApplicationNo::class,
+                SearchByName::class
+            ])
+            ->thenReturn()
+            ->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($inbox), '', '02', '', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
