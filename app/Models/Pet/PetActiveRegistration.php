@@ -106,6 +106,130 @@ class PetActiveRegistration extends Model
             ->where('pet_active_registrations.status', 1);
     }
 
+    //written by prity pandey
+    public function recentApplication($workflowIds, $roleId, $ulbId)
+    {
+        $data =  PetActiveRegistration::select(
+            'pet_active_registrations.id as ref_application_id',
+            DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
+            'pet_active_details.id as ref_pet_id',
+            'pet_active_applicants.id as ref_applicant_id',
+            'pet_active_registrations.*',
+            'pet_active_details.*',
+            'pet_active_applicants.*',
+            'pet_active_registrations.status as registrationStatus',
+            'pet_active_details.status as petStatus',
+            'pet_active_applicants.status as applicantsStatus',
+            'ulb_ward_masters.ward_name',
+            'ulb_masters.ulb_name',
+            'm_pet_occurrence_types.occurrence_types',
+            DB::raw("CASE 
+            WHEN pet_active_registrations.apply_through = '1' THEN 'Holding'
+            WHEN pet_active_registrations.apply_through = '2' THEN 'Saf'
+            END AS apply_through_name"),
+            DB::raw("CASE 
+            WHEN pet_active_details.sex = '1' THEN 'Male'
+            WHEN pet_active_details.sex = '2' THEN 'Female'
+            END AS ref_gender"),
+            DB::raw("CASE 
+            WHEN pet_active_details.pet_type = '1' THEN 'Dog'
+            WHEN pet_active_details.pet_type = '2' THEN 'Cat'
+            END AS ref_pet_type"),
+            'wf_roles.role_name AS roleName'
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
+            ->leftjoin('wf_roles', 'wf_roles.id', 'pet_active_registrations.current_role_id')
+            ->whereIn('workflow_id', $workflowIds)
+            ->where('pet_active_registrations.ulb_id', $ulbId)
+            ->whereIn('current_role_id', $roleId)
+            ->where('pet_active_registrations.status', 1)
+            ->orderBydesc('pet_active_registrations.id')
+            ->take(10)
+            ->get();
+        $application = collect($data)->map(function ($value) {
+            $value['applyDate'] = (Carbon::parse($value['applydate']))->format('d-m-Y');
+            return $value;
+        });
+        return $application;
+    }
+
+    public function recentApplicationJsk($userId, $ulbId)
+    {
+        $data =  PetActiveRegistration::select(
+            'pet_active_registrations.id as ref_application_id',
+            DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
+            'pet_active_details.id as ref_pet_id',
+            'pet_active_applicants.id as ref_applicant_id',
+            'pet_active_registrations.*',
+            'pet_active_details.*',
+            'pet_active_applicants.*',
+            'pet_active_registrations.status as registrationStatus',
+            'pet_active_details.status as petStatus',
+            'pet_active_applicants.status as applicantsStatus',
+            'ulb_ward_masters.ward_name',
+            'ulb_masters.ulb_name',
+            'm_pet_occurrence_types.occurrence_types',
+            DB::raw("CASE 
+            WHEN pet_active_registrations.apply_through = '1' THEN 'Holding'
+            WHEN pet_active_registrations.apply_through = '2' THEN 'Saf'
+            END AS apply_through_name"),
+            DB::raw("CASE 
+            WHEN pet_active_details.sex = '1' THEN 'Male'
+            WHEN pet_active_details.sex = '2' THEN 'Female'
+            END AS ref_gender"),
+            DB::raw("CASE 
+            WHEN pet_active_details.pet_type = '1' THEN 'Dog'
+            WHEN pet_active_details.pet_type = '2' THEN 'Cat'
+            END AS ref_pet_type"),
+            'wf_roles.role_name AS roleName'
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_active_registrations.occurrence_type_id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
+            ->leftjoin('wf_roles', 'wf_roles.id', 'pet_active_registrations.current_role_id')
+            ->where('pet_active_registrations.ulb_id', $ulbId)
+            ->where('pet_active_registrations.user_id', $userId)
+            ->where('pet_active_registrations.status', 1)
+            ->orderBydesc('pet_active_registrations.id')
+            ->take(10)
+            ->get();
+        $application = collect($data)->map(function ($value) {
+            $value['applyDate'] = (Carbon::parse($value['applydate']))->format('d-m-Y');
+            return $value;
+        });
+        return $application;
+    }
+
+
+    public function pendingApplicationCount()
+    {
+        $data =  PetActiveRegistration::select(
+            DB::raw('count(pet_active_registrations.id) as total_pending_application')
+        )
+            ->where('pet_active_registrations.status', 1)
+            ->get();
+
+        return $data;
+    }
+
+    public function approvedApplicationCount()
+    {
+        $data =  PetApprovedRegistration::select(
+            DB::raw('count(pet_approved_registrations.id) as total_approved_application')
+        )
+            ->where('pet_approved_registrations.status', 1)
+            ->get();
+
+        return $data;
+    }
+    //end of code
+
     /**
      * | Deactivate the doc Upload Status 
      */

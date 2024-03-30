@@ -69,6 +69,8 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('application/upload-docs', 'uploadPetDoc');                                                 // Admin/ Citizen
         Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
 
+        //written by prity pandey
+        Route::post('dashboard_details', 'petDashbordDtls'); 
     });
 
     /**

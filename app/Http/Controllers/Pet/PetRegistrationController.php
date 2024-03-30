@@ -37,6 +37,7 @@ use App\Models\Property\PropSaf;
 use App\Models\Workflows\CustomDetail;
 use App\Models\Workflows\UlbWardMaster;
 use App\Models\Workflows\WfRoleusermap;
+use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WorkflowMap;
 use App\Models\Workflows\WorkflowTrack;
@@ -657,7 +658,7 @@ class PetRegistrationController extends Controller
                 'docCategory'   => $req->docCategory,
                 'auth'          => $req->auth
             ];
-                      
+
 
             $metaReqs['unique_id'] = $docDetail['data']['uniqueId'];
             $metaReqs['reference_no'] = $docDetail['data']['ReferenceNo'];
@@ -1750,7 +1751,7 @@ class PetRegistrationController extends Controller
 
     #written by prity pandey
 
-public function searchApplication(Request $request)
+    public function searchApplication(Request $request)
     {
         $validated = Validator::make(
             $request->all(),
@@ -1779,9 +1780,9 @@ public function searchApplication(Request $request)
                 'pet_active_applicants.mobile_no',
                 'pet_active_applicants.applicant_name'
             )
-            ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
-            ->where('pet_active_registrations.status', 1)
-            ->orderByDesc('pet_active_registrations.id');
+                ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+                ->where('pet_active_registrations.status', 1)
+                ->orderByDesc('pet_active_registrations.id');
 
             if ($key && $request->parameter) {
                 $msg = "Pet appliction details according to $key!";
@@ -1790,10 +1791,10 @@ public function searchApplication(Request $request)
                         $activeApplication = $baseQuerry->where('pet_active_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicationNo"):
-                        $activeApplication = $baseQuerry->where('pet_active_registrations.application_no','LIKE', "%$parameter%")->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_active_registrations.application_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name','LIKE', "%$parameter%")
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name', 'LIKE', "%$parameter%")
                             ->paginate($pages);
                         break;
                     case ("holdingNo"):
@@ -1815,7 +1816,6 @@ public function searchApplication(Request $request)
             }
             $returnData = $baseQuerry->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -1881,7 +1881,7 @@ public function searchApplication(Request $request)
         }
     }
 
-    
+
     #writen by prity pandey
 
 
@@ -1923,16 +1923,16 @@ public function searchApplication(Request $request)
                 ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
                 ->where('pet_approved_registrations.status', 1)
                 ->orderByDesc('pet_approved_registrations.id');
-        
+
             if ($key && $parameter) {
                 $msg = "Pet approved application details according to $key!";
                 switch ($key) {
                     case "mobileNo":
                         $activeApplication = $baseQuery->where('pet_approve_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
-                        case ("applicationNo"):
+                    case ("applicationNo"):
                         $activeApplication = $baseQuery->where('pet_approved_registrations.application_no', 'LIKE', "%$parameter%")->paginate($pages);
-                            break;
+                        break;
                     case "applicantName":
                         $activeApplication = $baseQuery->where('pet_approve_applicants.applicant_name', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
@@ -1952,7 +1952,6 @@ public function searchApplication(Request $request)
             }
             $returnData = $baseQuery->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -2088,7 +2087,7 @@ public function searchApplication(Request $request)
     # written by prity pandey
 
 
-public function searchRejectedApplication(Request $request)
+    public function searchRejectedApplication(Request $request)
     {
         $validated = Validator::make(
             $request->all(),
@@ -2109,24 +2108,24 @@ public function searchRejectedApplication(Request $request)
             $mPetApprovedRegistration   = new PetApprovedRegistration();
 
             $baseQuerry =  DB::table('pet_rejected_registrations')
-            ->select(
-                'pet_rejected_registrations.id',
-                'pet_rejected_registrations.holding_no',
-                'pet_rejected_registrations.saf_no',
-                'pet_rejected_registrations.application_no',
-                'pet_rejected_registrations.application_type',
-                'pet_rejected_registrations.payment_status',
-                'pet_rejected_registrations.application_apply_date',
-                'pet_rejected_registrations.doc_upload_status',
-                'pet_rejected_registrations.renewal',
-                'pet_rejected_registrations.registration_id',
-                'pet_rejected_applicants.mobile_no',
-                'pet_rejected_applicants.applicant_name'
-            )
-            ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
-            ->where('pet_rejected_registrations.status', 1)
-            ->orderByDesc('pet_rejected_registrations.id');
-        
+                ->select(
+                    'pet_rejected_registrations.id',
+                    'pet_rejected_registrations.holding_no',
+                    'pet_rejected_registrations.saf_no',
+                    'pet_rejected_registrations.application_no',
+                    'pet_rejected_registrations.application_type',
+                    'pet_rejected_registrations.payment_status',
+                    'pet_rejected_registrations.application_apply_date',
+                    'pet_rejected_registrations.doc_upload_status',
+                    'pet_rejected_registrations.renewal',
+                    'pet_rejected_registrations.registration_id',
+                    'pet_rejected_applicants.mobile_no',
+                    'pet_rejected_applicants.applicant_name'
+                )
+                ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
+                ->where('pet_rejected_registrations.status', 1)
+                ->orderByDesc('pet_rejected_registrations.id');
+
 
             if ($key && $request->parameter) {
                 $msg = "Pet rejected appliction details according to $key!";
@@ -2160,7 +2159,6 @@ public function searchRejectedApplication(Request $request)
             }
             $returnData = $baseQuerry->paginate($pages);
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
-
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -2355,5 +2353,27 @@ public function searchRejectedApplication(Request $request)
         }
     }
 
-
+    //written by prity pandey
+    public function petDashbordDtls(Request $request)
+    {
+        try {
+            $user = authUser($request);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
+            $userType = $user->user_type;
+            $mPetActiveRegistration = new PetActiveRegistration();
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+            $data['recentApplications'] = $mPetActiveRegistration->recentApplication($workflowIds, $roleId, $ulbId);
+            if ($userType == 'JSK') {
+                $data['recentApplications'] = $mPetActiveRegistration->recentApplicationJsk($userId, $ulbId);
+            }
+            $data['pendingApplicationCount']= $mPetActiveRegistration->pendingApplicationCount();
+            $data['approvedApplicationCount']= $mPetActiveRegistration->approvedApplicationCount();
+            return responseMsgs(true, "Recent Application", remove_null($data), "011901", "1.0", "", "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "011901", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
 }
