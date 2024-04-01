@@ -213,7 +213,7 @@ class PetActiveRegistration extends Model
             DB::raw('count(pet_active_registrations.id) as total_pending_application')
         )
             ->where('pet_active_registrations.status', 1)
-            ->get();
+            ->first();
 
         return $data;
     }
@@ -224,7 +224,7 @@ class PetActiveRegistration extends Model
             DB::raw('count(pet_approved_registrations.id) as total_approved_application')
         )
             ->where('pet_approved_registrations.status', 1)
-            ->get();
+            ->first();
 
         return $data;
     }
