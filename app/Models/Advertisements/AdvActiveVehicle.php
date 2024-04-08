@@ -209,6 +209,7 @@ class AdvActiveVehicle extends Model
 
     /**
      * | Store Uploaded document after application store
+     * //modified by prity pandey
      */
     public function uploadDocument($tempId, $documents, $auth)
     {
@@ -222,16 +223,21 @@ class AdvActiveVehicle extends Model
             $refImageName = $doc['docCode'];
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
             $documentImg = $doc['image'];
-            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            $newRequest = new Request([
+                'document'=>$documentImg
+            ]);
+            $imageName = $docUpload->upload($newRequest);
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['activeId'] = $getApplicationDtls->id;
             $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
             $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
             $metaReqs['relativePath'] = $relativePath;
-            $metaReqs['document'] = $imageName;
+           // $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
+            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             // $a = new Request($metaReqs);
             // $mWfActiveDocument->postDocuments($a, $auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);

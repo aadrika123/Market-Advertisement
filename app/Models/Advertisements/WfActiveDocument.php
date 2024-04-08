@@ -278,13 +278,15 @@ class WfActiveDocument extends Model
             "ulb_id" => $req['ulbId'],
             "module_id" => $req['moduleId'],
             "relative_path" => $req['relativePath'],
-            "document" => $req['document'],
+            "document" => $req['document']??null,
             "uploaded_by" =>  Auth()->user()->id,
             "uploaded_by_type" => Auth()->user()->user_type,
             "remarks" => $req->remarks ?? null,
             "doc_code" => $req['docCode'],
             "owner_dtl_id" => $req['ownerDtlId'],
-            "doc_category" => $req['docCategory'] ?? null
+            "doc_category" => $req['docCategory'] ?? null,
+            "unique_id" => $req['uniqueId'] ?? null,
+            "reference_no" => $req['referenceNo'] ?? null,
         ];
     }
 
