@@ -175,7 +175,7 @@ class AdvActiveHoarding extends Model
 
         $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
         $mDocuments = $req->documents;
-        $this->uploadDocument($licenceId, $mDocuments,$req->auth);
+        $this->uploadDocument($licenceId, $mDocuments, $req->auth);
         return $mRenewNo['renew_no'];
     }
 
@@ -184,9 +184,9 @@ class AdvActiveHoarding extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents,$auth)
+    public function uploadDocument($tempId, $documents, $auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId,$auth) {
+        collect($documents)->map(function ($doc) use ($tempId, $auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -196,7 +196,11 @@ class AdvActiveHoarding extends Model
             $refImageName = $doc['docCode'];
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
             $documentImg = $doc['image'];
-            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            // $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            $newRequest = new Request([
+                'document' => $documentImg
+            ]);
+            $imageName = $docUpload->upload($newRequest);
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['activeId'] = $getApplicationDtls->id;
@@ -206,12 +210,13 @@ class AdvActiveHoarding extends Model
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
+            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
             // $mWfActiveDocument->postDocuments($a,$auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
             // $mWfActiveDocument->create($metaReqs);
-            foreach($metaReqs as $key=>$val)
-            {
+            foreach ($metaReqs as $key => $val) {
                 $mWfActiveDocument->$key = $val;
             }
             $mWfActiveDocument->save();
@@ -284,7 +289,7 @@ class AdvActiveHoarding extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('adv_active_hoardings')
             ->select(
@@ -300,10 +305,10 @@ class AdvActiveHoarding extends Model
                 // 'total_charge'
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
@@ -330,14 +335,14 @@ class AdvActiveHoarding extends Model
                 'doc_upload_status',
             )
             ->orderByDesc('id');
-            // ->get();
+        // ->get();
     }
 
 
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('adv_active_hoardings')
             ->select(
@@ -353,10 +358,10 @@ class AdvActiveHoarding extends Model
                 // 'total_charge'
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -421,7 +426,7 @@ class AdvActiveHoarding extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
+        $mWfActiveDocument->postDocuments($a, $req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
@@ -448,7 +453,8 @@ class AdvActiveHoarding extends Model
     /**
      * | Get Last Three Applied Application
      */
-    public function lastThreeActiveRecord($citizenId){
+    public function lastThreeActiveRecord($citizenId)
+    {
         return AdvActiveHoarding::where('citizen_id', $citizenId)
             ->select(
                 'id',

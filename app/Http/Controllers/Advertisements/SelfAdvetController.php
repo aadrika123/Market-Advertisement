@@ -633,11 +633,12 @@ class SelfAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            return $value;
-        });
-        return $data1;
+        // $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     return $value;
+        // });
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return $data;
     }
 
     /**
@@ -660,18 +661,19 @@ class SelfAdvetController extends Controller
         $data = array();
         $status = collect();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $data1['data'] = collect($data)->map(function ($value) use ($appUrl, $status) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            // $status->push($value->verify_status);
-            return $value;
-        });
+        // $data1['data'] = collect($data)->map(function ($value) use ($appUrl, $status) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     // $status->push($value->verify_status);
+        //     return $value;
+        // });
         // if($status->contains('0')){
         //     $data1['doc_upload_status']=0;
         // }else{
         //     $data1['doc_upload_status']=1;
         // }
-        $data1['doc_upload_status'] = $details->doc_upload_status;
-        return $data1;
+        //$data1['doc_upload_status'] = $details->doc_upload_status;
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return $data;
     }
 
 
@@ -734,11 +736,12 @@ class SelfAdvetController extends Controller
         }else{
             $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
         }
-        $data1 = collect($data)->map(function ($value) use ($appUrl) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            return $value;
-        });
-        return responseMsgs(true, "Data Fetched", remove_null($data1), "050118", "1.0", responseTime(), "POST", "");
+        // $data1 = collect($data)->map(function ($value) use ($appUrl) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     return $value;
+        // });
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
 

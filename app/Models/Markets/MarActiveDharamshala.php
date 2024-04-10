@@ -161,7 +161,11 @@ class MarActiveDharamshala extends Model
             $refImageName = $doc['docCode'];
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
             $documentImg = $doc['image'];
-            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            $newRequest = new Request([
+                'document'=>$documentImg
+            ]);
+            $imageName = $docUpload->upload($newRequest);
             $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
             $metaReqs['activeId'] = $getApplicationDtls->id;
             $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
@@ -170,6 +174,8 @@ class MarActiveDharamshala extends Model
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
             $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
+            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
             // $mWfActiveDocument->postDocuments($a, $auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);

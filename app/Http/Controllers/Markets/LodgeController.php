@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Lodge\RenewalRequest;
 use App\Http\Requests\Lodge\StoreRequest;
 use App\Http\Requests\Lodge\UpdateRequest;
+use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
@@ -491,12 +492,13 @@ class LodgeController extends Controller
         } else {
             throw new Exception("Required Application Id And Application Type");
         }
-        $appUrl = $this->_fileUrl;
-        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            return $value;
-        });
-        return $data1;
+        // $appUrl = $this->_fileUrl;
+        // $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     return $value;
+        // });
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return $data;
     }
 
 
@@ -517,12 +519,13 @@ class LodgeController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
-        $appUrl = $this->_fileUrl;
-        $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            return $value;
-        });
-        return $data1;
+        // $appUrl = $this->_fileUrl;
+        // $data1['data'] = collect($data)->map(function ($value) use ($appUrl) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     return $value;
+        // });
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return $data;
     }
 
 
@@ -578,11 +581,12 @@ class LodgeController extends Controller
         } else {
             $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
-        $data1 = collect($data)->map(function ($value) use ($appUrl) {
-            $value->doc_path = $appUrl . $value->doc_path;
-            return $value;
-        });
-        return responseMsgs(true, "Data Fetched", remove_null($data1), "050118", "1.0", responseTime(), "POST", "");
+        // $data1 = collect($data)->map(function ($value) use ($appUrl) {
+        //     $value->doc_path = $appUrl . $value->doc_path;
+        //     return $value;
+        // });
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
 
