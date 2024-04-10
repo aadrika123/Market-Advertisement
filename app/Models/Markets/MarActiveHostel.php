@@ -186,11 +186,11 @@ class MarActiveHostel extends Model
             // $mWfActiveDocument->postDocuments($a, $auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
             $mWfActiveDocument->create($metaReqs);
-            // foreach($metaReqs as $key=>$val)
-            // {
-            //     $mWfActiveDocument->$key = $val;
-            // }
-            // $mWfActiveDocument->save();
+            foreach($metaReqs as $key=>$val)
+            {
+                $mWfActiveDocument->$key = $val;
+            }
+            $mWfActiveDocument->save();
         });
     }
 
