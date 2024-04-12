@@ -464,8 +464,8 @@ class PrivateLandController extends Controller
                 throw new Exception("Document Are Not Re-upload By Citizen !!!");
             if ($adv->doc_verify_status == '0' && $adv->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
-            // if ($adv->zone == NULL)
-            //     throw new Exception("Zone Not Selected !!!");
+            if ($adv->zone == NULL)
+                throw new Exception("Zone Not Selected !!!");
             $adv->last_role_id = $request->current_role_id;
             $adv->current_role_id = $request->receiverRoleId;
             $adv->save();
