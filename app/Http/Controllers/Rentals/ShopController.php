@@ -115,10 +115,8 @@ class ShopController extends Controller
                 'present_occupier' => $req->presentOccupier,
                 'trade_license' => $req->tradeLicense,
                 'construction' => $req->construction,
-                // 'electricity' => $req->electricity,
-                // 'water' => $req->water,
-                'electricity' =>($req->electricity === 'yes') ? 1 : 0,
-                'water' =>($req->water === 'yes') ? 1 : 0,
+                'electricity' => $req->electricity,
+                'water' => $req->water,
                 'sale_purchase' => $req->salePurchase,
                 'contact_no' => $req->contactNo,
                 'longitude' => $req->longitude,
@@ -632,11 +630,11 @@ class ShopController extends Controller
             return $validator->errors();
         // Business Logics
         try {
-            $mShop=new Shop();
+            $mShop = new Shop();
             $reciept = $mShop->getShopReciept($req->shopId);
-            if(!$reciept)
+            if (!$reciept)
                 throw new Exception("Reciept Data Not Fetched !!!");
-            $reciept->inWords=getIndianCurrency($reciept->last_payment_amount)." Only /-";
+            $reciept->inWords = getIndianCurrency($reciept->last_payment_amount) . " Only /-";
             return responseMsgs(true, "Reciept Data Fetch Successfully !!!",  $reciept, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
