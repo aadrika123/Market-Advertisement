@@ -278,7 +278,7 @@ class WfActiveDocument extends Model
             "ulb_id" => $req['ulbId'],
             "module_id" => $req['moduleId'],
             "relative_path" => $req['relativePath'],
-            "document" => $req['document']??null,
+            //"document" => $req['document1111']??null,
             "uploaded_by" =>  Auth()->user()->id,
             "uploaded_by_type" => Auth()->user()->user_type,
             "remarks" => $req->remarks ?? null,

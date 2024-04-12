@@ -105,9 +105,9 @@ class HostelController extends Controller
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
-            DB::commit();
-            DB::connection('pgsql_masters')->commit();
-            return responseMsgs(false, $e->getMessage(), "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, [$e->getMessage(),$e->getLine(),$e->getFile()], "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
