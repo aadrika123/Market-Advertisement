@@ -26,7 +26,7 @@ class Shop extends Model
           ")
     )
       ->where('id', $id)
-      ->orderBy('id','desc')
+      ->orderBy('id', 'desc')
       ->first();
   }
 
@@ -108,8 +108,8 @@ class Shop extends Model
       ->orderByDesc('mar_shops.id');
   }
 
-  /**
-   * | Get Shop Details By Shop ID
+   /**
+   * | Get Shop Details By Market  Id
    */
   public function getShopDetailById($id)
   {
@@ -118,11 +118,9 @@ class Shop extends Model
       'mc.circle_name',
       'mm.market_name',
       'sc.construction_type',
-      DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
-      DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
@@ -133,7 +131,8 @@ class Shop extends Model
   /**
    * | Get Shop Reciept By Shop Id
    */
-  public function getShopReciept($shopId){
+  public function getShopReciept($shopId)
+  {
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
@@ -157,6 +156,14 @@ class Shop extends Model
       ->join('users as usr', 'msp.user_id', '=', 'usr.id')
       ->join('ulb_masters as ulb', 'mar_shops.ulb_id', '=', 'ulb.id')
       ->where('mar_shops.id', $shopId)
+      ->first();
+  }
+
+  # get shop details 
+  public function getData($req)
+  {
+    return self::select('mamr_shops.*')
+      ->where('mar_shops.id', $req->shopId)
       ->first();
   }
 }

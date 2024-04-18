@@ -20,6 +20,7 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Author - Anshu Kumar
      * | Change By - Bikash Kumar
      * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
+     * | Changes By - Arshad Hussain   
      */
     Route::controller(ShopController::class)->group(function () {
         Route::post('shop-payments', 'shopPayment');                                                                        // 01  ( Make Shop Payment )
@@ -39,6 +40,18 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');                                                  // 15  ( Shop Payment By Admin )
         Route::post('rental/calculate-shop-price', 'calculateShopPrice');                                                   // 16  ( Calculate Shop Price )
         Route::post('rental/shop-reciept', 'shopReciept');                                                                  // 17  ( Get Shop Reciept )
+        # Written BY  Arshad Hussain  
+        Route::post('rental/generate-shop-demand', 'generateShopDemand');                                                    // 18  (Generate shop demand)
+        Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');                                                          // 19  (payment by cheque or dd )
+        Route::post('rental/generate-shop-demand', 'generateShopDemandBill');                                               // 20 (Generate shop demand bill  )
+        Route::post('rental/calculate-shop-rate-month-wise', 'calculateShopRateMonhtlyWise');                               // 21 Calculate Shop Amount According to month wise 
+        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                            // 22 Get Shop Payment Receipt For Bluetooth Printer
+        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');                                         // 23 Update Data After Cheque is clear or bounce 
+        Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');                                                // 24  List Entry Cheque/DD Details Data  
+        Route::post('rental/list-cash-verification', 'listCashVerification');                                               // 25 List Cash Verification  
+        Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                                 // 26  List Details Cash Verification User wise 
+        Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                                 // 25  Verified Cash Payment 
+
     });
 
     /**
