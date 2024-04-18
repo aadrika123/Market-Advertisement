@@ -20,7 +20,8 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Author - Anshu Kumar
      * | Change By - Bikash Kumar
      * | Status - Closed By Bikash Kumar ( 03 Oct 2023 )
-     * | Changes By - Arshad Hussain   
+     * | Changes By - Arshad Hussain 
+     * | updated status - Open by Arshad Hussain (16 Apr 2024 )
      */
     Route::controller(ShopController::class)->group(function () {
         Route::post('shop-payments', 'shopPayment');                                                                        // 01  ( Make Shop Payment )
@@ -51,6 +52,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-cash-verification', 'listCashVerification');                                               // 25 List Cash Verification  
         Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                                 // 26  List Details Cash Verification User wise 
         Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                                 // 25  Verified Cash Payment 
+        Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                              // 26 List Circle Wise Market
+        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');                                              // 12  Search Shop Data For Payment
+        Route::post('rental/search-shop-for-payment', 'generateAllShopDemand');                                              // 12  Search Shop Data For Payment
 
     });
 
@@ -75,6 +79,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-toll-price-list', 'getTollPriceList');                                                    // 12  ( Get List of Price List)
         Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
         Route::post('rental/toll-reciept', 'tollReciept');                                                                // 14  ( Get Toll Reciept )
+        Route::post('rental/generate-toll-demand', 'generateTollDemand');                                                 // 17  (Generate toll demand)
+
     });
 
 

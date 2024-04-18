@@ -108,7 +108,7 @@ class Shop extends Model
       ->orderByDesc('mar_shops.id');
   }
 
-   /**
+  /**
    * | Get Shop Details By Market  Id
    */
   public function getShopDetailById($id)
@@ -165,5 +165,28 @@ class Shop extends Model
     return self::select('mamr_shops.*')
       ->where('mar_shops.id', $req->shopId)
       ->first();
+  }
+
+  /**
+   * | Search Shop for Payment
+   */
+  public function searchShopForPayment($shopConstructionId, $marketId)
+  {
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'sc.construction_type',
+      'msp.amount as last_payment_amount',
+      // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
+      ->where(['mar_shops.construction' => $shopConstructionId, 'mar_shops.market_id' => $marketId])
+      ->orderByDesc('mar_shops.id');
+    // ->get();
   }
 }

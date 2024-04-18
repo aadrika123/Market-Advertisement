@@ -3,6 +3,8 @@
 namespace App\BLL\Market;
 
 use App\Models\Rentals\MarShopDemand;
+use App\Models\Rentals\MarToll;
+use App\Models\Rentals\MarTollDemand;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopPayment;
 use Carbon\Carbon;
@@ -21,13 +23,16 @@ class ShopPaymentBll
     public $_shopDetails;
     public $_tranId;
     private $_shopLastDemand;
+    private $_tollLastDemand;
+    private $_mTollDemand;
     private $_now;
 
     public function __construct()
     {
         $this->_mShopPayments = new ShopPayment();
         $this->_mShopDemand   = new MarShopDemand();
-        $this->_now                     = Carbon::now();
+        $this->_now           = Carbon::now();
+        $this->_mTollDemand   = new MarTollDemand();
     }
 
     /**
@@ -230,6 +235,59 @@ class ShopPaymentBll
             $this->_mShopDemand::create($demandReqs);
         }
     }
+    /**
+     * | Shop demand
+     * | @param Request $req
+     */
+    public function AllshopDemand($req)
+    {
+        // Get the current month
+        $currentMonth = Carbon::now()->startOfMonth();
+
+        $shopDetails = Shop::find($req->shopId);
+        #check shop last demand 
+        $this->_shopLastDemand = $this->_mShopDemand->CheckConsumerDemand($req)->get()->sortByDesc("monthly")->first();;
+
+        if ($this->_shopLastDemand) {
+            $lastDemandMonth = Carbon::parse($this->_shopLastDemand->monthly)->startOfMonth();
+            if ($lastDemandMonth->eq($currentMonth)) {
+                throw new Exception("Demand is already generated for this month.");
+            }
+        }
+        if ($this->_shopLastDemand) {
+            $startDate          = Carbon::parse($this->_shopLastDemand->monthly);
+            $endDate            = Carbon::parse($this->_now);
+        }
+        # If the demand is generated for the first time
+        else {
+            $endDate            = Carbon::parse($this->_now);
+            $startDate          = Carbon::parse($shopDetails->created_at);
+        }
+
+        $demandFrom = Carbon::parse($startDate);
+        $months = [];
+        $currentMonth = $demandFrom->copy()->startOfMonth();
+        while ($currentMonth->lte($endDate)) {
+            $months[] = $currentMonth->format('Y-m-d');
+            $currentMonth->addMonth();
+        }
+        DB::beginTransaction();
+        foreach ($months as $month) {
+            $amount = $shopDetails->rate;                                        // rate is fixed for each month
+            $payableAmt = $amount;
+            $arrear = $amount;
+            // Insert demand
+            $demandReqs = [
+                'shop_id' => $req->shopId,
+                'amount' => $amount,
+                'monthly' => $month,
+                'payment_date' => Carbon::now(),
+                'user_id' => $req->auth['id'] ?? 0,
+                'ulb_id' => $shopDetails->ulb_id,
+            ];
+            $this->_mShopDemand::create($demandReqs);
+        }
+    }
 
     /**
      * | Calculate rate between two financial year 
@@ -241,5 +299,58 @@ class ShopPaymentBll
             ->where('payment_status', 0)
             ->where('monthly', '<=', $req->month)
             ->sum('amount');
+    }
+
+
+    /**
+     * | Shop demand
+     * | @param Request $req
+     */
+    public function tollDemand($req)
+    {
+        $currentDate = Carbon::now()->startOfDay();
+
+        $tollDetails = MarToll::find($req->tollId);
+        #check shop last demand 
+        $this->_tollLastDemand =  $this->_mTollDemand->CheckConsumerDemand($req)->get()->sortByDesc("daily")->first();;
+
+        if ($this->_tollLastDemand) {
+            $lastDemand = Carbon::parse($this->_tollLastDemand->daily);
+            if ($lastDemand->eq($currentDate)) {
+                throw new Exception("Demand is already generated for this date.");
+            }
+        }
+        if ($this->_shopLastDemand) {
+            $startDate          = Carbon::parse($this->_tollLastDemand->daily);
+            $endDate            = Carbon::parse($this->_now);
+        }
+        # If the demand is generated for the first time
+        else {
+            $endDate            = Carbon::parse($this->_now);
+            $startDate          = Carbon::parse($tollDetails->created_at);
+        }
+
+        $demandFrom = Carbon::parse($startDate);
+        $days = [];
+        $currentDay = $startDate->copy();
+        while ($currentDay->lte($endDate)) {
+            $days[] = $currentDay->format('Y-m-d');
+            $currentDay->addDay();
+        }
+
+        DB::beginTransaction();
+
+        // Insert demands for each day
+        foreach ($days as $day) {
+            $demandReqs = [
+                'toll_id' => $req->tollId,
+                'amount' => $tollDetails->rate,
+                'daily' => $day,
+                'payment_date' => Carbon::now(),
+                'user_id' => $req->auth['id'] ?? 0,
+                'ulb_id' => $tollDetails->ulb_id,
+            ];
+            $this->_mTollDemand->create($demandReqs);
+        }
     }
 }

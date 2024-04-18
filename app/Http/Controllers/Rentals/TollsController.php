@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Rentals;
 
+use App\BLL\Market\ShopPaymentBll;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Toll\TollValidationRequest;
 use App\MicroServices\DocumentUpload;
@@ -49,11 +50,11 @@ class TollsController extends Controller
 
         try {
             // Check Paymentupto Date For next Payment 
-            $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
-            if($paymentUpto != NULL){
-                if($paymentUpto >= $req->dateFrom)
-                    throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
-            }
+            // $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
+            // if($paymentUpto != NULL){
+            //     if($paymentUpto >= $req->dateFrom)
+            //         throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
+            // }
 
             // Variable Assignments
             $todayDate = Carbon::now()->format('Y-m-d');
@@ -80,7 +81,7 @@ class TollsController extends Controller
                 'rate' => $rate,
                 'days' => $noOfDays,
                 'payment_date' => $todayDate,
-                'transaction_no' => "TRAN-".time().$toll->ulb_id.$toll->id,
+                'transaction_no' => "TRAN-" . time() . $toll->ulb_id . $toll->id,
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
                 'remarks' => $req->remarks,
@@ -125,7 +126,7 @@ class TollsController extends Controller
                 $imageName2Absolute = $absolutePath;
             }
             $tollNo = $this->tollIdGeneration($request->marketId);
-            $rate=MarTollPriceList::select('rate')->where('id','=',$request->rate)->first()->rate;
+            $rate = MarTollPriceList::select('rate')->where('id', '=', $request->rate)->first()->rate;
             $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
@@ -512,10 +513,10 @@ class TollsController extends Controller
             return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
 
         try {
-            $paymentUpto=DB::table("mar_toll_payments")->select('to_date')->where('toll_id',$req->tollId)->orderByDesc('id')->first()->to_date;
-            if($paymentUpto != NULL){
-                if($paymentUpto >= $req->dateFrom)
-                    throw new Exception('Your Payment is Done Upto '. carbon::parse($paymentUpto)->format('d-m-Y'));
+            $paymentUpto = DB::table("mar_toll_payments")->select('to_date')->where('toll_id', $req->tollId)->orderByDesc('id')->first()->to_date;
+            if ($paymentUpto != NULL) {
+                if ($paymentUpto >= $req->dateFrom)
+                    throw new Exception('Your Payment is Done Upto ' . carbon::parse($paymentUpto)->format('d-m-Y'));
             }
             // Variable Assignments
             $toll = $this->_mToll::find($req->tollId);
@@ -532,7 +533,7 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-    
+
     /**
      * | Get Market Toll Price List
      * | Function - 14
@@ -546,17 +547,17 @@ class TollsController extends Controller
 
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
-            try {
-                // Variable Assignments
-                $mMarToll = new MarToll();
-                $reciept = $mMarToll->getTollReciept($req->tollId);
-                if(!$reciept)
-                    throw new Exception("Reciept Not Found !!!");
-                $reciept->inWords=trim(getIndianCurrency($reciept->last_payment_amount))." only /-";
-                return responseMsgs(true, "Reciept Fetch Successfully !!!", $reciept, "055114", "1.0", responseTime(), "POST", $req->deviceId);
-            } catch (Exception $e) {
-                return responseMsgs(false, $e->getMessage(), [], "055114", "1.0", responseTime(), "POST", $req->deviceId);
-            }
+        try {
+            // Variable Assignments
+            $mMarToll = new MarToll();
+            $reciept = $mMarToll->getTollReciept($req->tollId);
+            if (!$reciept)
+                throw new Exception("Reciept Not Found !!!");
+            $reciept->inWords = trim(getIndianCurrency($reciept->last_payment_amount)) . " only /-";
+            return responseMsgs(true, "Reciept Fetch Successfully !!!", $reciept, "055114", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055114", "1.0", responseTime(), "POST", $req->deviceId);
+        }
     }
 
     /**
@@ -571,5 +572,28 @@ class TollsController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['toll_counter' => $counter]);
         return $id = "TOLL-" . $market . "-" . (1000 + $idDetails->toll_counter);
     }
-
+    /**
+     * |Shop demand generation 
+     * |Function - 18 
+     * |API - 18
+     */
+    public function generateTollDemand(Request $request)
+    {
+        $shopPmtBll = new ShopPaymentBll();
+        $validator = Validator::make($request->all(), [
+            "tollId" => "required|integer",
+        ]);
+        if ($validator->fails())
+            return $validator->errors();
+        // Business Logics
+        try {
+            $shopPmtBll->tollDemand($request);
+            $shopDetails = MarToll::find($request->shopId);
+            DB::commit();
+            return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
 }

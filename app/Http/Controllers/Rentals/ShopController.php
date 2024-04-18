@@ -712,6 +712,30 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
         }
     }
+    /**
+     * |Shop demand generation 
+     * |Function - 18 
+     * |API - 18
+     */
+    public function generateAllShopDemand(Request $request)
+    {
+        $shopPmtBll = new ShopPaymentBll();
+        $validator = Validator::make($request->all(), [
+            "shopId" => "required|integer",
+        ]);
+        if ($validator->fails())
+            return $validator->errors();
+        // Business Logics
+        try {
+            $shopPmtBll->shopDemand($request);
+            $shopDetails = Shop::find($request->shopId);
+            DB::commit();
+            return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
 
     /**
      * | Generate Demand Reciept Details Before Payment
@@ -996,8 +1020,6 @@ class ShopController extends Controller
 
     /**
      * | List cheque or DD For Clearance
-     * | API - 15
-     * | Function - 15
      */
     public function listEntryCheckorDD(Request $req)
     {
@@ -1020,10 +1042,9 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055015", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
     /**
      * | Verified Payment one or more than one
-     * | API - 25
-     * | Function - 25
      */
     public function verifiedCashPayment(Request $req)
     {
@@ -1040,6 +1061,36 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | Search Shop For Payment
+     */
+    public function searchShopForPayment(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopConstructionId' => 'required|integer',
+            'circleId' => 'required|integer',
+            'marketId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mShop = new Shop();
+            // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            DB::enableQueryLog();
+            $list = $mShop->searchShopForPayment($req->shopConstructionId, $req->marketId);                                       // Get List Shop FOr Payment
+            if ($req->key)
+                $list = searchShopRentalFilter($list, $req);
+            $list = paginator($list, $req);
+            // return [dd(DB::getQueryLog())];
+            return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
 
 
     /**================================================= Support Function ============================== */
