@@ -231,4 +231,24 @@ class ShopPayment extends Model
       ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
       ->where('mar_shop_payments.payment_status', '!=', "3");
   }
+  /**
+   * | Transaction De-activation
+   */
+  public function deActiveTransaction($req)
+  {
+    $tranDetails = $tran = Self::find($req->tranId);
+    $tran->payment_status = 0;
+    $tran->deactive_date = Carbon::now();
+    $tran->deactive_reason = $req->deactiveReason;
+    $tran->save();
+    $demandids = MarShopDemand::select('id')->where('shop_id', $tranDetails->shop_id)->whereBetween('monthly', [$tranDetails->paid_from, $tranDetails->paid_to])->get();
+    $updateData = [
+      'payment_status' => '0',
+      'payment_date' => NULL,
+      'tran_id' => NULL
+    ];
+
+    return MarShopDemand::whereIn('id', $demandids)
+      ->update($updateData);
+  }
 }

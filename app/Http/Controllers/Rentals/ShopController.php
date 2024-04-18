@@ -11,6 +11,7 @@ use App\Models\Master\MMarket;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
+use App\Models\Rentals\ShopConstruction;
 use App\Models\Rentals\ShopPayment;
 use Exception;
 use Illuminate\Http\Request;
@@ -720,17 +721,25 @@ class ShopController extends Controller
     public function generateAllShopDemand(Request $request)
     {
         $shopPmtBll = new ShopPaymentBll();
-        $validator = Validator::make($request->all(), [
-            "shopId" => "required|integer",
-        ]);
-        if ($validator->fails())
-            return $validator->errors();
-        // Business Logics
         try {
-            $shopPmtBll->shopDemand($request);
-            $shopDetails = Shop::find($request->shopId);
-            DB::commit();
-            return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+            $shopIds = Shop::pluck('id')->toArray();
+            $getShop = collect($shopIds);
+            foreach ($shopIds as $shopId) {
+                $req = new \Illuminate\Http\Request();
+                $req->replace(['shopId' => $shopId]); // Set the shopId in the request
+
+                $validator = Validator::make($req->all(), [
+                    "shopId" => "required|integer",
+                ]);
+
+                if ($validator->fails()) {
+                    return $validator->errors();
+                }
+                $shopPmtBll->allShopDemand($req);
+
+                DB::commit();
+                return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $shopIds->shop_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+            }
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
@@ -1089,6 +1098,57 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+    /**
+     * | Transaction Deactivation 
+     */
+    public function transactionDeactivation(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "tranId" => "required|integer",
+            "deactiveReason" => "required|string",
+            "module" => "required|in:Shop",
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            if ($req->module == 'Shop') {
+                $mMarShopPayment = new ShopPayment();
+                DB::beginTransaction();
+                $status = $mMarShopPayment->deActiveTransaction($req);
+                DB::commit();
+            }
+            // $list = paginator($listShop, $req);
+            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055044", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055044", "1.0", responseTime(), "POST");
+        }
+    }
+    /**
+     * | get Shop Master Data
+     * | API - 11
+     * | Function - 11
+     */
+    public function shopMaster(Request $req)
+    {
+        try {
+            $mMCircle = new MCircle();
+            $mShopConstruction = new ShopConstruction();                                                    
+            $list['circleList'] = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);                                // Get Circle / Zone by ULB Id
+            $list['listConstruction'] = $mShopConstruction->listConstruction();                                     // Get List of Building Type
+            $fYear = FyListdescForShop();                                                                           // Get Financial Year
+            $f_y = array();
+            foreach ($fYear as $key => $fy) {
+                $f_y[$key]['id'] = $fy;
+                $f_y[$key]['financialYear'] = $fy;
+            }
+            $list['fYear'] = $f_y;
+            return responseMsgs(true, "Shop Type List !!!", $list, "055011", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055011", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
 
 
 

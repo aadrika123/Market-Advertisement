@@ -239,7 +239,7 @@ class ShopPaymentBll
      * | Shop demand
      * | @param Request $req
      */
-    public function AllshopDemand($req)
+    public function allShopDemand($req)
     {
         // Get the current month
         $currentMonth = Carbon::now()->startOfMonth();
