@@ -1200,6 +1200,31 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * |list shop demand 
+     */
+    public function listShopDemand(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shopId' => 'required|numeric'
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            # initialise variable
+            $mShop  = new Shop();
+            $mShopDemand = new MarShopDemand();
+
+            $shopDemand = $mShopDemand->getShopDemand($request->shopId);
+            if ($shopDemand->isEmpty()) {
+                throw new Exception('Shop demand not found');
+            }
+            return responseMsgs(true, "Shop Deamand !!!",  $shopDemand, "055018", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
+
 
 
 

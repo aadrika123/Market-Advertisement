@@ -26,4 +26,13 @@ class MarShopDemand extends Model
     {
         return self::select('monthly', 'amount')->where('shop_id', $shopId)->where('monthly', '<=', $month)->where('payment_status', '0')->orderBy('monthly', 'ASC')->get();
     }
+
+    # get shop demand 
+    public function getShopDemand($shopId)
+    {
+        return self::where('shop_id', $shopId)
+            ->where('status', true)
+            ->where('payment_status', 0)
+            ->get();
+    }
 }

@@ -58,7 +58,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/transaction-deactivation', 'transactionDeactivation');                                          // 44  Deactive Transaction
         Route::post('rental/shop-master', 'shopMaster');                                                                    // 11  Get Shop Master Data
         Route::post('rental/edit-shop-data', 'editShopData');                                                               // 18  Edit Shop Details Data
-
+        Route::post('rental/list-shop-demand', 'listShopDemand');                                                           // 18  Edit Shop Details Data
     });
 
     /**
