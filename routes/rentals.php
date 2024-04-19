@@ -54,9 +54,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                                 // 25  Verified Cash Payment 
         Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                              // 26 List Circle Wise Market
         Route::post('rental/search-shop-for-payment', 'searchShopForPayment');                                              // 12  Search Shop Data For Payment
-        Route::post('rental/generate-all-shop-demands', 'generateAllShopDemand');                                              // 12  Search Shop Data For Payment
-        Route::post('rental/transaction-deactivation', 'transactionDeactivation');                                            // 44  Deactive Transaction
-        Route::post('rental/shop-master', 'shopMaster');                                                                     // 11  Get Shop Master Data
+        Route::post('rental/generate-all-shop-demands', 'generateAllShopDemand');                                           // 12  Search Shop Data For Payment
+        Route::post('rental/transaction-deactivation', 'transactionDeactivation');                                          // 44  Deactive Transaction
+        Route::post('rental/shop-master', 'shopMaster');                                                                    // 11  Get Shop Master Data
+        Route::post('rental/edit-shop-data', 'editShopData');                                                               // 18  Edit Shop Details Data
 
     });
 

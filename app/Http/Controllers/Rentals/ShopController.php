@@ -9,6 +9,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
 use App\Models\Rentals\MarShopDemand;
+use App\Models\Rentals\MarShopLog;
 use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
@@ -1133,7 +1134,7 @@ class ShopController extends Controller
     {
         try {
             $mMCircle = new MCircle();
-            $mShopConstruction = new ShopConstruction();                                                    
+            $mShopConstruction = new ShopConstruction();
             $list['circleList'] = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);                                // Get Circle / Zone by ULB Id
             $list['listConstruction'] = $mShopConstruction->listConstruction();                                     // Get List of Building Type
             $fYear = FyListdescForShop();                                                                           // Get Financial Year
@@ -1148,6 +1149,60 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055011", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | Edit Shop Data For Contact Number
+     * | API - 18
+     * | Function - 18
+     */
+    public function editShopData(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|numeric',
+            'contactNo' => 'nullable|numeric|digits:10',
+            'rentType' => 'nullable|string',
+            'remarks' => 'nullable|string',
+            'amcShopNo' => 'nullable|string',
+            'circleId' => 'nullable|integer',                                                               // Circle i.e. Zone
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+
+        try {
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SHOP_PATH');
+            if (isset($req->image)) {
+                $image = $req->file('image');
+                $refImageName = 'Shop-Photo-1';
+                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
+                $imageName1Absolute = $relativePath;
+            }
+            $shopDetails = Shop::find($req->shopId);
+            $shopDetails->contact_no = $req->contactNo;
+            // $shopDetails->rent_type = $req->rentType;
+            $shopDetails->circle_id = $req->circleId;
+            // $shopDetails->amc_shop_no = $req->amcShopNo;
+            $shopDetails->remarks = $req->remarks;
+            if (isset($req->image)) {
+                $shopDetails->photo1_path = $imageName1 ?? "";
+                $shopDetails->photo1_path_absolute = $imageName1Absolute ?? "";
+            }
+            $shopDetails->save();
+            // Generate Edit Logs
+            $logData = [
+                'shop_id' => $req->shopId,
+                'user_id' => $req->auth['id'],
+                'change_data' => json_encode($req->all()),
+                'date' => Carbon::now()->format('Y-m-d'),
+            ];
+            MarShopLog::create($logData);
+            return responseMsgs(true, "Update Shop Successfully !!!", '', "055018", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
 
 
 
