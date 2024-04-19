@@ -44,7 +44,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         # Written BY  Arshad Hussain  
         Route::post('rental/generate-shop-demand', 'generateShopDemand');                                                    // 18  (Generate shop demand)
         Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');                                                          // 19  (payment by cheque or dd )
-        Route::post('rental/generate-shop-demand', 'generateShopDemandBill');                                               // 20 (Generate shop demand bill  )
+        Route::post('rental/generate-shop-demand_bill', 'generateShopDemandBill');                                               // 20 (Generate shop demand bill  )
         Route::post('rental/calculate-shop-rate-month-wise', 'calculateShopRateMonhtlyWise');                               // 21 Calculate Shop Amount According to month wise 
         Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                            // 22 Get Shop Payment Receipt For Bluetooth Printer
         Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');                                         // 23 Update Data After Cheque is clear or bounce 

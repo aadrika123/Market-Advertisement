@@ -692,8 +692,7 @@ class ShopController extends Controller
 
     /**
      * |Shop demand generation 
-     * |Function - 18 
-     * |API - 18
+     * | made by Arshad 
      */
     public function generateShopDemand(Request $request)
     {
@@ -716,8 +715,7 @@ class ShopController extends Controller
     }
     /**
      * |Shop demand generation 
-     * |Function - 18 
-     * |API - 18
+     * |
      */
     public function generateAllShopDemand(Request $request)
     {
@@ -1182,7 +1180,6 @@ class ShopController extends Controller
             $shopDetails->contact_no = $req->contactNo;
             // $shopDetails->rent_type = $req->rentType;
             $shopDetails->circle_id = $req->circleId;
-            // $shopDetails->amc_shop_no = $req->amcShopNo;
             $shopDetails->remarks = $req->remarks;
             if (isset($req->image)) {
                 $shopDetails->photo1_path = $imageName1 ?? "";
