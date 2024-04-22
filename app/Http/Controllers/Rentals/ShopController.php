@@ -692,14 +692,14 @@ class ShopController extends Controller
     public function shopReciept(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            "shopId" => "required|integer",
+            "tranId" => "required|integer",
         ]);
         if ($validator->fails())
             return $validator->errors();
         // Business Logics
         try {
             $mShop = new Shop();
-            $reciept = $mShop->getShopReciept($req->shopId);
+            $reciept = $mShop->getShopReciept($req->tranId);
             if (!$reciept)
                 throw new Exception("Reciept Data Not Fetched !!!");
             $reciept->inWords = getIndianCurrency($reciept->last_payment_amount) . " Only /-";
