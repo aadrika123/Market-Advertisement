@@ -60,6 +60,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/edit-shop-data', 'editShopData');                                                               // 32  Edit Shop Details Data
         Route::post('rental/list-shop-demand', 'listShopDemand');                                                           // 33  Edit Shop Details Data
         Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                          // 34  ( Generate Payment Order ID)
+        Route::post('rental/shop-reciept-list', 'shopRecieptList');
     });
 
     /**

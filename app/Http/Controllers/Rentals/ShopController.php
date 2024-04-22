@@ -1295,6 +1295,99 @@ class ShopController extends Controller
     }
 
 
+    /**
+     * |shop recipt list by Toll Id
+     */
+    public function shopRecieptList(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shopId' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+            $mMarTollPayment = new shopPayment();
+            $mMarToll = Shop::find($request->shopId);
+            $shopId = $mMarToll->id;
+            $data = $mMarTollPayment->getshopPayment($shopId);
+            if (collect($data)->isEmpty())
+                throw new Exception("Payment Details Not Found");
+
+            return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $request->deviceId ?? "");
+        }
+    }
+
+
+    // /**
+    //  * | Get Consumer Payment History 
+    //  * | Collect All the transaction relate to the respective Consumer 
+    //  * | @param request
+    //  * | @var mWaterTran
+    //  * | @var mWaterConsumer
+    //  * | @var mWaterConsumerDemand
+    //  * | @var mWaterTranDetail
+    //  * | @var transactions
+    //  * | @var waterDtls
+    //  * | @var waterTrans
+    //  * | @var applicationId
+    //  * | @var connectionTran
+    //  * | @return transactions  Consumer / Connection Data 
+    //     | Serial No : 01
+    //     | Working
+    //  */
+    // public function getConsumerPaymentHistory(Request $request)
+    // {
+    //     $validated = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'consumerId' => 'required|digits_between:1,9223372036854775807'
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+
+    //     try {
+    //         $mMarShopPayment             = new ShopPayment();
+    //         $mShop                       = new Shop();
+    //         $mMarShopDemand              = new MarShopDemand();
+    //         // $mWaterTranDetail            = new WaterTranDetail();
+    //         $transactions                = array();
+
+    //         # consumer Details
+    //         $waterDtls = $mShop->getShopDetailById($request->consumerId);
+    //         if (!$waterDtls)
+    //             throw new Exception("Shop Not Found!");
+
+    //         # if Consumer in made vie application
+    //         $applicationId = $waterDtls->apply_connection_id;
+    //         // if (!$applicationId)
+    //         //     throw new Exception("This Consumer has not ApplicationId!!");
+
+    //         # if demand transactions exist
+    //         $connectionTran = $applicationId ? $mMarShopPayment->getTransNo($applicationId, null)->get() : collect([]);                        // Water Connection payment History
+    //         $connectionTran = collect($connectionTran)->sortByDesc('id')->values();
+    //         // if((!$connectionTran->first() || is_null($connectionTran)) && $applicationId)
+    //         //     throw new Exception("Water Application's Transaction Details not Found!!");
+
+    //         # Application transactions
+    //         $waterTrans = $mMarShopPayment->ConsumerTransaction($request->consumerId)->get();         // Water Consumer Payment History
+    //         $waterTrans = collect($waterTrans)->map(function ($value) use ($mMarShopDemand) {
+    //             $demandId = $mWaterTranDetail->getDetailByTranId($value['id']);
+    //             $value['demand'] = $mWaterConsumerDemand->getDemandBydemandId($demandId['demand_id']);
+    //             return $value;
+    //         })->sortByDesc('id')->values();
+
+    //         $transactions['Consumer'] = $waterTrans;
+    //         $transactions['connection'] = $connectionTran;
+
+    //         return responseMsgs(true, "", remove_null($transactions), "", "01", "ms", "POST", $request->deviceId ?? "");
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", "ms", "POST", "");
+    //     }
+    // }
 
 
 

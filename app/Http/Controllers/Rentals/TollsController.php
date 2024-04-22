@@ -665,6 +665,8 @@ class TollsController extends Controller
             $mMarToll = MarToll::find($request->tollId);
             $tollId = $mMarToll->id;
             $data = $mMarTollPayment->getTollPayment($tollId);
+            if (collect($data)->isEmpty())
+            throw new Exception("Payment Details Not Found");
             // $data['paymentList'] = collect($data);
 
             return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");

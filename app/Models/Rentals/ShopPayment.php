@@ -270,4 +270,31 @@ class ShopPayment extends Model
       // })
       ->get();
   }
+  /**
+   * |---------------- Get transaction by the transaction details ---------------|
+   */
+  public function getTransNo($applicationId, $applicationFor)
+  {
+    return self::where('toll_id', $applicationId)
+      // ->where('tran_type', "<>", "Demand Collection")
+      ->where('status', 1);
+  }
+
+  /**
+   *|get toll payments list 
+   */
+  public function getshopPayment($shopId)
+  {
+    return self::select(
+      'mar_shop_payments.id',
+      'mar_shop_payments.amount',
+      'mar_shops.allottee',
+      'mar_shop_payments.pmt_mode',
+      'mar_shop_payments.payment_date',
+    )
+      ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
+      ->where('mar_shop_payments.shop_id', $shopId)
+      ->where('mar_shop_payments.is_active', 1)
+      ->get();
+  }
 }
