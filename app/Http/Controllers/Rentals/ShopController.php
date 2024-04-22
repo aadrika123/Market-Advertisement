@@ -64,12 +64,11 @@ class ShopController extends Controller
             return $validator->errors();
         // Business Logics
         try {
-            $shopPmtBll->shopPayment($req);
+            $shop = $shopPmtBll->shopPayment($req);
             $shopDetails = Shop::find($req->shopId);
-            $response = $shopPmtBll->shopPayment($req);
             DB::commit();
-            $tranId = isset($response['tranId']) ? $response['tranId'] : null;
-            return responseMsgs(true, "Payment Done Successfully", ['tranId' => $tranId], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            // $tranId = isset($response['TranId']) ? $response['TranId'] : null;
+            return responseMsgs(true, "Payment Done Successfully", ['tranId' => $shop['tranId']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
