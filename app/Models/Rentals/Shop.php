@@ -149,10 +149,10 @@ class Shop extends Model
       'ulb.toll_free_no',
       'ulb.current_website as website',
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
-      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.id', '=', 'msp.shop_id')
       ->join('users as usr', 'msp.user_id', '=', 'usr.id')
       ->join('ulb_masters as ulb', 'mar_shops.ulb_id', '=', 'ulb.id')
       ->where('msp.id', $tranId)

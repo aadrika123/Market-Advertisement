@@ -295,6 +295,7 @@ class ShopPayment extends Model
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('mar_shop_payments.shop_id', $shopId)
       ->where('mar_shop_payments.is_active', 1)
+      ->orderBy('mar_shop_payments.id','Desc')
       ->get();
   }
 }
