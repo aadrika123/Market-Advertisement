@@ -94,7 +94,7 @@ class TollsController extends Controller
                 'last_amount' => $payableAmt,
                 'last_tran_id' => $createdTran->id
             ]);
-            return responseMsgs(true, "Payment Successfully Done", ['tollNo' => $toll->toll_no], "055101", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Successfully Done", ['tollId' => $createdTran->id], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         }
