@@ -313,6 +313,24 @@ class ShopController extends Controller
             // Basic Details
             $basicDetails = $this->generateBasicDetails($details);                                              // Generate Basic Details of Shop
             $shop['shopDetails'] = $basicDetails;
+            $mMarShopDemand = new MarShopDemand();
+            $demands = $mMarShopDemand->getDemandByShopId($req->id);                                            // Get List of Generated All Demands against SHop
+            $total = $demands->pluck('amount')->sum();
+            $financialYear = $demands->where('payment_status', '0')->where('amount', '>', '0')->pluck('financial_year');
+            $f_y = array();
+            // foreach ($financialYear as $key => $fy) {
+            //     $f_y[$key]['id'] = $fy;
+            //     $f_y[$key]['financialYear'] = $fy;
+            // }
+            // $shop['fYear'] = $f_y;
+            // $shop['demands'] = $demands;
+            $shop['total'] =  round($total, 2);
+            $mMarShopPayment = new ShopPayment(); // DB::enableQueryLog();
+            $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
+            $totalPaid = $payments->pluck('amount')->sum();
+            // $shop['payments'] = $payments;
+            $shop['totalPaid'] =   round($totalPaid, 2);
+            $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
             return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1224,6 +1242,57 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $request->deviceId);
         }
     }
+    /**
+     * | Generate Payment Order ID
+     * | @param Request $req
+     * | Function - 22
+     * | Api- 21
+     */
+    public function generatePaymentOrderId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+            // Variable initialization
+            $shop = $req->id;
+
+            $mMarShopPayment = ShopPayment::find($req->id);
+            $reqData = [
+                "id" => $mMarShopPayment->id,
+                'amount' => $mMarShopPayment->amount,
+                // 'workflowId' => $mMarShopPayment->workflow_id,
+                'ulbId' => $mMarShopPayment->ulb_id,
+                // 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'auth' => $req->auth,
+            ];
+            $paymentUrl = Config::get('constants.PAYMENT_URL');
+            $refResponse = Http::withHeaders([
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->bearerToken())
+                ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
+
+            $data = json_decode($refResponse);
+            $data = $data->data;
+            if (!$data)
+                throw new Exception("Payment Order Id Not Generate");
+
+            $data->name = $mMarShopPayment->applicant;
+            $data->email = $mMarShopPayment->email;
+            $data->contact = $mMarShopPayment->mobile_no;
+            $data->type = "Private Lands";
+            // return $data;
+
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050421", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
 
 
 

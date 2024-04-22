@@ -251,4 +251,23 @@ class ShopPayment extends Model
     return MarShopDemand::whereIn('id', $demandids)
       ->update($updateData);
   }
+  /**
+   * | Get Paid List By Shop Id
+   */
+  public function getPaidListByShopId($shopId)
+  {
+    return self::select(
+      'shop_id',
+      'amount',
+      'pmt_mode as payment_mode',
+      DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date")
+    )
+      ->where('shop_id', $shopId)
+      ->whereIN('payment_status', [1, 2])
+      // ->where(function($where){
+      //    $where->Orwhere("payment_status",1)
+      //    ->Orwhere("payment_status",2);
+      // })
+      ->get();
+  }
 }

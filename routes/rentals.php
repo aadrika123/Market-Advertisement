@@ -45,20 +45,21 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/generate-shop-demand', 'generateShopDemand');                                                    // 18  (Generate shop demand)
         Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');                                                          // 19  (payment by cheque or dd )
         Route::post('rental/generate-shop-demand_bill', 'generateShopDemandBill');                                               // 20 (Generate shop demand bill  )
-        Route::post('rental/calculate-shop-rate-month-wise', 'calculateShopRateMonhtlyWise');                               // 21 Calculate Shop Amount According to month wise 
-        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                            // 22 Get Shop Payment Receipt For Bluetooth Printer
-        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');                                         // 23 Update Data After Cheque is clear or bounce 
-        Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');                                                // 24  List Entry Cheque/DD Details Data  
-        Route::post('rental/list-cash-verification', 'listCashVerification');                                               // 25 List Cash Verification  
-        Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                                 // 26  List Details Cash Verification User wise 
-        Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                                 // 25  Verified Cash Payment 
-        Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                              // 26 List Circle Wise Market
-        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');                                              // 12  Search Shop Data For Payment
-        Route::post('rental/generate-all-shop-demands', 'generateAllShopDemand');                                           // 12  Search Shop Data For Payment
-        Route::post('rental/transaction-deactivation', 'transactionDeactivation');                                          // 44  Deactive Transaction
-        Route::post('rental/shop-master', 'shopMaster');                                                                    // 11  Get Shop Master Data
-        Route::post('rental/edit-shop-data', 'editShopData');                                                               // 18  Edit Shop Details Data
-        Route::post('rental/list-shop-demand', 'listShopDemand');                                                           // 18  Edit Shop Details Data
+        Route::post('rental/calculate-shop-rate-month-wise', 'calculateShopRateMonhtlyWise');                               // 20 Calculate Shop Amount According to month wise 
+        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                            // 21  Get Shop Payment Receipt For Bluetooth Printer
+        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');                                         // 22 Update Data After Cheque is clear or bounce 
+        Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');                                                // 23  List Entry Cheque/DD Details Data  
+        Route::post('rental/list-cash-verification', 'listCashVerification');                                               // 24 List Cash Verification  
+        Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                                 // 25  List Details Cash Verification User wise 
+        Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                                 // 26  Verified Cash Payment 
+        Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                              // 27 List Circle Wise Market
+        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');                                              // 28  Search Shop Data For Payment
+        Route::post('rental/generate-all-shop-demands', 'generateAllShopDemand');                                           // 29  Search Shop Data For Payment
+        Route::post('rental/transaction-deactivation', 'transactionDeactivation');                                          // 30  Deactive Transaction
+        Route::post('rental/shop-master', 'shopMaster');                                                                    // 31  Get Shop Master Data
+        Route::post('rental/edit-shop-data', 'editShopData');                                                               // 32  Edit Shop Details Data
+        Route::post('rental/list-shop-demand', 'listShopDemand');                                                           // 33  Edit Shop Details Data
+        Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                          // 34  ( Generate Payment Order ID)
     });
 
     /**
@@ -83,6 +84,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
         Route::post('rental/toll-reciept', 'tollReciept');                                                                // 14  ( Get Toll Reciept )
         Route::post('rental/generate-toll-demand', 'generateTollDemand');                                                 // 17  (Generate toll demand)
+        // Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                         // 25 ( Generate Payment Order ID)
 
     });
 
