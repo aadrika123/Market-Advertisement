@@ -150,7 +150,7 @@ class MarToll extends Model
             ->leftjoin('mar_toll_payments as mtp', 'mar_tolls.last_tran_id', '=', 'mtp.id')
             ->join('ulb_masters as ulb', 'mar_tolls.ulb_id', '=', 'ulb.id')
             ->join('users as user', 'mtp.user_id', '=', 'user.id')
-            ->where('mar_tolls.id', $id)
+            ->where('mtp.id', $id)
             ->first();
     }
 }

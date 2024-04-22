@@ -589,9 +589,9 @@ class TollsController extends Controller
         // Business Logics
         try {
             $shopPmtBll->tollDemand($request);
-            $shopDetails = MarToll::find($request->shopId);
+            $tollDetails = MarToll::find($request->shopId);
             DB::commit();
-            return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+            return responseMsgs(true, "Demand Generate Successfully", ['shopNo' => $tollDetails->toll_no], "055001", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
