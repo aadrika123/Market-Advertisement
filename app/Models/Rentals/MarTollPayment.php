@@ -84,6 +84,7 @@ class MarTollPayment extends Model
   public function getTollPayment($tollId)
   {
     return self::select(
+      'mar_toll_payments.id',
       'mar_toll_payments.amount',
       'mar_tolls.vendor_name',
       'mar_toll_payments.pmt_mode',
