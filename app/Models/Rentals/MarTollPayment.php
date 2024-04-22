@@ -44,7 +44,7 @@ class MarTollPayment extends Model
   {
     return self::select('amount')
       ->where('ulb_id', $ulbId);
-      // ->where('payment_date', $date);
+    // ->where('payment_date', $date);
   }
 
   /**
@@ -76,5 +76,23 @@ class MarTollPayment extends Model
       "reciepts" => $req->reciepts,
       "absolute_path" => $req->absolutePath,
     ];
+  }
+
+  /**
+   *|get toll payments list 
+   */
+  public function getTollPayment($tollId)
+  {
+    return self::select(
+      'mar_toll_payments.amount',
+      'mar_tolls.vendor_name',
+      'mar_toll_payments.pmt_mode',
+      'mar_toll_payments.from_date',
+      'mar_toll_payments.to_date',
+    )
+      ->join('mar_tolls', 'mar_tolls.id', 'mar_toll_payments.toll_id')
+      ->where('mar_toll_payments.toll_id', $tollId)
+      ->where('mar_toll_payments.is_active', true)
+      ->get();
   }
 }

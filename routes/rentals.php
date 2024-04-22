@@ -84,8 +84,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
         Route::post('rental/toll-reciept', 'tollReciept');                                                                // 14  ( Get Toll Reciept )
         Route::post('rental/generate-toll-demand', 'generateTollDemand');                                                 // 17  (Generate toll demand)
-        // Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                         // 25 ( Generate Payment Order ID)
-
+        // Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                     // 25 ( Generate Payment Order ID)
+        Route::post('rental/toll/generate-payment-order-id', 'generatePaymentOrderId');                                        // 34  ( Generate Payment Order ID)
+        Route::post('rental/toll-reciept-list', 'tollRecieptList');
     });
 
 

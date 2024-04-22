@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class TollsController extends Controller
@@ -594,6 +595,80 @@ class TollsController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
+
+
+    /**
+     * | Generate Payment Order ID
+     * | @param Request $req
+     * | Function - 22
+     * | Api- 21
+     */
+    public function generatePaymentOrderId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+            // Variable initialization
+            $mMarShopPayment = MarTollPayment::find($req->id);
+            $reqData = [
+                "id" => $mMarShopPayment->id,
+                'amount' => $mMarShopPayment->amount,
+                'workflowId' => $mMarShopPayment->workflow_id ?? 0,
+                'ulbId' => $mMarShopPayment->ulb_id,
+                'departmentId' => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                'auth' => $req->auth,
+            ];
+            $paymentUrl = Config::get('constants.PAYMENT_URL');
+            $refResponse = Http::withHeaders([
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->bearerToken())
+                ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
+
+            $data = json_decode($refResponse);
+            $data = $data->data;
+            if (!$data)
+                throw new Exception("Payment Order Id Not Generate");
+
+            $data->name = $mMarShopPayment->applicant;
+            $data->email = $mMarShopPayment->email;
+            $data->contact = $mMarShopPayment->mobile_no;
+            $data->type = "Municipal Rental Toll";
+            // return $data;
+
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050421", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
+    /**
+     * |toll recipt list by Toll Id
+     */
+    public function tollRecieptList(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tollId' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+            $mMarTollPayment = new MarTollPayment();
+            $mMarToll = MarToll::find($request->tollId);
+            $tollId = $mMarToll->id;
+            $data = $mMarTollPayment->getTollPayment($tollId);
+            // $data['paymentList'] = collect($data);
+
+            return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
 }

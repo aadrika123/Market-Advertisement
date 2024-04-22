@@ -1242,6 +1242,7 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $request->deviceId);
         }
     }
+
     /**
      * | Generate Payment Order ID
      * | @param Request $req
@@ -1258,15 +1259,13 @@ class ShopController extends Controller
         }
         try {
             // Variable initialization
-            $shop = $req->id;
-
             $mMarShopPayment = ShopPayment::find($req->id);
             $reqData = [
                 "id" => $mMarShopPayment->id,
                 'amount' => $mMarShopPayment->amount,
-                // 'workflowId' => $mMarShopPayment->workflow_id,
+                'workflowId' => $mMarShopPayment->workflow_id ?? 0,
                 'ulbId' => $mMarShopPayment->ulb_id,
-                // 'departmentId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'departmentId' => Config::get('workflow-constants.MARKET_MODULE_ID'),
                 'auth' => $req->auth,
             ];
             $paymentUrl = Config::get('constants.PAYMENT_URL');
@@ -1284,7 +1283,7 @@ class ShopController extends Controller
             $data->name = $mMarShopPayment->applicant;
             $data->email = $mMarShopPayment->email;
             $data->contact = $mMarShopPayment->mobile_no;
-            $data->type = "Private Lands";
+            $data->type = "Municipal Rental";
             // return $data;
 
             return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050421", "1.0", responseTime(), "POST", $req->deviceId ?? "");
