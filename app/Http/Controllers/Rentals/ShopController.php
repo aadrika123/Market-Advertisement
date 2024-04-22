@@ -506,9 +506,6 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->getShopDetailById($req->shopId);
-            if ($list->isEmpty()) {
-                throw new Exception('Shop Details Not Found');
-            }
             return responseMsgs(true, "Shop Details Fetch Successfully !!!", $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);

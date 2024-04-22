@@ -41,6 +41,7 @@ class MarShopDemand extends Model
         return self::where('shop_id', $shopId)
             ->where('status', true)
             ->where('payment_status', 0)
+            ->orderBy('monthly','Asc')
             ->get();
     }
 }
