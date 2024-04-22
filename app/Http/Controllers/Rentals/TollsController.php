@@ -608,19 +608,20 @@ class TollsController extends Controller
     public function generatePaymentOrderId(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required'
+            'id'    => 'required',
+            'amount'
         ]);
         if ($validator->fails()) {
             return $validator->errors();
         }
         try {
             // Variable initialization
-            $mMarShopPayment = MarTollPayment::find($req->id);
+            $mMarToll = MarToll::find($req->id);
             $reqData = [
-                "id" => $mMarShopPayment->id,
-                'amount' => $mMarShopPayment->amount,
-                'workflowId' => $mMarShopPayment->workflow_id ?? 0,
-                'ulbId' => $mMarShopPayment->ulb_id,
+                "id" => $mMarToll->id,
+                'amount' => $req->amount,
+                'workflowId' => 0,
+                'ulbId' => $mMarToll->ulb_id,
                 'departmentId' => Config::get('workflow-constants.MARKET_MODULE_ID'),
                 'auth' => $req->auth,
             ];
@@ -636,9 +637,9 @@ class TollsController extends Controller
             if (!$data)
                 throw new Exception("Payment Order Id Not Generate");
 
-            $data->name = $mMarShopPayment->applicant;
-            $data->email = $mMarShopPayment->email;
-            $data->contact = $mMarShopPayment->mobile_no;
+            $data->name = $mMarToll->vendor_name;
+            $data->email = $mMarToll->email;
+            $data->contact = $mMarToll->mobile_no;
             $data->type = "Municipal Rental Toll";
             // return $data;
 

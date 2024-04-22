@@ -66,8 +66,10 @@ class ShopController extends Controller
         try {
             $shopPmtBll->shopPayment($req);
             $shopDetails = Shop::find($req->shopId);
+            $response = $shopPmtBll->shopPayment($req);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", ['shopNo' => $shopDetails->shop_no], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            $tranId = isset($response['tranId']) ? $response['tranId'] : null;
+            return responseMsgs(true, "Payment Done Successfully", ['tranId' => $tranId], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
