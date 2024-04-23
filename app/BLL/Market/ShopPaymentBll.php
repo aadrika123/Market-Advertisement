@@ -216,10 +216,12 @@ class ShopPaymentBll
                 try{
                     $respons = $this->shopDemand($newReq);
                     $exrow["status"]="Success";
-                    // DB::commit();
+                    DB::commit();
+                    DB::commit();
                 }
                 catch(Exception $e)
                 {
+                    DB::rollBack();
                     DB::rollBack();
                     $exrow["status"]="Faild";
                     $exrow["error"]=$e->getMessage();
