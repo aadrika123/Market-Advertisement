@@ -27,6 +27,14 @@ class MarShopDemand extends Model
     {
         return self::select('monthly', 'amount')->where('shop_id', $shopId)->where('monthly', '<=', $month)->where('payment_status', '0')->orderBy('monthly', 'ASC')->get();
     }
+
+    /**
+     * | Get Generated Demand Details Pay Before
+     */
+    public function demandDtls($shopId, $month)
+    {
+        return self::select('id','ulb_id','monthly', 'amount')->where('shop_id', $shopId)->where('monthly', '=', $month)->where('payment_status', '0')->orderBy('monthly', 'ASC')->first();
+    }
     /**
      * | Get Generated Demand Details Shop Wise
      */

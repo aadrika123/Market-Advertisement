@@ -14,6 +14,7 @@ use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
 use App\Models\Rentals\ShopPayment;
+use App\Models\Rentals\ShopRazorpayRequest;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -1234,19 +1235,26 @@ class ShopController extends Controller
     public function generatePaymentOrderId(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required'
+            'id' => 'required',
+            'month' => 'required'
         ]);
         if ($validator->fails()) {
             return $validator->errors();
         }
         try {
             // Variable initialization
-            $mMarShopPayment = ShopPayment::find($req->id);
+            $mMarShopDemand   = new MarShopDemand();
+            $mShopRazorpayRequest = new ShopRazorpayRequest();
+            $getDemandDetails = $mMarShopDemand->demandDtls($req->id, $req->month);
+            if (!$getDemandDetails) {
+                throw new Exception('Demand Not Found');
+            }
+            // $totalAmount      = round($getDemandDetails->pluck('amount')->sum());
             $reqData = [
-                "id" => $mMarShopPayment->id,
-                'amount' => $mMarShopPayment->amount,
-                'workflowId' => $mMarShopPayment->workflow_id ?? 0,
-                'ulbId' => $mMarShopPayment->ulb_id,
+                "id" => $getDemandDetails->id,
+                'amount' => $getDemandDetails->amount,
+                'workflowId' => $getDemandDetails->worklflow_id ?? 0,
+                'ulbId' => $getDemandDetails->ulb_id ?? 2,
                 'departmentId' => Config::get('workflow-constants.MARKET_MODULE_ID'),
                 'auth' => $req->auth,
             ];
@@ -1257,18 +1265,24 @@ class ShopController extends Controller
                 ->withToken($req->bearerToken())
                 ->post($paymentUrl . 'api/payment/generate-orderid', $reqData);
 
-            $data = json_decode($refResponse);
-            $data = $data->data;
-            if (!$data)
-                throw new Exception("Payment Order Id Not Generate");
+            $orderData = json_decode($refResponse);
+            if ($orderData->status == false) {
+                throw new Exception(collect($orderData->message)->first());
+            }
 
-            $data->name = $mMarShopPayment->applicant;
-            $data->email = $mMarShopPayment->email;
-            $data->contact = $mMarShopPayment->mobile_no;
-            $data->type = "Municipal Rental";
+            $refPaymentRequest = [
+                "order_id"       => $orderData->data->orderId,
+                "application_id" => $orderData->data->applicationId,
+                // "workflow_id"    => $orderData->data->workflowId,
+                "department_id"  => $orderData->data->departmentId,
+                "total_amount"   => $orderData->data->amount,
+                "amount"         => $mMarShopDemand->amount,
+                "penalty_amount" => $mMarShopDemand->amount,
+            ];
+            $mShopRazorpayRequest->store($refPaymentRequest);
             // return $data;
 
-            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $data, "050421", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Payment OrderId Generated Successfully !!!", $orderData->data, "050421", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $req->deviceId ?? "");
         }
@@ -1289,18 +1303,17 @@ class ShopController extends Controller
             return $validator->errors();
         }
         try {
-            $mMarTollPayment = new shopPayment();
-            $mMarToll = Shop::find($request->shopId);
-            if(!$mMarToll)
-            {
+            $mMarShopPayment = new shopPayment();
+            $mMarShop = Shop::find($request->shopId);
+            if (!$mMarShop) {
                 throw new Exception("Data Not Found!");
             }
-            $shopId = $mMarToll->id;
-            $data = $mMarTollPayment->getshopPayment($shopId);
+            $shopId = $mMarShop->id;
+            $data = $mMarShopPayment->getshopPayment($shopId);
             if (collect($data)->isEmpty()) {
                 return responseMsgs(false, "Payment Receipt not Found !!!", [], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
             }
-            return responseMsgs(true, "Payment List !!!",$data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }

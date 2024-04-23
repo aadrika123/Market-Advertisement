@@ -238,6 +238,11 @@ class ShopPaymentBll
             dd("fatel Error",$e->getMessage(),$e->getFile(),$e->getLine());
         }
     }
+
+    /**
+     * | generate shop demands monthly
+     * | 
+     */
     public function shopDemand($req)
     {
         // Get the current month

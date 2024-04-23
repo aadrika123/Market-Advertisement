@@ -663,15 +663,17 @@ class TollsController extends Controller
         try {
             $mMarTollPayment = new MarTollPayment();
             $mMarToll = MarToll::find($request->tollId);
+            if (!$mMarToll) {
+                throw new Exception("Data Not Found!");
+            }
             $tollId = $mMarToll->id;
             $data = $mMarTollPayment->getTollPayment($tollId);
-            if (collect($data)->isEmpty())
-            throw new Exception("Payment Details Not Found");
-            // $data['paymentList'] = collect($data);
-
+            if (collect($data)->isEmpty()) {
+                return responseMsgs(false, "Payment Receipt not Found !!!", [], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            }
             return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
 }
