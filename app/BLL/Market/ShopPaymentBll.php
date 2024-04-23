@@ -9,6 +9,8 @@ use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopPayment;
 use Carbon\Carbon;
 use Exception;
+use GrahamCampbell\ResultType\Success;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -186,6 +188,54 @@ class ShopPaymentBll
      * | Shop demand
      * | @param Request $req
      */
+    public function getActiveShop(Request $req)
+    {
+        try{
+            $currentYm = Carbon::now()->format("Y-m");
+            $sql = "with demand_genrated as (
+                select distinct shop_id
+                from mar_shop_demands
+                where status =1 and  TO_CHAR(cast(monthly as date),'YYYY-MM') = TO_CHAR(CURRENT_DATE,'YYYY-MM')
+            )
+            select id
+            from mar_shops
+            left join demand_genrated on demand_genrated.shop_id = mar_shops.id
+            where status =1 AND demand_genrated.shop_id IS null ";
+            $data = DB::select($sql);
+            $excelData=[
+                "shopId","status","errors","response",
+            ];
+            $size = collect($data)->count("id");
+            foreach($data as $key=>$val)
+            {
+                DB::beginTransaction();
+                echo"=========index( ".$key." [remain---->".($size - $key)."]  ".$val->id.")===========\n\n";
+                $newReq = new Request(["shopId"=>$val->id]);
+                $exrow["shopId"]=$val->id;
+                $respons = null;
+                try{
+                    $respons = $this->shopDemand($newReq);
+                    $exrow["status"]="Success";
+                    // DB::commit();
+                }
+                catch(Exception $e)
+                {
+                    DB::rollBack();
+                    $exrow["status"]="Faild";
+                    $exrow["error"]=$e->getMessage();
+                }
+                echo("=======".$exrow["status"]."=======\n\n");
+                $exrow["response"]=json_decode($respons??"");
+                array_push($excelData,$exrow);
+            }
+            echo"=========end===========\n";
+            print_var($excelData);
+        }
+        catch(Exception $e)
+        {
+            dd("fatel Error",$e->getMessage(),$e->getFile(),$e->getLine());
+        }
+    }
     public function shopDemand($req)
     {
         // Get the current month

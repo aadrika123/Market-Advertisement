@@ -1291,14 +1291,18 @@ class ShopController extends Controller
         try {
             $mMarTollPayment = new shopPayment();
             $mMarToll = Shop::find($request->shopId);
+            if(!$mMarToll)
+            {
+                throw new Exception("Data Not Found!");
+            }
             $shopId = $mMarToll->id;
             $data = $mMarTollPayment->getshopPayment($shopId);
             if (collect($data)->isEmpty()) {
                 return responseMsgs(false, "Payment Receipt not Found !!!", [], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
             }
-            return responseMsgs(true, "Payment List !!!", ['data' => [$data]], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            return responseMsgs(true, "Payment List !!!",$data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
     /**
