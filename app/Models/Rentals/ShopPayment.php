@@ -295,7 +295,40 @@ class ShopPayment extends Model
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('mar_shop_payments.shop_id', $shopId)
       ->where('mar_shop_payments.is_active', 1)
-      ->orderBy('mar_shop_payments.id','Desc')
+      ->orderBy('mar_shop_payments.id', 'Desc')
       ->get();
+  }
+
+  /**
+   * | List of shop collection between two given date
+   */
+  public function listShopCollection($fromDate, $toDate)
+  {
+    return DB::table('mar_shop_payments')
+      ->select(
+        'mar_shop_payments.amount',
+        'mar_shop_payments.transaction_no as tran_number',
+        'mar_shop_payments.user_id as collected_by',
+        DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+        'mar_shop_payments.paid_from',
+        'mar_shop_payments.paid_to',
+        // 't2.shop_category_id',
+        't2.shop_no as shop_no',
+        't2.allottee',
+        't2.market_id',
+        't2.allottee as ownerName',
+        // 'mst.shop_type',
+        'mkt.market_name',
+        'mc.circle_name',
+        'mar_shop_payments.pmt_mode as paymentMode'
+
+      )
+      ->leftjoin('mar_shops as t2', 't2.id', '=', 'mar_shop_payments.shop_id')
+      // ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
+      ->leftjoin('m_circle as mc', 'mc.id', '=', 't2.circle_id')
+      ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
+      ->where('mar_shop_payments.payment_date', '>=', $fromDate)
+      ->where('mar_shop_payments.payment_date', '<=', $toDate)
+      ->whereIn('mar_shop_payments.payment_status', [1, 2]);
   }
 }

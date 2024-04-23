@@ -32,6 +32,7 @@ class ShopController extends Controller
      * | Created On-14-06-2023 
      * | Created By - Anshu Kumar
      * | Change By - Bikash Kumar
+     * | Change By - Arshad Hussain
      */
     private $_mShops;
     private $_tranId;
@@ -74,48 +75,7 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-    /**
-     * | Entry Cheque or DD For Payment
-     * | API - 14
-     * | Function - 14
-     */
-    public function entryCheckOrDD(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'shopId' => 'required|integer',
-            'bankName' => 'required|string',
-            'branchName' => 'required|string',
-            'chequeNo' => $req->ddNo == NULL ? 'required|' : 'nullable|',
-            'ddNo' => $req->chequeNo == NULL ? 'required|numeric' : 'nullable|numeric',
-            "month" => 'required|string',
-            "paymentMode" => 'required|string',
-            "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(3)->format('d-m-Y'),
-            'photo'  =>   'nullable|image|mimes:jpg,jpeg,png',
-        ]);
-        if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
-        }
-        try {
-            $docUpload = new DocumentUpload;
-            $relativePath = Config::get('constants.SHOP_PATH');
-            if (isset($req->photo)) {
-                $image = $req->file('photo');
-                $refImageName = 'Shop-cheque-1' . $req->allottee;
-                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                $imageName1Absolute = $relativePath;
-            }
-            $req->merge(['photo_path' => $imageName1 ?? ""]);
-            $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
-            $mMarShopPayment = new ShopPayment();
-            DB::beginTransaction();
-            $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
-            DB::commit();
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
+
 
 
     /**
@@ -711,6 +671,8 @@ class ShopController extends Controller
 
     /**
      * |Shop demand generation 
+     * |Funtion - 18
+     * | API - 18
      * | made by Arshad 
      */
     public function generateShopDemand(Request $request)
@@ -734,7 +696,8 @@ class ShopController extends Controller
     }
     /**
      * |Shop demand generation 
-     * |
+     * | Function - 19
+     * | API - 19
      */
     public function generateAllShopDemand(Request $request)
     {
@@ -766,6 +729,8 @@ class ShopController extends Controller
 
     /**
      * | Generate Demand Reciept Details Before Payment
+     * | Function - 20
+     * | API - 20
      */
     public function generateShopDemandBill(Request $req)
     {
@@ -802,6 +767,8 @@ class ShopController extends Controller
 
     /**
      * | Calculate Shop rate monthly Wise
+     * | Funtcion -21
+     * | API - 21 
      */
     public function calculateShopRateMonhtlyWise(Request $req)
     {
@@ -822,6 +789,8 @@ class ShopController extends Controller
     }
     /**
      * | Get Shop Payment Reciept By Demand ID 
+     * | Funtcion - 22
+     * | API - 22
      */
     public function shopPaymentRecieptBluetoothPrint(Request $req)
     {
@@ -887,8 +856,8 @@ class ShopController extends Controller
     }
     /**
      * | Clear or Bounce Cheque or DD (i.e. After Bank Reconsile )
-     * | API - 16
-     * | Function - 16
+     * | API - 23
+     * | Function - 23
      */
     public function clearOrBounceChequeOrDD(Request $req)
     {
@@ -948,6 +917,8 @@ class ShopController extends Controller
 
     /**
      * | List Cash Verification userwise
+     * | Function - 24
+     * | API - 24
      */
     public function listCashVerification(Request $req)
     {
@@ -987,8 +958,8 @@ class ShopController extends Controller
 
     /**
      * | List Cash Verification Details by TC or Userwise
-     * | API - 27
-     * | Function - 27
+     * | API - 25
+     * | Function - 25
      */
     public function listDetailCashVerification(Request $req)
     {
@@ -1047,6 +1018,8 @@ class ShopController extends Controller
 
     /**
      * | List cheque or DD For Clearance
+     * | Function - 26 
+     * | API - 26
      */
     public function listEntryCheckorDD(Request $req)
     {
@@ -1072,6 +1045,8 @@ class ShopController extends Controller
 
     /**
      * | Verified Payment one or more than one
+     * | Function - 27
+     * | API - 27
      */
     public function verifiedCashPayment(Request $req)
     {
@@ -1091,6 +1066,8 @@ class ShopController extends Controller
 
     /**
      * | Search Shop For Payment
+     * | Function - 28
+     * | API - 28
      */
     public function searchShopForPayment(Request $req)
     {
@@ -1118,6 +1095,8 @@ class ShopController extends Controller
     }
     /**
      * | Transaction Deactivation 
+     * | Function - 29
+     * | API - 29
      */
     public function transactionDeactivation(Request $req)
     {
@@ -1144,8 +1123,8 @@ class ShopController extends Controller
     }
     /**
      * | get Shop Master Data
-     * | API - 11
-     * | Function - 11
+     * | API - 30
+     * | Function - 30
      */
     public function shopMaster(Request $req)
     {
@@ -1169,8 +1148,8 @@ class ShopController extends Controller
 
     /**
      * | Edit Shop Data For Contact Number
-     * | API - 18
-     * | Function - 18
+     * | API - 31
+     * | Function - 31
      */
     public function editShopData(Request $req)
     {
@@ -1221,6 +1200,8 @@ class ShopController extends Controller
 
     /**
      * |list shop demand 
+     * | Function - 32
+     * | API - 32
      */
     public function listShopDemand(Request $request)
     {
@@ -1247,8 +1228,8 @@ class ShopController extends Controller
     /**
      * | Generate Payment Order ID
      * | @param Request $req
-     * | Function - 22
-     * | Api- 21
+     * | Function - 33
+     * | Api- 33
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -1296,6 +1277,8 @@ class ShopController extends Controller
 
     /**
      * |shop recipt list by Toll Id
+     * | Function - 34
+     * | API - 34
      */
     public function shopRecieptList(Request $request)
     {
@@ -1310,85 +1293,105 @@ class ShopController extends Controller
             $mMarToll = Shop::find($request->shopId);
             $shopId = $mMarToll->id;
             $data = $mMarTollPayment->getshopPayment($shopId);
-            if (collect($data)->isEmpty())
-                throw new Exception("Payment Details Not Found");
-
-            return responseMsgs(true, "Payment List !!!", $data, "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            if (collect($data)->isEmpty()) {
+                return responseMsgs(false, "Payment Receipt not Found !!!", [], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            }
+            return responseMsgs(true, "Payment List !!!", ['data' => [$data]], "050421", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
+    /**
+     * | List shop Collection between two dates
+     * | API - 35
+     * | Function - 35
+     */
+    public function listShopCollection(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'  => 'nullable'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        // return $req->all();
+        try {
+            $paymentMode = null;
+            if (!isset($req->fromDate))
+                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
+            else
+                $fromDate = $req->fromDate;
+            if (!isset($req->toDate))
+                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
+            else
+                $toDate = $req->toDate;
 
-
-    // /**
-    //  * | Get Consumer Payment History 
-    //  * | Collect All the transaction relate to the respective Consumer 
-    //  * | @param request
-    //  * | @var mWaterTran
-    //  * | @var mWaterConsumer
-    //  * | @var mWaterConsumerDemand
-    //  * | @var mWaterTranDetail
-    //  * | @var transactions
-    //  * | @var waterDtls
-    //  * | @var waterTrans
-    //  * | @var applicationId
-    //  * | @var connectionTran
-    //  * | @return transactions  Consumer / Connection Data 
-    //     | Serial No : 01
-    //     | Working
-    //  */
-    // public function getConsumerPaymentHistory(Request $request)
-    // {
-    //     $validated = Validator::make(
-    //         $request->all(),
-    //         [
-    //             'consumerId' => 'required|digits_between:1,9223372036854775807'
-    //         ]
-    //     );
-    //     if ($validated->fails())
-    //         return validationError($validated);
-
-    //     try {
-    //         $mMarShopPayment             = new ShopPayment();
-    //         $mShop                       = new Shop();
-    //         $mMarShopDemand              = new MarShopDemand();
-    //         // $mWaterTranDetail            = new WaterTranDetail();
-    //         $transactions                = array();
-
-    //         # consumer Details
-    //         $waterDtls = $mShop->getShopDetailById($request->consumerId);
-    //         if (!$waterDtls)
-    //             throw new Exception("Shop Not Found!");
-
-    //         # if Consumer in made vie application
-    //         $applicationId = $waterDtls->apply_connection_id;
-    //         // if (!$applicationId)
-    //         //     throw new Exception("This Consumer has not ApplicationId!!");
-
-    //         # if demand transactions exist
-    //         $connectionTran = $applicationId ? $mMarShopPayment->getTransNo($applicationId, null)->get() : collect([]);                        // Water Connection payment History
-    //         $connectionTran = collect($connectionTran)->sortByDesc('id')->values();
-    //         // if((!$connectionTran->first() || is_null($connectionTran)) && $applicationId)
-    //         //     throw new Exception("Water Application's Transaction Details not Found!!");
-
-    //         # Application transactions
-    //         $waterTrans = $mMarShopPayment->ConsumerTransaction($request->consumerId)->get();         // Water Consumer Payment History
-    //         $waterTrans = collect($waterTrans)->map(function ($value) use ($mMarShopDemand) {
-    //             $demandId = $mWaterTranDetail->getDetailByTranId($value['id']);
-    //             $value['demand'] = $mWaterConsumerDemand->getDemandBydemandId($demandId['demand_id']);
-    //             return $value;
-    //         })->sortByDesc('id')->values();
-
-    //         $transactions['Consumer'] = $waterTrans;
-    //         $transactions['connection'] = $connectionTran;
-
-    //         return responseMsgs(true, "", remove_null($transactions), "", "01", "ms", "POST", $request->deviceId ?? "");
-    //     } catch (Exception $e) {
-    //         return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", "ms", "POST", "");
-    //     }
-    // }
-
-
+            if ($req->paymentMode) {
+                $paymentMode = $req->paymentMode;
+            }
+            $mMarShopPayment = new ShopPayment();
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
+            if ($req->shopCategoryId != 0)
+                $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
+            if ($req->paymentMode != 0)
+                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+            if ($req->marketId != 0)
+                $data = $data->where('t2.market_id', $req->marketId);
+            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
+                $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+            $list = paginator($data, $req);
+            $list['collectAmount'] = $data->sum('amount');
+            return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | Entry Cheque or DD For Payment
+     * | API - 36
+     * | Function - 36
+     */
+    public function entryCheckOrDD(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => $req->ddNo == NULL ? 'required|' : 'nullable|',
+            'ddNo' => $req->chequeNo == NULL ? 'required|numeric' : 'nullable|numeric',
+            "month" => 'required|string',
+            "paymentMode" => 'required|string',
+            "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(3)->format('d-m-Y'),
+            'photo'  =>   'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SHOP_PATH');
+            if (isset($req->photo)) {
+                $image = $req->file('photo');
+                $refImageName = 'Shop-cheque-1' . $req->allottee;
+                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
+                $imageName1Absolute = $relativePath;
+            }
+            $req->merge(['photo_path' => $imageName1 ?? ""]);
+            $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
+            $mMarShopPayment = new ShopPayment();
+            DB::beginTransaction();
+            $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
+            DB::commit();
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 
 
 
@@ -1396,7 +1399,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 18
+     * | Function - 37
      */
     public function shopIdGeneration($marketId)
     {
