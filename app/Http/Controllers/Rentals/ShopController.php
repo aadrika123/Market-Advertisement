@@ -1469,7 +1469,7 @@ class ShopController extends Controller
             DB::beginTransaction();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
             DB::commit();
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['tranId' => $res['tranId']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['tranId' => $res['lastTranId']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
