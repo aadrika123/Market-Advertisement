@@ -135,6 +135,7 @@ class ShopPayment extends Model
     // update shop table with payment transaction ID
     $mshop = Shop::find($createdPayment->shop_id);
     $mshop->last_tran_id = $createdPayment->id;
+    $tranId = $mshop->last_tran_id = $createdPayment->id;
     $mshop->save();
 
     // Get All Demand for cheque Payment
@@ -156,6 +157,7 @@ class ShopPayment extends Model
     $shop['shopDetails'] = $mshop;
     $shop['amount'] = $amount;
     $shop['lastTranId'] = $createdPayment->id;
+    $ret['tranId'] = $tranId;
     return $shop;
   }
 

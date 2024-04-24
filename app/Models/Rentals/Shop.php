@@ -148,6 +148,10 @@ class Shop extends Model
       'ulb.ulb_name',
       'ulb.toll_free_no',
       'ulb.current_website as website',
+      'msp.cheque_date',
+      'msp.cheque_no',
+      'msp.bank_name',
+      'msp.branch_name'
     )
       ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')

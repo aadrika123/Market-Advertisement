@@ -15,6 +15,7 @@ use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
 use App\Models\Rentals\ShopPayment;
 use App\Models\Rentals\ShopRazorpayRequest;
+use App\Models\Rentals\ShopRazorpayResponse;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -1227,10 +1228,8 @@ class ShopController extends Controller
     }
 
     /**
-     * | Generate Payment Order ID
-     * | @param Request $req
-     * | Function - 33
-     * | Api- 33
+     * | Initiate Online Payment
+         razor pay request store pending
      */
     public function generatePaymentOrderId(Request $req)
     {
@@ -1249,6 +1248,7 @@ class ShopController extends Controller
             if (!$getDemandDetails) {
                 throw new Exception('Demand Not Found');
             }
+            // if()
             // $totalAmount      = round($getDemandDetails->pluck('amount')->sum());
             $reqData = [
                 "id" => $getDemandDetails->id,
@@ -1287,6 +1287,72 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050421", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
+
+    /**
+     * | End Online Payment
+         razor pay response store pending
+     */
+    public function storeTransactionDtl(Request $req)
+    {
+        try {
+            $mShopPayment = new ShopPayment();
+            $mShopRazorpayRequest = new ShopRazorpayRequest();
+            $mShopRazorpayResponse = new ShopRazorpayResponse();
+            $mMarShopDemand = MarShopDemand::find($req->id);
+            if (!$mMarShopDemand)
+                throw new Exception("Application Not Found");
+
+            if ($mMarShopDemand->payment_status == 1)
+                throw new Exception("Payment Already Done");
+
+            $RazorPayRequest = $mShopRazorpayRequest->getRazorpayRequest($req);
+            if (!$RazorPayRequest) {
+                throw new Exception("Payment request data Not Found!");
+            }
+
+            $razorpayReqs = [
+                "razorpay_request_id" => $RazorPayRequest->id,
+                "order_id"            => $req->orderId,
+                "payment_id"          => $req->paymentId,
+                "application_id"      => $req->id,
+                "amount"              => $req->amount,
+                "workflow_id"         => $req->workflowId,
+                "transaction_no"      => $req->transactionNo,
+                "citizen_id"          => $req->userId,
+                "ulb_id"              => $req->ulbId,
+                "tran_date"           => date("Y-m-d", $req->tranDate),
+                "gateway_type"        => $req->gatewayType,
+                "department_id"       => $req->departmentId,
+            ];
+
+            $transanctionReqs = [
+                "application_id" => $req->id,
+                "tran_date"      => date("Y-m-d", $req->tranDate),
+                "tran_no"        => $req->transactionNo,
+                "amount_paid"    => $req->amount,
+                "payment_mode"   => $req->paymentMode,
+                "workflow_id"    => $req->workflowId,
+                "amount"         => $mMarShopDemand->payment_amount,
+                "penalty_amount" => $mMarShopDemand->penalty_amount,
+                "ulb_id"         => $req->ulbId,
+                "citizen_id"     => $req->userId,
+                "status"         => 1,
+            ];
+
+            DB::beginTransaction();
+            $mShopRazorpayResponse->store($razorpayReqs);
+            $mShopPayment->store($transanctionReqs);
+            $mMarShopDemand->update(["payment_status" => 1]);
+            $RazorPayRequest->update(["status" => 1]);
+            DB::commit();
+
+            return responseMsgs(true, "Data Received", "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", 100117, 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
 
 
     /**
@@ -1403,7 +1469,7 @@ class ShopController extends Controller
             DB::beginTransaction();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
             DB::commit();
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['tranId' => $res['tranId']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
