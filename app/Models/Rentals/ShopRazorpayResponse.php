@@ -9,4 +9,9 @@ class ShopRazorpayResponse extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    public function store($req)
+    {
+        return ShopRazorpayResponse::create($req);
+    }
 }

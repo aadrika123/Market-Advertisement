@@ -16,4 +16,15 @@ class ShopRazorpayRequest extends Model
     {
         return ShopRazorpayRequest::create($req);
     }
+
+    /**
+     * |Get Razor Pay Request 
+     */
+    public function  getRazorpayRequest($req)
+    {
+        return ShopRazorpayRequest::where('order_id', $req->orderId)
+            ->where('application_id', $req->id)
+            ->where('status', 2)
+            ->first();
+    }
 }

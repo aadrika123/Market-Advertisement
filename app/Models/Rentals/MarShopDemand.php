@@ -25,7 +25,7 @@ class MarShopDemand extends Model
      */
     public function payBeforeDemand($shopId, $month)
     {
-        return self::select('monthly', 'amount')->where('shop_id', $shopId)->where('monthly', '<=', $month)->where('payment_status', '0')->orderBy('monthly', 'ASC')->get();
+        return self::select('monthly', 'amount')->where('id', $shopId)->where('monthly', '<=', $month)->where('payment_status', '0')->orderBy('monthly', 'ASC')->get();
     }
 
     /**

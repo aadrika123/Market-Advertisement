@@ -14,6 +14,13 @@ class ShopPayment extends Model
   protected $guarded = [];
   protected $table = 'mar_shop_payments';
 
+  # store payment 
+  public function store($req)
+  {
+    $tranDtl = ShopPayment::create($req);
+    return $tranDtl;
+  }
+
   /**
    * | Get Payment List
    */

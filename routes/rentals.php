@@ -59,9 +59,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-master', 'shopMaster');                                                                    // 31  Get Shop Master Data
         Route::post('rental/edit-shop-data', 'editShopData');                                                               // 32  Edit Shop Details Data
         Route::post('rental/list-shop-demand', 'listShopDemand');                                                           // 33  Edit Shop Details Data
-        Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                          // 34  ( Generate Payment Order ID)
+        Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                          // 34  (Initiate Online Payments)
         Route::post('rental/shop-reciept-list', 'shopRecieptList');                                                         // 35  Shop receipt 
-        Route::post('rental/list-shop-collection', 'listShopCollection');                                                   // 36 List Shop Collection
+        Route::post('rental/list-shop-collection', 'listShopCollection');                                                   // 36  List Shop Collection
+        Route::post('rental/save-tran-dtl', 'storeTransactionDtl');                                                                // 37  END Online Payment
     });
 
     /**

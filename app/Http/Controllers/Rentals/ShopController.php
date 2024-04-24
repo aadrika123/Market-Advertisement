@@ -1296,9 +1296,14 @@ class ShopController extends Controller
     {
         try {
             $mShopPayment = new ShopPayment();
+            $mMarShopDemand   = new MarShopDemand();
             $mShopRazorpayRequest = new ShopRazorpayRequest();
             $mShopRazorpayResponse = new ShopRazorpayResponse();
-            $mMarShopDemand = MarShopDemand::find($req->id);
+
+            $getDemandDetails = $mMarShopDemand->demandDtls($req->id, $req->month);
+            if (!$getDemandDetails) {
+                throw new Exception('Demand Not Found');
+            }
             if (!$mMarShopDemand)
                 throw new Exception("Application Not Found");
 
@@ -1326,17 +1331,17 @@ class ShopController extends Controller
             ];
 
             $transanctionReqs = [
-                "application_id" => $req->id,
-                "tran_date"      => date("Y-m-d", $req->tranDate),
-                "tran_no"        => $req->transactionNo,
-                "amount_paid"    => $req->amount,
-                "payment_mode"   => $req->paymentMode,
-                "workflow_id"    => $req->workflowId,
-                "amount"         => $mMarShopDemand->payment_amount,
-                "penalty_amount" => $mMarShopDemand->penalty_amount,
-                "ulb_id"         => $req->ulbId,
-                "citizen_id"     => $req->userId,
-                "status"         => 1,
+                "shop_id"           => $req->id,
+                "payment_date"      => date("Y-m-d", $req->tranDate),
+                "transaction_no"    => $req->transactionNo,
+                "amount"            => $req->amount,
+                "pmt_mode"          => $req->paymentMode,
+                "workflow_id"       => $req->workflowId,
+                "amount"            => $mMarShopDemand->payment_amount,
+                "penalty_amount"    => $mMarShopDemand->penalty_amount,
+                "ulb_id"            => $req->ulbId,
+                "citizen_id"        => $req->userId,
+                "status"            => 1,
             ];
 
             DB::beginTransaction();

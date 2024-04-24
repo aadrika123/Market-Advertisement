@@ -98,15 +98,23 @@ class Shop extends Model
       'mc.circle_name',
       'mm.market_name',
       DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      DB::raw("CASE WHEN demand_genrated.shop_id IS NULL THEN TRUE ELSE FALSE END AS can_generate_demand"),
       'msp.amount as last_payment_amount'
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
-      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->leftJoin(DB::raw("
+        (SELECT DISTINCT shop_id
+         FROM mar_shop_demands
+         WHERE status = 1
+         AND TO_CHAR(cast(monthly as date),'YYYY-MM') = TO_CHAR(CURRENT_DATE,'YYYY-MM')
+        ) AS demand_genrated"), 'demand_genrated.shop_id', '=', 'mar_shops.id')
       ->where('mar_shops.market_id', $marketid)
       ->where('mar_shops.status', '1')
       ->orderByDesc('mar_shops.id');
   }
+
 
   /**
    * | Get Shop Details By Market  Id
