@@ -62,7 +62,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                          // 34  (Initiate Online Payments)
         Route::post('rental/shop-reciept-list', 'shopRecieptList');                                                         // 35  Shop receipt 
         Route::post('rental/list-shop-collection', 'listShopCollection');                                                   // 36  List Shop Collection
-        Route::post('rental/save-tran-dtl', 'storeTransactionDtl');                                                                // 37  END Online Payment
+        Route::post('rental/save-tran-dtl', 'storeTransactionDtl');                                                         // 37  END Online Payment
+        Route::post('rental/search-shop-by-parameters', 'searchShopPipeline');                                              // 37  END Online Payment
     });
 
     /**

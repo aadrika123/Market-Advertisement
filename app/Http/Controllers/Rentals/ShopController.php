@@ -16,6 +16,7 @@ use App\Models\Rentals\ShopConstruction;
 use App\Models\Rentals\ShopPayment;
 use App\Models\Rentals\ShopRazorpayRequest;
 use App\Models\Rentals\ShopRazorpayResponse;
+use App\Pipelines\Rentals\SearchByShopAlottee;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Traits\ShopDetailsTraits;
 use Carbon\Carbon;
+use Illuminate\Pipeline\Pipeline;
 
 class ShopController extends Controller
 {
@@ -1480,6 +1482,45 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * |search for shop payment
+     */
+    public function searchShopPipeline(Request $request)
+    {
+        // Define validation rules
+        $validated = Validator::make($request->all(), [
+            'allottee'  => 'nullable',
+            'shopNo'     => 'nullable',
+            'pages'     => 'nullable',
+            'wardId'    => 'nullable',
+            'zoneId'    => 'nullable'
+        ]);
+
+        // Handle validation errors
+        if ($validated->fails()) {
+            return $this->validationError($validated);
+        }
+        try {
+            $refNo = 0;
+            $mShop = new Shop();
+            // Create a pipeline to process the search
+            $result = $mShop->searchShopForPaymentv1();
+            // $result = HoardingMaster::where('status',1);
+            // $mobile =  $this->_modelObj->getByItsDetailsV2($request, $key, $refNo, $request->auth['email']);
+            $result = app(Pipeline::class)
+                ->send($result)
+                ->through([
+                    SearchByShopAlottee::class,
+                ])
+                ->thenReturn()
+                ->first();
+            return responseMsgs(true, "Data According To Parameter!", remove_null($result), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
 
 
 
