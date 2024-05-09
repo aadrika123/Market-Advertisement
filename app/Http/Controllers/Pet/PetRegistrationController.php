@@ -371,53 +371,54 @@ class PetRegistrationController extends Controller
         $confPropertyType   = $this->_propertyType;
         $ownertype          = $this->_masterDetails['OWNER_TYPE_MST'];
 
-        switch ($req->applyThrough) {
-            case ($req->applyThrough == $confApplyThrough['Holding']):
-                $refPropDetails = $mPropProperty->getPropDtls()
-                    ->where('prop_properties.holding_no', $req->propertyNo)
-                    ->first();
-                if (is_null($refPropDetails)) {
-                    throw new Exception("property according to $req->propertyNo not found!");
-                }
-                if ($refPropDetails->prop_type_mstr_id != $confPropertyType['VACANT_LAND']) {
-                    $floorsDetails = $mPropFloor->getPropFloors($refPropDetails->id)->get();
-                    $isTenant = $this->getPropOccupancyType($floorsDetails);
-                    if ($req->ownerCategory == $ownertype['Tenant'] && $isTenant == false) {
-                        throw new Exception("Respective property dont have tenant!");
-                    }
-                }
-                if ($refPropDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
-                    throw new Exception("Pet cannot be applied in VACANT LAND!");
-                }
-                $returnDetails = [
-                    "tenant"        => $isTenant,
-                    "propDetails"   => $refPropDetails,
-                ];
-                break;
+        // commented because of property database is not present on live server
+        // switch ($req->applyThrough) {
+        //     case ($req->applyThrough == $confApplyThrough['Holding']):
+        //         $refPropDetails = $mPropProperty->getPropDtls()
+        //             ->where('prop_properties.holding_no', $req->propertyNo)
+        //             ->first();
+        //         if (is_null($refPropDetails)) {
+        //             throw new Exception("Property according to $req->propertyNo not found!");
+        //         }
+        //         if ($refPropDetails->prop_type_mstr_id != $confPropertyType['VACANT_LAND']) {
+        //             $floorsDetails = $mPropFloor->getPropFloors($refPropDetails->id)->get();
+        //             $isTenant = $this->getPropOccupancyType($floorsDetails);
+        //             if ($req->ownerCategory == $ownertype['Tenant'] && $isTenant == false) {
+        //                 throw new Exception("Respective property dont have tenant!");
+        //             }
+        //         }
+        //         if ($refPropDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
+        //             throw new Exception("Pet cannot be applied in VACANT LAND!");
+        //         }
+        //         $returnDetails = [
+        //             "tenant"        => $isTenant,
+        //             "propDetails"   => $refPropDetails,
+        //         ];
+        //         break;
 
-            case ($req->applyThrough == $confApplyThrough['Saf']):
-                $refSafDetails = $mPropActiveSaf->getSafDtlBySaf()->where('prop_active_safs.saf_no', $req->propertyNo)
-                    ->first();
-                if (is_null($refSafDetails)) {
-                    throw new Exception("property according to $req->propertyNo not found!");
-                }
-                if ($refSafDetails->prop_type_mstr_id != $confPropertyType['VACANT_LAND']) {
-                    $floorsDetails = $mPropActiveSafsFloor->getSafFloors($refSafDetails->id)->get();
-                    $isTenant = $this->getPropOccupancyType($floorsDetails);
-                    if ($req->ownerCategory == $ownertype['Tenant'] && $isTenant == false) {
-                        throw new Exception("Respective property dont have tenant!");
-                    }
-                }
-                if ($refSafDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
-                    throw new Exception("Pet cannot be applied in VACANT LAND!");
-                }
-                $returnDetails = [
-                    "tenant"        => $isTenant,
-                    "propDetails"   => $refSafDetails,
-                ];
-                break;
-        }
-        return $returnDetails;
+        //     case ($req->applyThrough == $confApplyThrough['Saf']):
+        //         $refSafDetails = $mPropActiveSaf->getSafDtlBySaf()->where('prop_active_safs.saf_no', $req->propertyNo)
+        //             ->first();
+        //         if (is_null($refSafDetails)) {
+        //             throw new Exception("Property according to $req->propertyNo not found!");
+        //         }
+        //         if ($refSafDetails->prop_type_mstr_id != $confPropertyType['VACANT_LAND']) {
+        //             $floorsDetails = $mPropActiveSafsFloor->getSafFloors($refSafDetails->id)->get();
+        //             $isTenant = $this->getPropOccupancyType($floorsDetails);
+        //             if ($req->ownerCategory == $ownertype['Tenant'] && $isTenant == false) {
+        //                 throw new Exception("Respective property dont have tenant!");
+        //             }
+        //         }
+        //         if ($refSafDetails->prop_type_mstr_id == $confPropertyType['VACANT_LAND']) {
+        //             throw new Exception("Pet cannot be applied in VACANT LAND!");
+        //         }
+        //         $returnDetails = [
+        //             "tenant"        => $isTenant,
+        //             "propDetails"   => $refSafDetails,
+        //         ];
+        //         break;
+        // }
+        // return $returnDetails;
     }
 
     /**
