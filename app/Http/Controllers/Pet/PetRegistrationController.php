@@ -271,6 +271,7 @@ class PetRegistrationController extends Controller
                 "initiatorRoleId"   => $initiatorRoleId,
                 "workflowId"        => $ulbWorkflowId->id,
                 "applicationNo"     => $petApplicationNo,
+                "ulbId"             => $ulbId,
             ];
             if ($req->applyThrough == $confApplyThrough['Holding']) {
                 $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
@@ -1169,9 +1170,9 @@ class PetRegistrationController extends Controller
             }
             $chargeDetails['roundAmount'] = round($chargeDetails['amount']);
             $applicationDetails['charges'] = $chargeDetails;
-            return responseMsgs(true, "Listed application details!", remove_null($applicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(true, "Listed application detail", remove_null($applicationDetails), "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
         }
     }
 
