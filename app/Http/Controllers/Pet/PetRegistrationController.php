@@ -274,10 +274,14 @@ class PetRegistrationController extends Controller
                 "ulbId"             => $ulbId,
             ];
             if ($req->applyThrough == $confApplyThrough['Holding']) {
-                $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
+                // $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
+                $refData["holdingNo"] = $req->propertyNo;
+                
             }
             if ($req->applyThrough == $confApplyThrough['Saf']) {
-                $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
+                // $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
+                $refData["safNo"] = $req->propertyNo;
+                
             }
             $req->merge($refData);
 
