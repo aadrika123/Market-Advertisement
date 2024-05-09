@@ -198,7 +198,7 @@ class PetPaymentController extends Controller
             $returnData = [
                 "transactionNo" => $petTranNo
             ];
-            return responseMsgs(true, "Paymet done!", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
@@ -271,10 +271,10 @@ class PetPaymentController extends Controller
             ->where('pet_active_applicants.status', 1)
             ->first();
         if (is_null($applicationDetail)) {
-            throw new Exception("Application details not found for ID:$applicationId!");
+            throw new Exception("Application details not found!");
         }
         if ($applicationDetail->payment_status != 0) {
-            throw new Exception("payment is updated for application");
+            throw new Exception("Payment is updated for application");
         }
         if ($applicationDetail->citizen_id && $applicationDetail->doc_upload_status == false) {
             throw new Exception("All application related document not uploaded!");
@@ -297,21 +297,21 @@ class PetPaymentController extends Controller
             ->first();
 
         if (is_null($regisCharges)) {
-            throw new Exception("Charges not found!");
+            throw new Exception("Charges not found");
         }
         if (in_array($regisCharges->paid_status, [1, 2])) {
-            throw new Exception("Payment has been done!");
+            throw new Exception("Payment already done");
         }
         if ($paymentMode == $confPaymentMode['1']) {
             if ($applicationDetail->citizen_id != authUser($req)->id) {
-                throw new Exception("You are not he Autherized User!");
+                throw new Exception("You are not the Authorized User");
             }
         }
 
         # Transaction details
         $transDetails = $mPetTran->getTranDetails($applicationId, $chargeCategory)->first();
         if ($transDetails) {
-            throw new Exception("Transaction has been Done!");
+            throw new Exception("Transaction has been Done");
         }
 
         return [
@@ -471,14 +471,14 @@ class PetPaymentController extends Controller
 
             $RazorPayRequest = $mPetRazorPayRequest->getRazorpayRequest($req);
             if (!$RazorPayRequest) {
-                throw new Exception("Payment request data Not Found!");
+                throw new Exception("Payment request not found");
             }
 
             # Handel the fake data or error data 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$applicationDetails) {
                 Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
-                throw new Exception("Application Not found!");
+                throw new Exception("Application Not found");
             }
             if (!$refUlbId)
                 $refUlbId  = $applicationDetails->ulb_id;
@@ -530,7 +530,7 @@ class PetPaymentController extends Controller
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             $this->commit();
-            return responseMsgs(true, "Online Payment Success!", $req, "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(true, "Online Payment Success", $req, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
@@ -546,15 +546,15 @@ class PetPaymentController extends Controller
     {
         if (!$chargeDetails) {
             Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
-            throw new Exception("Demand Not found!");
+            throw new Exception("Demand Not found");
         }
         if ($chargeDetails->amount != $req->amount) {
             Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
-            throw new Exception("amount Not found!");
+            throw new Exception("Amount not found");
         }
         if ($req->amount != $RazorPayRequest->amount) {
             Storage::disk('public/Uploads/Pet/Suspecious')->put($epoch . '.json', json_encode($req->all()));
-            throw new Exception("Amount Not Match from request!");
+            throw new Exception("Amount not matches from request");
         }
         # Save the success file
         // Storage::disk('public/Uploads/Pet/Success')->put($epoch . '.json', json_encode($req->all()));
@@ -586,7 +586,7 @@ class PetPaymentController extends Controller
             # Get transaction details according to trans no
             $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
             if (!$transactionDetails) {
-                throw new Exception("transaction details not found! for $request->transactionNo");
+                throw new Exception("Transaction details not found for $request->transactionNo");
             }
 
             # Check for bank details for dd,cheque,neft
@@ -619,7 +619,7 @@ class PetPaymentController extends Controller
                 'type'          =>$applicationDetails->type
                
             ];
-            return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(true, 'Payment Receipt', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -696,7 +696,7 @@ class PetPaymentController extends Controller
 
         # Check the existence of final data
         if (!$refApplicationDetails) {
-            throw new Exception("application details not found!");
+            throw new Exception("Application detail not found");
         }
         return $refApplicationDetails;
     }

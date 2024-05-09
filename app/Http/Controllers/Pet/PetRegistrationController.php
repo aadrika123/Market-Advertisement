@@ -171,7 +171,7 @@ class PetRegistrationController extends Controller
                 ->get();
             $is_occurence_exist = collect($occurenceType)->first();
             if (is_null($is_occurence_exist)) {
-                throw new Exception("master Data not Found!");
+                throw new Exception("master No data found");
             }
             $refMasterDetails       = $this->_masterDetails;
             $registrationThrough    = $this->formatTheArray($refMasterDetails['REGISTRATION_THROUGH'], "registration_through");
@@ -462,7 +462,7 @@ class PetRegistrationController extends Controller
 
             $refPetApplication = $mPetActiveRegistration->getPetApplicationById($petApplicationId)->first();                      // Get Pet Details
             if (is_null($refPetApplication)) {
-                throw new Exception("Application Not Found for respective ($petApplicationId) id!");
+                throw new Exception("Application not found for respective ($petApplicationId) id!");
             }
             // check if the respective is working on the front end
             // $this->checkAutheriseUser($req);
@@ -793,7 +793,7 @@ class PetRegistrationController extends Controller
 
             $petDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$petDetails)
-                throw new Exception("Application Not Found for this ($applicationId) application Id!");
+                throw new Exception("Application not found for this ($applicationId) application Id!");
 
             $workflowId = $petDetails->workflow_id;
             $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
@@ -1144,7 +1144,7 @@ class PetRegistrationController extends Controller
 
             $applicationDetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (is_null($applicationDetails)) {
-                throw new Exception("application Not found!");
+                throw new Exception("Application not found");
             }
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($applicationDetails->ref_application_id)
                 ->select(
@@ -1157,7 +1157,7 @@ class PetRegistrationController extends Controller
                 )
                 ->first();
             if (is_null($chargeDetails)) {
-                throw new Exception("Charges for respective application not found!");
+                throw new Exception("Charges for respective application not found");
             }
             if ($chargeDetails->paid_status != 0) {
                 # Get Transaction details 
@@ -1518,10 +1518,10 @@ class PetRegistrationController extends Controller
         # Collecting application detials
         $applicationdetails = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
         if (!$applicationdetails) {
-            throw new Exception("Application details not found!");
+            throw new Exception("Application details not found");
         }
         if ($applicationdetails->renewal == 1) {
-            throw new Exception("application cannot be edited in case of renewal!");
+            throw new Exception("Application cannot be edited in case of renewal");
         }
 
         # Validation diff btw citizen and user
@@ -1533,28 +1533,28 @@ class PetRegistrationController extends Controller
                 ]);
                 $readRoleDtls = $mWfRoleusermap->getRoleByUserWfId($getRoleReq);
                 if (!$readRoleDtls) {
-                    throw new Exception("User Dont have any role!");
+                    throw new Exception("User Don't have any role");
                 }
 
                 # Check for jsk 
                 $roleId = $readRoleDtls->wf_role_id;
                 if ($roleId != $confRoles['JSK']) {
-                    throw new Exception("You are not Permited to edit the application!");
+                    throw new Exception("You are not Permitted to edit the application");
                 }
                 if ($user->id != $applicationdetails->user_id) {
-                    throw new Exception("You are not the right user who applied!");
+                    throw new Exception("You are not the right user who applied");
                 }
                 if ($applicationdetails->payment_status == 1) {
-                    throw new Exception("Payment is done application cannot be updated!");
+                    throw new Exception("Payment is done application cannot be updated");
                 }
                 break;
 
             case (is_null($applicationdetails->user_id)):
                 if ($user->id != $applicationdetails->citizen_id) {
-                    throw new Exception("You are not the right user who applied!");
+                    throw new Exception("You are not the right user who applied");
                 }
                 if ($applicationdetails->payment_status == 1) {
-                    throw new Exception("Payment is done application cannot be updated!");
+                    throw new Exception("Payment is done application cannot be updated");
                 }
                 break;
         }
@@ -1562,7 +1562,7 @@ class PetRegistrationController extends Controller
         # Checking the transaction details 
         $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
         if ($transactionDetails) {
-            throw new Exception("Transaction data exist application cannot be updated!");
+            throw new Exception("Transaction data exist application cannot be updated");
         }
         return [
             "applicationDetails" => $applicationdetails,
@@ -1598,7 +1598,7 @@ class PetRegistrationController extends Controller
             # Check the Registered Application existence
             $refApprovedDetails = $mPetApprovedRegistration->getApplictionByRegId($request->registrationId)->first();
             if (!$refApprovedDetails) {
-                throw new Exception("Application Detial Not found!");
+                throw new Exception("Application detail not found");
             }
 
             # Check Params for renewal of Application
@@ -1637,13 +1637,13 @@ class PetRegistrationController extends Controller
             # Apply so that appliction get to workflow
             $applyDetails = $this->applyPetRegistration($newReq);                   // Here 
             if ($applyDetails->original['status'] == false) {
-                throw new Exception($applyDetails->original['message'] ?? "Renewal Process can't be done!");
+                throw new Exception($applyDetails->original['message'] ?? "Renewal Process can't be done");
             };
             # Update the details for renewal
             $this->updateRenewalDetails($refApprovedDetails);
             $this->commit();
             $returnDetails = $applyDetails->original['data'];
-            return responseMsgs(true, "Application applied for renewal!", $returnDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(true, "Application applied for renewal", $returnDetails, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
@@ -1664,7 +1664,7 @@ class PetRegistrationController extends Controller
             ->where('renewal', 1)
             ->first();
         if ($isRenewalInProcess) {
-            throw new Exception("Renewal of the Application is in process!");
+            throw new Exception("Renewal of the Application is in process");
         }
 
         # Check the lecence year difference 
@@ -1672,7 +1672,7 @@ class PetRegistrationController extends Controller
         // $approveDate = $approveDate->copy()->addDays(7);
         // $yearDifferernce = $approveDate->diffInYears($now);
         // if ($yearDifferernce <= 0) {
-        //     throw new Exception("Application has an active licence please apply Larter!");
+        //     throw new Exception("Application has an active licence please apply Later!");
         // }
     }
 
@@ -1713,7 +1713,7 @@ class PetRegistrationController extends Controller
             $paramenter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring  = Str::snake($key);
-            $msg        = "Pet active appliction details according to parameter!";
+            $msg        = "Pet active appliction details according to parameter";
 
             $mPetActiveRegistration = new PetActiveRegistration();
             $mPetActiveApplicant    = new PetActiveApplicant();
@@ -1736,12 +1736,12 @@ class PetRegistrationController extends Controller
                     $activeApplication = $mPetActiveRegistration->getActiveApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 default:
-                    throw new Exception("Data provided in filterBy is not valid!");
+                    throw new Exception("Invalid Data");
             }
             # Check if data not exist
             $checkVal = collect($activeApplication)->last();
             if (!$checkVal || $checkVal == 0) {
-                $msg = "Data Not found!";
+                $msg = "No data found";
             }
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -1768,11 +1768,11 @@ class PetRegistrationController extends Controller
             $parameter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring                  = Str::snake($key);
-            $msg                        = "Pending application list!";
+            $msg                        = "Pending application list";
             $baseQuerry = PetActiveApplicant::select(
                 'pet_active_registrations.id',
                 'pet_active_registrations.application_no',
-                'pet_active_registrations.application_type',
+                DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS application_type"),
                 'pet_active_registrations.payment_status',
                 'pet_active_registrations.application_apply_date',
                 'pet_active_registrations.doc_upload_status',
@@ -1785,7 +1785,7 @@ class PetRegistrationController extends Controller
                 ->orderByDesc('pet_active_registrations.id');
 
             if ($key && $request->parameter) {
-                $msg = "Pet appliction details according to $key!";
+                $msg = "Pet appliction details according to $key";
                 switch ($key) {
                     case ("mobileNo"):
                         $activeApplication = $baseQuerry->where('pet_active_applicants.mobile_no', 'LIKE', "%$parameter%")->paginate($pages);
@@ -1794,23 +1794,20 @@ class PetRegistrationController extends Controller
                         $activeApplication = $baseQuerry->where('pet_active_registrations.application_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("applicantName"):
-                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name', 'LIKE', "%$parameter%")
-                            ->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_active_applicants.applicant_name', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("holdingNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%")
-                            ->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     case ("safNo"):
-                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%")
-                            ->paginate($pages);
+                        $activeApplication = $baseQuerry->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     default:
-                        throw new Exception("Data provided in filterBy is not valid!");
+                        throw new Exception("Invalid Data");
                 }
                 $checkVal = collect($activeApplication)->last();
                 if (!$checkVal || $checkVal == 0) {
-                    $msg = "Data Not found!";
+                    $msg = "No data found";
                 }
                 return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
@@ -1845,7 +1842,7 @@ class PetRegistrationController extends Controller
             $paramenter = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring  = Str::snake($key);
-            $msg        = "Pet approved appliction details according to $key!";
+            $msg        = "Pet approved appliction details according to $key";
 
             $mPetApprovedRegistration   = new PetApprovedRegistration();
             $mPetApproveApplicant       = new PetApproveApplicant();
@@ -1868,12 +1865,12 @@ class PetRegistrationController extends Controller
                     $activeApplication = $mPetApprovedRegistration->getApprovedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 default:
-                    throw new Exception("Data provided in filterBy is not valid!");
+                    throw new Exception("Invalid Data");
             }
             # Check if data not exist
             $checkVal = collect($activeApplication)->last();
             if (!$checkVal || $checkVal == 0) {
-                $msg = "Data Not found!";
+                $msg = "No data found";
             }
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -1910,7 +1907,7 @@ class PetRegistrationController extends Controller
                     'pet_approved_registrations.id',
                     'pet_approved_registrations.holding_no',
                     'pet_approved_registrations.application_no',
-                    'pet_approved_registrations.application_type',
+                    DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
                     'pet_approved_registrations.payment_status',
                     'pet_approved_registrations.saf_no',
                     'pet_approved_registrations.application_apply_date',
@@ -1943,10 +1940,10 @@ class PetRegistrationController extends Controller
                         $activeApplication = $baseQuery->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%")->paginate($pages);
                         break;
                     default:
-                        throw new Exception("Data provided in filterBy is not valid!");
+                        throw new Exception("Invalid Data");
                 }
                 if ($activeApplication->isEmpty()) {
-                    $msg = "Data Not found!";
+                    $msg = "No data found";
                 }
                 return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
@@ -1987,7 +1984,7 @@ class PetRegistrationController extends Controller
                 ->where('pet_approved_registrations.status', '<>', 0)                                                       // Static
                 ->first();
             if (is_null($approveApplicationDetails)) {
-                throw new Exception("application Not found!");
+                throw new Exception("Application not found");
             }
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($approveApplicationDetails->application_id)
                 ->select(
@@ -2001,7 +1998,7 @@ class PetRegistrationController extends Controller
                 ->where('paid_status', 1)                                                                                   // Static
                 ->first();
             if (is_null($chargeDetails)) {
-                throw new Exception("Charges for respective application not found!");
+                throw new Exception("Charges for respective application not found");
             }
             # Get Transaction details 
             $tranDetails = $mPetTran->getTranByApplicationId($approveApplicationDetails->application_id)->first();
@@ -2071,12 +2068,12 @@ class PetRegistrationController extends Controller
                     $rejectedApplications = $mPetRejectedRegistration->getRejectedApplicationDetails($request, $refstring, $paramenter)->paginate($pages);
                     break;
                 default:
-                    throw new Exception("Data provided in filterBy is not valid!");
+                    throw new Exception("Invalid Data");
             }
             # Check if data not exist
             $checkVal = collect($rejectedApplications)->last();
             if (!$checkVal || $checkVal == 0) {
-                $msg = "Data Not found!";
+                $msg = "No data found";
             }
             return responseMsgs(true, $msg, remove_null($rejectedApplications), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -2113,7 +2110,7 @@ class PetRegistrationController extends Controller
                     'pet_rejected_registrations.holding_no',
                     'pet_rejected_registrations.saf_no',
                     'pet_rejected_registrations.application_no',
-                    'pet_rejected_registrations.application_type',
+                    DB::raw("REPLACE(pet_rejected_registrations.application_type, '_', ' ') AS application_type"),
                     'pet_rejected_registrations.payment_status',
                     'pet_rejected_registrations.application_apply_date',
                     'pet_rejected_registrations.doc_upload_status',
@@ -2149,11 +2146,11 @@ class PetRegistrationController extends Controller
                             ->paginate($pages);
                         break;
                     default:
-                        throw new Exception("Data provided in filterBy is not valid!");
+                        throw new Exception("Invalid Data");
                 }
                 $checkVal = collect($activeApplication)->last();
                 if (!$checkVal || $checkVal == 0) {
-                    $msg = "Data Not found!";
+                    $msg = "No data found";
                 }
                 return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
             }
@@ -2191,7 +2188,7 @@ class PetRegistrationController extends Controller
                 ->where('pet_rejected_registrations.status', '<>', 0)                                                       // Static
                 ->first();
             if (is_null($rejectedApplicationDetails)) {
-                throw new Exception("application Not found!");
+                throw new Exception("Application not found");
             }
             $chargeDetails = $mPetRegistrationCharge->getChargesbyId($rejectedApplicationDetails->application_id)
                 ->select(
@@ -2205,7 +2202,7 @@ class PetRegistrationController extends Controller
                 ->where('paid_status', 1)                                                                                   // Static
                 ->first();
             if (is_null($chargeDetails)) {
-                throw new Exception("Charges for respective application not found!");
+                throw new Exception("Charges for respective application not found");
             }
             # Get Transaction details 
             $tranDetails = $mPetTran->getTranByApplicationId($rejectedApplicationDetails->application_id)->first();
@@ -2300,7 +2297,7 @@ class PetRegistrationController extends Controller
                     'pet_renewal_registrations.approve_end_date AS validUpto'
                 )->get();
             if (!$renewalList->first()) {
-                $msg = "Data not found!";
+                $msg = "No data found";
             }
             return responseMsgs(true, $msg, remove_null($renewalList), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -2336,7 +2333,7 @@ class PetRegistrationController extends Controller
                 ->where('pet_renewal_registrations.status', '<>', 0)                                                       // Static
                 ->first();
             if (is_null($renewalApplicationDetails)) {
-                throw new Exception("application Not found!");
+                throw new Exception("Application not found");
             }
             # Get Transaction details 
             $tranDetails = $mPetTran->getTranByApplicationId($renewalApplicationDetails->application_id)->first();
