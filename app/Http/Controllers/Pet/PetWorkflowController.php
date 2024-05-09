@@ -275,7 +275,7 @@ class PetWorkflowController extends Controller
 
             $this->begin();
             if ($req->action == 'forward') {
-                $this->checkPostCondition($req->senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
+                $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
                 $metaReqs['verificationStatus']     = 1;
                 $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
                 $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
