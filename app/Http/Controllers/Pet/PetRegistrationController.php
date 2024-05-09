@@ -274,11 +274,13 @@ class PetRegistrationController extends Controller
                 "ulbId"             => $ulbId,
             ];
             if ($req->applyThrough == $confApplyThrough['Holding']) {
+                //uncomment this after property database is updated on live
                 // $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
                 $refData["holdingNo"] = $req->propertyNo;
                 
             }
             if ($req->applyThrough == $confApplyThrough['Saf']) {
+                //uncomment this after property database is updated on live
                 // $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
                 $refData["safNo"] = $req->propertyNo;
                 
@@ -476,7 +478,7 @@ class PetRegistrationController extends Controller
             $petTypeDocs['listDocs'] = collect($documentList)->map(function ($value) use ($refPetApplication) {
                 return $this->filterDocument($value, $refPetApplication)->first();
             });
-            return  $totalDocLists = collect($petTypeDocs);
+            $totalDocLists = collect($petTypeDocs);
             $totalDocLists['docUploadStatus']   = $refPetApplication->doc_upload_status;
             $totalDocLists['docVerifyStatus']   = $refPetApplication->doc_verify_status;
             $totalDocLists['ApplicationNo']     = $refPetApplication->application_no;
@@ -505,11 +507,13 @@ class PetRegistrationController extends Controller
     public function filterDocument($documentList, $refPetApplication, $ownerId = null)
     {
         $mWfActiveDocument  = new WfActiveDocument();
+        $docUpload          = new DocumentUpload;
         $applicationId      = $refPetApplication->ref_application_id;
         $workflowId         = $refPetApplication->workflow_id;
         $moduleId           = $this->_petModuleId;
         $confDocReqCatagory = $this->_docReqCatagory;
         $uploadedDocs       = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
+        $uploadedDocs       = $docUpload->getDocUrl($uploadedDocs);           #_Calling BLL for Document Path from DMS
 
         $explodeDocs = collect(explode('#', $documentList->requirements));
         $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $ownerId, $confDocReqCatagory) {
@@ -525,15 +529,15 @@ class PetRegistrationController extends Controller
                     ->where('owner_dtl_id', $ownerId)
                     ->first();
                 if ($uploadedDoc) {
-                    $path = $uploadedDoc->doc_path; //$this->readDocumentPath($uploadedDoc->doc_path);
-                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                    $path = $uploadedDoc['doc_path']; //$this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc['doc_path'])) ? $path : null;
                     $response = [
-                        "uploadedDocId" => $uploadedDoc->id ?? "",
+                        "uploadedDocId" => $uploadedDoc['id'] ?? "",
                         "documentCode"  => $item,
-                        "ownerId"       => $uploadedDoc->owner_dtl_id ?? "",
+                        "ownerId"       => $uploadedDoc['owner_dtl_id'] ?? "",
                         "docPath"       => $fullDocPath ?? "",
-                        "verifyStatus"  => $uploadedDoc->verify_status ?? "",
-                        "remarks"       => $uploadedDoc->remarks ?? "",
+                        "verifyStatus"  => $uploadedDoc['verify_status'] ?? "",
+                        "remarks"       => $uploadedDoc['remarks'] ?? "",
                     ];
                     $documents->push($response);
                 }
@@ -558,16 +562,16 @@ class PetRegistrationController extends Controller
                 $strLower = strtolower($doc);
                 $strReplace = str_replace('_', ' ', $strLower);
                 if (isset($uploadedDoc)) {
-                    $path =  $uploadedDoc->doc_path; //$this->readDocumentPath($uploadedDoc->doc_path);
-                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                    $path =  $uploadedDoc['doc_path']; //$this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc['doc_path'])) ? $path : null;
                 }
                 $arr = [
                     "documentCode"  => $doc,
                     "docVal"        => ucwords($strReplace),
                     "uploadedDoc"   => $fullDocPath ?? "",
-                    "uploadedDocId" => $uploadedDoc->id ?? "",
-                    "verifyStatus'" => $uploadedDoc->verify_status ?? "",
-                    "remarks"       => $uploadedDoc->remarks ?? "",
+                    "uploadedDocId" => $uploadedDoc['id'] ?? "",
+                    "verifyStatus'" => $uploadedDoc['verify_status'] ?? "",
+                    "remarks"       => $uploadedDoc['remarks'] ?? "",
                 ];
                 return $arr;
             });
