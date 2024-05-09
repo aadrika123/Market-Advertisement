@@ -462,7 +462,7 @@ class PetRegistrationController extends Controller
 
             $refPetApplication = $mPetActiveRegistration->getPetApplicationById($petApplicationId)->first();                      // Get Pet Details
             if (is_null($refPetApplication)) {
-                throw new Exception("Application not found for respective ($petApplicationId) id!");
+                throw new Exception("Application not found");
             }
             // check if the respective is working on the front end
             // $this->checkAutheriseUser($req);
@@ -470,7 +470,7 @@ class PetRegistrationController extends Controller
             $petTypeDocs['listDocs'] = collect($documentList)->map(function ($value) use ($refPetApplication) {
                 return $this->filterDocument($value, $refPetApplication)->first();
             });
-            $totalDocLists = collect($petTypeDocs);
+            return  $totalDocLists = collect($petTypeDocs);
             $totalDocLists['docUploadStatus']   = $refPetApplication->doc_upload_status;
             $totalDocLists['docVerifyStatus']   = $refPetApplication->doc_verify_status;
             $totalDocLists['ApplicationNo']     = $refPetApplication->application_no;
@@ -1286,14 +1286,16 @@ class PetRegistrationController extends Controller
             $request->all(),
             [
                 'connectionThrough' => 'required|int|in:1,2',
-                'id'                => 'required|',
-                'ulbId'             => 'required|'
+                'id'                => 'required',
+                'ulbId'             => 'nullable'
             ]
         );
         if ($validated->fails())
             return validationError($validated);
 
         try {
+            $user                   = authUser($request);
+            $ulbId                  = $request->ulbId ?? $user->ulb_id;
             $mPropProperty          = new PropProperty();
             $mPropOwner             = new PropOwner();
             $mPropFloor             = new PropFloor();
@@ -1302,11 +1304,13 @@ class PetRegistrationController extends Controller
             $mPropActiveSaf         = new PropActiveSaf();
             $key                    = $request->connectionThrough;
             $refTenanted            = Config::get('property.OCCUPANCY_TYPE.TENANTED');
+            if (!$ulbId)
+                throw new Exception("Please select ulb");
 
             switch ($key) {
                     # For Property
                 case (1):
-                    $application = collect($mPropProperty->getPropByHolding($request->id, $request->ulbId));
+                    $application = collect($mPropProperty->getPropByHolding($request->id, $ulbId));
                     $checkExist = collect($application)->first();
                     if (!$checkExist) {
                         throw new Exception("Data According to Holding Not Found!");
@@ -1333,7 +1337,7 @@ class PetRegistrationController extends Controller
 
                     # For Saf
                 case (2):
-                    $application = collect($mPropActiveSaf->getSafDtlBySafUlbNo($request->id, $request->ulbId));
+                    $application = collect($mPropActiveSaf->getSafDtlBySafUlbNo($request->id, $ulbId));
                     $checkExist = collect($application)->first();
                     if (!$checkExist) {
                         throw new Exception("Data According to SAF Not Found!");
@@ -2366,8 +2370,8 @@ class PetRegistrationController extends Controller
             if ($userType == 'JSK') {
                 $data['recentApplications'] = $mPetActiveRegistration->recentApplicationJsk($userId, $ulbId);
             }
-            $data['pendingApplicationCount']= $mPetActiveRegistration->pendingApplicationCount();
-            $data['approvedApplicationCount']= $mPetActiveRegistration->approvedApplicationCount();
+            $data['pendingApplicationCount'] = $mPetActiveRegistration->pendingApplicationCount();
+            $data['approvedApplicationCount'] = $mPetActiveRegistration->approvedApplicationCount();
             return responseMsgs(true, "Recent Application", remove_null($data), "011901", "1.0", "", "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "011901", "1.0", "", "POST", $request->deviceId ?? "");

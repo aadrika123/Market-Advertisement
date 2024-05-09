@@ -18,7 +18,8 @@ class WfActiveDocument extends Model
         $docUrl  = Config::get("dms_constants.DMS_URL");
         return WfActiveDocument::select(
             DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
-            '*',"reference_no"
+            '*',
+            "reference_no"
         )
             ->where('active_id', $activeId)
             ->where('workflow_id', $workflowId)
@@ -70,7 +71,7 @@ class WfActiveDocument extends Model
         $mWfActiveDocument->doc_code          = $req->docCode;
         $mWfActiveDocument->owner_dtl_id      = $req->ownerDtlId;
         $mWfActiveDocument->doc_category      = $req->docCategory ?? null;
-        $mWfActiveDocument->unique_id      = $req->unique_id ?? null;
+        $mWfActiveDocument->unique_id         = $req->unique_id ?? null;
         $mWfActiveDocument->reference_no      = $req->reference_no ?? null;
         if (isset($req->verifyStatus)) {
             $mWfActiveDocument->verify_status = $req->verifyStatus;
@@ -202,8 +203,8 @@ class WfActiveDocument extends Model
             'doc_code'          => $req->docCode,
             'owner_dtl_id'      => $req->ownerDtlId,
             'doc_category'      => $req->docCategory ?? null,
-            'unique_id'      =>$req->unique_id ,
-            'reference_no'      =>$req->reference_no 
+            'unique_id'         => $req->unique_id,
+            'reference_no'      => $req->reference_no
 
         ]);
     }
