@@ -230,7 +230,7 @@ class PetRegistrationController extends Controller
             $mWorkflowTrack             = new WorkflowTrack();
             $mPetRegistrationCharge     = new PetRegistrationCharge();
             $user                       = authUser($req);
-            $ulbId                      = $req->ulbId ?? 2;                                                 // Static / remove
+            $ulbId                      = $req->ulbId ?? $user->ulb_id;
             $workflowMasterId           = $this->_workflowMasterId;
             $petParamId                 = $this->_petParamId;
             $feeId                      = $this->_fee;

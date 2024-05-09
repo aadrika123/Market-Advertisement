@@ -41,7 +41,7 @@ class PetRegistrationReq extends FormRequest
             'petIdentity'           => 'nullable|',
             'petName'               => 'required|regex:/^[A-Za-z.\s]+$/',
             'petType'               => 'required|',
-            'ulbId'                 => 'required|int',
+            'ulbId'                 => 'nullable|int',
             'ward'                  => 'required|int',
             'applicantName'         => "required|",
             'mobileNo'              => "required|digits:10|regex:/[0-9]{10}/",
