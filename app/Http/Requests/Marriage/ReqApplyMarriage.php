@@ -115,7 +115,7 @@ class ReqApplyMarriage extends FormRequest
                 'message' => 'The given data was invalid',
                 'errors' => $validator->errors()
             ],
-            422
+            200
         ));
     }
 }
