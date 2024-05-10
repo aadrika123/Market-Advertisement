@@ -15,6 +15,7 @@ return [
     "BASE_URL" => env('BASE_URL','http://localhost/'),
     "95_PAYMENT_URL" => env('95_PAYMENT_URL','http://localhost:8000/'),    
     "ULB_LOGO_URL" => env('ULB_LOGO_URL','http://localhost/'),                       // Property URL
+    "DOC_URL" => env('DOC_URL','http://localhost/'),                       // Property URL
 
     // Local URL
     // "AUTH_URL" => 'http://192.168.0.21:8005/',    
