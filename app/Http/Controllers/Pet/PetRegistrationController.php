@@ -1551,9 +1551,9 @@ class PetRegistrationController extends Controller
 
                 # Check for jsk 
                 $roleId = $readRoleDtls->wf_role_id;
-                if ($roleId != $confRoles['JSK']) {
-                    throw new Exception("You are not Permitted to edit the application");
-                }
+                // if ($roleId != $confRoles['JSK']) {
+                //     throw new Exception("You are not Permitted to edit the application");
+                // }
                 if ($user->id != $applicationdetails->user_id) {
                     throw new Exception("You are not the right user who applied");
                 }
