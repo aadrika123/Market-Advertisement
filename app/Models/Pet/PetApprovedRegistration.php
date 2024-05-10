@@ -136,7 +136,7 @@ class PetApprovedRegistration extends Model
     /**
      * | Get Approved Application by applicationId
      */
-    public function getPetApprovedApplicationById($registrationId)
+    public function getPetApprovedApplicationById($applicationId)
     {
         return PetApprovedRegistration::select(
             DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
@@ -167,12 +167,53 @@ class PetApprovedRegistration extends Model
         )
             ->join('ulb_masters', 'ulb_masters.id', 'pet_approved_registrations.ulb_id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
-            // ->leftjoin('wf_roles','wf_roles.id','')
             ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
-            ->where('pet_approved_registrations.id', $registrationId);
+            ->where('pet_approved_registrations.id', $applicationId);
     }
+
+
+    /**
+     * | Get Approved Application by applicationId
+     */
+    public function getPetApprovedApplicationRegistrationId($registrationId)
+    {
+        return PetApprovedRegistration::select(
+            DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS ref_application_type"),
+            'pet_approved_registrations.id as approve_id',
+            'pet_approve_details.id as ref_pet_id',
+            'pet_approve_applicants.id as ref_applicant_id',
+            'pet_approved_registrations.*',
+            'pet_approve_details.*',
+            'pet_approve_applicants.*',
+            'pet_approved_registrations.status as registrationStatus',
+            'pet_approve_details.status as petStatus',
+            'pet_approve_applicants.status as applicantsStatus',
+            'ulb_ward_masters.ward_name',
+            'ulb_masters.ulb_name',
+            'm_pet_occurrence_types.occurrence_types',
+            DB::raw("CASE 
+            WHEN pet_approved_registrations.apply_through = '1' THEN 'Holding'
+            WHEN pet_approved_registrations.apply_through = '2' THEN 'Saf'
+            END AS apply_through_name"),
+            DB::raw("CASE 
+            WHEN pet_approve_details.sex = '1' THEN 'Male'
+            WHEN pet_approve_details.sex = '2' THEN 'Female'
+            END AS ref_gender"),
+            DB::raw("CASE 
+            WHEN pet_approve_details.pet_type = '1' THEN 'Dog'
+            WHEN pet_approve_details.pet_type = '2' THEN 'Cat'
+            END AS ref_pet_type"),
+        )
+            ->join('ulb_masters', 'ulb_masters.id', 'pet_approved_registrations.ulb_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
+            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.registration_id', $registrationId);
+    }
+
 
 
     /**

@@ -614,12 +614,77 @@ class PetPaymentController extends Controller
                 "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
                 "address"       => $applicationDetails->address,
                 "tokenNo"       => $transactionDetails->token_no,
-                "typeOfAnimal"  =>$applicationDetails->animal,
-                "typeOfBreed"   =>$applicationDetails->breed,
-                'type'          =>$applicationDetails->type
-               
+                "typeOfAnimal"  => $applicationDetails->animal,
+                "typeOfBreed"   => $applicationDetails->breed,
+                'type'          => $applicationDetails->type
+
             ];
             return responseMsgs(true, 'Payment Receipt', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    /**
+     * | Get the data of license receipt
+     */
+    public function generateLicense(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'registrationId' => 'required',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $now            = Carbon::now();
+            $mPetApprovedRegistration =  new PetApprovedRegistration();
+            $petApprovedDtls = $mPetApprovedRegistration->getPetApprovedApplicationRegistrationId($request->registrationId);
+            return $petApprovedDtls;
+            $toward         = "Pet Registration Fee";
+            $mPetTran       = new PetTran();
+            $mPetChequeDtl  = new PetChequeDtl();
+            $confVerifyMode = $this->_offlineVerificationModes;
+
+            # Get transaction details according to trans no
+            $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
+            if (!$transactionDetails) {
+                throw new Exception("Transaction details not found for $request->transactionNo");
+            }
+
+            # Check for bank details for dd,cheque,neft
+            if (in_array($transactionDetails->payment_mode, $confVerifyMode)) {
+                $bankRelatedDetails = $mPetChequeDtl->getDetailsByTranId($transactionDetails->refTransId)->first();
+            }
+            # check the transaction related details in related table
+            $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
+
+            if (isset($bankRelatedDetails->cheque_date)) {
+                $bankDate = Carbon::parse($bankRelatedDetails->cheque_date)->format('d-m-Y');
+            }
+            $returnData = [
+                "todayDate"     => $now->format('d-m-Y'),
+                "applicationNo" => $applicationDetails->application_no,
+                "applicantName" => $applicationDetails->applicant_name,
+                "paidAmount"    => $transactionDetails->amount,
+                "toward"        => $toward,
+                "paymentMode"   => $transactionDetails->payment_mode,
+                "bankName"      => $bankRelatedDetails->bank_name ?? "",
+                "branchName"    => $bankRelatedDetails->branch_name ?? "",
+                "chequeNo"      => $bankRelatedDetails->cheque_no ?? "",
+                "chequeDate"    => $bankDate ?? "",
+                "ulb"           => $applicationDetails->ulb_name,
+                "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
+                "address"       => $applicationDetails->address,
+                "tokenNo"       => $transactionDetails->token_no,
+                "typeOfAnimal"  => $applicationDetails->animal,
+                "typeOfBreed"   => $applicationDetails->breed,
+                'type'          => $applicationDetails->type
+
+            ];
+            return responseMsgs(true, 'Pet License', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
@@ -649,7 +714,7 @@ class PetPaymentController extends Controller
                 WHEN pet_active_details.pet_type = 2 THEN 'cat'
                         END as animal"),
                 'pet_active_details.breed',
-                'pet_active_details.pet_type as type' 
+                'pet_active_details.pet_type as type'
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
@@ -664,7 +729,7 @@ class PetPaymentController extends Controller
                     WHEN pet_approve_details.pet_type = 2 THEN 'cat'
                             END as animal"),
                     'pet_approve_details.breed',
-                    'pet_approve_details.pet_type as type' 
+                    'pet_approve_details.pet_type as type'
                 )->first();
         }
         if (!$refApplicationDetails) {
@@ -690,7 +755,7 @@ class PetPaymentController extends Controller
                     WHEN pet_rejected_details.pet_type = 2 THEN 'cat'
                             END as animal"),
                     'pet_rejected_details.breed',
-                    'pet_rejected_details.pet_type as type' 
+                    'pet_rejected_details.pet_type as type'
                 )->first();
         }
 

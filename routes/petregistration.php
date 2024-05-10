@@ -70,7 +70,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('application/get-uploaded-docs', 'getUploadDocuments');                                     // Admin/ Citizen
 
         //written by prity pandey
-        Route::post('dashboard_details', 'petDashbordDtls'); 
+        Route::post('dashboard_details', 'petDashbordDtls');
     });
 
     /**
@@ -80,6 +80,7 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post("application/offline-payment", "offlinePayment");                                           // Admin
         Route::post("application/initiate-online-payment", "handelOnlinePayment");                              // Admin
         Route::post("application/payment-receipt", "generatePaymentReceipt");                                   // Admin / Citizen
+        Route::post("application/license", "generateLicense");                                   // Admin / Citizen
     });
 
     /**
