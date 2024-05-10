@@ -281,11 +281,13 @@ class PetWorkflowController extends Controller
                 $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
                 $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
                 $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
+                $msg = "Application Forwaded Succesfully.";
             }
             if ($req->action == 'backward') {
                 $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
                 $metaReqs['verificationStatus']     = 0;
                 $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
+                $msg = "Application has been sent back Succesfully.";
             }
             $petApplication->save();
 
@@ -314,10 +316,10 @@ class PetWorkflowController extends Controller
             //     'forward_time' => $current->format('H:i:s')
             // ]);
             $this->commit();
-            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
+            return responseMsgs(true, $msg, [], "", "", '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             $this->rollback();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
         }
     }
 
@@ -487,11 +489,11 @@ class PetWorkflowController extends Controller
             // $explodeDocs = explode(',', $item);
             // array_shift($explodeDocs);
             // foreach ($explodeDocs as $explodeDoc) {
-                $changeStatus = 0;
-                if (in_array($item, $collectUploadDocList->toArray())) {
-                    $changeStatus = 1;
-                    // break;
-                }
+            $changeStatus = 0;
+            if (in_array($item, $collectUploadDocList->toArray())) {
+                $changeStatus = 1;
+                // break;
+            }
             // }
             if ($changeStatus == 0) {
                 $flag = 0;

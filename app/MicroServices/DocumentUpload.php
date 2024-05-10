@@ -212,7 +212,7 @@ class DocumentUpload
                    $responseData = $response->json();
                    $key['id'] =  $document->id;
                    $key['doc_code'] =  $document->doc_code;
-                   $key['doc_category'] =  $document->doc_category;
+                   $key['doc_category'] =  $document->doc_category??null;
                    $key['verify_status'] =  $document->verify_status;
                    //$key['owner_name'] =  $document->owner_name;
                    $key['remarks'] =  $document->remarks;
