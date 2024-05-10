@@ -1572,11 +1572,11 @@ class PetRegistrationController extends Controller
                 break;
         }
 
-        # Checking the transaction details 
-        $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
-        if ($transactionDetails) {
-            throw new Exception("Transaction data exist application cannot be updated");
-        }
+        // # Checking the transaction details 
+        // $transactionDetails = $mPetTran->getTranByApplicationId($applicationId)->first();
+        // if ($transactionDetails) {
+        //     throw new Exception("Transaction data exist application cannot be updated");
+        // }
         return [
             "applicationDetails" => $applicationdetails,
         ];
