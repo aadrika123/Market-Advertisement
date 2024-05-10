@@ -1554,9 +1554,9 @@ class PetRegistrationController extends Controller
                 // if ($roleId != $confRoles['JSK']) {
                 //     throw new Exception("You are not Permitted to edit the application");
                 // }
-                if ($user->id != $applicationdetails->user_id) {
-                    throw new Exception("You are not the right user who applied");
-                }
+                // if ($user->id != $applicationdetails->user_id) {
+                //     throw new Exception("You are not the right user who applied");
+                // }
                 if ($applicationdetails->payment_status == 1) {
                     throw new Exception("Payment is done application cannot be updated");
                 }
