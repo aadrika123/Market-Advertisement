@@ -316,7 +316,7 @@ class PetWorkflowController extends Controller
             //     'forward_time' => $current->format('H:i:s')
             // ]);
             $this->commit();
-            return responseMsgs(true, $msg, null, "", "", '01', responseTime(), 'Post', '');
+            return responseMsgs(true, $msg, "", "", "", '01', responseTime(), 'Post', '');
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
