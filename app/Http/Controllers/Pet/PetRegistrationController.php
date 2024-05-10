@@ -171,7 +171,7 @@ class PetRegistrationController extends Controller
                 ->get();
             $is_occurence_exist = collect($occurenceType)->first();
             if (is_null($is_occurence_exist)) {
-                throw new Exception("master No data found");
+                throw new Exception("Master data not found");
             }
             $refMasterDetails       = $this->_masterDetails;
             $registrationThrough    = $this->formatTheArray($refMasterDetails['REGISTRATION_THROUGH'], "registration_through");
@@ -639,7 +639,6 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
-            //$user                       = $req->auth?authUser($req):collect();
             $user                       = authUser($req);
             $metaReqs                   = array();
             $applicationId              = $req->applicationId;
@@ -740,7 +739,7 @@ class PetRegistrationController extends Controller
                 $role =  $mWfRoleusermap->getRoleByUserWfId($refReq);
                 // $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
                 if (!$role) {
-                    throw new Exception("You dont have any role!");
+                    throw new Exception("You dont have any role");
                 }
                 if ($role->can_upload_document != true) {
                     throw new Exception("You dont have permission to upload Document!");

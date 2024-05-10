@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Pipeline\Pipeline;
 use App\Pipelines\Pet\SearchByApplicationNo;
+
 class PetWorkflowController extends Controller
 {
 
@@ -150,20 +151,20 @@ class PetWorkflowController extends Controller
                 // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
                 // ->where('pet_active_registrations.is_escalate', false)
                 ->where('pet_active_registrations.parked', false);
-                //->paginate($pages);
+            //->paginate($pages);
 
             if (collect($waterList)->last() == 0 || !$waterList) {
                 $msg = "Data not found!";
             }
             $inbox = app(Pipeline::class)
-            ->send(
-                $waterList
-            )
-            ->through([
-                SearchByApplicationNo::class
-            ])
-            ->thenReturn()
-            ->paginate($pages);
+                ->send(
+                    $waterList
+                )
+                ->through([
+                    SearchByApplicationNo::class
+                ])
+                ->thenReturn()
+                ->paginate($pages);
             return responseMsgs(true, $msg, remove_null($inbox), '', '02', '', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
@@ -422,6 +423,7 @@ class PetWorkflowController extends Controller
                 $status = true;
                 $mPetActiveRegistration->updateDocStatus($applicationId, $status);
             }
+            dd();
             $this->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -453,9 +455,52 @@ class PetWorkflowController extends Controller
         ];
 
         $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $ifPropDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifPropDocUnverified == true)
+        $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
+        return $this->isAllDocs($applicationId, $refDocList, $refapplication);
+    }
+
+    public function isAllDocs($applicationId, $refDocList, $refapplication)
+    {
+        $docList = array();
+        $verifiedDocList = array();
+        $petController = new PetRegistrationController;
+        $documentLists = $petController->getPetDocLists($refapplication);
+
+        $docList['petDocs'] = $documentLists->map(function ($documentList) {
+            $filteredDocs = $documentList['requirements'];
+            $document   = explode(',', $filteredDocs);
+            $key        = array_shift($document);
+            $label      = array_shift($document);
+            return $document[0];
+        });
+        # var defining
+
+        $verifiedDocList['petDocs'] = $refDocList->where('owner_dtl_id', null)->values();
+        $collectUploadDocList = collect();
+        collect($verifiedDocList['petDocs'])->map(function ($item) use ($collectUploadDocList) {
+            return $collectUploadDocList->push($item['doc_code']);
+        });
+
+        // $petDocs = collect();
+        // Property List Documents
+        $flag = 1;
+        foreach ($docList['petDocs'] as $item) {
+            // $explodeDocs = explode(',', $item);
+            // array_shift($explodeDocs);
+            // foreach ($explodeDocs as $explodeDoc) {
+                $changeStatus = 0;
+                if (in_array($item, $collectUploadDocList->toArray())) {
+                    $changeStatus = 1;
+                    // break;
+                }
+            // }
+            if ($changeStatus == 0) {
+                $flag = 0;
+                break;
+            }
+        }
+
+        if ($flag == 0)
             return 0;
         else
             return 1;
