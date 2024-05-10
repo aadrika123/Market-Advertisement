@@ -334,13 +334,13 @@ class PetWorkflowController extends Controller
         switch ($senderRoleId) {
             case $wfLevels['BO']:                                                                       // Back Office Condition
                 if ($application->doc_upload_status == false)
-                    throw new Exception("Document Not Fully Uploaded");                                                                      // DA Condition
+                    throw new Exception("The full document has not been uploaded");                                                                      // DA Condition
                 if ($application->payment_status != 1)
                     throw new Exception("Payment Not Done");
                 break;
             case $wfLevels['DA']:
                 if ($application->doc_upload_status == false)
-                    throw new Exception("Document Not Fully Uploaded");                                                                      // DA Condition
+                    throw new Exception("The full document has not been uploaded");                                                                      // DA Condition
                 if ($application->payment_status != 1)
                     throw new Exception("Payment Not Done");                                                                      // DA Condition
                 if ($application->doc_verify_status == false)
