@@ -602,7 +602,7 @@ class PetPaymentController extends Controller
                 $bankDate = Carbon::parse($bankRelatedDetails->cheque_date)->format('d-m-Y');
             }
 
-            $ulbDtl = $mUlbMaster->getUlbDetails($applicationDetails->ulb_id);
+            $ulbDtl = $mUlbMaster->getUlbDetails($transactionDetails->ulb_id);
             $returnData = [
                 "todayDate"     => $now->format('d-m-Y'),
                 "applicationNo" => $applicationDetails->application_no,
