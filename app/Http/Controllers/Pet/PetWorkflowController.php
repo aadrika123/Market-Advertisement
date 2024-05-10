@@ -423,7 +423,6 @@ class PetWorkflowController extends Controller
                 $status = true;
                 $mPetActiveRegistration->updateDocStatus($applicationId, $status);
             }
-            dd();
             $this->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
