@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Pet\PetActiveApplicant;
 use App\Models\Pet\PetActiveDetail;
@@ -298,8 +299,8 @@ class PetWorkflowController extends Controller
             $metaReqs['user_id']            = authUser($req)->id;
             $req->request->add($metaReqs);
 
-            $waterTrack = new WorkflowTrack();
-            $waterTrack->saveTrack($req);
+            $workflowTrack = new WorkflowTrack();
+            $workflowTrack->saveTrack($req);
 
             # Check in all the cases the data if entered in the track table 
             # Updation of Received Date
@@ -310,7 +311,7 @@ class PetWorkflowController extends Controller
             //     'receiverRoleId'    => $senderRoleId
             // ];
 
-            // $previousWorkflowTrack = $waterTrack->getWfTrackByRefId($preWorkflowReq);
+            // $previousWorkflowTrack = $workflowTrack->getWfTrackByRefId($preWorkflowReq);
             // $previousWorkflowTrack->update([
             //     'forward_date' => $current->format('Y-m-d'),
             //     'forward_time' => $current->format('H:i:s')
@@ -609,7 +610,7 @@ class PetWorkflowController extends Controller
             # Get Application details 
             $application = $mPetActiveRegistration->getPetApplicationById($applicationId)->first();
             if (!$application) {
-                throw new Exception("application Details not found!");
+                throw new Exception("Application details not found.");
             }
 
             # Check the workflow role 
@@ -632,14 +633,15 @@ class PetWorkflowController extends Controller
                     $approveDetails = $this->finalApproval($request, $application);
                     $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
                 } else {
-                    $this->finalApprovalRenewal($request, $application);
+                    $approveDetails =  $this->finalApprovalRenewal($request, $application);
+                    $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
                 }
-                $msg = "Application Successfully Approved !!";
+                $msg = "Application Successfully Approved";
             }
             # Rejection of grievance application
             if ($request->status == 0) {                                                                // Static
                 $this->finalRejectionOfAppication($request, $application);
-                $msg = "Application Successfully Rejected !!";
+                $msg = "Application Rejected";
             }
             $this->commit();
             $returnData["applicationNo"] = $applicationNo;
@@ -659,16 +661,19 @@ class PetWorkflowController extends Controller
     public function checkParamForApproval($readRoleDtls, $application)
     {
         if (!$readRoleDtls) {
-            throw new Exception("Role details not found!");
+            throw new Exception("Role details not found");
         }
         if ($readRoleDtls->wf_role_id != $application->finisher_role_id) {
-            throw new Exception("You are not the Finisher!");
+            throw new Exception("You are not the finisher");
         }
-        if ($application->doc_upload_status == false || $application->payment_status != 1) {
-            throw new Exception("Document Not Fully Uploaded or Payment in not Done!");
+        if ($application->doc_upload_status == false) {
+            throw new Exception("Document Not Fully Uploaded");
+        }
+        if ($application->payment_status != 1) {
+            throw new Exception("Payment not Done");
         }
         if ($application->doc_verify_status == false) {
-            throw new Exception("Document Not Fully Verified!");
+            throw new Exception("Document Not Fully Verified");
         }
     }
 
@@ -684,28 +689,28 @@ class PetWorkflowController extends Controller
         $now                        = Carbon::now();
         $status                     = 2;
         $applicationId              = $request->applicationId;
-        $waterTrack                 = new WorkflowTrack();
+        $workflowTrack                 = new WorkflowTrack();
         $mPetActiveRegistration     = new PetActiveRegistration();
         $mPetApprovedRegistration   = new PetApprovedRegistration();
         $mPetActiveApplicant        = new PetActiveApplicant();
         $mPetActiveDetail           = new PetActiveDetail();
         $lastLicenceDate            = $now->copy()->addYear()->subDay();
-        $key                        = "REG-";                                           // Static
-        $registrationId             = $this->getUniqueId($key);
-
-
+        
         # Check if the approve application exist
         $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
-            ->whereNot('status', 0)
-            ->first();
+        ->whereNot('status', 0)
+        ->first();
         if ($someDataExist) {
             throw new Exception("Approve application details exist in active table ERROR!");
         }
-
+        
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
         $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationId)->first();
         $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
+        
+        $idGeneration           = new PrefixIdGenerator(45, $refApplicationDetial->ulb_id);
+        $registrationId         = $idGeneration->generate();
 
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
@@ -738,7 +743,7 @@ class PetWorkflowController extends Controller
             'user_id'           => authUser($request)->id,
         ];
         $request->request->add($metaReqs);
-        $waterTrack->saveTrack($request);
+        $workflowTrack->saveTrack($request);
 
         # Delete the details form the active table
         $refAppReq = [
@@ -763,7 +768,7 @@ class PetWorkflowController extends Controller
         $now                        = Carbon::now();
         $status                     = 0;                                        // Static
         $applicationId              = $request->applicationId;
-        $waterTrack                 = new WorkflowTrack();
+        $workflowTrack              = new WorkflowTrack();
         $mPetActiveRegistration     = new PetActiveRegistration();
         $mPetActiveApplicant        = new PetActiveApplicant();
         $mPetActiveDetail           = new PetActiveDetail();
@@ -855,7 +860,11 @@ class PetWorkflowController extends Controller
             'user_id'           => authUser($request)->id,
         ];
         $request->request->add($metaReqs);
-        $waterTrack->saveTrack($request);
+        $workflowTrack->saveTrack($request);
+        return [
+            "approveDetails" => $approvedPetRegistration,
+            "registrationId" => $registrationId
+        ];
     }
 
 
@@ -870,7 +879,7 @@ class PetWorkflowController extends Controller
         $now                        = Carbon::now();
         $status                     = 0;                                               // Static     
         $applicationId              = $request->applicationId;
-        $waterTrack                 = new WorkflowTrack();
+        $workflowTrack                 = new WorkflowTrack();
         $mPetRejectedRegistration   = new PetRejectedRegistration();
         $mPetActiveRegistration     = new PetActiveRegistration();
         $mPetActiveApplicant        = new PetActiveApplicant();
@@ -918,7 +927,7 @@ class PetWorkflowController extends Controller
             'user_id'           => authUser($request)->id,
         ];
         $request->request->add($metaReqs);
-        $waterTrack->saveTrack($request);
+        $workflowTrack->saveTrack($request);
 
         # Delete the details form the active table
         $refAppReq = [
