@@ -1002,7 +1002,7 @@ class PetRegistrationController extends Controller
         $applyDate = Carbon::createFromFormat('Y-m-d', $applicationDetails->application_apply_date)->format('d-m-Y');
         return new Collection([
             ['displayString' => 'Ward No',              'key' => 'WardNo',                  'value' => $applicationDetails->ward_name],
-            ['displayString' => 'Type of Connection',   'key' => 'TypeOfConnection',        'value' => $applicationDetails->ref_application_type],
+            ['displayString' => 'Type of Application',   'key' => 'TypeOfConnection',       'value' => $applicationDetails->ref_application_type],
             ['displayString' => 'Registration Through', 'key' => 'RegistrationThrough',     'value' => $applyThrough],
             ['displayString' => 'Apply From',           'key' => 'ApplyFrom',               'value' => $applicationDetails->apply_mode],
             ['displayString' => 'Apply Date',           'key' => 'ApplyDate',               'value' => $applyDate]
