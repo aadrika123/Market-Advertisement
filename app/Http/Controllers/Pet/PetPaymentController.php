@@ -608,6 +608,7 @@ class PetPaymentController extends Controller
                 "applicationNo" => $applicationDetails->application_no,
                 "applicantName" => $applicationDetails->applicant_name,
                 "paidAmount"    => $transactionDetails->amount,
+                "transactionNo" => $transactionDetails->tran_no,
                 "toward"        => $toward,
                 "paymentMode"   => $transactionDetails->payment_mode,
                 "bankName"      => $bankRelatedDetails->bank_name ?? "",
