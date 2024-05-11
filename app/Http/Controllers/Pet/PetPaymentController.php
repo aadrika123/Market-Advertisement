@@ -817,13 +817,13 @@ class PetPaymentController extends Controller
             $collection = collect($data->groupBy("emp_dtl_id")->values());
 
             $data = $collection->map(function ($val) use ($date) {
-                $total =  $val->sum('total_amount');
+                $total =  $val->sum('amount');
                 return [
                     "id" => $val[0]['id'],
                     "user_id" => $val[0]['emp_dtl_id'],
                     "officer_name" => $val[0]['user_name'],
                     "mobile" => $val[0]['mobile'],
-                    "penalty_amount" => $total,
+                    "amount" => $total,
                     "date" => Carbon::parse($date)->format('d-m-Y'),
                 ];
             });
@@ -859,8 +859,8 @@ class PetPaymentController extends Controller
                 throw new Exception("No Application Found for this id");
 
             $data['tranDtl'] = collect($details)->values();
-            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('total_amount');
-            $data['totalAmount'] =  $details->sum('total_amount');
+            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('amount');
+            $data['totalAmount'] =  $details->sum('amount');
             $data['numberOfTransaction'] =  $details->count();
             $data['date'] = Carbon::parse($date)->format('d-m-Y');
             $data['tcId'] = $userId;
