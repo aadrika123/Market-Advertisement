@@ -104,4 +104,7 @@ Route::group(['middleware' => ['json.response']], function () {
  */
 Route::controller(PetPaymentController::class)->group(function () {
     Route::post("webhook/end-online-payment", "endOnlinePayment");                                              // Admin
+    Route::post('cash-verification-list', 'listCashVerification');                                      #_List of Cash Verification --------------- 0703
+    Route::post('cash-verification-dtl', 'cashVerificationDtl');                                        #_Cash Verification Detail ---------------- 0704
+    Route::post('verify-cash', 'verifyCash');                                                           #_Verify Cash ----------------------------- 0705
 });

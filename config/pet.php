@@ -57,7 +57,8 @@ return [
     ],
     "PARAM_ID" => [
         "REGISTRATION" => 34,
-        "TRANSACTION" => 37
+        "TRANSACTION" => 37,
+        "VERIFICATION" => 33
     ],
     "PET_RELATIVE_PATH" => [
         "REGISTRATION" => 'Uploads/Pet/Application',

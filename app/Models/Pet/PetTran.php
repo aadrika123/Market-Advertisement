@@ -5,6 +5,7 @@ namespace App\Models\Pet;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 class PetTran extends Model
 {
@@ -92,5 +93,41 @@ class PetTran extends Model
             ->where('pet_trans.tran_no', $tranNo)
             ->where('pet_trans.status', 1)
             ->orderByDesc('pet_trans.id');
+    }
+
+    /**
+     * | List Uncleared cheque or DD
+     */
+    public function listUnverifiedCashPayment($req)
+    {
+        return  DB::table('pet_trans')
+            ->select(
+                'pet_trans.id',
+                'pet_trans.tran_no',
+                'pet_trans.tran_date',
+                'pet_trans.amount',
+                't1.application_no',
+                'pet_active_applicants.applicant_name',
+                'pet_active_applicants.mobile_no',
+                DB::raw("CASE 
+                WHEN pet_trans.verify_status = '0' THEN 'Not Verified'
+                WHEN pet_trans.verify_status = '1' THEN 'Verified'
+                END AS cashVerifiedStatus"),
+            )
+            ->join('pet_active_registrations as t1', 'pet_trans.related_id', '=', 't1.id')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_trans.related_id')
+            ->where('payment_mode', '=', 'CASH');
+    }
+
+    /**
+     * | Details for Cash Verification
+     */
+    public function cashDtl($date)
+    {
+        return PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
+            ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
+            ->where('pet_trans.status', 1)
+            ->where('verify_status', 0)
+            ->where('tran_date', $date);
     }
 }

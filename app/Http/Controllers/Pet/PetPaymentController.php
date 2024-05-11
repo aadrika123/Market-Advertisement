@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetPaymentReq;
 use App\Http\Requests\Pet\PetRegistrationReq;
+use App\MicroServices\IdGeneration;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\IdGenerationParam;
 use App\Models\Payment\TempTransaction;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Pet\PetChequeDtl;
+use App\Models\Pet\PetDailycollection;
+use App\Models\Pet\PetDailycollectiondetail;
 use App\Models\Pet\PetRazorPayRequest;
 use App\Models\Pet\PetRazorPayResponse;
 use App\Models\Pet\PetRegistrationCharge;
@@ -649,7 +653,7 @@ class PetPaymentController extends Controller
             $mPetApprovedRegistration =  new PetApprovedRegistration();
             $petApprovedDtls = $mPetApprovedRegistration->getPetApprovedApplicationRegistrationId($request->registrationId)->first();
             $ulbDtl         = $mUlbMaster->getUlbDetails($petApprovedDtls->ulb_id);
-            $petApprovedDtls->ulbDetails = $ulbDtl ;
+            $petApprovedDtls->ulbDetails = $ulbDtl;
 
             return responseMsgs(true, 'Pet License', $petApprovedDtls, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -731,5 +735,201 @@ class PetPaymentController extends Controller
             throw new Exception("Application detail not found");
         }
         return $refApplicationDetails;
+    }
+
+    /*
+    //   |List of unverified cash transaction
+    //  */
+    // public function listUnverifiedCashPayment(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'fromDate' => 'nullable|date_format:Y-m-d',
+    //         'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
+    //     try {
+    //         $petPayment = new PetTran();
+    //         $data = $petPayment->listUnverifiedCashPayment($req);
+    //         $data = $data->whereBetween('pet_trans.tran_date', [$req->fromDate, $req->toDate]);
+    //         $data = $data->where('pet_trans.emp_dtl_id', $useriD)
+    //             ->get();
+
+    //         $list = $data;
+    //         return responseMsgs(true, "List Uncleared Cash Payment", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
+    // }
+
+    /**
+      | verified cash payments
+     */
+    // public function verifiedCashPayment(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'id' => 'required',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return responseMsgs(false, $validator->errors()->first(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
+    //     try {
+    //         PetTran::where('id', $req->id)->update(['verify_status' => '1']);
+    //         return responseMsgs(true, "Payment Verified Successfully !!!",  '', "055025", "1.0", responseTime(), "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
+    // }
+
+    /**
+     * | Unverified Cash Verification List
+     */
+    public function listCashVerification(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'required|date',
+            'userId' => 'nullable|int'
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0703";
+            $version = "01";
+            $user = authUser($req);
+            $PetTransaction = new PetTran();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+
+            if (isset($userId)) {
+                $data = $PetTransaction->cashDtl($date)
+                    ->where('pet_trans.ulb_id', $user->ulb_id)
+                    ->where('emp_dtl_id', $userId)
+                    ->get();
+            }
+
+            if (!isset($userId)) {
+                $data = $PetTransaction->cashDtl($date)
+                    ->where('penalty_transactions.ulb_id', $user->ulb_id)
+                    ->get();
+            }
+
+            $collection = collect($data->groupBy("emp_dtl_id")->values());
+
+            $data = $collection->map(function ($val) use ($date) {
+                $total =  $val->sum('total_amount');
+                return [
+                    "id" => $val[0]['id'],
+                    "user_id" => $val[0]['emp_dtl_id'],
+                    "officer_name" => $val[0]['user_name'],
+                    "mobile" => $val[0]['mobile'],
+                    "penalty_amount" => $total,
+                    "date" => Carbon::parse($date)->format('d-m-Y'),
+                ];
+            });
+
+            return responseMsgs(true, "Cash Verification List", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Tc Collection Dtl
+     */
+    public function cashVerificationDtl(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date" => "required|date",
+            "userId" => "required|int",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0704";
+            $version = "01";
+            $PetTransaction = new PetTran();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+            $details = $PetTransaction->cashDtl($date, $userId)
+                ->where('emp_dtl_id', $userId)
+                ->get();
+
+            if (collect($details)->isEmpty())
+                throw new Exception("No Application Found for this id");
+
+            $data['tranDtl'] = collect($details)->values();
+            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('total_amount');
+            $data['totalAmount'] =  $details->sum('total_amount');
+            $data['numberOfTransaction'] =  $details->count();
+            $data['date'] = Carbon::parse($date)->format('d-m-Y');
+            $data['tcId'] = $userId;
+
+            return responseMsgs(true, "Cash Verification Details", remove_null($data), $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | For Verification of cash
+        save data in collection detail is pending and update verify status in transaction table
+     */
+    public function verifyCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date"          => "required|date",
+            "tcId"          => "required|int",
+            "id"            => "required|array",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0705";
+            $version = "01";
+            $user = authUser($req);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
+            $petParamId                 = $this->_petParamId;
+            $mPetTransaction           = new PetTran();
+            $mPetDailycollection       = new PetDailycollection();
+            $mPetDailycollectiondetail = new PetDailycollectiondetail();
+            $receiptIdParam                = Config::get('constants.ID_GENERATION_PARAMS.CASH_VERIFICATION_ID');
+            DB::beginTransaction();
+            $idGeneration  = new PrefixIdGenerator($petParamId['VERIFICATION'], $ulbId);
+            $receiptNo = $idGeneration->generate();
+
+            $totalAmount = $mPetTransaction->whereIn('id', $req->id)->sum('amount');
+
+            $mReqs = [
+                "receipt_no"     => $receiptNo,
+                "user_id"        => $userId,
+                "tran_date"      => Carbon::parse($req->date)->format('Y-m-d'),
+                "deposit_date"   => Carbon::now(),
+                "deposit_amount" => $totalAmount,
+                "tc_id"          => $req->tcId,
+            ];
+
+            $collectionDtl =  $mPetDailycollection->store($mReqs);
+            //Update collection details table
+
+            foreach ($req->id as $id) {
+                $collectionDtlsReqs = [
+                    "collection_id"  => $collectionDtl->id,
+                    "transaction_id" => $id,
+                ];
+                $mPetDailycollectiondetail->store($collectionDtlsReqs);
+            }
+
+            //Update transaction table
+            $mPetTransaction->whereIn('id', $req->id)
+                ->update(['verify_status' => 1]);
+
+            DB::commit();
+            return responseMsgs(true, "Cash Verified", ["receipt_no" => $receiptNo], $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
     }
 }
