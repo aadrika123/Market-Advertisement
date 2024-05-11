@@ -2379,8 +2379,8 @@ class PetRegistrationController extends Controller
             if ($userType == 'JSK') {
                 $data['recentApplications'] = $mPetActiveRegistration->recentApplicationJsk($userId, $ulbId);
             }
-            $data['pendingApplicationCount'] = $mPetActiveRegistration->pendingApplicationCount();
-            $data['approvedApplicationCount'] = $mPetActiveRegistration->approvedApplicationCount();
+            $data['pendingApplicationCount'] = $mPetActiveRegistration->pendingApplicationCount($ulbId);
+            $data['approvedApplicationCount'] = $mPetActiveRegistration->approvedApplicationCount($ulbId);
             return responseMsgs(true, "Recent Application", remove_null($data), "011901", "1.0", "", "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "011901", "1.0", "", "POST", $request->deviceId ?? "");

@@ -207,23 +207,25 @@ class PetActiveRegistration extends Model
     }
 
 
-    public function pendingApplicationCount()
+    public function pendingApplicationCount($ulbId)
     {
         $data =  PetActiveRegistration::select(
             DB::raw('count(pet_active_registrations.id) as total_pending_application')
         )
             ->where('pet_active_registrations.status', 1)
+            ->where('pet_active_registrations.ulb_id',  $ulbId)
             ->first();
 
         return $data;
     }
 
-    public function approvedApplicationCount()
+    public function approvedApplicationCount($ulbId)
     {
         $data =  PetApprovedRegistration::select(
             DB::raw('count(pet_approved_registrations.id) as total_approved_application')
         )
             ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.ulb_id',  $ulbId)
             ->first();
 
         return $data;
