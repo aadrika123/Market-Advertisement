@@ -1909,6 +1909,8 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            $user = authUser($request);
+            $ulbId = $user->ulb_id;
             $key        = $request->filterBy;
             $parameter  = $request->parameter;
             $pages      = $request->perPage ?? 10;
@@ -1933,6 +1935,7 @@ class PetRegistrationController extends Controller
                 )
                 ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
                 ->where('pet_approved_registrations.status', 1)
+                ->where('pet_approved_registrations.ulb_id', $ulbId)
                 ->orderByDesc('pet_approved_registrations.id');
 
             if ($key && $parameter) {
@@ -2111,8 +2114,10 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            $user       = authUser($request);
+            $ulbId      = $user->ulb_id;
             $key        = $request->filterBy;
-            $parameter = $request->parameter;
+            $parameter  = $request->parameter;
             $pages      = $request->perPage ?? 10;
             $refstring                  = Str::snake($key);
             $msg                        = "Rejected application list!";
@@ -2135,6 +2140,7 @@ class PetRegistrationController extends Controller
                 )
                 ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
                 ->where('pet_rejected_registrations.status', 1)
+                ->where('pet_rejected_registrations.ulb_id', $ulbId)
                 ->orderByDesc('pet_rejected_registrations.id');
 
 
