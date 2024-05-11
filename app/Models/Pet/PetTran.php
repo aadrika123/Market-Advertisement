@@ -84,6 +84,7 @@ class PetTran extends Model
     {
         return PetTran::select(
             'pet_trans.id AS refTransId',
+            'pet_trans.tran_no',
             'pet_trans.*',
             'pet_tran_details.*',
         )
