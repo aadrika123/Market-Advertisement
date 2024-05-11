@@ -277,13 +277,11 @@ class PetRegistrationController extends Controller
                 //uncomment this after property database is updated on live
                 // $refData["holdingNo"] = collect($refValidatedDetails['propDetails'])['holding_no'] ?? null;
                 $refData["holdingNo"] = $req->propertyNo;
-                
             }
             if ($req->applyThrough == $confApplyThrough['Saf']) {
                 //uncomment this after property database is updated on live
                 // $refData["safNo"] = collect($refValidatedDetails['propDetails'])['saf_no'] ?? null;
                 $refData["safNo"] = $req->propertyNo;
-                
             }
             $req->merge($refData);
 
@@ -1777,6 +1775,8 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            $user = authUser($request);
+            $ulbId = $user->ulb_id;
             $key        = $request->filterBy;
             $parameter = $request->parameter;
             $pages      = $request->perPage ?? 10;
@@ -1795,6 +1795,7 @@ class PetRegistrationController extends Controller
             )
                 ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
                 ->where('pet_active_registrations.status', 1)
+                ->where('pet_active_registrations.ulb_id', $ulbId)
                 ->orderByDesc('pet_active_registrations.id');
 
             if ($key && $request->parameter) {
