@@ -31,7 +31,7 @@ class PetRegistrationReq extends FormRequest
             'breed'                 => 'required|regex:/^[A-Za-z.\s]+$/',
             'ownerCategory'         => 'required|in:1,2',
             'color'                 => 'required|regex:/^[A-Za-z.\s]+$/',
-            'dateOfLepVaccine'      => 'required|date|date_format:Y-m-d',
+            'dateOfLepVaccine'      => 'nullable|date|date_format:Y-m-d',
             'dateOfRabies'          => 'required|date|date_format:Y-m-d',
             'doctorName'            => 'required|regex:/^[A-Za-z.\s]+$/',
             'doctorRegNo'           => 'required|',
