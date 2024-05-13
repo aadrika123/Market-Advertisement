@@ -810,7 +810,7 @@ class PetPaymentController extends Controller
 
             if (!isset($userId)) {
                 $data = $PetTransaction->cashDtl($date)
-                    ->where('penalty_transactions.ulb_id', $user->ulb_id)
+                    ->where('pet_trans.ulb_id', $user->ulb_id)
                     ->get();
             }
 
