@@ -636,12 +636,12 @@ class PetWorkflowController extends Controller
                     $approveDetails =  $this->finalApprovalRenewal($request, $application);
                     $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
                 }
-                $msg = "Application Successfully Approved";
+                $msg = "Application Successfully Approved of Application No ".$applicationNo." with Registration No:" . $approveDetails['registrationId'];
             }
             # Rejection of grievance application
             if ($request->status == 0) {                                                                // Static
                 $this->finalRejectionOfAppication($request, $application);
-                $msg = "Application Rejected";
+                $msg = "Application Rejected of Application No $applicationNo";
             }
             $this->commit();
             $returnData["applicationNo"] = $applicationNo;
