@@ -63,7 +63,7 @@ class PetRegistrationReq extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'status'    => false,
-            'message'   => $validator->errors(),
+            'message'   => $validator->errors()->first(),
             'error'     => "Validation Error!"
         ], 200));
     }
