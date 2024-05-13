@@ -224,14 +224,24 @@ class PetWorkflowController extends Controller
 
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereNotIn('pet_active_registrations.current_role_id', $roleId)
+                ->orderByDesc('pet_active_registrations.id');
                 // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
-                ->orderByDesc('pet_active_registrations.id')
-                ->paginate($pages);
+                // ->paginate($pages);
 
             if (collect($waterList)->last() == 0 || !$waterList) {
                 $msg = "Data not found!";
             }
-            return responseMsgs(true, $msg, remove_null($waterList), '', '01', '.ms', 'Post', '');
+
+            $outbox = app(Pipeline::class)
+                ->send(
+                    $waterList
+                )
+                ->through([
+                    SearchByApplicationNo::class
+                ])
+                ->thenReturn()
+                ->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($outbox), '', '01', '.ms', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
