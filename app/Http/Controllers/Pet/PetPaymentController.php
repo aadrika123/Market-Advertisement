@@ -78,9 +78,9 @@ class PetPaymentController extends Controller
         $this->_apiKey                      = Config::get('pet.API_KEY_PAYMENT');
         $this->_refStatus                   = Config::get('pet.REF_STATUS');
         # Database connectivity
-        $this->_DB_NAME     = "pgsql_property";
-        $this->_DB          = DB::connection($this->_DB_NAME);
-        $this->_DB_NAME2    = "pgsql_masters";
+        $this->_DB_NAME    = "pgsql_masters";
+        $this->_DB         = DB::connection($this->_DB_NAME);
+        $this->_DB_NAME2   = "pgsql_property";
         $this->_DB2         = DB::connection($this->_DB_NAME2);
     }
 
@@ -92,12 +92,12 @@ class PetPaymentController extends Controller
     {
         $db1 = DB::connection()->getDatabaseName();
         $db2 = $this->_DB->getDatabaseName();
-        $db3 = $this->_DB2->getDatabaseName();
+        // $db3 = $this->_DB2->getDatabaseName();
         DB::beginTransaction();
         if ($db1 != $db2)
             $this->_DB->beginTransaction();
-        if ($db1 != $db3 && $db2 != $db3)
-            $this->_DB2->beginTransaction();
+        // if ($db1 != $db3 && $db2 != $db3)
+        //     $this->_DB2->beginTransaction();
     }
     /**
      * | Database transaction connection
@@ -106,12 +106,12 @@ class PetPaymentController extends Controller
     {
         $db1 = DB::connection()->getDatabaseName();
         $db2 = $this->_DB->getDatabaseName();
-        $db3 = $this->_DB2->getDatabaseName();
+        // $db3 = $this->_DB2->getDatabaseName();
         DB::rollBack();
         if ($db1 != $db2)
             $this->_DB->rollBack();
-        if ($db1 != $db3 && $db2 != $db3)
-            $this->_DB2->rollBack();
+        // if ($db1 != $db3 && $db2 != $db3)
+        //     $this->_DB2->rollBack();
     }
     /**
      * | Database transaction connection
@@ -120,12 +120,12 @@ class PetPaymentController extends Controller
     {
         $db1 = DB::connection()->getDatabaseName();
         $db2 = $this->_DB->getDatabaseName();
-        $db3 = $this->_DB2->getDatabaseName();
+        // $db3 = $this->_DB2->getDatabaseName();
         DB::commit();
         if ($db1 != $db2)
             $this->_DB->commit();
-        if ($db1 != $db3 && $db2 != $db3)
-            $this->_DB2->commit();
+        // if ($db1 != $db3 && $db2 != $db3)
+        //     $this->_DB2->commit();
     }
 
     #------------------------------------------------------------------------------------------------------------------------------------------------#
