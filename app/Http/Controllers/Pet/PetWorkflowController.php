@@ -18,6 +18,7 @@ use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflow;
 use App\Models\Workflows\WfWorkflowrolemap;
 use App\Models\Workflows\WorkflowTrack;
+use App\Pipelines\Pet\SearchByApplicantName;
 use App\Traits\Workflow\Workflow;
 use Carbon\Carbon;
 use Exception;
@@ -162,7 +163,8 @@ class PetWorkflowController extends Controller
                     $waterList
                 )
                 ->through([
-                    SearchByApplicationNo::class
+                    SearchByApplicationNo::class,
+                    SearchByApplicantName::class
                 ])
                 ->thenReturn()
                 ->paginate($pages);
@@ -237,7 +239,8 @@ class PetWorkflowController extends Controller
                     $waterList
                 )
                 ->through([
-                    SearchByApplicationNo::class
+                    SearchByApplicationNo::class,
+                    SearchByApplicantName::class
                 ])
                 ->thenReturn()
                 ->paginate($pages);
