@@ -43,8 +43,8 @@ class PetPaymentReq extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'status'    => false,
-            'message'   => "Validation Error!",
-            'error'     => $validator->errors()
+            'message'   => $validator->errors()->first(),
+            'error'     => "Validation Error!"
         ], 200));
     }
 }
