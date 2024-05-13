@@ -810,7 +810,7 @@ class PetPaymentController extends Controller
 
             if (!isset($userId)) {
                 $data = $PetTransaction->cashDtl($date)
-                    ->where('pet_trans.ulb_id', $user->ulb_id)
+                    ->where('penalty_transactions.ulb_id', $user->ulb_id)
                     ->get();
             }
 
@@ -854,6 +854,7 @@ class PetPaymentController extends Controller
             $details = $PetTransaction->cashDtl($date, $userId)
                 ->where('emp_dtl_id', $userId)
                 ->get();
+           
 
             if (collect($details)->isEmpty())
                 throw new Exception("No Application Found for this id");
@@ -865,7 +866,8 @@ class PetPaymentController extends Controller
             $data['date'] = Carbon::parse($date)->format('d-m-Y');
             $data['tcId'] = $userId;
 
-            return responseMsgs(true, "Cash Verification Details", remove_null($data), $apiId, $version, responseTime(), "POST", $req->deviceId);
+            
+            return responseMsgs(true, "Cash Verification Details", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
