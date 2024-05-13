@@ -189,7 +189,6 @@ class PetApprovedRegistration extends Model
             'pet_approve_applicants.*',
             'pet_approved_registrations.status as registrationStatus',
             'pet_approve_details.status as petStatus',
-            DB::raw("TO_CHAR(pet_approve_details.dob, 'DD-MM-YYYY') as dob"),
             'pet_approve_applicants.status as applicantsStatus',
             'ulb_ward_masters.ward_name',
             'ulb_masters.ulb_name',
