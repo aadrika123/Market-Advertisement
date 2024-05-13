@@ -81,7 +81,7 @@ class PetPaymentController extends Controller
         $this->_DB_NAME    = "pgsql_masters";
         $this->_DB         = DB::connection($this->_DB_NAME);
         $this->_DB_NAME2   = "pgsql_property";
-        $this->_DB2         = DB::connection($this->_DB_NAME2);
+        $this->_DB2        = DB::connection($this->_DB_NAME2);
     }
 
 
