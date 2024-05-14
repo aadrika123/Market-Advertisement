@@ -40,7 +40,7 @@ class UlbMaster extends Model
             "mobile_no" => $ulb->mobile_no,
             "mobile_no_2" => $ulb->toll_free_no,
             "email" => $ulb->email,
-            "state_logo" => $docBaseUrl . "/" . "custom/jhk-govt-logo.png",
+            "state_logo" => $docBaseUrl . "/" . "Uploads/Icon/jharkhand.png",
             "ulb_logo" => $docBaseUrl . "/" . $ulb->logo,
             "ulb_parent_website" => $ulb->parent_website,
             "short_name" => $ulb->short_name,
