@@ -594,7 +594,7 @@ class PetRegistrationController extends Controller
         $type = ["PET_VACCINATION", "LEPTOSPIROSIS_VACCINATION", "PET_PHOTO"];      // "ADDRESS PROOF"
         if ($application->owner_type == $confOwnerType['Tenant'])                   // Holding No, SAF No // Static
         {
-            $type = ["TENANTED", "NOC"];
+            $type = array_merge($type, ["TENANTED", "NOC"]);;
         }
         return $mRefRequiredDocument->getCollectiveDocByCode($confPetModuleId, $type);
     }
