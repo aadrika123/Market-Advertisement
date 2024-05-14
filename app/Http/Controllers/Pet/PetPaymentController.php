@@ -654,6 +654,8 @@ class PetPaymentController extends Controller
             $petApprovedDtls = $mPetApprovedRegistration->getPetApprovedApplicationRegistrationId($request->registrationId)->first();
             $ulbDtl         = $mUlbMaster->getUlbDetails($petApprovedDtls->ulb_id);
             $petApprovedDtls->ulbDetails = $ulbDtl;
+            $petApprovedDtls->issueDate = $petApprovedDtls->approve_date;
+            $petApprovedDtls->expiredDate = $petApprovedDtls->approve_end_date;
 
             return responseMsgs(true, 'Pet License', $petApprovedDtls, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
