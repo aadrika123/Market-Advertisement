@@ -661,7 +661,7 @@ class PetWorkflowController extends Controller
             return responseMsgs(true, $msg, $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(false, $e->getMessage(), $e->getLine(), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
