@@ -624,14 +624,13 @@ class PetRegistrationController extends Controller
      */
     public function uploadPetDoc(Request $req)
     {
-        $extention = $req->document->getClientOriginalExtension();
-        $validated = Validator::make(
-            $req->all(),
+        $extension = $req->document->getClientOriginalExtension();
+        $validated = Validator::make($req->all(),
             [
                 "applicationId" => "required|numeric",
-                "document"      => "required|mimes:pdf,jpeg,png,jpg" . (strtolower($extention) == 'pdf' ? 'max:10240' : 'max:10240'),
+                "document"      => "required|mimes:pdf,jpeg,png,jpg" . (strtolower($extension) == 'pdf' ? '|max:2048' : '|max:2048'),
                 "docCode"       => "required",
-                "docCategory"   => "required",                                  // Recheck in case of undefined
+                "docCategory"   => "required", // Make sure to verify if this rule is appropriate for your application
             ]
         );
         if ($validated->fails())

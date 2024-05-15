@@ -227,7 +227,7 @@ if (!function_exists('authUser')) {
 if (!function_exists("validationError")) {
     function validationError($validator)
     {
-        return responseMsg(false, 'Validation Error', $validator->errors()->all());
+        return responseMsg(false, $validator->errors()->first(), 'Validation Error');
     }
 }
 
@@ -369,7 +369,7 @@ if (!function_exists('getClientIpAddress')) {
             });
         }
     }
-    
+
     if (!function_exists('FyListdescForShop')) {
         function FyListdescForShop($date = null)
         {
