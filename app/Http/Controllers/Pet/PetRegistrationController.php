@@ -1456,10 +1456,16 @@ class PetRegistrationController extends Controller
                         "wf_roles.role_name",
                         "pet_approved_registrations.status as registrationSatus",
                         DB::raw("CASE 
-                        WHEN pet_approved_registrations.status = 1 THEN 'Approved'
-                        WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
-                        END as current_status")
+                                    WHEN pet_approved_registrations.status = 1 THEN 'Approved'
+                                    WHEN pet_approved_registrations.status = 2 THEN 'Under Renewal Process'
+                                END as current_status"),
+                        "pet_renewal_registrations.id as renewal_id",
+                        DB::raw("CASE 
+                                    WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'false'
+                                        else 'true'
+                                END as preview_button"),
                     )
+                    ->leftJoin('pet_renewal_registrations','pet_renewal_registrations.registration_id','pet_approved_registrations.registration_id')
                     ->where('pet_approved_registrations.status', '<>', 0)
                     ->where('pet_approved_registrations.citizen_id', $user->id)
                     ->orderByDesc('pet_approved_registrations.id')
