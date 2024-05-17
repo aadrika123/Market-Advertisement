@@ -85,13 +85,25 @@ class VehicleAdvetController extends Controller
         try {
             // Variable Initialization
             $advVehicle = new AdvActiveVehicle();
-            if ($req->auth['user_type'] == 'JSK') {
-                $userId = ['userId' => $req->auth['id']];
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
+            // if ($req->auth['user_type'] == 'JSK') {
+            //     $userId = ['userId' => $req->auth['id']];
+            //     $req->request->add($userId);
+            // } else {
+            //     $citizenId = ['citizenId' => $req->auth['id']];
+            //     $req->request->add($citizenId);
+            // }
+            if ($user->user_type == 'JSK') {
+                $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
                 $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            $req->request->add(['ulbId' => $ulbId]);
 
             // $mCalculateRate = new CalculateRate;
             // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
@@ -653,10 +665,10 @@ class VehicleAdvetController extends Controller
         $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
-        if ($roleId == $wfLevel['DA']){
+        if ($roleId == $wfLevel['DA']) {
             $data = $data->get();                                                                                           // If DA Then show all docs
-        }else{
-            $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
+        } else {
+            $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
         $data = (new DocumentUpload())->getDocUrl($data);
         // $data1 = collect($data)->map(function ($value) use ($appUrl) {
