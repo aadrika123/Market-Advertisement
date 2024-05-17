@@ -553,6 +553,7 @@ class ParamController extends Controller
      * | Advertisement Dashboard
      * | Function - 05
      * | API - 05
+     * modified by prity pandey
      */
     public function advertDashboard(Request $req)
     {
