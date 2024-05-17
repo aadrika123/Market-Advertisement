@@ -82,6 +82,7 @@ class PrivateLandController extends Controller
      * | Apply For Private Land Advertisement
      * | Function - 01
      * | API - 01
+     * modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {

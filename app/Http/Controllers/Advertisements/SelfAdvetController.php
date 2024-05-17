@@ -90,6 +90,7 @@ class SelfAdvetController extends Controller
      * | @param StoreRequest 
      * | Function - 01
      * | API No. - 01
+     * Modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {
