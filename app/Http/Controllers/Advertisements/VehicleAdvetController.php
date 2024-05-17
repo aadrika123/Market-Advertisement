@@ -107,7 +107,7 @@ class VehicleAdvetController extends Controller
 
             // $mCalculateRate = new CalculateRate;
             // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $ulbId);
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);

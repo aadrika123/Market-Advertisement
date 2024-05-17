@@ -135,8 +135,7 @@ class AdvActiveVehicle extends Model
         // return $metaReqs;
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
         $mDocuments = $req->documents;
-      return      $this->uploadDocument($tempId, $mDocuments, $req->auth);
-
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
         return $req->application_no;
     }
 
