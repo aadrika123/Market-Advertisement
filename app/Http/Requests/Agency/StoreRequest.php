@@ -26,7 +26,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'ulbId' => 'required|numeric',
+            'ulbId' => 'nullable|numeric',
             'entityType' => 'required|integer',
             'entityName' => 'required|string',
             'address' => 'required|string',

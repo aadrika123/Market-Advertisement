@@ -79,16 +79,13 @@ class VehicleAdvetController extends Controller
      * | Apply for new document
      * | Function - 01
      * | API - 01
+     * Modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {
         try {
             // Variable Initialization
             $advVehicle = new AdvActiveVehicle();
-            $user = authUser($req);
-            $ulbId = $req->ulbId ?? $user->ulb_id;
-            if (!$ulbId)
-                throw new Exception("Ulb Not Found");
             // if ($req->auth['user_type'] == 'JSK') {
             //     $userId = ['userId' => $req->auth['id']];
             //     $req->request->add($userId);
@@ -96,6 +93,10 @@ class VehicleAdvetController extends Controller
             //     $citizenId = ['citizenId' => $req->auth['id']];
             //     $req->request->add($citizenId);
             // }
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
             if ($user->user_type == 'JSK') {
                 $userId = ['userId' => $user->id];
                 $req->request->add($userId);

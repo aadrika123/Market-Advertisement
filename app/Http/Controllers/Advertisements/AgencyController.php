@@ -98,13 +98,25 @@ class AgencyController extends Controller
             // Variable initialization
 
             $agency = new AdvActiveAgency();
-            if ($req->auth['user_type'] == 'JSK') {
-                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            // if ($req->auth['user_type'] == 'JSK') {
+            //     $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            //     $req->request->add($userId);
+            // } else {
+            //     $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+            //     $req->request->add($citizenId);
+            // }
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
+            if ($user->user_type == 'JSK') {
+                $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+                $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            $req->request->add(['ulbId' => $ulbId]);
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);    // Id Generation 
             $generatedId = $idGeneration->generate();
