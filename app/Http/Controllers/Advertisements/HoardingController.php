@@ -99,15 +99,17 @@ class HoardingController extends Controller
     public function listTypology(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            "ulbId" => "required|integer",
+            "ulbId" => "nullable|integer",
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
             // Variable initialization
             $mAdvTypologyMstr = new AdvTypologyMstr();
-            $typologyList = $mAdvTypologyMstr->listTypology1($req->ulbId);
+            $typologyList = $mAdvTypologyMstr->listTypology1($ulbId);
             $typologyList = $typologyList->groupBy('type');
             $fData = array();
             foreach ($typologyList as $key => $data) {
