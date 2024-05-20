@@ -78,10 +78,9 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication($userId)
+    public function listjskApprovedApplication()
     {
-        return AdvVehicle::where('user_id', $userId)
-            ->select(
+        return AdvVehicle::select(
                 'id',
                 'application_no',
                 'application_date',
@@ -90,9 +89,10 @@ class AdvVehicle extends Model
                 'payment_status',
                 'payment_amount',
                 'approve_date',
+                'mobile_no'
             )
-            ->orderByDesc('temp_id')
-            ->get();
+            ->orderByDesc('id');
+            //->get();
     }
 
     /**

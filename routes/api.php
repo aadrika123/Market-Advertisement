@@ -70,8 +70,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/list-approved', 'listApproved');                                               // 20 ( Approved list for Citizen)
         Route::post('advert/self/list-rejected', 'listRejected');                                               // 21 ( Rejected list for Citizen)
         Route::post('advert/self/get-jsk-applications', 'getJSKApplications');                                  // 22 ( Get Applied Applications List By JSK )
+        //written by prity pandey
         Route::post('advert/self/list-jsk-approved-application', 'listJskApprovedApplication');                 // 23 ( Approved list for JSK)
-        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 24 ( Rejected list for JSK)    
+        Route::post('advert/self/approved/get-details-by-id', 'getApproveDetailsById');
+        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 24 ( Rejected list for JSK)  
+        //=============================end==============  
         Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');                         // 25 ( Generate Payment Order ID)
         Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');         // 26 ( Application Details For Payments )
         // Route::post('advert/self/get-payment-details', 'getPaymentDetails');                                 // 19 ( Payments Details )
@@ -108,6 +111,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/advertisement-dashboard', 'advertisementDashboard');                                // 10 ( Advertisement Dashboard )
         // Route::post('crud/district-mstrs', 'districtMstrs');                                                 // 11 ( Get District List )
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');                                  // 12 ( Application Details For Payments )
+
+        //written by prity pandey
+        Route::post('advert/self/search', 'selfAdvertisementsearchApplication');
+        Route::post('advert/jsk/approved-list', 'selfAdvertisementApprovedApplication');
     });
 
     /**

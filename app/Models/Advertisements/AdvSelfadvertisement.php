@@ -78,10 +78,9 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listJskApprovedApplication($userId)
+    public function listJskApprovedApplication()
     {
-        return AdvSelfadvertisement::where('user_id', $userId)
-            ->select(
+        return AdvSelfadvertisement::select(
                 'id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
@@ -94,9 +93,10 @@ class AdvSelfadvertisement extends Model
                 'license_no',
                 'ulb_id',
                 'workflow_id',
+                'mobile_no'
             )
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+            //->get();
     }
 
 
@@ -330,5 +330,88 @@ class AdvSelfadvertisement extends Model
     public function approveListForReport()
     {
         return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Approve' as application_status"));
+    }
+
+
+    public function getDetailsById($id, $type = NULL)
+    {
+        $details = array();
+        if ($type == 'Active' || $type == NULL) {
+            $details = DB::table('adv_active_selfadvertisements')
+                ->select(
+                    'adv_active_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role',
+                    'cat.type',
+                )
+                ->where('adv_active_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_active_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_active_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_active_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_active_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_active_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_active_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_active_selfadvertisements.advt_category')
+                ->first();
+        } elseif ($type == 'Reject') {
+            $details = DB::table('adv_rejected_selfadvertisements')
+                ->select(
+                    'adv_rejected_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role',
+                    'cat.type',
+                )
+                ->where('adv_rejected_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_rejected_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_rejected_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_rejected_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_rejected_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_rejected_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_rejected_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_rejected_selfadvertisements.advt_category')
+                ->first();
+        } elseif ($type == 'Approve') {
+            $details = DB::table('adv_selfadvertisements')
+                ->select(
+                    'adv_selfadvertisements.*',
+                    'u.ulb_name',
+                    'p.string_parameter as m_license_year',
+                    'w.ward_name as ward_no',
+                    'pw.ward_name as permanent_ward_no',
+                    'ew.ward_name as entity_ward_no',
+                    'dp.string_parameter as m_display_type',
+                    'il.string_parameter as m_installation_location',
+                    'r.role_name as m_current_role',
+                    'cat.type',
+                )
+                ->where('adv_selfadvertisements.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
+                ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_selfadvertisements.ward_id')
+                ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
+                ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_selfadvertisements.entity_ward_id')
+                ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
+                ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
+                ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
+                ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_selfadvertisements.advt_category')
+                ->first();
+        }
+        return json_decode(json_encode($details), true);            // Convert Std Class to Array
     }
 }

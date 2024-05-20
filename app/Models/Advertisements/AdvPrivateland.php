@@ -76,18 +76,18 @@ class AdvPrivateland extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication($userId)
+    public function listjskApprovedApplication()
     {
-        return AdvPrivateland::where('user_id', $userId)
-            ->select(
+        return AdvPrivateland::select(
                 'id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'payment_amount',
                 'approve_date',
+                'mobile_no'
             )
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+            //->get();
     }
 
 

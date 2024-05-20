@@ -318,10 +318,10 @@ class SelfAdvetController extends Controller
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "adv_active_selfadvertisements.id";                         // Static
-            
-        // DB::connection('pgsql_masters')->enableQueryLog();
+
+            // DB::connection('pgsql_masters')->enableQueryLog();
             $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
-        //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
+            //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
@@ -744,10 +744,10 @@ class SelfAdvetController extends Controller
         $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
-        if ($roleId == $wfLevel['DA']){
+        if ($roleId == $wfLevel['DA']) {
             $data = $data->get();                                                                                           // If DA Then show all docs
-        }else{
-            $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
+        } else {
+            $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
         // $data1 = collect($data)->map(function ($value) use ($appUrl) {
         //     $value->doc_path = $appUrl . $value->doc_path;
@@ -973,26 +973,72 @@ class SelfAdvetController extends Controller
      * | @param Request $req
      * |  Function - 24
      * |  API - 23
+     * //writen by prity pandey
      */
-    public function listJskApprovedApplication(Request $req)
+
+    public function listJskApprovedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            $userId = $req->auth['id'];
-            // $userId = authUser()->id;
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $userId = $request->auth['id'];
+
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->listJskApprovedApplication($userId);
+            $applications = $mAdvSelfadvertisements->listJskApprovedApplication();
 
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_selfadvertisements.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_selfadvertisements.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_selfadvertisements.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
 
-            return responseMsgs(true, "Approved Application List", $data1, "050123", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
+
 
     /**
      * | Reject Application List for JSK
@@ -1735,4 +1781,79 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050138", 1.0, "271ms", "POST", "", "");
         }
     }
+
+    //written by prity pandey
+    public function getApproveDetailsById(Request $req)
+    {
+        // return $req;
+        try {
+            // Variable initialization
+            $mAdvActiveSelfadvertisement = new AdvSelfadvertisement();
+            $mWorkflowTracks        = new WorkflowTrack();
+            $fullDetailsData = array();
+            $type = NULL;
+            if (isset($req->type)) {
+                $type = $req->type;
+            }
+            if ($req->applicationId) {
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);   // Find Details From Model
+            } else {
+                throw new Exception("Not Pass Application Id");
+            }
+
+            if (!$data)
+                throw new Exception("Application Not Found");
+
+            // Basic Details
+            $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
+            $basicElement = [
+                'headerTitle' => "Basic Details",
+                "data" => $basicDetails
+            ];
+
+            $cardDetails = $this->generateCardDetails($data);
+            $cardElement = [
+                'headerTitle' => "Self Advertisement Details",
+                'data' => $cardDetails
+            ];
+            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
+            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
+
+            # Level comment
+            $mtableId = $req->applicationId;
+            $mRefTable = "adv_active_selfadvertisements.id";                         // Static
+
+            // DB::connection('pgsql_masters')->enableQueryLog();
+            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+            //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
+
+            #citizen comment
+            $refCitizenId = $data['citizen_id'];
+            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+
+            $metaReqs['customFor'] = 'SELF';
+            $metaReqs['wfRoleId'] = $data['current_role_id'];
+            $metaReqs['workflowId'] = $data['workflow_id'];
+            $metaReqs['lastRoleId'] = $data['last_role_id'];
+
+            $req->request->add($metaReqs);
+            $forwardBackward = $this->getRoleDetails($req);
+            $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
+
+            $fullDetailsData = remove_null($fullDetailsData);
+
+            $fullDetailsData['application_no'] = $data['application_no'];
+            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
+            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
+            if (isset($data['payment_amount'])) {
+                $fullDetailsData['payment_amount'] = $data['payment_amount'];
+            }
+            $fullDetailsData['timelineData'] = collect($metaReqs);
+            $fullDetailsData['workflowId'] = $data['workflow_id'];
+            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050107", "1.0", "", 'POST', $req->deviceId ?? "");
+        }
+    }
+
 }
