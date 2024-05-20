@@ -1159,8 +1159,8 @@ class SelfAdvetController extends Controller
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
+            'applicationId' => 'required|string'
+            //'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
