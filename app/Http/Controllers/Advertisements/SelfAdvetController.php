@@ -1785,75 +1785,42 @@ class SelfAdvetController extends Controller
     //written by prity pandey
     public function getApproveDetailsById(Request $req)
     {
-        // return $req;
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
+            $applicationId = $req->applicationId;
             $mAdvActiveSelfadvertisement = new AdvSelfadvertisement();
-            $mWorkflowTracks        = new WorkflowTrack();
-            $fullDetailsData = array();
-            $type = NULL;
-            if (isset($req->type)) {
-                $type = $req->type;
-            }
-            if ($req->applicationId) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($req->applicationId, $type);   // Find Details From Model
-            } else {
-                throw new Exception("Not Pass Application Id");
-            }
+            $mtransaction = new AdvMarTransaction();
 
-            if (!$data)
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
                 throw new Exception("Application Not Found");
-
-            // Basic Details
-            $basicDetails = $this->generateBasicDetails($data);                             // Trait function to get Basic Details
-            $basicElement = [
-                'headerTitle' => "Basic Details",
-                "data" => $basicDetails
-            ];
-
-            $cardDetails = $this->generateCardDetails($data);
-            $cardElement = [
-                'headerTitle' => "Self Advertisement Details",
-                'data' => $cardDetails
-            ];
-            $fullDetailsData['fullDetailsData']['dataArray'] = new Collection([$basicElement]);
-            $fullDetailsData['fullDetailsData']['cardArray'] = new Collection($cardElement);
-
-            # Level comment
-            $mtableId = $req->applicationId;
-            $mRefTable = "adv_active_selfadvertisements.id";                         // Static
-
-            // DB::connection('pgsql_masters')->enableQueryLog();
-            $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
-            //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
-
-            #citizen comment
-            $refCitizenId = $data['citizen_id'];
-            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
-
-            $metaReqs['customFor'] = 'SELF';
-            $metaReqs['wfRoleId'] = $data['current_role_id'];
-            $metaReqs['workflowId'] = $data['workflow_id'];
-            $metaReqs['lastRoleId'] = $data['last_role_id'];
-
-            $req->request->add($metaReqs);
-            $forwardBackward = $this->getRoleDetails($req);
-            $fullDetailsData['roleDetails'] = collect($forwardBackward)['original']['data'];
-
-            $fullDetailsData = remove_null($fullDetailsData);
-
-            $fullDetailsData['application_no'] = $data['application_no'];
-            $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
-            $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
-            if (isset($data['payment_amount'])) {
-                $fullDetailsData['payment_amount'] = $data['payment_amount'];
             }
-            $fullDetailsData['timelineData'] = collect($metaReqs);
-            $fullDetailsData['workflowId'] = $data['workflow_id'];
-            return responseMsgs(true, 'Data Fetched', $fullDetailsData, "050107", "1.0", responseTime(), "POST", $req->deviceId);
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+            if (!$tranDetails) {
+                throw new Exception("Transaction details not found there is some error in data !");
+            }
+            $approveApplicationDetails['basicDetails']    = $data;
+            $approveApplicationDetails['paymentDetails']        =$tranDetails;   
+
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050107", "1.0", "", 'POST', $req->deviceId ?? "");
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
-
 }

@@ -38,4 +38,22 @@ class AdvMarTransaction extends Model
         $addData->verify_status     = 1;
         $addData->save();
     }
+    public function getTranByApplicationId($applicationId)
+    {
+        return AdvMarTransaction::select(
+            'adv_mar_transactions.id',
+            'adv_mar_transactions.transaction_no',
+            'adv_mar_transactions.transaction_date',
+            'adv_mar_transactions.amount',
+            'adv_mar_transactions.payment_mode',
+            'adv_mar_transactions.demand_amount',
+            'adv_mar_transactions.ulb_id',
+            'adv_mar_transactions.cheque_dd_no',
+            'adv_mar_transactions.cheque_date',
+            'adv_mar_transactions.bank_name',
+            'adv_mar_transactions.branch_name'
+        )
+            ->where('adv_mar_transactions.application_id', '=', $applicationId);
+           //->get();
+    }
 }
