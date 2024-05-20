@@ -1808,13 +1808,17 @@ class SelfAdvetController extends Controller
             if (!$data) {
                 throw new Exception("Application Not Found");
             }
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
-            if (!$tranDetails) {
-                throw new Exception("Transaction details not found there is some error in data !");
-            }
-            $approveApplicationDetails['basicDetails']    = $data;
-            $approveApplicationDetails['paymentDetails']        =$tranDetails;   
 
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
 
             // Return success response with the data
             return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
