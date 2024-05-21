@@ -94,7 +94,10 @@ class AdvSelfadvertisement extends Model
             'license_no',
             'ulb_id',
             'workflow_id',
-            'mobile_no'
+            'mobile_no',
+            'user_id',
+            'citizen_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();

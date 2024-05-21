@@ -16,8 +16,9 @@ class AdvMarTransaction extends Model
     public function addTransaction($req, $moduleId, $moduleType, $paymentMode)
     {
         $addData = new AdvMarTransaction();
-
+        $addData->user_id = $req->userId;
         $addData->module_id         = $moduleId;
+        $addData->user_id         = $req->userId;
         $addData->workflow_id       = $req->workflow_id;
         $addData->application_id    = $req->id;
         $addData->module_type       = $moduleType;
@@ -55,6 +56,14 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.verify_status'
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId);
-           //->get();
+        //->get();
+    }
+
+    public function cashDtl($date)
+    {
+        return AdvMarTransaction::select('adv_mar_transactions.*', 'adv_selfadvertisements.user_id')
+            ->leftjoin('adv_selfadvertisements', 'adv_selfadvertisements.id', 'AdvMarTransaction.application_id')
+            ->where('verify_status', 0)
+            ->where('transaction_date', $date);
     }
 }

@@ -1260,19 +1260,19 @@ class ParamController extends Controller
 
             // Fetch applications for each advertisement type
             $mAdvActivePrivateland = new AdvPrivateland();
-            $AdvActivePrivateland = ($mAdvActivePrivateland->select('application_no','ulb_id',"application_type","applicant","email",DB::raw('self as type'))->where('ulb_id', $ulbId));
+            $AdvActivePrivateland = ($mAdvActivePrivateland->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
 
             $mAdvActiveSelfadvertisement = new AdvSelfadvertisement();
-            $AdvActiveSelfadvertisement = ($mAdvActiveSelfadvertisement->select('application_no','ulb_id',"application_type","applicant","email",DB::raw('self as type'))->where('ulb_id', $ulbId));
+            $AdvActiveSelfadvertisement = ($mAdvActiveSelfadvertisement->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
 
             $mAdvActiveVehicle = new AdvVehicle();
-            $AdvActiveVehicle = ($mAdvActiveVehicle->select('application_no','ulb_id',"application_type","applicant","email",DB::raw('self as type'))->where('ulb_id', $ulbId));
+            $AdvActiveVehicle = ($mAdvActiveVehicle->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
 
             $mAdvActiveAgency = new AdvAgency();
-            $AdvActiveAgency = ($mAdvActiveAgency->select('application_no','ulb_id',"application_type","applicant","email",DB::raw('self as type'))->where('ulb_id', $ulbId));
+            $AdvActiveAgency = ($mAdvActiveAgency->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
 
             $mAdvActiveHoarding = new AdvHoarding();
-            $AdvActiveHoarding = ($mAdvActiveHoarding->select('application_no','ulb_id',"application_type","applicant","email",DB::raw('self as type'))->where('ulb_id', $ulbId));
+            $AdvActiveHoarding = ($mAdvActiveHoarding->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
 
             // Filtering based on search parameters
             if ($key && $parameter) {
@@ -1306,55 +1306,54 @@ class ParamController extends Controller
                     $msg = "No data found";
                 }
             }
-            $advAPvtLCount= $AdvActivePrivateland->count();
-            $advASelfACount = $AdvActiveSelfadvertisement->count() ;
-            $advAVehicleCount= $AdvActiveVehicle->count();
+            $advAPvtLCount = $AdvActivePrivateland->count();
+            $advASelfACount = $AdvActiveSelfadvertisement->count();
+            $advAVehicleCount = $AdvActiveVehicle->count();
             $advAAgencyCount = $AdvActiveAgency->count();
             $advAHoardingCount = $AdvActiveHoarding->count();
             $total =  $advAPvtLCount
-                    + $advASelfACount
-                    + $advAVehicleCount
-                    + $advAAgencyCount
-                    + $advAHoardingCount;
+                + $advASelfACount
+                + $advAVehicleCount
+                + $advAAgencyCount
+                + $advAHoardingCount;
             $perPage = $request->perPage ? $request->perPage :  10;
             $current_page = $page = $request->page && $request->page > 0 ? $request->page : 1;
-            $last_page = Ceil($total/$perPage);
+            $last_page = Ceil($total / $perPage);
             $data = collect();
             $tbl = "";
-            switch($perPage)
-            {
-                case ($perPage * $page) <= $advAPvtLCount: 
-                    $request->merge(["page"=>$page]);
+            switch ($perPage) {
+                case ($perPage * $page) <= $advAPvtLCount:
+                    $request->merge(["page" => $page]);
                     $data = $AdvActivePrivateland->paginate($perPage);
                     $tbl = $mAdvActivePrivateland->getTable();
                     break;
-                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount: 
-                    $request->merge(["page"=>$page - Ceil($advAPvtLCount/$perPage)]);                    
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount:
+                    $request->merge(["page" => $page - Ceil($advAPvtLCount / $perPage)]);
                     $data = $AdvActiveSelfadvertisement->paginate($perPage);
                     $tbl = $mAdvActiveSelfadvertisement->getTable();
                     break;
-                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount: 
-                    $request->merge(["page"=>$page - Ceil(($advAPvtLCount + $advASelfACount)/$perPage)]);
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount) / $perPage)]);
                     $data = $AdvActiveVehicle->paginate($perPage);
                     $tbl = $mAdvActiveVehicle->getTable();
                     break;
-                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount: 
-                    $request->merge(["page"=>$page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount)/$perPage)]);
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount) / $perPage)]);
                     $data = $AdvActiveAgency->paginate($perPage);
                     $tbl = $mAdvActiveAgency->getTable();
                     break;
-                default : 
-                    $request->merge(["page"=>$page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount)/$perPage)]);
+                default:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount) / $perPage)]);
                     $data = $AdvActiveHoarding->paginate($perPage);
                     $tbl = $mAdvActiveHoarding->getTable();
                     break;
             }
             $list = [
-                "tbl"=>$tbl,
-                "current_page"=>$current_page,
+                "tbl" => $tbl,
+                "current_page" => $current_page,
                 "last_page" => $last_page,
-                "total"=>$total,
-                "data"=>$data->items()
+                "total" => $total,
+                "data" => $data->items()
 
             ];
             // Paginate and return response
@@ -1362,6 +1361,93 @@ class ParamController extends Controller
             return responseMsgs(true, $msg, $list, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    //================end of unused code============
+    /**
+     * | Unverified Cash Verification List
+     */
+    public function listCashVerification(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'required|date',
+            'userId' => 'nullable|int'
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0703";
+            $version = "01";
+            $user = authUser($req);
+            $AdvTransaction = new AdvMarTransaction();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+
+            if (isset($userId)) {
+                $data = $AdvTransaction->cashDtl($date)
+                    ->where('adv_mar_transactions.ulb_id', $user->ulb_id)
+                    ->where('user_id', $userId)
+                    ->get();
+            }
+
+            // if (!isset($userId)) {
+            //     $data = $PetTransaction->cashDtl($date)
+            //         ->where('pet_trans.ulb_id', $user->ulb_id)
+            //         ->get();
+            // }
+
+            $collection = collect($data->groupBy("user_id")->values());
+
+            $data = $collection->map(function ($val) use ($date) {
+                $total =  $val->sum('amount');
+                return [
+                    "id" => $val[0]['id'],
+                    "user_id" => $val[0]['emp_dtl_id'],
+                    //"officer_name" => $val[0]['user_name'],
+                    //"mobile" => $val[0]['mobile'],
+                    "amount" => $total,
+                    "date" => Carbon::parse($date)->format('d-m-Y'),
+                ];
+            });
+
+            return responseMsgs(true, "Cash Verification List", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function cashVerificationDtl(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date" => "required|date",
+            "userId" => "required|int",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0704";
+            $version = "01";
+            $AdvTransaction = new AdvMarTransaction();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+            $details = $AdvTransaction->cashDtl($date, $userId)
+                ->where('user_id', $userId)
+                ->get();
+
+
+            if (collect($details)->isEmpty())
+                throw new Exception("No Application Found for this id");
+
+            $data['tranDtl'] = collect($details)->values();
+            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('amount');
+            $data['totalAmount'] =  $details->sum('amount');
+            $data['numberOfTransaction'] =  $details->count();
+            $data['date'] = Carbon::parse($date)->format('d-m-Y');
+            $data['tcId'] = $userId;
+            return responseMsgs(true, "Cash Verification Details", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
     }
 

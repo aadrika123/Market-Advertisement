@@ -999,7 +999,6 @@ class SelfAdvetController extends Controller
 
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
             $applications = $mAdvSelfadvertisements->listJskApprovedApplication();
-
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1159,19 +1158,22 @@ class SelfAdvetController extends Controller
     public function paymentByCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string'
-            //'status' => 'required|integer'
+            'applicationId' => 'required|string',
+            'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
             // Variable initialization
+            $userId = $req->auth['id'];
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
             $data = $mAdvSelfadvertisement->paymentByCash($req);
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
+            # Water Transactions
+            $req->merge(['userId' => $userId]);
             $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
             DB::commit();
 
@@ -1853,7 +1855,7 @@ class SelfAdvetController extends Controller
             $workflowId = $AdvDetails->workflow_id;
             $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
             $data = $refDocUpload->getDocUrl($data);
-            return responseMsgs(true, "Uploaded Documents", remove_null($data), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }

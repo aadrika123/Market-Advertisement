@@ -114,8 +114,13 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('send-whatsapp-notification', 'sendWhatsAppNotification');                                  // 12 ( Application Details For Payments )
 
         //written by prity pandey
+        //not in used 
         Route::post('advert/self/search', 'selfAdvertisementsearchApplication');
         Route::post('advert/jsk/approved-list', 'selfAdvertisementApprovedApplication');
+       // ==================end of api ===================
+       Route::post('cash-verification-list', 'listCashVerification');
+       Route::post('cash-verification-dtl', 'cashVerificationDtl'); 
+
     });
 
     /**
