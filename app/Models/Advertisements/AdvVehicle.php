@@ -81,15 +81,23 @@ class AdvVehicle extends Model
     public function listjskApprovedApplication()
     {
         return AdvVehicle::select(
-                'id',
+                'adv_vehicles.id',
                 'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'payment_status',
-                'payment_amount',
-                'approve_date',
-                'mobile_no'
+                DB::raw("TO_CHAR(adv_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+                'adv_vehicles.application_type',
+                'adv_vehicles.applicant',
+                'adv_vehicles.applicant as owner_name',
+                'adv_vehicles.entity_name',
+                'adv_vehicles.mobile_no',
+                'adv_vehicles.license_no',
+                'adv_vehicles.payment_status',
+                'adv_vehicles.payment_amount',
+                'adv_vehicles.approve_date',
+                'adv_vehicles.citizen_id',
+                'adv_vehicles.valid_upto',
+                'adv_vehicles.valid_from',
+                'adv_vehicles.user_id',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
             ->orderByDesc('id');
             //->get();
