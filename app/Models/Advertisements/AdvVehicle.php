@@ -280,4 +280,30 @@ class AdvVehicle extends Model
     {
         return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
+
+
+    public function getDetailsById($appId)
+    {
+        return AdvVehicle::select(
+            'adv_vehicles.*',
+            'adv_vehicles.typology as typology_id',
+            'adv_vehicles.display_type as display_type_id',
+            'adv_vehicles.vehicle_type as vehicle_type_id',
+            'dt.string_parameter as display_type',
+            'vt.string_parameter as vehicle_type',
+            'typo.descriptions as typology',
+            'w.ward_name',
+            'pw.ward_name as permanent_ward_name',
+            'ulb.ulb_name',
+        )
+            ->leftJoin('ref_adv_paramstrings as dt', 'dt.id', '=', DB::raw('adv_vehicles.display_type::int'))
+            ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', DB::raw('adv_vehicles.vehicle_type::int'))
+            ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_vehicles.typology')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_vehicles.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_vehicles.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'adv_vehicles.ulb_id')
+            ->where('adv_vehicles.id', $appId);
+            //->first();
+    }
+
 }
