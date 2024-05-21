@@ -225,7 +225,7 @@ class AdvActiveVehicle extends Model
             $newRequest = new Request([
                 'document'=>$documentImg
             ]);
-           return $imageName = $docUpload->upload($newRequest);
+            $imageName = $docUpload->upload($newRequest);
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['activeId'] = $getApplicationDtls->id;
