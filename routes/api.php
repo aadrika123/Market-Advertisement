@@ -195,6 +195,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/get-jsk-applications', 'getJSKApplications');                                  // 18 ( Get Applied Applications List By JSK )
          //written by prity pandey
         Route::post('advert/pvt-land/list-jsk-approved-application', 'listjskApprovedApplication');                 // 19 ( Approved list for JSK)
+        Route::post('advert/pvt-land/approved/get-details-by-id', 'getApproveDetailsById');
+        Route::post('advert/pvt-land/view-approve-document', 'getUploadDocuments');
         Route::post('advert/pvt-land/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 20 ( Rejected list for JSK)  
         Route::post('advert/pvt-land/generate-payment-order-id', 'generatePaymentOrderId');                         // 21 ( Generate Payment Order ID)
         Route::post('advert/pvt-land/get-application-details-for-payment', 'getApplicationDetailsForPayment');      // 22 ( Application Details For Payments )

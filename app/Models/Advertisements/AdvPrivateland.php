@@ -79,14 +79,32 @@ class AdvPrivateland extends Model
     public function listjskApprovedApplication()
     {
         return AdvPrivateland::select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'payment_amount',
-                'approve_date',
-                'mobile_no'
-            )
-            ->orderByDesc('id');
+            'adv_privatelands.id',
+            'adv_privatelands.application_no',
+            'adv_privatelands.applicant',
+            'adv_privatelands.applicant as owner_name',
+            DB::raw("TO_CHAR(adv_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_privatelands.application_type',
+            'adv_privatelands.entity_name',
+            'adv_privatelands.mobile_no',
+            'adv_privatelands.entity_address',
+            'adv_privatelands.payment_amount',
+            'adv_privatelands.payment_status',
+            'adv_privatelands.valid_upto',
+            'adv_privatelands.valid_from',
+            'adv_privatelands.approve_date',
+            'adv_privatelands.citizen_id',
+            'adv_privatelands.user_id',
+            'adv_privatelands.ulb_id',
+            'adv_privatelands.workflow_id',
+            'adv_privatelands.license_no',
+            'adv_privatelands.payment_id',
+            DB::raw("'privateLand' as type"),
+            'um.ulb_name as ulb_name',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_privatelands.ulb_id')
+            ->orderByDesc('adv_privatelands.id');
             //->get();
     }
 
@@ -271,5 +289,31 @@ class AdvPrivateland extends Model
     public function approveListForReport()
     {
         return AdvPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Approve' as application_status"));
+    }
+
+    public function getDetailsById($appId)
+    {
+        return AdvPrivateland::select(
+            'adv_privatelands.*',
+            'adv_privatelands.typology as typology_id',
+            'adv_privatelands.zone as zone_id',
+            'adv_privatelands.display_type as display_type_id',
+            'adv_privatelands.installation_location as installation_location_id',
+            'il.string_parameter as installation_location',
+            'dt.string_parameter as display_type',
+            'typo.descriptions as typology',
+            'w.ward_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'ulb.ulb_name',
+        )
+            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_privatelands.installation_location::int'))
+            ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_privatelands.typology')
+            ->leftJoin('ref_adv_paramstrings as dt', 'dt.id', '=', DB::raw('adv_privatelands.display_type::int'))
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_privatelands.ward_id::int'))
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_privatelands.permanent_ward_id::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_privatelands.entity_ward_id::int'))
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', DB::raw('adv_privatelands.ulb_id::int'))
+            ->where('adv_privatelands.id', $appId);
     }
 }
