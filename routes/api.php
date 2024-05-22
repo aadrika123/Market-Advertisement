@@ -119,7 +119,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/search', 'selfAdvertisementsearchApplication');
         Route::post('advert/jsk/approved-list', 'selfAdvertisementApprovedApplication');
        // ==================end of api ===================
-       Route::post('cash-verification-list', 'listCashVerification');
+       Route::post('advert/cash-verification-list', 'listCashVerification');
        Route::post('cash-verification-dtl', 'cashVerificationDtl'); 
 
     });

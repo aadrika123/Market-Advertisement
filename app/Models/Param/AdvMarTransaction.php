@@ -97,8 +97,7 @@ class AdvMarTransaction extends Model
 
     public function cashDtl($date)
     {
-        return AdvMarTransaction::select('adv_mar_transactions.*', 'adv_selfadvertisements.user_id')
-            ->leftjoin('adv_selfadvertisements', 'adv_selfadvertisements.id', 'AdvMarTransaction.application_id')
+        return AdvMarTransaction::select('adv_mar_transactions.*')
             ->where('verify_status', 0)
             ->where('transaction_date', $date);
     }

@@ -501,9 +501,11 @@ class AdvActivePrivateland extends Model
                 'adv_active_privatelands.parked',
                 'adv_active_privatelands.doc_upload_status',
                 'adv_active_privatelands.mobile_no',
+                'adv_active_privatelands.payment_status',
                 DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
                 'um.ulb_name',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_privatelands.ulb_id')

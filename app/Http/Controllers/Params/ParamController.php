@@ -1391,11 +1391,12 @@ class ParamController extends Controller
                     ->get();
             }
 
-            // if (!isset($userId)) {
-            //     $data = $PetTransaction->cashDtl($date)
-            //         ->where('pet_trans.ulb_id', $user->ulb_id)
-            //         ->get();
-            // }
+            if (!isset($userId)) {
+                $data = $AdvTransaction->cashDtl($date)
+                    ->where('adv_mar_transactions.ulb_id', $user->ulb_id)
+                    ->where('user_id', $userId)
+                    ->get();
+            }
 
             $collection = collect($data->groupBy("user_id")->values());
 
@@ -1404,8 +1405,8 @@ class ParamController extends Controller
                 return [
                     "id" => $val[0]['id'],
                     "user_id" => $val[0]['emp_dtl_id'],
-                    //"officer_name" => $val[0]['user_name'],
-                    //"mobile" => $val[0]['mobile'],
+                    "officer_name" => $val[0]['user_name'],
+                    "mobile" => $val[0]['mobile'],
                     "amount" => $total,
                     "date" => Carbon::parse($date)->format('d-m-Y'),
                 ];

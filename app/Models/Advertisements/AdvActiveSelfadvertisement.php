@@ -484,6 +484,7 @@ class AdvActiveSelfadvertisement extends Model
                 DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
                 'um.ulb_name',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_selfadvertisements.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
