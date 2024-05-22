@@ -514,7 +514,7 @@ class AdvActiveVehicle extends Model
                 DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
                 'um.ulb_name',
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
