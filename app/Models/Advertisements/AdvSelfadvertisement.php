@@ -179,6 +179,10 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id = $mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId-" . time();
+            if($req->paymentMode == 'Cheque')
+            {
+                $pay_id = $mAdvSelfadvertisement->payment_id = "Cheque-$req->applicationId-" . time();
+            }
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_mode = "Cash";
 
