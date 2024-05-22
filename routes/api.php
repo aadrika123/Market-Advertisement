@@ -74,7 +74,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/list-jsk-approved-application', 'listJskApprovedApplication');                 // 23 ( Approved list for JSK)
         Route::post('advert/self/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('advert/self/view-approve-document', 'getUploadDocuments'); 
-        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 24 ( Rejected list for JSK)  
+        Route::post('advert/self/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 24 ( Rejected list for JSK) 
+        Route::post('advert/self/list-jsk-applied-application', 'listJskAppliedApplication'); 
         //=============================end==============  
         Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');                         // 25 ( Generate Payment Order ID)
         Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');         // 26 ( Application Details For Payments )
@@ -152,6 +153,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('advert/vehicle/view-approve-document', 'getUploadDocuments');
         Route::post('advert/vehicle/list-jsk-rejected-application', 'listJskRejectedApplication');              // 20 ( Rejected list for JSK)  
+        Route::post('advert/vehicle/list-jsk-applied-application', 'listJskAppliedApplication');
+        //====================end=====================
         Route::post('advert/vehicle/generate-payment-order-id', 'generatePaymentOrderId');                      // 21 ( Generate Payment Order ID)
         Route::post('advert/vehicle/get-application-details-for-payment', 'getApplicationDetailsForPayment');   // 22 ( Application Details For Payments )
         // Route::post('advert/vehicle/get-payment-details', 'getPaymentDetails');                              // 19 ( Application Details For Payments )
@@ -198,6 +201,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('advert/pvt-land/view-approve-document', 'getUploadDocuments');
         Route::post('advert/pvt-land/list-jsk-rejected-application', 'listJskRejectedApplication');                 // 20 ( Rejected list for JSK) 
+        Route::post('advert/pvt-land/list-jsk-applied-application', 'listJskAppliedApplication'); 
         //=====================end=================== 
         Route::post('advert/pvt-land/generate-payment-order-id', 'generatePaymentOrderId');                         // 21 ( Generate Payment Order ID)
         Route::post('advert/pvt-land/get-application-details-for-payment', 'getApplicationDetailsForPayment');      // 22 ( Application Details For Payments )

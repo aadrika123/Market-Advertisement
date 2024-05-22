@@ -466,4 +466,28 @@ class AdvActiveSelfadvertisement extends Model
     {
         return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Active' as application_status"));
     }
+
+    public function listAppliedApplicationsJsk()
+    { 
+        return AdvActiveSelfadvertisement::select(
+                'adv_active_selfadvertisements.id',
+                'adv_active_selfadvertisements.application_no',
+                'adv_active_selfadvertisements.applicant',
+                'adv_active_selfadvertisements.entity_name',
+                'adv_active_selfadvertisements.entity_address',
+                'adv_active_selfadvertisements.payment_status',
+                'adv_active_selfadvertisements.doc_upload_status',
+                'adv_active_selfadvertisements.application_type',
+                'adv_active_selfadvertisements.parked',
+                'adv_active_selfadvertisements.workflow_id',
+                'adv_active_selfadvertisements.mobile_no',
+                DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
+                'wr.role_name',
+                'um.ulb_name',
+            )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_selfadvertisements.current_role_id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
+            ->orderByDesc('adv_active_selfadvertisements.id');
+            //->get();
+    }
 }
