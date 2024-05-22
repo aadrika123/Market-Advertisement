@@ -1155,38 +1155,38 @@ class SelfAdvetController extends Controller
      * |  Function - 28
      * |  API - 27
      */
-    public function paymentByCash(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $userId = $req->auth['id'];
-            $mAdvSelfadvertisement = new AdvSelfadvertisement();
-            $mAdvMarTransaction = new AdvMarTransaction();
-            DB::beginTransaction();
-            $data = $mAdvSelfadvertisement->paymentByCash($req);
-            $appDetails = AdvSelfadvertisement::find($req->applicationId);
-            # Water Transactions
-            $req->merge(['userId' => $userId]);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
-            DB::commit();
+    // public function paymentByCash(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'applicationId' => 'required|string',
+    //         'status' => 'required|integer'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         // Variable initialization
+    //         $userId = $req->auth['id'];
+    //         $mAdvSelfadvertisement = new AdvSelfadvertisement();
+    //         $mAdvMarTransaction = new AdvMarTransaction();
+    //         DB::beginTransaction();
+    //         $data = $mAdvSelfadvertisement->paymentByCash($req);
+    //         $appDetails = AdvSelfadvertisement::find($req->applicationId);
+    //         # Water Transactions
+    //         $req->merge(['userId' => $userId]);
+    //         $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
+    //         DB::commit();
 
-            if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
+    //         if ($req->status == '1' && $data['status'] == 1) {
+    //             return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+    //         } else {
+    //             return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+    //         }
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    // }
 
     /**
      * | Entry Cheque or DD
@@ -1858,6 +1858,56 @@ class SelfAdvetController extends Controller
             return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    public function paymentByCash(Request $req)
+    {
+        $mAdvSelfadvertisement = new AdvSelfadvertisement();
+        $rules = [
+            'applicationId' => "required|digits_between:1,9223372036854775807|exists:" . $mAdvSelfadvertisement->getConnectionName() . "." . $mAdvSelfadvertisement->getTable() . ",id",
+            "paymentMode"   => "required|string|in:" . collect(Config::get("constants.PAYMENT_MODE_OFFLINE"))->implode(","),
+            'status'        => 'required|integer'
+        ];
+        if (isset($req->paymentMode) && $req->paymentMode != "Cash") {
+            $rules["chequeNo"] = "required";
+            $rules["chequeDate"] = "required|date|date_format:Y-m-d|after_or_equal:" . Carbon::now()->format("Y-m-d");
+            $rules["bankName"] = "required";
+            $rules["branchName"] = "required";
+        }
+        $validator = Validator::make($req->all(), $rules);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $user = Auth()->user();
+            $userId = $user->id ?? null;
+            $isCitizen = $user && $user->getTable() != "users" ? true : false;
+            $isJsk = (!$isCitizen) && $user->user_type == "JSK" ? true : false;
+            $req->merge([
+                "isJsk" => $isJsk,
+                "userId" => !$isCitizen ? $userId : null,
+                "citizenId" => $isCitizen ? $userId : null,
+            ]);
+            // Variable initialization
+            $mAdvMarTransaction = new AdvMarTransaction();
+            DB::beginTransaction();
+
+            $data = $mAdvSelfadvertisement->paymentByCash($req);
+            $appDetails = AdvSelfadvertisement::find($req->applicationId);
+            $req->merge($appDetails->toArray());
+            $mAdvMarTransaction->addTransaction($req, $this->_moduleIds, "Advertisement", $req->paymentMode);
+
+            DB::commit();
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }
