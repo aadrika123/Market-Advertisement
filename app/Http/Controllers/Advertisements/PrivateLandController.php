@@ -953,25 +953,62 @@ class PrivateLandController extends Controller
      * | Function - 21
      * | API - 20
      */
-    public function listJskRejectedApplication(Request $req)
+    public function listJskRejectedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            $userId = $req->auth['id'];
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Applied application list";
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
+            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_rejected_privatelands.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_rejected_privatelands.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_rejected_privatelands.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
 
+            $paginatedData = $applications->paginate($pages);
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050420", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050420", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 

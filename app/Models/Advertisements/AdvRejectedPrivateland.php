@@ -31,20 +31,22 @@ class AdvRejectedPrivateland extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication($userId)
+    public function listJskRejectedApplication()
     {
-        return AdvRejectedPrivateland::where('user_id', $userId)
-            ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
-                'rejected_date',
-            )
-            ->orderByDesc('id')
-            ->get();
+        return AdvRejectedPrivateland::select(
+            'id',
+            'application_no',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'mobile_no',
+            "email",
+            'rejected_date',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'entity_name',
+            'entity_address'
+
+        )
+            ->orderByDesc('id');
+        //->get();
     }
 
     /**

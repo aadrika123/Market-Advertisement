@@ -33,22 +33,21 @@ class AdvRejectedVehicle extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication($userId)
+    public function listJskRejectedApplication()
     {
-        return AdvRejectedVehicle::where('user_id', $userId)
-            ->select(
+        return AdvRejectedVehicle::select(
                 'id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
                 'entity_name',
-                // 'entity_address',
-                // 'old_application_no',
-                // 'payment_status',
+                'email',
                 'rejected_date',
+                'mobile_no',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+            //->get();
     }
 
     /**
