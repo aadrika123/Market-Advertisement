@@ -82,19 +82,32 @@ class PrivateLandController extends Controller
      * | Apply For Private Land Advertisement
      * | Function - 01
      * | API - 01
+     * modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {
         try {
             // Variable initialization
             $privateLand = new AdvActivePrivateland();
-            if ($req->auth['user_type'] == 'JSK') {
-                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            // if ($req->auth['user_type'] == 'JSK') {
+            //     $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            //     $req->request->add($userId);
+            // } else {
+            //     $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+            //     $req->request->add($citizenId);
+            // }
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
+            if ($user->user_type == 'JSK') {
+                $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+                $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            $req->request->add(['ulbId' => $ulbId]);
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
@@ -487,7 +500,7 @@ class PrivateLandController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, [$e->getMessage(),$e->getLine()], "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, [$e->getMessage(), $e->getLine()], "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
@@ -873,26 +886,65 @@ class PrivateLandController extends Controller
      * | Function - 20
      * | API - 19
      */
-    public function listjskApprovedApplication(Request $req)
+    public function listjskApprovedApplication(Request $request)
     {
+
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            $userId = $req->auth['id'];
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $userId = $request->auth['id'];
             $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->listjskApprovedApplication($userId);
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
+            $applications = $mAdvPrivateland->listjskApprovedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_privatelands.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_privatelands.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_privatelands.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
 
-            return responseMsgs(true, "Approved Application List", $data1, "050419", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $paginatedData = $applications->paginate($pages);
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050419", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
 
 
     /**
@@ -901,25 +953,122 @@ class PrivateLandController extends Controller
      * | Function - 21
      * | API - 20
      */
-    public function listJskRejectedApplication(Request $req)
+    public function listJskRejectedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            $userId = $req->auth['id'];
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Rejected application list";
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($userId);
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
-            if ($data1['arrayCount'] == 0) {
-                $data1 = null;
+            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_rejected_privatelands.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_rejected_privatelands.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_rejected_privatelands.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
 
+            $paginatedData = $applications->paginate($pages);
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050420", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050420", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    public function listJskAppliedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Applied application list";
+            $mAdvRejectedPrivateland = new AdvActivePrivateland();
+            $applications = $mAdvRejectedPrivateland->listAppliedApplicationsjsk();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_active_privatelands.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_active_privatelands.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_active_privatelands.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
@@ -1587,6 +1736,83 @@ class PrivateLandController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $data, "050433", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050433", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    //written by prity pandey
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new AdvPrivateland();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvActiveRegistration = new AdvPrivateland();
+            $refDocUpload               = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvActiveRegistration->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }

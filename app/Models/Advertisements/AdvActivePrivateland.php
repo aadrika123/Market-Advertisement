@@ -487,4 +487,29 @@ class AdvActivePrivateland extends Model
     {
         return AdvActivePrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Active' as application_status"));
     }
+
+    public function listAppliedApplicationsjsk()
+    {
+        return AdvActivePrivateland::select(
+                'adv_active_privatelands.id',
+                'adv_active_privatelands.application_no',
+                'adv_active_privatelands.application_date',
+                'adv_active_privatelands.application_type',
+                'adv_active_privatelands.applicant',
+                'adv_active_privatelands.entity_name',
+                'adv_active_privatelands.entity_address',
+                'adv_active_privatelands.parked',
+                'adv_active_privatelands.doc_upload_status',
+                'adv_active_privatelands.mobile_no',
+                'adv_active_privatelands.payment_status',
+                DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+                'wr.role_name',
+                'um.ulb_name',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+            )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_privatelands.ulb_id')
+            ->orderByDesc('adv_active_privatelands.id');
+            //->get();
+    }
 }

@@ -78,21 +78,29 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication($userId)
+    public function listjskApprovedApplication()
     {
-        return AdvVehicle::where('user_id', $userId)
-            ->select(
-                'id',
+        return AdvVehicle::select(
+                'adv_vehicles.id',
                 'application_no',
-                'application_date',
-                'applicant',
-                'entity_name',
-                'payment_status',
-                'payment_amount',
-                'approve_date',
+                DB::raw("TO_CHAR(adv_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+                'adv_vehicles.application_type',
+                'adv_vehicles.applicant',
+                'adv_vehicles.applicant as owner_name',
+                'adv_vehicles.entity_name',
+                'adv_vehicles.mobile_no',
+                'adv_vehicles.license_no',
+                'adv_vehicles.payment_status',
+                'adv_vehicles.payment_amount',
+                'adv_vehicles.approve_date',
+                'adv_vehicles.citizen_id',
+                'adv_vehicles.valid_upto',
+                'adv_vehicles.valid_from',
+                'adv_vehicles.user_id',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
-            ->orderByDesc('temp_id')
-            ->get();
+            ->orderByDesc('id');
+            //->get();
     }
 
     /**
@@ -272,4 +280,30 @@ class AdvVehicle extends Model
     {
         return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
+
+
+    public function getDetailsById($appId)
+    {
+        return AdvVehicle::select(
+            'adv_vehicles.*',
+            'adv_vehicles.typology as typology_id',
+            'adv_vehicles.display_type as display_type_id',
+            'adv_vehicles.vehicle_type as vehicle_type_id',
+            'dt.string_parameter as display_type',
+            'vt.string_parameter as vehicle_type',
+            'typo.descriptions as typology',
+            'w.ward_name',
+            'pw.ward_name as permanent_ward_name',
+            'ulb.ulb_name',
+        )
+            ->leftJoin('ref_adv_paramstrings as dt', 'dt.id', '=', DB::raw('adv_vehicles.display_type::int'))
+            ->leftJoin('ref_adv_paramstrings as vt', 'vt.id', '=', DB::raw('adv_vehicles.vehicle_type::int'))
+            ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_vehicles.typology')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_vehicles.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_vehicles.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'adv_vehicles.ulb_id')
+            ->where('adv_vehicles.id', $appId);
+            //->first();
+    }
+
 }

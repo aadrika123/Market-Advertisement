@@ -553,6 +553,7 @@ class ParamController extends Controller
      * | Advertisement Dashboard
      * | Function - 05
      * | API - 05
+     * modified by prity pandey
      */
     public function advertDashboard(Request $req)
     {
@@ -934,14 +935,14 @@ class ParamController extends Controller
     }
 
 
-    
-    
+
+
     /**
      * | Get Payment Details for all workflow
      * | Function - 12
      * | API - 12
      */
-    public function getPaymentDetailsForReciept($paymentId,$workflowId,Request $req)
+    public function getPaymentDetailsForReciept($paymentId, $workflowId, Request $req)
     {
         try {
             // Variable initialization
@@ -1015,23 +1016,442 @@ class ParamController extends Controller
         }
     }
 
+    #written by prity pandey
+    public function selfAdvertisementsearchApplication(Request $request)
+    {
+
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo', // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user = authUser($request);
+            $ulbId = $user->ulb_id;
+            $userId = $user->id;
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+
+            // Array to hold all applications
+            $applications = collect();
+
+            // Fetch applications for each advertisement type
+            $mAdvActivePrivateland = new AdvActivePrivateland();
+            $AdvActivePrivateland = ($mAdvActivePrivateland->where('ulb_id', $ulbId));
+
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $AdvActiveSelfadvertisement = ($mAdvActiveSelfadvertisement->where('ulb_id', $ulbId));
+
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $AdvActiveVehicle = ($mAdvActiveVehicle->where('ulb_id', $ulbId));
+
+            $mAdvActiveAgency = new AdvActiveAgency();
+            $AdvActiveAgency = ($mAdvActiveAgency->where('ulb_id', $ulbId));
+
+            $mAdvActiveHoarding = new AdvActiveHoarding();
+            $AdvActiveHoarding = ($mAdvActiveHoarding->where('ulb_id', $ulbId));
+
+            // Filtering based on search parameters
+            if ($key && $parameter) {
+                $msg = "Application details according to $key";
+                switch ($key) {
+                    case ("mobileNo"):
+                        $AdvActivePrivateland->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('mobile_no', 'LIKE', "%$parameter%");
+                        //$AdvActiveHoarding->where('mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case ("applicationNo"):
+                        $AdvActivePrivateland->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveHoarding->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    case ("applicantName"):
+                        $AdvActivePrivateland->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('entity_name', 'LIKE', "%$parameter%");
+                        $AdvActiveHoarding->where('property_owner_name', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+                if ($applications->isEmpty()) {
+                    $msg = "No data found";
+                }
+            }
+            $advAPvtLCount = $AdvActivePrivateland->count();
+            $advASelfACount = $AdvActiveSelfadvertisement->count();
+            $advAVehicleCount = $AdvActiveVehicle->count();
+            $advAAgencyCount = $AdvActiveAgency->count();
+            $advAHoardingCount = $AdvActiveHoarding->count();
+            $total =  $advAPvtLCount
+                + $advASelfACount
+                + $advAVehicleCount
+                + $advAAgencyCount
+                + $advAHoardingCount;
+            $perPage = $request->perPage ? $request->perPage :  10;
+            $current_page = $page = $request->page && $request->page > 0 ? $request->page : 1;
+            $last_page = Ceil($total / $perPage);
+            $data = collect();
+            $tbl = "";
+            switch ($perPage) {
+                case ($perPage * $page) <= $advAPvtLCount:
+                    $request->merge(["page" => $page]);
+                    $data = $AdvActivePrivateland->paginate($perPage);
+                    $tbl = $mAdvActivePrivateland->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount:
+                    $request->merge(["page" => $page - Ceil($advAPvtLCount / $perPage)]);
+                    $data = $AdvActiveSelfadvertisement->paginate($perPage);
+                    $tbl = $mAdvActiveSelfadvertisement->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount) / $perPage)]);
+                    $data = $AdvActiveVehicle->paginate($perPage);
+                    $tbl = $mAdvActiveVehicle->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount) / $perPage)]);
+                    $data = $AdvActiveAgency->paginate($perPage);
+                    $tbl = $mAdvActiveAgency->getTable();
+                    break;
+                default:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount) / $perPage)]);
+                    $data = $AdvActiveHoarding->paginate($perPage);
+                    $tbl = $mAdvActiveHoarding->getTable();
+                    break;
+            }
+            $list = [
+                "tbl" => $tbl,
+                "current_page" => $current_page,
+                "last_page" => $last_page,
+                "total" => $total,
+                "data" => $data->items()
+
+            ];
+            // Paginate and return response
+            // $returnData = $applications->paginate($pages);
+            return responseMsgs(true, $msg, $list, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    // public function btcList(Request $request)
+    // {
+    //     try{
+    //         $users = Auth()->user();
+    //         $userId = $users->id;
+    //         $ulbId = $users->ulb_id;
+    //         $userTbl = $users->getTable();
+    //         $is_citizen = $userTbl !="users" ? true : false;
+    //         $hoardings = AdvActiveHoarding::select("*")
+    //                     ->where("parked",1);
+    //         $agencies = AdvActiveAgency::select("*")
+    //                     ->where("parked",1);
+    //         $privatelands = AdvActivePrivateland::select("*")
+    //                     ->where("parked",1);
+    //         $selfadvertisements = AdvActiveSelfadvertisement::select("*")
+    //                         ->where("parked",1);
+    //         $vehicles =AdvActiveVehicle::select("*")
+    //                     ->where("parked",1);
+    //         if($is_citizen)
+    //         {
+    //             $hoardings->where("citizen_id",$userId);
+    //             $agencies->where("citizen_id",$userId);
+    //             $privatelands->where("citizen_id",$userId);
+    //             $selfadvertisements->where("citizen_id",$userId);
+    //             $vehicles->where("citizen_id",$userId);
+    //         }
+    //         else
+    //         {
+    //             $hoardings->where("user_id",$userId)
+    //                     ->where("ulb_id",$ulbId);
+    //             $agencies->where("user_id",$userId)
+    //                     ->where("ulb_id",$ulbId);
+    //             $privatelands->where("user_id",$userId)
+    //                     ->where("ulb_id",$ulbId);
+    //             $selfadvertisements->where("user_id",$userId)
+    //                     ->where("ulb_id",$ulbId);
+    //             $vehicles->where("user_id",$userId)
+    //                     ->where("ulb_id",$ulbId);
+    //         }
+    //         $perPage = $request->perPage ? $request->perPage :  10;
+    //         $page = $request->page && $request->page > 0 ? $request->page : 1;
+
+    //         $hoardingsPaginator = $hoardings->paginate($perPage);
+    //         $agenciesPaginator = $agencies->paginate($perPage);
+    //         $privatelandsPaginator = $privatelands->paginate($perPage);
+    //         $selfadvertisementsPaginator = $selfadvertisements->paginate($perPage);
+    //         $vehiclesPaginator = $vehicles->paginate($perPage);
+    //         $list = [
+    //             "hoardings"=>[
+    //                 "current_page" => $hoardingsPaginator->currentPage(),
+    //                 "last_page" => $hoardingsPaginator->lastPage(),
+    //                 "data" => $hoardingsPaginator->items(),
+    //                 "total" => $hoardingsPaginator->total(),
+    //             ],
+    //             "agencies"=>[
+    //                 "current_page" => $agenciesPaginator->currentPage(),
+    //                 "last_page" => $agenciesPaginator->lastPage(),
+    //                 "data" => $agenciesPaginator->items(),
+    //                 "total" => $agenciesPaginator->total(),
+    //             ],
+    //             "privatelands"=>[
+    //                 "current_page" => $privatelandsPaginator->currentPage(),
+    //                 "last_page" => $privatelandsPaginator->lastPage(),
+    //                 "data" => $privatelandsPaginator->items(),
+    //                 "total" => $privatelandsPaginator->total(),
+    //             ],
+    //             "selfadvertisements"=>[
+    //                 "current_page" => $selfadvertisementsPaginator->currentPage(),
+    //                 "last_page" => $selfadvertisementsPaginator->lastPage(),
+    //                 "data" => $selfadvertisementsPaginator->items(),
+    //                 "total" => $selfadvertisementsPaginator->total(),
+    //             ],
+    //             "vehicles"=>[
+    //                 "current_page" => $vehiclesPaginator->currentPage(),
+    //                 "last_page" => $vehiclesPaginator->lastPage(),
+    //                 "data" => $vehiclesPaginator->items(),
+    //                 "total" => $vehiclesPaginator->total(),
+    //             ]
+    //         ]; 
+    //         return responseMsg(true, "", remove_null($list));
+    //     }
+    //     catch(Exception $e)
+    //     {
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+    //     }
+    // }
+
+    public function selfAdvertisementApprovedApplication(Request $request)
+    {
+
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo', // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user = authUser($request);
+            $ulbId = $user->ulb_id;
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $msg = "Pending application list";
+
+            // Array to hold all applications
+            $applications = collect();
+
+            // Fetch applications for each advertisement type
+            $mAdvActivePrivateland = new AdvPrivateland();
+            $AdvActivePrivateland = ($mAdvActivePrivateland->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
+
+            $mAdvActiveSelfadvertisement = new AdvSelfadvertisement();
+            $AdvActiveSelfadvertisement = ($mAdvActiveSelfadvertisement->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
+
+            $mAdvActiveVehicle = new AdvVehicle();
+            $AdvActiveVehicle = ($mAdvActiveVehicle->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
+
+            $mAdvActiveAgency = new AdvAgency();
+            $AdvActiveAgency = ($mAdvActiveAgency->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
+
+            $mAdvActiveHoarding = new AdvHoarding();
+            $AdvActiveHoarding = ($mAdvActiveHoarding->select('application_no', 'ulb_id', "application_type", "applicant", "email", DB::raw('self as type'))->where('ulb_id', $ulbId));
+
+            // Filtering based on search parameters
+            if ($key && $parameter) {
+                $msg = "Application details according to $key";
+                switch ($key) {
+                    case ("mobileNo"):
+                        $AdvActivePrivateland->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('mobile_no', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('mobile_no', 'LIKE', "%$parameter%");
+                        //$AdvActiveHoarding->where('mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case ("applicationNo"):
+                        $AdvActivePrivateland->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('application_no', 'LIKE', "%$parameter%");
+                        $AdvActiveHoarding->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    case ("applicantName"):
+                        $AdvActivePrivateland->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveSelfadvertisement->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveVehicle->where('applicant', 'LIKE', "%$parameter%");
+                        $AdvActiveAgency->where('entity_name', 'LIKE', "%$parameter%");
+                        $AdvActiveHoarding->where('property_owner_name', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+                if ($applications->isEmpty()) {
+                    $msg = "No data found";
+                }
+            }
+            $advAPvtLCount = $AdvActivePrivateland->count();
+            $advASelfACount = $AdvActiveSelfadvertisement->count();
+            $advAVehicleCount = $AdvActiveVehicle->count();
+            $advAAgencyCount = $AdvActiveAgency->count();
+            $advAHoardingCount = $AdvActiveHoarding->count();
+            $total =  $advAPvtLCount
+                + $advASelfACount
+                + $advAVehicleCount
+                + $advAAgencyCount
+                + $advAHoardingCount;
+            $perPage = $request->perPage ? $request->perPage :  10;
+            $current_page = $page = $request->page && $request->page > 0 ? $request->page : 1;
+            $last_page = Ceil($total / $perPage);
+            $data = collect();
+            $tbl = "";
+            switch ($perPage) {
+                case ($perPage * $page) <= $advAPvtLCount:
+                    $request->merge(["page" => $page]);
+                    $data = $AdvActivePrivateland->paginate($perPage);
+                    $tbl = $mAdvActivePrivateland->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount:
+                    $request->merge(["page" => $page - Ceil($advAPvtLCount / $perPage)]);
+                    $data = $AdvActiveSelfadvertisement->paginate($perPage);
+                    $tbl = $mAdvActiveSelfadvertisement->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount) / $perPage)]);
+                    $data = $AdvActiveVehicle->paginate($perPage);
+                    $tbl = $mAdvActiveVehicle->getTable();
+                    break;
+                case ($perPage * $page) <= $advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount) / $perPage)]);
+                    $data = $AdvActiveAgency->paginate($perPage);
+                    $tbl = $mAdvActiveAgency->getTable();
+                    break;
+                default:
+                    $request->merge(["page" => $page - Ceil(($advAPvtLCount + $advASelfACount +  $advAVehicleCount + $advAAgencyCount) / $perPage)]);
+                    $data = $AdvActiveHoarding->paginate($perPage);
+                    $tbl = $mAdvActiveHoarding->getTable();
+                    break;
+            }
+            $list = [
+                "tbl" => $tbl,
+                "current_page" => $current_page,
+                "last_page" => $last_page,
+                "total" => $total,
+                "data" => $data->items()
+
+            ];
+            // Paginate and return response
+            // $returnData = $applications->paginate($pages);
+            return responseMsgs(true, $msg, $list, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    //================end of unused code============
+    /**
+     * | Unverified Cash Verification List
+     */
+    public function listCashVerification(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'required|date',
+            'userId' => 'nullable|int'
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0703";
+            $version = "01";
+            $user = authUser($req);
+            $AdvTransaction = new AdvMarTransaction();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+
+            if (isset($userId)) {
+                $data = $AdvTransaction->cashDtl($date)
+                    ->where('adv_mar_transactions.ulb_id', $user->ulb_id)
+                    ->where('user_id', $userId)
+                    ->get();
+            }
+
+            if (!isset($userId)) {
+                $data = $AdvTransaction->cashDtl($date)
+                    ->where('adv_mar_transactions.ulb_id', $user->ulb_id)
+                    ->where('user_id', $userId)
+                    ->get();
+            }
+
+            $collection = collect($data->groupBy("user_id")->values());
+
+            $data = $collection->map(function ($val) use ($date) {
+                $total =  $val->sum('amount');
+                return [
+                    "id" => $val[0]['id'],
+                    "user_id" => $val[0]['emp_dtl_id'],
+                    "officer_name" => $val[0]['user_name'],
+                    "mobile" => $val[0]['mobile'],
+                    "amount" => $total,
+                    "date" => Carbon::parse($date)->format('d-m-Y'),
+                ];
+            });
+
+            return responseMsgs(true, "Cash Verification List", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function cashVerificationDtl(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date" => "required|date",
+            "userId" => "required|int",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0704";
+            $version = "01";
+            $AdvTransaction = new AdvMarTransaction();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+            $details = $AdvTransaction->cashDtl($date, $userId)
+                ->where('user_id', $userId)
+                ->get();
 
 
+            if (collect($details)->isEmpty())
+                throw new Exception("No Application Found for this id");
 
+            $data['tranDtl'] = collect($details)->values();
+            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('amount');
+            $data['totalAmount'] =  $details->sum('amount');
+            $data['numberOfTransaction'] =  $details->count();
+            $data['date'] = Carbon::parse($date)->format('d-m-Y');
+            $data['tcId'] = $userId;
+            return responseMsgs(true, "Cash Verification Details", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
 
 
     /************************************************************************************************************************************************************* */

@@ -26,7 +26,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
             'applicantName' => 'required|string',
             'licenseYear' => 'required',
             'fatherName' => 'required',
@@ -60,7 +60,7 @@ class StoreRequest extends FormRequest
     public function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
-            'success'   => false,
+            'status'   => false,
             'message'   => 'Validation errors',
             'data'      => $validator->errors()
         ], 200),);

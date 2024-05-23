@@ -52,7 +52,7 @@ class StoreRequest extends FormRequest
             // 'longitude' => 'required|numeric',
             // 'latitude' => 'required|numeric',
             'installationLocation' => 'required|integer',
-            'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
             'typology' => 'required|integer',
 
             'documents' => 'required|array',

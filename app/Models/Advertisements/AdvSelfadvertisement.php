@@ -2,6 +2,7 @@
 
 namespace App\Models\Advertisements;
 
+use App\Models\Param\AdvMarTransaction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -78,25 +79,28 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listJskApprovedApplication($userId)
+    public function listJskApprovedApplication()
     {
-        return AdvSelfadvertisement::where('user_id', $userId)
-            ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'payment_amount',
-                'approve_date',
-                'license_no',
-                'ulb_id',
-                'workflow_id',
-            )
-            ->orderByDesc('id')
-            ->get();
+        return AdvSelfadvertisement::select(
+            'id',
+            'application_no',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'applicant',
+            'entity_name',
+            'entity_address',
+            'payment_status',
+            'payment_amount',
+            'approve_date',
+            'license_no',
+            'ulb_id',
+            'workflow_id',
+            'mobile_no',
+            'user_id',
+            'citizen_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->orderByDesc('id');
+        //->get();
     }
 
 
@@ -175,6 +179,10 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
             $mAdvSelfadvertisement->payment_status = $req->status;
             $pay_id = $mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId-" . time();
+            if($req->paymentMode == 'Cheque')
+            {
+                $pay_id = $mAdvSelfadvertisement->payment_id = "Cheque-$req->applicationId-" . time();
+            }
             $mAdvSelfadvertisement->payment_date = Carbon::now();
             $mAdvSelfadvertisement->payment_mode = "Cash";
 
@@ -331,4 +339,35 @@ class AdvSelfadvertisement extends Model
     {
         return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Approve' as application_status"));
     }
+
+    public function getDetailsById($applicationId)
+    {
+        return  AdvSelfadvertisement::select(
+                'adv_selfadvertisements.*',
+                'u.ulb_name',
+                'p.string_parameter as m_license_year',
+                'w.ward_name as ward_no',
+                'pw.ward_name as permanent_ward_no',
+                'ew.ward_name as entity_ward_no',
+                'dp.string_parameter as m_display_type',
+                'il.string_parameter as m_installation_location',
+                'r.role_name as m_current_role',
+                'cat.type as advt_category_type'
+            )
+            ->where('adv_selfadvertisements.id', $applicationId)
+            ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
+            ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
+            ->leftJoin('ulb_ward_masters as w', 'w.id', '=', 'adv_selfadvertisements.ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'adv_selfadvertisements.entity_ward_id')
+            ->leftJoin('ref_adv_paramstrings as dp', 'dp.id', '=', 'adv_selfadvertisements.display_type')
+            ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
+            ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
+            ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_selfadvertisements.advt_category');
+            //->first();
+
+        //return $details;
+    }
+    
+  
 }

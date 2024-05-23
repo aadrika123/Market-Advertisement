@@ -79,19 +79,32 @@ class VehicleAdvetController extends Controller
      * | Apply for new document
      * | Function - 01
      * | API - 01
+     * Modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {
         try {
             // Variable Initialization
             $advVehicle = new AdvActiveVehicle();
-            if ($req->auth['user_type'] == 'JSK') {
-                $userId = ['userId' => $req->auth['id']];
+            // if ($req->auth['user_type'] == 'JSK') {
+            //     $userId = ['userId' => $req->auth['id']];
+            //     $req->request->add($userId);
+            // } else {
+            //     $citizenId = ['citizenId' => $req->auth['id']];
+            //     $req->request->add($citizenId);
+            // }
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
+            if ($user->user_type == 'JSK') {
+                $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
                 $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            $req->request->add(['ulbId' => $ulbId]);
 
             // $mCalculateRate = new CalculateRate;
             // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
@@ -591,8 +604,9 @@ class VehicleAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        $workflowId = AdvActiveVehicle::find($req->applicationId)->workflow_id;
-
+       
+        $details = AdvActiveVehicle::find($req->applicationId);
+        $workflowId = $details->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
         $data = array();
         $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
@@ -653,10 +667,10 @@ class VehicleAdvetController extends Controller
         $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
-        if ($roleId == $wfLevel['DA']){
+        if ($roleId == $wfLevel['DA']) {
             $data = $data->get();                                                                                           // If DA Then show all docs
-        }else{
-            $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
+        } else {
+            $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
         $data = (new DocumentUpload())->getDocUrl($data);
         // $data1 = collect($data)->map(function ($value) use ($appUrl) {
@@ -875,21 +889,63 @@ class VehicleAdvetController extends Controller
      * | Function - 20
      * | API - 19
      */
-    public function listjskApprovedApplication(Request $req)
+    public function listjskApprovedApplication(Request $request)
     {
-        try {
-            // Variable Initialization
-            $userId = $req->auth['id'];
-            $mAdvVehicle = new AdvVehicle();
-            $applications = $mAdvVehicle->listjskApprovedApplication($userId);
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
 
-            return responseMsgs(true, "Approved Application List", $data1, "050319", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            //$userId = $request->auth['id'];
+            $mAdvVehicle = new AdvVehicle();
+            $applications = $mAdvVehicle->listjskApprovedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_vehicles.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_vehicles.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_vehicles.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050319", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
@@ -899,22 +955,122 @@ class VehicleAdvetController extends Controller
      * | Function - 21
      * | API - 20
      */
-    public function listJskRejectedApplication(Request $req)
+    public function listJskRejectedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable Initialization
-
-            $userId = $req->auth['id'];
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Rejected application list";
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $applications = $mAdvRejectedVehicle->listJskRejectedApplication($userId);
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
+            $applications = $mAdvRejectedVehicle->listJskRejectedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_rejected_vehicles.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_rejected_vehicles.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_rejected_vehicles.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050320", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050320", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    public function listJskAppliedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Applied application list";
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $applications = $mAdvActiveVehicle->listAppliedApplicationsJsk();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_active_vehicles.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_active_vehicles.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_active_vehicles.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
@@ -1509,6 +1665,83 @@ class VehicleAdvetController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    
+
+    //written by prity pandey
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new AdvVehicle();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvActiveRegistration = new AdvVehicle();
+            $refDocUpload               = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvActiveRegistration->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }

@@ -86,4 +86,12 @@ return [
     "PARAM_IDS" => [
         "TRN" => 37,
     ],
+
+    'PAYMENT_MODE_OFFLINE' => [
+        'Cash',
+        'Cheque',
+        'DD',
+        'NEFT',
+        'RTGS'
+    ],
 ];

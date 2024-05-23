@@ -43,7 +43,8 @@ class StoreRequest extends FormRequest
             'vehicleName' => 'required|string',
             'vehicleNo' => 'required|string',
             'vehicleType' => 'required|integer',
-            'ulbId' => 'required|integer',
+            //'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
             'brandDisplayed' => 'required|string',
             'frontArea' => 'required|numeric',
             'rearArea' => 'required|numeric',
@@ -72,7 +73,7 @@ class StoreRequest extends FormRequest
     public function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
-            'success'   => false,
+            'status'   => false,
             'message'   => 'Validation errors',
             'data'      => $validator->errors()
         ], 200),);

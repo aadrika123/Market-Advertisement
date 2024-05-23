@@ -136,7 +136,6 @@ class AdvActiveVehicle extends Model
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
         $mDocuments = $req->documents;
         $this->uploadDocument($tempId, $mDocuments, $req->auth);
-
         return $req->application_no;
     }
 
@@ -493,5 +492,33 @@ class AdvActiveVehicle extends Model
     public function pendingListForReport()
     {
         return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Active' as application_status"));
+    }
+
+    public function listAppliedApplicationsJsk()
+    {
+        return AdvActiveVehicle::select(
+                'adv_active_vehicles.id',
+                'adv_active_vehicles.application_no',
+                'adv_active_vehicles.application_date',
+                'adv_active_vehicles.applicant',
+                'adv_active_vehicles.father',
+                'adv_active_vehicles.residence_address',
+                'adv_active_vehicles.entity_name',
+                'adv_active_vehicles.vehicle_no',
+                'adv_active_vehicles.vehicle_name',
+                'adv_active_vehicles.application_type',
+                'adv_active_vehicles.parked',
+                'adv_active_vehicles.doc_upload_status',
+                'adv_active_vehicles.mobile_no',
+                'adv_active_vehicles.payment_status',
+                DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+                'wr.role_name',
+                'um.ulb_name',
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+            )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
+            ->orderByDesc('adv_active_vehicles.id');
+            //->get();
     }
 }

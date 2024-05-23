@@ -90,19 +90,32 @@ class SelfAdvetController extends Controller
      * | @param StoreRequest 
      * | Function - 01
      * | API No. - 01
+     * Modified by prity pandey
      */
     public function addNew(StoreRequest $req)
     {
         try {
             // Variable initialization
             $mAdvActiveSelfadvertisement = $this->_modelObj;
-            if ($req->auth['user_type'] == 'JSK') {
-                $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            // if ($req->auth['user_type'] == 'JSK') {
+            //     $userId = ['userId' => $req->auth['id']];                            // Find Jsk Id
+            //     $req->request->add($userId);
+            // } else {
+            //     $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+            //     $req->request->add($citizenId);
+            // }
+            $user = authUser($req);
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            if (!$ulbId)
+                throw new Exception("Ulb Not Found");
+            if ($user->user_type == 'JSK') {
+                $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => $req->auth['id']];                       // Find CItizen Id
+                $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            $req->request->add(['ulbId' => $ulbId]);
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $applicationNo = $idGeneration->generate();
@@ -305,10 +318,10 @@ class SelfAdvetController extends Controller
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "adv_active_selfadvertisements.id";                         // Static
-            
-        // DB::connection('pgsql_masters')->enableQueryLog();
+
+            // DB::connection('pgsql_masters')->enableQueryLog();
             $fullDetailsData['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
-        //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
+            //   return ([DB::connection('pgsql_masters')->getQueryLog()]);
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
@@ -731,10 +744,10 @@ class SelfAdvetController extends Controller
         $data = $mWfActiveDocument->uploadDocumentsOnWorkflowViewById($req->applicationId, $workflowId);                    // Get All Documents Against Application
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
-        if ($roleId == $wfLevel['DA']){
+        if ($roleId == $wfLevel['DA']) {
             $data = $data->get();                                                                                           // If DA Then show all docs
-        }else{
-            $data = $data->where('current_status','1')->get();                                                              // Other Than DA show only Active docs
+        } else {
+            $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
         // $data1 = collect($data)->map(function ($value) use ($appUrl) {
         //     $value->doc_path = $appUrl . $value->doc_path;
@@ -960,26 +973,71 @@ class SelfAdvetController extends Controller
      * | @param Request $req
      * |  Function - 24
      * |  API - 23
+     * //writen by prity pandey
      */
-    public function listJskApprovedApplication(Request $req)
+
+    public function listJskApprovedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            $userId = $req->auth['id'];
-            // $userId = authUser()->id;
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $userId = $request->auth['id'];
+
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->listJskApprovedApplication($userId);
+            $applications = $mAdvSelfadvertisements->listJskApprovedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_selfadvertisements.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_selfadvertisements.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_selfadvertisements.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
 
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
+            $paginatedData = $applications->paginate($pages);
 
-            return responseMsgs(true, "Approved Application List", $data1, "050123", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050123", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
+
 
     /**
      * | Reject Application List for JSK
@@ -987,23 +1045,125 @@ class SelfAdvetController extends Controller
      * |  Function - 25
      * |  API - 24
      */
-    public function listJskRejectedApplication(Request $req)
+    public function listJskRejectedApplication(Request $request)
     {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
         try {
-            // Variable initialization
-            // $userId = authUser()->id;
-            $userId = $req->auth['id'];
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Rejected application list";
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication($userId);
+            $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication();
 
-            $totalApplication = $applications->count();
-            remove_null($applications);
-            $data1['data'] = $applications;
-            $data1['arrayCount'] =  $totalApplication;
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_rejected_selfadvertisements.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_rejected_selfadvertisements.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_rejected_selfadvertisements.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
 
-            return responseMsgs(true, "Rejected Application List", $data1, "050124", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050124", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+
+    public function listJskAppliedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Applied application list";
+            $mAdvRejectedSelfadvertisement = new AdvActiveSelfadvertisement();
+            $applications = $mAdvRejectedSelfadvertisement->listAppliedApplicationsJsk();
+
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_active_selfadvertisements.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('adv_active_selfadvertisements.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_active_selfadvertisements.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
@@ -1097,35 +1257,38 @@ class SelfAdvetController extends Controller
      * |  Function - 28
      * |  API - 27
      */
-    public function paymentByCash(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'applicationId' => 'required|string',
-            'status' => 'required|integer'
-        ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
-        try {
-            // Variable initialization
-            $mAdvSelfadvertisement = new AdvSelfadvertisement();
-            $mAdvMarTransaction = new AdvMarTransaction();
-            DB::beginTransaction();
-            $data = $mAdvSelfadvertisement->paymentByCash($req);
-            $appDetails = AdvSelfadvertisement::find($req->applicationId);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
-            DB::commit();
+    // public function paymentByCash(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'applicationId' => 'required|string',
+    //         'status' => 'required|integer'
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         // Variable initialization
+    //         $userId = $req->auth['id'];
+    //         $mAdvSelfadvertisement = new AdvSelfadvertisement();
+    //         $mAdvMarTransaction = new AdvMarTransaction();
+    //         DB::beginTransaction();
+    //         $data = $mAdvSelfadvertisement->paymentByCash($req);
+    //         $appDetails = AdvSelfadvertisement::find($req->applicationId);
+    //         # Water Transactions
+    //         $req->merge(['userId' => $userId]);
+    //         $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", "Cash");
+    //         DB::commit();
 
-            if ($req->status == '1' && $data['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
-            } else {
-                return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
+    //         if ($req->status == '1' && $data['status'] == 1) {
+    //             return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+    //         } else {
+    //             return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+    //         }
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    // }
 
     /**
      * | Entry Cheque or DD
@@ -1720,6 +1883,133 @@ class SelfAdvetController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $data, "050138", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050138", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    //written by prity pandey
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new AdvSelfadvertisement();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvActiveRegistration = new AdvSelfadvertisement();
+            $refDocUpload               = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvActiveRegistration->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+
+    public function paymentByCash(Request $req)
+    {
+        $mAdvSelfadvertisement = new AdvSelfadvertisement();
+        $rules = [
+            'applicationId' => "required|digits_between:1,9223372036854775807|exists:" . $mAdvSelfadvertisement->getConnectionName() . "." . $mAdvSelfadvertisement->getTable() . ",id",
+            "paymentMode"   => "required|string|in:" . collect(Config::get("constants.PAYMENT_MODE_OFFLINE"))->implode(","),
+            'status'        => 'required|integer'
+        ];
+        if (isset($req->paymentMode) && $req->paymentMode != "Cash") {
+            $rules["chequeNo"] = "required";
+            $rules["chequeDate"] = "required|date|date_format:Y-m-d|after_or_equal:" . Carbon::now()->format("Y-m-d");
+            $rules["bankName"] = "required";
+            $rules["branchName"] = "required";
+        }
+        $validator = Validator::make($req->all(), $rules);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $user = Auth()->user();
+            $userId = $user->id ?? null;
+            $isCitizen = $user && $user->getTable() != "users" ? true : false;
+            $isJsk = (!$isCitizen) && $user->user_type == "JSK" ? true : false;
+            $req->merge([
+                "isJsk" => $isJsk,
+                "userId" => !$isCitizen ? $userId : null,
+                "citizenId" => $isCitizen ? $userId : null,
+            ]);
+            // Variable initialization
+            $mAdvMarTransaction = new AdvMarTransaction();
+            DB::beginTransaction();
+
+            $data = $mAdvSelfadvertisement->paymentByCash($req);
+            $appDetails = AdvSelfadvertisement::find($req->applicationId);
+            $req->merge($appDetails->toArray());
+            $mAdvMarTransaction->addTransaction($req, $this->_moduleIds, "Advertisement", $req->paymentMode);
+
+            DB::commit();
+            if ($req->status == '1' && $data['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            } else {
+                return responseMsgs(false, "Payment Rejected !!", '', "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }
