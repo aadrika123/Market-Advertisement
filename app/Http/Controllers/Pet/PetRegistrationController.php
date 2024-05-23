@@ -1060,7 +1060,7 @@ class PetRegistrationController extends Controller
             $petType = "Cat";
         }
         return new Collection([
-            ['displayString' => 'Pet Name',                         'key' => 'PetName',                         'value' => $applicationDetails->ward_name],
+            ['displayString' => 'Pet Name',                         'key' => 'PetName',                         'value' => $applicationDetails->pet_name],
             ['displayString' => 'Pet Type',                         'key' => 'PetType',                         'value' => $petType],
             ['displayString' => 'Sex',                              'key' => 'Sex',                             'value' => $sex],
             ['displayString' => 'Breed',                            'key' => 'Breed',                           'value' => $applicationDetails->breed],
