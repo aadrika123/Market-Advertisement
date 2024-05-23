@@ -97,19 +97,34 @@ class AdvAgency extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication($userId)
+    public function listjskApprovedApplication()
     {
-        return AdvAgency::where('user_id', $userId)
-            ->select(
-                'id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'payment_status',
-                'payment_amount',
-                'approve_date',
-            )
-            ->orderByDesc('id')
-            ->get();
+        return AdvAgency::select(
+            'adv_agencies.id',
+            'adv_agencies.application_no',
+            DB::raw("TO_CHAR(adv_agencies.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_agencies.application_type',
+            'adv_agencies.entity_name',
+            'adv_agencies.payment_status',
+            'adv_agencies.mobile_no',
+            'adv_agencies.payment_amount',
+            'adv_agencies.approve_date',
+            'adv_agencies.valid_upto',
+            'adv_agencies.valid_from',
+            'adv_agencies.citizen_id',
+            'adv_agencies.user_id',
+            'adv_agencies.ulb_id',
+            'adv_agencies.workflow_id',
+            'adv_agencies.license_no',
+            'adv_agencies.payment_id',
+            DB::raw("'agency' as type"),
+            DB::raw("'' as owner_name"),
+            'um.ulb_name as ulb_name',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
+            ->orderByDesc('adv_agencies.id');
+            //->get();
     }
 
     /**

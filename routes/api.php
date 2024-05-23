@@ -241,6 +241,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/list-approved', 'listApproved');                                                 // 15 ( Approved list for Citizen)
         Route::post('advert/agency/list-rejected', 'listRejected');                                                 // 16 ( Rejected list for Citizen)
         Route::post('advert/agency/get-jsk-applications', 'getJSKApplications');                                    // 17 ( Get Applied Applications List By JSK )
+
+        //written by prity pandey
         Route::post('advert/agency/list-jsk-approved-application', 'listjskApprovedApplication');                   // 18 ( Approved list for JSK)
         Route::post('advert/agency/list-jsk-rejected-application', 'listJskRejectedApplication');                   // 19 ( Rejected list for JSK)  
         Route::post('advert/agency/generate-payment-order-id', 'generatePaymentOrderId');                           // 20 ( Generate Payment Order ID)
