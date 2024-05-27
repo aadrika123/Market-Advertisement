@@ -686,7 +686,8 @@ class SelfAdvetController extends Controller
         // }
         //$data1['doc_upload_status'] = $details->doc_upload_status;
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        //return $data;
     }
 
 
