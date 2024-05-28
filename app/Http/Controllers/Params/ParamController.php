@@ -742,16 +742,26 @@ class ParamController extends Controller
             $dharamshalaApproveList = $mMarDharamshala->allApproveList();              // Find Dharamshala Approve Applications
             $merged = $merged->merge($dharamshalaApproveList);
 
-            // $merged = $merged->where('payment_staus', '0');
+            // // $merged = $merged->where('payment_staus', '0');
+            // if ($req->filterBy == 'mobileNo') {
+            //     $merged = $merged->where('mobile_no', $req->parameter);
+            // }
+            // if ($req->filterBy == 'entityName') {
+            //     $merged = $merged->where('entity_name', $req->parameter);
+            // }
+            // if ($req->filterBy == 'ownerName') {
+            //     $merged = $merged->where('owner_name', $req->parameter);
+            // }
             if ($req->filterBy == 'mobileNo') {
-                $merged = $merged->where('mobile_no', $req->parameter);
+                $merged = $merged->where('mobile_no', 'LIKE', '%' . $req->parameter . '%');
             }
             if ($req->filterBy == 'entityName') {
-                $merged = $merged->where('entity_name', $req->parameter);
+                $merged = $merged->where('entity_name', 'LIKE', '%' . $req->parameter . '%');
             }
             if ($req->filterBy == 'ownerName') {
-                $merged = $merged->where('owner_name', $req->parameter);
+                $merged = $merged->where('owner_name', 'LIKE', '%' . $req->parameter . '%');
             }
+            
             return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, responseTime(), "POST", "", "");
