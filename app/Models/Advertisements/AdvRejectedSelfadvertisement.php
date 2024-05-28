@@ -21,6 +21,7 @@ class AdvRejectedSelfadvertisement extends Model
                 'adv_rejected_selfadvertisements.application_no',
                 DB::raw("TO_CHAR(adv_rejected_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
                 'adv_rejected_selfadvertisements.applicant',
+                'adv_rejected_selfadvertisements.application_type',
                 'adv_rejected_selfadvertisements.entity_name',
                 'adv_rejected_selfadvertisements.entity_address',
                 'adv_rejected_selfadvertisements.payment_status',

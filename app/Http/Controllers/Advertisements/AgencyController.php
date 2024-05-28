@@ -653,13 +653,21 @@ class AgencyController extends Controller
     public function approvedOrReject(Request $req)
     {
         try {
-            $req->validate([
-                'roleId' => 'required',
-                'applicationId' => 'required|integer',
-                'status' => 'required|integer',
-            ]);
+            // $req->validate([
+            //     'roleId' => 'required',
+            //     'applicationId' => 'required|integer',
+            //     'status' => 'required|integer',
+            // ]);
             // Variable initialization
-            // Check if the Current User is Finisher or Not         
+            // Check if the Current User is Finisher or Not   
+            $validator = Validator::make($req->all(), [
+                'roleId' => 'required',
+                'applicationId' => 'required',
+                'status' => 'required|integer'
+            ]);
+            if ($validator->fails()) {
+                return ['status' => false, 'message' => $validator->errors()];
+            }      
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveAgency->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();

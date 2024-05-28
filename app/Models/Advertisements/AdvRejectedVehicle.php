@@ -23,6 +23,7 @@ class AdvRejectedVehicle extends Model
                 'adv_rejected_vehicles.applicant',
                 'adv_rejected_vehicles.entity_name',
                 'adv_rejected_vehicles.rejected_date',
+                'adv_rejected_vehicles.application_type',
                 'um.ulb_name as ulb_name',
             )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_rejected_vehicles.ulb_id')

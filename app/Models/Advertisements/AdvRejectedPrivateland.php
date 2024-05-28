@@ -22,6 +22,7 @@ class AdvRejectedPrivateland extends Model
                 DB::raw("TO_CHAR(adv_rejected_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
                 'adv_rejected_privatelands.rejected_date',
                 'um.ulb_name as ulb_name',
+                'adv_rejected_privatelands.application_type'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_rejected_privatelands.ulb_id')
             ->orderByDesc('adv_rejected_privatelands.id')

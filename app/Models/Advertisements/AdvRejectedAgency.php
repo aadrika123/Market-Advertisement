@@ -25,6 +25,7 @@ class AdvRejectedAgency extends Model
                 // 'old_application_no',
                 // 'payment_status',
                 'rejected_date',
+                'application_type'
             )
             ->orderByDesc('id')
             ->get();
