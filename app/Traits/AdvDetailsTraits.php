@@ -17,7 +17,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
+            //['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
