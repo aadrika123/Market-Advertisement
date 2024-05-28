@@ -47,6 +47,7 @@ use App\Models\Markets\MarRejectedBanquteHall;
 use App\Models\Markets\MarRejectedHostel;
 use App\Models\Markets\MarRejectedLodge;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\UlbMaster;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWorkflow;
 use Carbon\Carbon;
@@ -957,6 +958,7 @@ class ParamController extends Controller
     public function getPaymentDetailsForReciept($paymentId, $workflowId, Request $req)
     {
         try {
+            $mUlbMaster     = new UlbMaster();
             // Variable initialization
             $wfworkflowMasterId = $this->getWorkflowMasterId($workflowId);
             // Get Advertesement Payment Details
@@ -1018,9 +1020,11 @@ class ParamController extends Controller
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Dharamshala Tax";
             }
+            $ulbDtl = $mUlbMaster->getUlbDetails($paymentDetails->ulb_id);
             if (empty($paymentDetails)) {
                 throw new Exception("Payment Details Not Found By Given Paymenst Id !!!");
             } else {
+                $paymentDetails->ulbDetails = $ulbDtl;
                 return responseMsgs(true, 'Data Fetched',  $paymentDetails, "050012", "1.0", responseTime(), "POST", $req->deviceId);
             }
         } catch (Exception $e) {
