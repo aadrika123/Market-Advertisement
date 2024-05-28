@@ -307,11 +307,11 @@ class PetPaymentController extends Controller
         if (in_array($regisCharges->paid_status, [1, 2])) {
             throw new Exception("Payment already done");
         }
-        if ($paymentMode == $confPaymentMode['1']) {
-            if ($applicationDetail->citizen_id != authUser($req)->id) {
-                throw new Exception("You are not the Authorized User");
-            }
-        }
+        // if ($paymentMode == $confPaymentMode['1']) {
+        //     if ($applicationDetail->citizen_id != authUser($req)->id) {
+        //         throw new Exception("You are not the Authorized User");
+        //     }
+        // }
 
         # Transaction details
         $transDetails = $mPetTran->getTranDetails($applicationId, $chargeCategory)->first();
@@ -440,6 +440,7 @@ class PetPaymentController extends Controller
                 'mobile'             => $refUser->mobile,
                 'email'              => $refUser->email,
                 'userId'             => $refUser->id,
+                'user_id'            => $refUser->id,
                 'ulbId'              => $refUser->ulb_id ?? $orderData->data->ulbId,
             ];
             $returnData = collect($returnData)->merge($orderData->data);

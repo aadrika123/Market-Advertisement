@@ -1135,6 +1135,7 @@ class MarriageRegistrationController extends Controller
                 "penalty_amount" => $marriageDetails->penalty_amount,
             ];
             $mMarriageRazorpayRequest->store($refPaymentRequest);
+            $orderData->data->user_id  = $user->id;
 
             return responseMsgs(true, "Order Id generated successfully", $orderData->data, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {

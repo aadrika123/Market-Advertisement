@@ -2040,9 +2040,9 @@ class PetRegistrationController extends Controller
                 throw new Exception("Transaction details not found there is some error in data !");
             }
             # Check for jsk for renewal button
-            if ($user->user_type == 'JSK') {                                                                                // Static
-                $viewRenewButton = true;
-            }
+            // if ($user->user_type == 'JSK') {                                                                                // Static
+            //     $viewRenewButton = true;
+            // }
 
             # return Details 
             $approveApplicationDetails['transactionDetails']    = $tranDetails;

@@ -157,6 +157,7 @@ class ShopPaymentBll
         $ret['allottee'] = $mShop->allottee;
         $ret['mobile'] = $mShop->contact_no;
         $ret['tranId'] = $tranId;
+        $ret['tranNo'] = $createdPayment->transaction_no;
         return $ret;
     }
 
