@@ -52,8 +52,8 @@ class UpdateRequest extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'success'   => false,
-            'message'   => 'Validation errors',
-            'data'      => $validator->errors()
+            'message'   => $validator->errors()->first(),
+            'data'      => "Validation Error"
         ], 200),);
     }
 }
