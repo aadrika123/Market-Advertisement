@@ -700,7 +700,7 @@ class ParamController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'filterBy' => 'required|in:mobileNo,entityName,ownerName',
-            'parameter' => $req->filterBy == 'mobileNo' ? 'required|digits:10' : 'required|string',
+            'parameter' => 'nullable|string',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
