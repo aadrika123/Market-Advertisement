@@ -151,6 +151,7 @@ class AdvVehicle extends Model
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             'wn.ward_name as wardNo',
+            'adv_vehicles.ulb_id',
             DB::raw("'Advertisement' as module"),
         )
             ->leftjoin('ulb_masters', 'adv_vehicles.ulb_id', '=', 'ulb_masters.id')

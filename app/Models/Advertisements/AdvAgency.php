@@ -193,6 +193,7 @@ class AdvAgency extends Model
             'adv_agencies.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
+            'adv_agencies.ulb_id',
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             DB::raw("'Advertisement' as module")
