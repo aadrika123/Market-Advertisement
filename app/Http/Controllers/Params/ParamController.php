@@ -965,31 +965,31 @@ class ParamController extends Controller
             if ($wfworkflowMasterId == $this->_selfAdvt) {
                 $mAdvSelfadvertisement = new AdvSelfadvertisement();
                 $paymentDetails = $mAdvSelfadvertisement->getPaymentDetails($paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                //$paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Self Advertisement Tax";
             } elseif ($wfworkflowMasterId == $this->_pvtLand) {
                 $mAdvPrivateland = new AdvPrivateland();
                 $paymentDetails = $mAdvPrivateland->getPaymentDetails($paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                //$paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Private Land Tax";
             } elseif ($wfworkflowMasterId ==  $this->_movableVehicle) {
                 $mAdvVehicle = new AdvVehicle();
                 $paymentDetails = $mAdvVehicle->getPaymentDetails($paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                //$paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Movable Vehicle Tax";
             } elseif ($wfworkflowMasterId == $this->_agency) {
                 $mAdvAgency = new AdvAgency();
                 $paymentDetails = $mAdvAgency->getPaymentDetails($paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                //$paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Agency Tax";
             } elseif ($wfworkflowMasterId == $this->_hording) {
                 $mAdvHoarding = new AdvHoarding();
                 $paymentDetails = $mAdvHoarding->getPaymentDetails($paymentId);
-                $paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
+                //$paymentDetails->ulbLogo = $this->_ulbLogoUrl . $paymentDetails->ulbLogo;
                 $paymentDetails->inWords = getIndianCurrency($paymentDetails->payment_amount) . " Only /-";
                 $paymentDetails->paymentAgainst = "Hoarding Tax";
             }

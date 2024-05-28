@@ -149,8 +149,6 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.application_date as applyDate',
             'adv_selfadvertisements.trade_license_no',
             'adv_selfadvertisements.ulb_id',
-            'ulb_masters.ulb_name as ulbName',
-            'ulb_masters.logo as ulbLogo',
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             'ly.string_parameter as licenseYear',
