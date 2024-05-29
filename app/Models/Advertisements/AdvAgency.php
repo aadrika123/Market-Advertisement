@@ -297,6 +297,7 @@ class AdvAgency extends Model
             'adv_agencies.entity_name as applicant_name',
             'adv_agencies.application_no',
             'adv_agencies.license_no',
+            'ulb_id',
             'adv_agencies.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )

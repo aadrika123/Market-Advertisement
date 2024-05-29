@@ -287,6 +287,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.approve_date',
             // DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
             'adv_selfadvertisements.applicant as applicant_name',
+            'ulb_id',
             'adv_selfadvertisements.application_no',
             'adv_selfadvertisements.license_no',
             'adv_selfadvertisements.payment_date as license_start_date',

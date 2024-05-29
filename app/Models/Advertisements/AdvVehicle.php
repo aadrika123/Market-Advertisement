@@ -264,6 +264,7 @@ class AdvVehicle extends Model
             'adv_vehicles.applicant as applicant_name',
             'adv_vehicles.application_no',
             'adv_vehicles.license_no',
+            'ulb_id',
             'adv_vehicles.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )

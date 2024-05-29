@@ -146,8 +146,8 @@ class ParamController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            $mUlbMaster     = new UlbMaster();
             // Variable initialization
-            $ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');
             $wfworkflowMasterId = $this->getWorkflowMasterId($req->workflowId);
             // Get Advertesement Reciept Details
             if ($wfworkflowMasterId == $this->_selfAdvt) {
@@ -181,7 +181,10 @@ class ParamController extends Controller
                 $mMarLodge = new MarLodge();
                 $recieptDetails = $mMarLodge->getApprovalLetter($req->applicationId);
             }
-            $recieptDetails['ulb_logo'] = $ulbLogoUrl;
+            $ulbDtl = $mUlbMaster->getUlbDetails($recieptDetails->ulb_id);
+
+            $recieptDetails->ulbDetails = $ulbDtl;
+
             return responseMsgs(true, "Approval Fetched Successfully !!", $recieptDetails, "050202", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Approval Not Fetched", $e->getMessage(), "050202", 1.0,  responseTime(), "POST", "", "");
@@ -764,7 +767,7 @@ class ParamController extends Controller
             if ($req->filterBy == 'ownerName') {
                 $merged = $merged->where('owner_name', 'LIKE', '%' . $req->parameter . '%');
             }
-            
+
             return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050207", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050207", 1.0, responseTime(), "POST", "", "");

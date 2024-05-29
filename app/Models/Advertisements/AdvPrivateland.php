@@ -271,6 +271,7 @@ class AdvPrivateland extends Model
             'adv_privatelands.approve_date',
             'adv_privatelands.applicant as applicant_name',
             'adv_privatelands.application_no',
+            'ulb_id',
             'adv_privatelands.license_no',
             'adv_privatelands.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')

@@ -625,6 +625,7 @@ class AdvHoarding extends Model
             'adv_hoardings.applicant as applicant_name',
             'adv_hoardings.application_no',
             'adv_hoardings.license_no',
+            'ulb_id',
             'adv_hoardings.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
