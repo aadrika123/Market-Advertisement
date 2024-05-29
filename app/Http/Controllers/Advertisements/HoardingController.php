@@ -277,7 +277,7 @@ class HoardingController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
-            
+
             // return $metaReqs;
 
             # Level comment
@@ -683,14 +683,14 @@ class HoardingController extends Controller
                     $approvedHoarding->save();
 
                     // Save in Hording Renewal
-                    $approvedHoarding = $mAdvActiveHoarding->replicate();
-                    $approvedHoarding->approve_date = Carbon::now();
-                    $approvedHoarding->license_no = $generatedId;
-                    $approvedHoarding->setTable('adv_hoarding_renewals');
-                    $approvedHoarding->id = $temp_id;
-                    $approvedHoarding->save();
+                    // $approvedHoarding = $mAdvActiveHoarding->replicate();
+                    // $approvedHoarding->approve_date = Carbon::now();
+                    // $approvedHoarding->license_no = $generatedId;
+                    // $approvedHoarding->setTable('adv_hoarding_renewals');
+                    // $approvedHoarding->id = $temp_id;
+                    // $approvedHoarding->save();
 
-                    $mAdvActiveHoarding->delete();
+                    // $mAdvActiveHoarding->delete();
 
                     // Update in adv_hoardings (last_renewal_id)
 
@@ -747,6 +747,15 @@ class HoardingController extends Controller
                 $mAdvActiveHoarding->delete();
                 $msg = "Application Successfully Rejected !!";
             }
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['workflowId'] = $mAdvActiveHoarding->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_hoardings.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+
+            $track = new WorkflowTrack();
+            $req->request->add($metaReqs);
+            $track->saveTrack($req);
+
             DB::commit();
 
             return responseMsgs(true, $msg, "", '050615', 01, responseTime(), 'POST', $req->deviceId);
