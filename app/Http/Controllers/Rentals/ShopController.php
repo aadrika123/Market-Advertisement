@@ -73,7 +73,7 @@ class ShopController extends Controller
             $shopDetails = Shop::find($req->shopId);
             DB::commit();
             // $tranId = isset($response['TranId']) ? $response['TranId'] : null;
-            return responseMsgs(true, "Payment Done Successfully", ['tranId' => $shop['tranId'],'tranNo'=>$shop['tranNo']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", ['tranId' => $shop['tranId'], 'tranNo' => $shop['tranNo']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
@@ -520,6 +520,7 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+            'empId'   => 'nullable'
         ]);
 
         if ($validator->fails()) {
@@ -535,11 +536,16 @@ class ShopController extends Controller
                 $toDate = $req->toDate;
             }
             $mShopPayment = new ShopPayment();
-            $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
+            $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            if ($req->shopCategoempIdryId != 0)
+                $shopPayment = $shopPayment->where('user_id', $req->empId)->get();
             // $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
             $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
             $mMarTollPayment = new MarTollPayment();
-            $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get();
+            $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            if ($req->shopCategoempIdryId != 0)
+                $tollPayment = $tollPayment->where('user_id', $req->empId)->get()
+                    ->get();
             // $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
             $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
             $totalCollection = collect($shopPayment)->merge($tollPayment);

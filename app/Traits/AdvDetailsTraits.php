@@ -300,7 +300,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
-            ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
+            // ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
             ['displayString' => 'Property Type', 'key' => 'propertyType', 'value' => $data['property_type']],
             ['displayString' => 'Property Owner Name', 'key' => 'propertyOwnerName', 'value' => $data['property_owner_name']],
@@ -334,7 +334,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
-            ['displayString' => 'License No', 'key' => 'applicantionNo', 'value' => $data['license_no']==NULL ? 'N/A' : $data['license_no']],
+            // ['displayString' => 'License No', 'key' => 'applicantionNo', 'value' => $data['license_no']==NULL ? 'N/A' : $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
         ]);
     }
