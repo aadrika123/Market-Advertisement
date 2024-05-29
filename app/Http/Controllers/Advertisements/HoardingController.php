@@ -277,6 +277,7 @@ class HoardingController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
+            
             // return $metaReqs;
 
             # Level comment
@@ -297,6 +298,7 @@ class HoardingController extends Controller
             $fullDetailsData = remove_null($fullDetailsData);
 
             $fullDetailsData['application_no'] = $data['application_no'];
+            $fullDetailsData['application_at'] = $data['application_at'];
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
             if (isset($data['payment_amount'])) {

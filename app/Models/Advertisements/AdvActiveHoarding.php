@@ -247,7 +247,14 @@ class AdvActiveHoarding extends Model
                     'u.ulb_name',
                     'tm.type_inner as hoardingCategory',
                     'p.string_parameter as licenseYear',
+                    DB::raw("CASE 
+                    WHEN adv_active_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+                    WHEN adv_active_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
+                    WHEN adv_active_hoardings.current_role_id = 10 THEN 'AT TAX SUPRERINTENDENT'
+                    ELSE 'Unknown Role'
+                    END AS application_at")
                 )
+
                 ->where('adv_active_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_active_hoardings.ulb_id')
                 ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_active_hoardings.license_year')
@@ -260,6 +267,12 @@ class AdvActiveHoarding extends Model
                     'u.ulb_name',
                     'tm.type_inner as hoardingCategory',
                     'p.string_parameter as licenseYear',
+                    DB::raw("CASE 
+                    WHEN adv_rejected_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+                    WHEN adv_rejected_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
+                    WHEN adv_rejected_hoardings.current_role_id = 10 THEN 'AT TAX SUPRERINTENDENT'
+                    ELSE 'Unknown Role'
+                    END AS application_at")
                 )
                 ->where('adv_rejected_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_rejected_hoardings.ulb_id')
@@ -273,6 +286,31 @@ class AdvActiveHoarding extends Model
                     'u.ulb_name',
                     'tm.type_inner as hoardingCategory',
                     'p.string_parameter as licenseYear',
+                    DB::raw("CASE 
+                    WHEN adv_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+                    WHEN adv_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
+                    WHEN adv_hoardings.current_role_id = 10 THEN 'AT TAX SUPRERINTENDENT'
+                    ELSE 'Unknown Role'
+                    END AS application_at")
+                )
+                ->where('adv_hoardings.id', $id)
+                ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_hoardings.ulb_id')
+                ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_hoardings.license_year')
+                ->leftJoin('adv_typology_mstrs as tm', 'tm.id', '=', DB::raw('adv_hoardings.typology::int'))
+                ->first();
+        } elseif ($type == "Payment" || $type == NULL) {
+            $details = DB::table('adv_hoardings')
+                ->select(
+                    'adv_hoardings.*',
+                    'u.ulb_name',
+                    'tm.type_inner as hoardingCategory',
+                    'p.string_parameter as licenseYear',
+                    DB::raw("CASE 
+                    WHEN adv_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+                    WHEN adv_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
+                    WHEN adv_hoardings.current_role_id = 10 THEN 'AT TAX SUPRERINTENDENT'
+                    ELSE 'Unknown Role'
+                    END AS application_at")
                 )
                 ->where('adv_hoardings.id', $id)
                 ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_hoardings.ulb_id')
@@ -280,6 +318,7 @@ class AdvActiveHoarding extends Model
                 ->leftJoin('adv_typology_mstrs as tm', 'tm.id', '=', DB::raw('adv_hoardings.typology::int'))
                 ->first();
         }
+
         $details = json_decode(json_encode($details), true);            // Convert Std Class to Array
         return $details;
     }
