@@ -62,7 +62,7 @@ class StoreLicenceRequest extends FormRequest
     public function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
-            'success'   => false,
+            'status'   => false,
             'message'   => 'Validation errors',
             'data'      => $validator->errors()
         ], 200),);
