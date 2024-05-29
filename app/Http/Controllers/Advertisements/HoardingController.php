@@ -647,6 +647,7 @@ class HoardingController extends Controller
                 'roleId' => 'required',
                 'applicationId' => 'required|integer',
                 'status' => 'required|integer',
+                'comment' => 'required',
                 // 'payment_amount' => 'required',
             ]);
             if ($validator->fails()) {
@@ -815,8 +816,11 @@ class HoardingController extends Controller
         try {
             // Variable initialization
             $citizenId = $req->auth['id'];
+
             $mAdvRejectedHoarding = new AdvRejectedHoarding();
-            $applications = $mAdvRejectedHoarding->listRejected($citizenId);
+            $moduleId             = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $workflowId           = 22;
+            $applications = $mAdvRejectedHoarding->listRejected($citizenId, $moduleId, $workflowId);
             if (trim($req->key))
                 $applications =  searchFilter($applications, $req);
             $list = paginator($applications, $req);

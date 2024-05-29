@@ -13,16 +13,27 @@ class AdvRejectedHoarding extends Model
     /**
      * | Get Application Reject List by Role Ids
      */
-    public function listRejected($citizenId)
+    public function listRejected($citizenId, $moduleId, $workflowId)
     {
-        return AdvRejectedHoarding::where('citizen_id', $citizenId)
-            ->select(
-                'id',
-                'application_no',
-                'license_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'rejected_date',
-            )
+        return AdvRejectedHoarding::select(
+            'adv_rejected_hoardings.id',
+            'adv_rejected_hoardings.application_no',
+            'adv_rejected_hoardings.license_no',
+            DB::raw("TO_CHAR(adv_rejected_hoardings.application_date, 'DD-MM-YYYY') as application_date"),
+            'rejected_date',
+            "workflow_tracks.message as reason",
+            "workflow_tracks.workflow_id"
+        )
+            ->leftJoin('workflow_tracks', function ($join) use ($workflowId ,$moduleId) {
+                $join->on('workflow_tracks.ref_table_id_value', 'adv_rejected_hoardings.id')
+                    ->where('workflow_tracks.status', true)
+                    ->where('workflow_tracks.message', '<>', null)
+                    ->where('workflow_tracks.verification_status', 3)
+                    ->where('workflow_tracks.workflow_id', $workflowId)
+                    ->where('workflow_tracks.module_id', $moduleId);
+                    
+            })
+            ->where('adv_rejected_hoardings.citizen_id', $citizenId)
             ->orderByDesc('id');
     }
 
