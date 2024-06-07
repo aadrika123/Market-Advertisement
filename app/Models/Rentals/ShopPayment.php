@@ -299,7 +299,7 @@ class ShopPayment extends Model
       'mar_shop_payments.amount',
       'mar_shops.allottee',
       'mar_shop_payments.pmt_mode',
-      'mar_shop_payments.payment_date',
+      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
     )
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('mar_shop_payments.shop_id', $shopId)
