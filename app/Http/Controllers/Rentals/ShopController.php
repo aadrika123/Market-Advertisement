@@ -108,6 +108,7 @@ class ShopController extends Controller
                 // $absolutePath = $relativePath;
                 $imageName2Absolute = $relativePath;
             }
+
             $shopNo = $this->shopIdGeneration($req->marketId);
             $metaReqs = [
                 'circle_id' => $req->circleId,
@@ -1407,8 +1408,8 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'shopCategoryId' => 'nullable|integer',
             'marketId' => 'nullable|integer',
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
             'paymentMode'  => 'nullable'
         ]);
         if ($validator->fails()) {
@@ -1417,14 +1418,14 @@ class ShopController extends Controller
         // return $req->all();
         try {
             $paymentMode = null;
-            if (!isset($req->fromDate))
+            if (!isset($req->dateFrom))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
-                $fromDate = $req->fromDate;
-            if (!isset($req->toDate))
+                $fromDate = $req->dateFrom;
+            if (!isset($req->dateTo))
                 $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
             else
-                $toDate = $req->toDate;
+                $toDate = $req->dateTo;
 
             if ($req->paymentMode) {
                 $paymentMode = $req->paymentMode;
