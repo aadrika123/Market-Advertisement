@@ -147,16 +147,16 @@ class WfActiveDocument extends Model
     /**
      * | Get Uploaded documents
      */
-    public function getDocsByActiveId(array $req)
+    public function getDocsByActiveId($req)
     {
-        return WfActiveDocument::where('active_id', $req['activeId'])
+        return WfActiveDocument::where('active_id', $req->activeId)
             ->select(
                 'doc_code',
                 'owner_dtl_id',
                 'verify_status'
             )
-            ->where('workflow_id', $req['workflowId'])
-            ->where('module_id',  $req['moduleId'])
+            ->where('workflow_id', $req->workflowId)
+            ->where('module_id',  $req->moduleId)
             // ->where('verify_status', '!=', 2)
             ->where('verify_status', '=', 1)
             ->where('status', 1)
