@@ -210,7 +210,7 @@ class DharamshalaController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
-            
+
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "mar_active_dharamshalas.id";                         // Static
@@ -491,8 +491,8 @@ class DharamshalaController extends Controller
         //     return $value;
         // });
         $data = (new DocumentUpload())->getDocUrl($data);
-        
-       return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
+
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -682,11 +682,26 @@ class DharamshalaController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                $dharamshalaTrack                 = new WorkflowTrack();
                 //dharamshala Application replication
                 $rejecteddharamshala = $mMarActiveDharamshala->replicate();
                 $rejecteddharamshala->setTable('mar_rejected_dharamshalas');
                 $rejecteddharamshala->id = $mMarActiveDharamshala->id;
                 $rejecteddharamshala->rejected_date = Carbon::now();
+
+                $metaReqs = [
+                    'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                    'workflowId'        => $mMarActiveDharamshala->workflow_id,
+                    'refTableDotId'     => 'mar_active_dharamshalas.id',                                   // Static
+                    'refTableIdValue'   => $req->applicationId,
+                    'user_id'           => authUser($req)->id,
+                    'ulb_id'            =>  $mMarActiveDharamshala->ulb_id,
+                    'verificationStatus' => 3,
+                    'citizenId'         =>  $mMarActiveDharamshala->citizen_id
+                ];
+                $req->request->add($metaReqs);
+                $dharamshalaTrack->saveTrack($req);
+
                 $rejecteddharamshala->save();
                 $mMarActiveDharamshala->delete();
                 $msg = "Application Successfully Rejected !!";

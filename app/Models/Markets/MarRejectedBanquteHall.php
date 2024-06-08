@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\DB;
 class MarRejectedBanquteHall extends Model
 {
     use HasFactory;
- 
-     /**
+
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function listRejected($citizenId)
@@ -22,8 +22,18 @@ class MarRejectedBanquteHall extends Model
                 'mar_rejected_banqute_halls.application_date',
                 'mar_rejected_banqute_halls.rejected_date',
                 'um.ulb_name as ulb_name',
+                'workflow_tracks.message as remarks'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_banqute_halls.ulb_id')
+            ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {
+                $join->on('workflow_tracks.ref_table_id_value', 'mar_rejected_banqute_halls.id')
+                    ->where('workflow_tracks.status', true)
+                    ->where('workflow_tracks.message', '<>', null)
+                    ->where('workflow_tracks.verification_status', 3)
+                    ->where('workflow_tracks.workflow_id', 23)
+                    ->where('workflow_tracks.module_id', 5)
+                    ->where('workflow_tracks.citizen_id', $citizenId);
+            })
             ->orderByDesc('mar_rejected_banqute_halls.id')
             ->get();
     }
@@ -34,12 +44,12 @@ class MarRejectedBanquteHall extends Model
     public function rejectedApplication()
     {
         return MarRejectedBanquteHall::select(
-                'id',
-                'application_no',
-                'application_date',
-                'rejected_date',
-                'ulb_id',
-            )
+            'id',
+            'application_no',
+            'application_date',
+            'rejected_date',
+            'ulb_id',
+        )
             ->orderByDesc('id')
             ->get();
     }
@@ -47,7 +57,8 @@ class MarRejectedBanquteHall extends Model
     /**
      * | Reject List For Report
      */
-    public function rejectListForReport(){
-        return MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule','hall_type', 'ulb_id','license_year','organization_type',DB::raw("'Reject' as application_status"));
+    public function rejectListForReport()
+    {
+        return MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"));
     }
 }
