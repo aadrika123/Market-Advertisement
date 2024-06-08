@@ -102,9 +102,9 @@ class MarActiveHostel extends Model
             ],
             $this->metaReqs($req),
             $ulbWorkflowReqs
-        );   
+        );
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments, $req->auth);
+        $this->uploadDocument($req, $tempId, $mDocuments, $req->auth);
 
         return $req->application_no;
     }
@@ -144,7 +144,7 @@ class MarActiveHostel extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveHostel::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments, $req->auth);
+        $this->uploadDocument($req, $tempId, $mDocuments, $req->auth);
 
         return $mRenewNo['renew_no'];;
     }
@@ -154,44 +154,43 @@ class MarActiveHostel extends Model
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadDocument($tempId, $documents, $auth)
+    public function uploadDocument($req, $tempId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mMarActiveHostel = new MarActiveHostel();
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
+        $user = collect(authUser($req));
 
-        collect($documents)->map(function ($doc) use ($tempId, $auth, $docUpload, $mWfActiveDocument, $mMarActiveHostel, $relativePath) {
-            $metaReqs = array();
-            $getApplicationDtls = $mMarActiveHostel->getApplicationDtls($tempId);
-            $refImageName = $doc['docCode'];
-            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
-            $documentImg = $doc['image'];
-            //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-            $newRequest = new Request([
-                'document'=>$documentImg
+
+        $getApplicationDtls = $mMarActiveHostel->getApplicationDtls($tempId);
+
+        foreach ($documents as $document) {
+            $file = $document['image'];
+            $req->merge([
+                'document' => $file
             ]);
-            $imageName = $docUpload->upload($newRequest);
-            $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
-            $metaReqs['activeId'] = $getApplicationDtls->id;
-            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
-            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
-            $metaReqs['relativePath'] = $relativePath;
-            $metaReqs['document'] = $imageName;
-            $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
-            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
-            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
-            $a = new Request($metaReqs);
-            // $mWfActiveDocument->postDocuments($a, $auth);
-            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
-            //$mWfActiveDocument->create($metaReqs);
-            foreach($metaReqs as $key=>$val)
-            {
-                $mWfActiveDocument->$key = $val;
-            }
-            $mWfActiveDocument->save();
-        });
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE') ?? 15,
+                'activeId' => $getApplicationDtls->id,
+                'workflowId' => $getApplicationDtls->workflow_id,
+                'ulbId' => $getApplicationDtls->ulb_id,
+                'relativePath' => $relativePath,
+                'document' => $imageName,
+                'doc_category' => $req->docCategory,
+                'docCode' => $document['docCode'],
+                'ownerDtlId' => $document['ownerDtlId'],
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $mWfActiveDocument->postDocuments(new Request($metaReqs), $user);
+            //update docupload  status 
+            $mMarActiveHostel->updateUploadStatus($getApplicationDtls->id, true);
+        }
     }
 
     /**
@@ -521,5 +520,17 @@ class MarActiveHostel extends Model
     public function pendingListForReport()
     {
         return MarActiveHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"));
+    }
+
+    /**
+     * | Deactivate the doc Upload Status 
+     */
+    public function updateUploadStatus($applicationId, $status)
+    {
+        return  MarActiveHostel::where('id', $applicationId)
+            // ->where('status', true)
+            ->update([
+                "doc_upload_status" => $status
+            ]);
     }
 }

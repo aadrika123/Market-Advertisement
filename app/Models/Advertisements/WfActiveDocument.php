@@ -40,7 +40,7 @@ class WfActiveDocument extends Model
         $metaReqs->ulb_id               = $req->ulbId;
         $metaReqs->module_id            = $req->moduleId;
         $metaReqs->relative_path        = $req->relativePath;
-        $metaReqs->document             = $req->document;
+        // $metaReqs->document             = $req->document;
         $metaReqs->uploaded_by          = $auth['id'];
         $metaReqs->uploaded_by_type     = $auth['user_type'];
         $metaReqs->remarks              = $req->remarks ?? null;
