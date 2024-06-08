@@ -926,12 +926,21 @@ class HostelController extends Controller
                 'action_taken_by' => $userId
             ];
             $mWfDocument->docVerifyReject($wfDocId, $reqs);
-            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+            if ($req->docStatus == 'Verified')
+                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId, $req->docStatus);
+            else
+                $ifFullDocVerifiedV1 = 0;                                         // In Case of Rejection the Document Verification Status will always remain false
 
             if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
-                $appDetails->doc_verify_status = 1;
+                $appDetails->doc_verify_status = TRUE;
                 $appDetails->save();
             }
+            // $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+
+            // if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+            //     $appDetails->doc_verify_status = 1;
+            //     $appDetails->save();
+            // }
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050918", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -956,11 +965,8 @@ class HostelController extends Controller
             'workflowId' => $mMarActiveHostel->workflow_id,
             'moduleId' =>  $this->_moduleIds
         ];
-        $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $totalApproveDoc = $refDocList->count();
-        // self Advertiesement List Documents
-        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        // $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
         return $this->isAllDocs($applicationId, $refDocList, $mMarActiveHostel);
     }
 

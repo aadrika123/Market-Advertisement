@@ -147,7 +147,7 @@ class WfActiveDocument extends Model
     /**
      * | Get Uploaded documents
      */
-    public function getDocsByActiveId($req)
+    public function getDocsByActiveId(array $req)
     {
         return WfActiveDocument::where('active_id', $req['activeId'])
             ->select(

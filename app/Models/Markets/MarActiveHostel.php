@@ -173,7 +173,7 @@ class MarActiveHostel extends Model
             #_Doc Upload through a DMS
             $imageName = $docUpload->upload($req);
             $metaReqs = [
-                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE') ?? 15,
+                'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID'),
                 'activeId' => $getApplicationDtls->id,
                 'workflowId' => $getApplicationDtls->workflow_id,
                 'ulbId' => $getApplicationDtls->ulb_id,
