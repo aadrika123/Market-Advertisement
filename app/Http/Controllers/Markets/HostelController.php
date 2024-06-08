@@ -701,11 +701,26 @@ class HostelController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                $hostTrack                 = new WorkflowTrack();
                 //Hostel Application replication
                 $rejectedhostel = $mMarActiveHostel->replicate();
                 $rejectedhostel->setTable('mar_rejected_hostels');
                 $rejectedhostel->id = $mMarActiveHostel->id;
                 $rejectedhostel->rejected_date = Carbon::now();
+                # Send record in the track table 
+                $metaReqs = [
+                    'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                    'workflowId'        => $mMarActiveHostel->workflow_id,
+                    'refTableDotId'     => 'mar_active_hoastels.id',                                   // Static
+                    'refTableIdValue'   => $req->applicationId,
+                    'user_id'           => authUser($req)->id,
+                    'ulb_id'            =>  $mMarActiveHostel->ulb_id,
+                    'verificationStatus' => 3,
+                    'citizenId'         =>  $mMarActiveHostel->citizen_id
+                ];
+                $req->request->add($metaReqs);
+                $hostTrack->saveTrack($req);
+
                 $rejectedhostel->save();
                 $mMarActiveHostel->delete();
                 $msg = "Application Successfully Rejected !!";

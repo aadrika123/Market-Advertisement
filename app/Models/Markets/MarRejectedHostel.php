@@ -10,8 +10,8 @@ class MarRejectedHostel extends Model
 {
     use HasFactory;
 
-        
-     /**
+
+    /**
      * | Get Application Reject List by Role Ids
      */
     public function listRejected($citizenId)
@@ -27,29 +27,39 @@ class MarRejectedHostel extends Model
                 'mar_rejected_hostels.rejected_date',
                 'mar_rejected_hostels.citizen_id',
                 'um.ulb_name as ulb_name',
+                'workflow_tracks.message as remarks'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_hostels.ulb_id')
+            ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {
+                $join->on('workflow_tracks.ref_table_id_value', 'mar_rejected_hostels.id')
+                    ->where('workflow_tracks.status', true)
+                    ->where('workflow_tracks.message', '<>', null)
+                    ->where('workflow_tracks.verification_status', 3)
+                    ->where('workflow_tracks.workflow_id', 24)
+                    ->where('workflow_tracks.module_id', 5)
+                    ->where('workflow_tracks.citizen_id', $citizenId);
+            })
             ->orderByDesc('mar_rejected_hostels.id')
             ->get();
     }
 
-            
-     /**
+
+    /**
      * | Get All Application Reject List
      */
     public function rejectedApplication()
     {
         return MarRejectedHostel::select(
-                'id',
-                'application_no',
-                'application_date',
-                'entity_address',
-                'entity_name',
-                'applicant',
-                'rejected_date',
-                'citizen_id',
-                'ulb_id',
-            )
+            'id',
+            'application_no',
+            'application_date',
+            'entity_address',
+            'entity_name',
+            'applicant',
+            'rejected_date',
+            'citizen_id',
+            'ulb_id',
+        )
             ->orderByDesc('id')
             ->get();
     }
@@ -57,7 +67,8 @@ class MarRejectedHostel extends Model
     /**
      * | Reject List For Report
      */
-    public function rejectListForReport(){
-        return MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type','hostel_type', 'ulb_id','license_year',DB::raw("'Reject' as application_status"));
+    public function rejectListForReport()
+    {
+        return MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"));
     }
 }
