@@ -38,7 +38,8 @@ class MarTollPayment extends Model
       'user_id',
       'payment_date',
       'amount',
-      'users.name'
+      'users.name',
+      'users.user_type'
     )
       ->leftJoin('users', function ($join) use ($empID) {
         $join->on('users.id', 'mar_toll_payments.user_id');
