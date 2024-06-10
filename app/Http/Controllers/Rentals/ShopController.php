@@ -1442,12 +1442,18 @@ class ShopController extends Controller
             // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
             $onlineCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
             $chequeCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
+            $cashAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
+            $onlineAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
+            $chequeAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
 
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
             $list['cashCount'] = $cashCount;
             $list['onlineCount'] = $onlineCount;
             $list['chequeCount'] = $chequeCount;
+            $list['cashAmount'] = $cashAmount;
+            $list['onlineAmount'] = $onlineAmount;
+            $list['chequeAmount'] = $chequeAmount;
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
