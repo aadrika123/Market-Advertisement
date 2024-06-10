@@ -32,9 +32,18 @@ class MarTollPayment extends Model
   /**
    * | Get Payment List For TC Collection
    */
-  public function paymentListForTcCollection($ulbId)
+  public function paymentListForTcCollection($ulbId, $empID)
   {
-    return self::select('user_id', 'payment_date', 'amount')->where('ulb_id', $ulbId);
+    return self::select(
+      'user_id',
+      'payment_date',
+      'amount'
+    )
+      ->leftJoin('users', function ($join) use ($empID) {
+        $join->on('users.id', 'mar_toll_payments.user_id')
+          ->where('mar_toll_payments.user_id', $empID);
+      })
+      ->where('mar_toll_payments.ulb_id', $ulbId);
   }
 
   /**

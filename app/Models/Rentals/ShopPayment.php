@@ -55,9 +55,19 @@ class ShopPayment extends Model
   /**
    * | Get List of Tc Collection
    */
-  public function paymentListForTcCollection($ulbId)
+  public function paymentListForTcCollection($ulbId, $empID)
   {
-    return self::select('user_id', 'payment_date', 'amount')->where('ulb_id', $ulbId);
+    return self::select(
+      'user_id',
+      'payment_date',
+      'amount',
+      'users.name'
+    )
+      ->leftJoin('users', function ($join) use ($empID) {
+        $join->on('users.id', 'mar_shop_payments.user_id')
+          ->where('mar_shop_payments.user_id', $empID);
+      })
+      ->where('mar_shop_payments.ulb_id', $ulbId);
   }
 
   /**

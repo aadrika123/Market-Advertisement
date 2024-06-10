@@ -536,34 +536,31 @@ class ShopController extends Controller
                 $fromDate = $req->fromDate;
                 $toDate = $req->toDate;
             }
-            $mShopPayment = new ShopPayment();
-            $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
-            if ($req->shopCategoempIdryId != 0)
-                $shopPayment = $shopPayment->where('user_id', $req->empId)->get();
-            // $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
-            $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
-            $mMarTollPayment = new MarTollPayment();
-            $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
-            if ($req->shopCategoempIdryId != 0)
-                $tollPayment = $tollPayment->where('user_id', $req->empId)->get()
-                    ->get();
-            // $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
-            $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
-            $totalCollection = collect($shopPayment)->merge($tollPayment);
-            $refValues = collect($totalCollection)->pluck('user_id')->unique();
-            $ids['ids'] = $refValues;
-            $userDetails = Http::withToken($req->token)
-                ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
-            $userDetails = json_decode($userDetails);
-            $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
-                $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
-                $ref['userId'] = $values;
-                $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
-                return $ref;
-            });
-            $list1['list'] = $list->values();
-            $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
+            $mShopPayment = new ShopPayment();
+            $shopPaymentQuery = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
+                ->whereBetween('payment_date', [$fromDate, $toDate]);
+            if (!empty($req->empId)) {
+                $shopPaymentQuery->where('user_id', $req->empId);
+            }
+            $shopPaymentdtl = $shopPaymentQuery->get();
+            $ShopPayment = $shopPaymentQuery->sum('amount');
+
+            $mMarTollPayment = new MarTollPayment();
+            $tollPaymentQuery = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
+                ->whereBetween('payment_date', [$fromDate, $toDate]);
+            if (!empty($req->empId)) {
+                $tollPaymentQuery->where('user_id', $req->empId);
+            }
+            $tollPaymentdtl = $tollPaymentQuery->get();
+            $TollPayment = $tollPaymentQuery->sum('amount');
+
+            $totalTcCollection = collect($shopPaymentdtl)->merge($tollPaymentdtl);
+            // $refValues = collect($totalCollection)->pluck('user_id')->unique();
+
+            $list1['totalCollection'] = $TollPayment + $ShopPayment;
+            $list1['tcCollection'] = $totalTcCollection;
+            // $list1['totalCollection'] = $TollPayment + $ShopPayment;
             return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1440,8 +1437,17 @@ class ShopController extends Controller
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+            // Calculate counts
+            $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->count();
+            // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
+            $onlineCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
+            $chequeCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
+
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
+            $list['cashCount'] = $cashCount;
+            $list['onlineCount'] = $onlineCount;
+            $list['chequeCount'] = $chequeCount;
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
