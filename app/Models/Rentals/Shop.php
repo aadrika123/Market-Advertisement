@@ -123,6 +123,7 @@ class Shop extends Model
   {
     return Shop::select(
       'mar_shops.*',
+      'mar_shops.circle_id',
       'mc.circle_name',
       'mm.market_name',
       'sc.construction_type',
