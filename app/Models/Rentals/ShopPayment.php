@@ -64,8 +64,10 @@ class ShopPayment extends Model
       'users.name'
     )
       ->leftJoin('users', function ($join) use ($empID) {
-        $join->on('users.id', 'mar_shop_payments.user_id')
-          ->where('mar_shop_payments.user_id', $empID);
+        $join->on('users.id', 'mar_shop_payments.user_id');
+        if (!is_null($empID)) {
+          $join->where('mar_shop_payments.user_id', $empID);
+        }
       })
       ->where('mar_shop_payments.ulb_id', $ulbId);
   }

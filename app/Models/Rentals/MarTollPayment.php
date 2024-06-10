@@ -37,11 +37,14 @@ class MarTollPayment extends Model
     return self::select(
       'user_id',
       'payment_date',
-      'amount'
+      'amount',
+      'users.name'
     )
       ->leftJoin('users', function ($join) use ($empID) {
-        $join->on('users.id', 'mar_toll_payments.user_id')
-          ->where('mar_toll_payments.user_id', $empID);
+        $join->on('users.id', 'mar_toll_payments.user_id');
+        if (!is_null($empID)) {
+          $join->where('mar_toll_payments.user_id', $empID);
+        }
       })
       ->where('mar_toll_payments.ulb_id', $ulbId);
   }
