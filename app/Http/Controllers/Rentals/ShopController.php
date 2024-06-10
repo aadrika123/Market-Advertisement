@@ -521,21 +521,19 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
-            'empId'   => 'nullable'
+            'empId' => 'nullable',
+            'perPage' => 'nullable|integer|min:1'
         ]);
 
         if ($validator->fails()) {
-            return  $validator->errors();
+            return response()->json($validator->errors(), 422);
         }
+
         try {
             $authUrl = Config::get('constants.AUTH_URL');
-            if ($req->fromDate == NULL) {
-                $fromDate = date('Y-m-d');
-                $toDate = date('Y-m-d');
-            } else {
-                $fromDate = $req->fromDate;
-                $toDate = $req->toDate;
-            }
+            $fromDate = $req->fromDate ?? date('Y-m-d');
+            $toDate = $req->toDate ?? date('Y-m-d');
+            $perPage = $req->perPage ?? 15;
 
             $mShopPayment = new ShopPayment();
             $shopPaymentQuery = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
@@ -543,7 +541,7 @@ class ShopController extends Controller
             if (!empty($req->empId)) {
                 $shopPaymentQuery->where('user_id', $req->empId);
             }
-            $shopPaymentdtl = $shopPaymentQuery->get();
+            $shopPaymentdtl = $shopPaymentQuery->paginate($perPage);
             $ShopPayment = $shopPaymentQuery->sum('amount');
 
             $mMarTollPayment = new MarTollPayment();
@@ -552,20 +550,25 @@ class ShopController extends Controller
             if (!empty($req->empId)) {
                 $tollPaymentQuery->where('user_id', $req->empId);
             }
-            $tollPaymentdtl = $tollPaymentQuery->get();
+            $tollPaymentdtl = $tollPaymentQuery->paginate($perPage);
             $TollPayment = $tollPaymentQuery->sum('amount');
 
-            $totalTcCollection = collect($shopPaymentdtl)->merge($tollPaymentdtl);
-            // $refValues = collect($totalCollection)->pluck('user_id')->unique();
+            $totalTcCollection = collect($shopPaymentdtl->items())->merge($tollPaymentdtl->items());
 
             $list1['totalCollection'] = $TollPayment + $ShopPayment;
-            $list1['tcCollection'] = $totalTcCollection;
-            // $list1['totalCollection'] = $TollPayment + $ShopPayment;
+            $list1['tcCollection'] = [
+                "current_page" => $shopPaymentdtl->currentPage(),
+                "last_page" => $shopPaymentdtl->lastPage(),
+                "data" => $totalTcCollection,
+                "total" => $shopPaymentdtl->total() + $tollPaymentdtl->total(),
+            ];
+
             return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
 
     /**
      * | Shop Payment By Admin
