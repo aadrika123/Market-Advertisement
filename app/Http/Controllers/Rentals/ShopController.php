@@ -1628,4 +1628,42 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | Tc Collection Dtl
+     */
+    public function cashVerificationDtl(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date" => "required|date",
+            "userId" => "required|int",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0704";
+            $version = "01";
+            $mRigTransaction = new shopPayment();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+            $details = $mRigTransaction->cashDtl($date, $userId)
+                ->where('emp_dtl_id', $userId)
+                ->get();
+            return $details;
+
+            if (collect($details)->isEmpty())
+                throw new Exception("No Application Found for this id");
+
+            $data['tranDtl'] = collect($details)->values();
+            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('amount');
+            $data['totalAmount'] =  $details->sum('amount');
+            $data['numberOfTransaction'] =  $details->count();
+            $data['date'] = Carbon::parse($date)->format('d-m-Y');
+            $data['tcId'] = $userId;
+
+            return responseMsgs(true, "Cash Verification Details", remove_null($data), $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
 }

@@ -1616,7 +1616,7 @@ class SelfAdvetController extends Controller
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mAdvActiveSelfadvertisement->reuploadDocument($req);
+            $appId = $this->reuploadDocumentAdv($req);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
@@ -1625,6 +1625,45 @@ class SelfAdvetController extends Controller
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    /**
+     * |Arshad 
+     */
+
+    public function reuploadDocumentAdv($req)
+    {
+        try {
+            #initiatialise variable 
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SELF_ADVET_RELATIVE_PATH');
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+
+
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+                'relative_path' => $relativePath
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
 

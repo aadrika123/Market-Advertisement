@@ -91,6 +91,7 @@ class WfActiveDocument extends Model
         $metaReqs->verify_status        = 0;
         $metaReqs->unique_id            = $req->unique_id ?? null;
         $metaReqs->reference_no         = $req->reference_no ?? null;
+        $metaReqs->relative_path         = $req->relative_path ?? null;
 
         $metaReqs->save();
         return $metaReqs->active_id;
