@@ -64,6 +64,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-shop-collection', 'listShopCollection');                                                   // 36  List Shop Collection
         Route::post('rental/save-tran-dtl', 'storeTransactionDtl');                                                         // 37  END Online Payment
         Route::post('rental/search-shop-by-parameters', 'searchShopPipeline');                                              // 37  END Online Payment
+        Route::post('rental/cash-verification-list', 'listCashVerificationDtl');                                                    #_List of Cash Verification --------------- 0703
+
     });
 
     /**

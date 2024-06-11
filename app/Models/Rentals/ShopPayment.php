@@ -353,4 +353,16 @@ class ShopPayment extends Model
       ->where('mar_shop_payments.payment_date', '<=', $toDate)
       ->whereIn('mar_shop_payments.payment_status', [1, 2]);
   }
+
+  /**
+   * | Details for Cash Verification
+   */
+  public function cashDtl($date)
+  {
+    return self::select('mar_shop_payments.*', 'users.name', 'users.id as user_id', 'mobile')
+      ->join('users', 'users.id', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.is_active', 1)
+      ->where('is_verified', 0)
+      ->where('payment_date', $date);
+  }
 }

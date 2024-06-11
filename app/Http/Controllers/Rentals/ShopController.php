@@ -543,45 +543,42 @@ class ShopController extends Controller
             if (!empty($req->empId)) {
                 $shopPaymentQuery->where('user_id', $req->empId);
             }
-            $shopPaymentdtl = $shopPaymentQuery->paginate($perPage);
+            // $shopPayments = $shopPaymentQuery->get();
             $ShopPayment = $shopPaymentQuery->sum('amount');
 
             $mMarTollPayment = new MarTollPayment();
             $tollPaymentQuery = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
-                ->whereBetween('payment_date', [$fromDate, $toDate]);
+                ->whereBetween('payment_date', [$fromDate, $toDate])
+
+                ->union($shopPaymentQuery);
+
             if (!empty($req->empId)) {
                 $tollPaymentQuery->where('user_id', $req->empId);
             }
-            $tollPaymentdtl = $tollPaymentQuery->paginate($perPage);
+
+            // $tollPayments = $tollPaymentQuery->get();
+
             $TollPayment = $tollPaymentQuery->sum('amount');
 
             // Merge results
             // $totalCollection = $shopPaymentdtl->merge($tollPaymentdtl);
+            $allPayments =  $tollPaymentQuery;
 
             // Paginate the merged results
-            $data = collect($shopPaymentdtl->items())
-                ->merge($tollPaymentdtl->items());
-            $currentPageData = $data->forPage($page, $perPage)->values();
-            $paginator = new LengthAwarePaginator(
-                $currentPageData,
-                $data->count(),
-                $perPage,
-                $page
-            );
-
-            $list1 = [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'data' => $paginator->items(),
-                'totalCollection' => $TollPayment + $ShopPayment,
+            $paginator = $allPayments->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'totalCollection' => $ShopPayment + $TollPayment,
                 'summary' => [
                     'shop_payment_total' => $ShopPayment,
                     'toll_payment_total' => $TollPayment,
                 ]
-            ];;
+            ];
 
-
-            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -1577,5 +1574,58 @@ class ShopController extends Controller
         $counter = $idDetails->shop_counter + 1;
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
+    }
+
+    /**
+     * | Unverified Cash Verification List
+     */
+    public function listCashVerificationDtl(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'required|date',
+            'userId' => 'nullable|int'
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0703";
+            $version = "01";
+            $user = authUser($req);
+            $mShopTrans = new shopPayment();
+            $userId =  $req->userId;
+            $date = date('Y-m-d', strtotime($req->date));
+
+            if (isset($userId)) {
+                $mShopTrans = new shopPayment();
+                $data = $mShopTrans->cashDtl($date)
+                    ->where('mar_shop_payments.ulb_id', $user->ulb_id)
+                    ->where('user_id', $userId)
+                    ->get();
+            }
+
+            if (!isset($userId)) {
+                $data = $mShopTrans->cashDtl($date)
+                    ->where('mar_shop_payments.ulb_id', $user->ulb_id)
+                    ->get();
+            }
+
+            $collection = collect($data->groupBy("emp_dtl_id")->values());
+
+            $data = $collection->map(function ($val) use ($date) {
+                $total =  $val->sum('amount');
+                return [
+                    "id" => $val[0]['id'],
+                    "user_id" => $val[0]['user_id'],
+                    "officer_name" => $val[0]['name'],
+                    "mobile" => $val[0]['mobile'],
+                    "amount" => $total,
+                    "date" => Carbon::parse($date)->format('d-m-Y'),
+                ];
+            });
+
+            return responseMsgs(true, "Cash Verification List", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
     }
 }
