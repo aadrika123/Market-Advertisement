@@ -28,7 +28,10 @@ class AdvPrivateland extends Model
             'adv_privatelands.mobile_no',
             'adv_privatelands.entity_address',
             'adv_privatelands.payment_amount',
-            'adv_privatelands.payment_status',
+            DB::raw("CASE 
+            WHEN adv_privatelands.payment_amount = '0' THEN '1'
+            ELSE adv_privatelands.payment_status
+              END AS payment_status"),
             'adv_privatelands.valid_upto',
             'adv_privatelands.valid_from',
             'adv_privatelands.approve_date',
@@ -105,7 +108,7 @@ class AdvPrivateland extends Model
         )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_privatelands.ulb_id')
             ->orderByDesc('adv_privatelands.id');
-            //->get();
+        //->get();
     }
 
 
