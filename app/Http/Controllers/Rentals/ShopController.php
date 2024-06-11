@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Traits\ShopDetailsTraits;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pipeline\Pipeline;
 
 class ShopController extends Controller
@@ -522,7 +523,7 @@ class ShopController extends Controller
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
             'empId' => 'nullable',
-            'perPage' => 'nullable|integer|min:1'
+            'perPage' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -534,6 +535,7 @@ class ShopController extends Controller
             $fromDate = $req->fromDate ?? date('Y-m-d');
             $toDate = $req->toDate ?? date('Y-m-d');
             $perPage = $req->perPage ?? 15;
+            $page = $req->page ?? 1;
 
             $mShopPayment = new ShopPayment();
             $shopPaymentQuery = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
@@ -553,15 +555,31 @@ class ShopController extends Controller
             $tollPaymentdtl = $tollPaymentQuery->paginate($perPage);
             $TollPayment = $tollPaymentQuery->sum('amount');
 
-            $totalTcCollection = collect($shopPaymentdtl->items())->merge($tollPaymentdtl->items());
+            // Merge results
+            // $totalCollection = $shopPaymentdtl->merge($tollPaymentdtl);
 
-            $list1['totalCollection'] = $TollPayment + $ShopPayment;
-            $list1['tcCollection'] = [
-                "current_page" => $shopPaymentdtl->currentPage(),
-                "last_page" => $shopPaymentdtl->lastPage(),
-                "data" => $totalTcCollection,
-                "total" => $shopPaymentdtl->total() + $tollPaymentdtl->total(),
-            ];
+            // Paginate the merged results
+            $data = collect($shopPaymentdtl->items())
+                ->merge($tollPaymentdtl->items());
+            $currentPageData = $data->forPage($page, $perPage)->values();
+            $paginator = new LengthAwarePaginator(
+                $currentPageData,
+                $data->count(),
+                $perPage,
+                $page
+            );
+
+            $list1 = [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'data' => $paginator->items(),
+                'totalCollection' => $TollPayment + $ShopPayment,
+                'summary' => [
+                    'shop_payment_total' => $ShopPayment,
+                    'toll_payment_total' => $TollPayment,
+                ]
+            ];;
+
 
             return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
