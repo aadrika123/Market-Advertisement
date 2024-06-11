@@ -667,7 +667,7 @@ class AgencyController extends Controller
             ]);
             if ($validator->fails()) {
                 return ['status' => false, 'message' => $validator->errors()];
-            }      
+            }
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveAgency->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
@@ -1426,7 +1426,7 @@ class AgencyController extends Controller
             $mAdvActiveAgency = new AdvActiveAgency();
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mAdvActiveAgency->reuploadDocument($req);
+            $appId = $this->reuploadDocumentAgency($req);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
@@ -1437,6 +1437,47 @@ class AgencyController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050529", 1.0, "", "POST", "", "");
         }
     }
+
+    /**
+     * |Arshad 
+     */
+
+    public function reuploadDocumentAgency($req)
+    {
+        try {
+            #initiatialise variable 
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+
+
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+                'relative_path' => $relativePath
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Search application by mobile no., entity name, and owner name
      * | Function - 34
