@@ -2,11 +2,13 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class AdvAgency extends Model
 {
@@ -124,7 +126,7 @@ class AdvAgency extends Model
         )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
             ->orderByDesc('adv_agencies.id');
-            //->get();
+        //->get();
     }
 
     /**
@@ -241,11 +243,16 @@ class AdvAgency extends Model
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $mAdvAgency->payment_status = $req->status;
             $mAdvAgency->payment_mode = "Cash";
-            $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
+            // $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvAgency->ulb_id);
+            $pay_id = $idGeneration->generate();
+
+            $mAdvAgency->payment_id = $pay_id;
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvAgency->payment_details = json_encode($payDetails);
             if ($mAdvAgency->renew_no == NULL) {

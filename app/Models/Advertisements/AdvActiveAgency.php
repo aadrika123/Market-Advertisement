@@ -117,7 +117,7 @@ class AdvActiveAgency extends Model
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
         $mDocuments = $req->documents;
-        $this->uploadDocument($agencyId, $mDocuments,$req->auth);
+        $this->uploadDocument($agencyId, $mDocuments, $req->auth);
 
         // Store Director Details
         $mDocService = new DocumentUpload;
@@ -132,9 +132,9 @@ class AdvActiveAgency extends Model
     /**
      * | Upload document after application is submit
      */
-    public function uploadDocument($tempId, $documents,$auth)
+    public function uploadDocument($tempId, $documents, $auth)
     {
-        collect($documents)->map(function ($doc) use ($tempId,$auth) {
+        collect($documents)->map(function ($doc) use ($tempId, $auth) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -146,7 +146,7 @@ class AdvActiveAgency extends Model
             $documentImg = $doc['image'];
             //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
             $newRequest = new Request([
-                'document'=>$documentImg
+                'document' => $documentImg
             ]);
             $imageName = $docUpload->upload($newRequest);
 
@@ -165,8 +165,7 @@ class AdvActiveAgency extends Model
             // $mWfActiveDocument->postDocuments($a,$auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
             // $mWfActiveDocument->create($metaReqs);
-            foreach($metaReqs as $key=>$val)
-            {
+            foreach ($metaReqs as $key => $val) {
                 $mWfActiveDocument->$key = $val;
             }
             $mWfActiveDocument->save();
@@ -253,7 +252,7 @@ class AdvActiveAgency extends Model
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
-    public function listInbox($roleIds,$ulbId)
+    public function listInbox($roleIds, $ulbId)
     {
         $inbox = DB::table('adv_active_agencies')
             ->select(
@@ -266,10 +265,10 @@ class AdvActiveAgency extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $inbox;
     }
 
@@ -294,7 +293,7 @@ class AdvActiveAgency extends Model
                 'wr.role_name',
                 'um.ulb_name',
             )
-            ->join('wf_roles as wr','wr.id','=','adv_active_agencies.current_role_id')
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
             ->orderByDesc('adv_active_agencies.id')
             ->get();
@@ -304,7 +303,7 @@ class AdvActiveAgency extends Model
     /**
      * | Get Application Outbox List by Role Ids
      */
-    public function listOutbox($roleIds,$ulbId)
+    public function listOutbox($roleIds, $ulbId)
     {
         $outbox = DB::table('adv_active_agencies')
             ->select(
@@ -316,10 +315,10 @@ class AdvActiveAgency extends Model
                 'application_type',
             )
             ->orderByDesc('id')
-            ->where('parked',NULL)
-            ->where('ulb_id',$ulbId)
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
             ->whereNotIn('current_role_id', $roleIds);
-            // ->get();
+        // ->get();
         return $outbox;
     }
 
@@ -371,7 +370,7 @@ class AdvActiveAgency extends Model
         // $workflowId = Config::get('workflow-constants.AGENCY');
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         $ulbWorkflows = $ulbWorkflows['data'];
-         // $ipAddress = getClientIpAddress();
+        // $ipAddress = getClientIpAddress();
         $mRenewNo = ['renew_no' => 'AGENCY/REN-' . random_int(100000, 999999)];                  // Generate Application No
         $details = AdvAgency::find($req->applicationId);                              // Find Previous Application No
         $licenseNo = ['license_no' => $details->license_no];
@@ -402,7 +401,7 @@ class AdvActiveAgency extends Model
         $agencyId = AdvActiveAgency::create($metaReqs)->id;
 
         $mDocuments = $req->documents;
-        $this->uploadDocument($agencyId, $mDocuments,$req->auth);
+        $this->uploadDocument($agencyId, $mDocuments, $req->auth);
 
         // Store Director Details
         $mDocService = new DocumentUpload;
@@ -463,7 +462,7 @@ class AdvActiveAgency extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
+        $mWfActiveDocument->postDocuments($a, $req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
@@ -484,5 +483,30 @@ class AdvActiveAgency extends Model
     public function pendingListForReport()
     {
         return AdvActiveAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Active' as application_status"));
+    }
+
+    public function listAppliedApplicationsjsk()
+    {
+        return AdvActiveAgency::select(
+            'adv_active_agencies.id',
+            'adv_active_agencies.application_no',
+            'adv_active_agencies.application_date',
+            'adv_active_agencies.application_type',
+            'adv_active_agencies.address',
+            'adv_active_agencies.entity_name',
+            // 'adv_active_agencies.entity_address',
+            'adv_active_agencies.parked',
+            'adv_active_agencies.doc_upload_status',
+            'adv_active_agencies.mobile_no',
+            // 'adv_active_agencies.payment_status',
+            DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
+            'wr.role_name',
+            'um.ulb_name',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
+            ->orderByDesc('adv_active_agencies.id');
+        //->get();
     }
 }
