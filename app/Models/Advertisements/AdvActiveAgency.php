@@ -498,14 +498,30 @@ class AdvActiveAgency extends Model
             'adv_active_agencies.parked',
             'adv_active_agencies.doc_upload_status',
             'adv_active_agencies.mobile_no',
+            DB::raw("STRING_AGG(agd.director_name, ', ') as director_names"),
             // 'adv_active_agencies.payment_status',
             DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
             'wr.role_name',
             'um.ulb_name',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
         )
+            ->join('adv_active_agencydirectors as agd', 'agd.agency_id', '=', 'adv_active_agencies.id')
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
+            ->groupBy(
+                'adv_active_agencies.id',
+                'adv_active_agencies.application_no',
+                'adv_active_agencies.application_date',
+                'adv_active_agencies.application_type',
+                'adv_active_agencies.address',
+                'adv_active_agencies.entity_name',
+                'adv_active_agencies.parked',
+                'adv_active_agencies.doc_upload_status',
+                'adv_active_agencies.mobile_no',
+                'wr.role_name',
+                'um.ulb_name',
+                'user_type'
+            )
             ->orderByDesc('adv_active_agencies.id');
         //->get();
     }

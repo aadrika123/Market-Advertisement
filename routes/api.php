@@ -263,6 +263,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/get-agency-dashboard-data', 'getAgencyDashboard');                               // 36 ( Get Agency Dashboard)
         # Arshad 
         Route::post('advert/agency/list-jsk-applied-application', 'listJskAppliedApplication');
+        Route::post('advert/agency/approved/get-details-by-id', 'getApproveDetailsById');
     });
 
     /**

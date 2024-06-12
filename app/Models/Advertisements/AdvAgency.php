@@ -321,4 +321,32 @@ class AdvAgency extends Model
     {
         return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
     }
+
+    public function getDetailsById($appId)
+    {
+        return AdvAgency::select(
+            'adv_agencies.*',
+            'adv_agencies.application_no',
+            'adv_agencies.zone as zone_id',
+            // 'adv_agencies.display_type as display_type_id',
+            // 'adv_agencies.installation_location as installation_location_id',
+            // 'il.string_parameter as installation_location',
+            // 'dt.string_parameter as display_type',
+            // 'typo.descriptions as typology',
+            'adv_agencies.entity_name',
+            'adv_agencies.address',
+            'w.ward_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'ulb.ulb_name',
+        )
+            // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_agencies.installation_location::int'))
+            // ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_agencies.typology')
+            // ->leftJoin('ref_adv_paramstrings as dt', 'dt.id', '=', DB::raw('adv_agencies.display_type::int'))
+            // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_agencies.ward_id::int'))
+            // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_agencies.permanent_ward_id::int'))
+            // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_agencies.entity_ward_id::int'))
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', DB::raw('adv_agencies.ulb_id::int'))
+            ->where('adv_agencies.id', $appId);
+    }
 }
