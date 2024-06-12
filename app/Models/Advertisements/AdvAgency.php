@@ -119,15 +119,38 @@ class AdvAgency extends Model
             'adv_agencies.workflow_id',
             'adv_agencies.license_no',
             'adv_agencies.payment_id',
+            DB::raw("STRING_AGG(agd.director_name, ', ') as director_names"),
             DB::raw("'agency' as type"),
             DB::raw("'' as owner_name"),
             'um.ulb_name as ulb_name',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->join('adv_active_agencydirectors as agd', 'agd.agency_id', '=', 'adv_agencies.id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
+            ->groupBy(
+                'adv_agencies.id',
+                'adv_agencies.application_no',
+                'adv_agencies.application_date',
+                'adv_agencies.application_type',
+                'adv_agencies.entity_name',
+                'adv_agencies.payment_status',
+                'adv_agencies.mobile_no',
+                'adv_agencies.payment_amount',
+                'adv_agencies.approve_date',
+                'adv_agencies.valid_upto',
+                'adv_agencies.valid_from',
+                'adv_agencies.citizen_id',
+                'adv_agencies.user_id',
+                'adv_agencies.ulb_id',
+                'adv_agencies.workflow_id',
+                'adv_agencies.license_no',
+                'adv_agencies.payment_id',
+                'um.ulb_name'
+            )
             ->orderByDesc('adv_agencies.id');
         //->get();
     }
+
 
     /**
      * | Get Application Details FOr Payments
