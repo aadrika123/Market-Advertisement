@@ -327,7 +327,7 @@ class AdvAgency extends Model
         return AdvAgency::select(
             'adv_agencies.*',
             'adv_agencies.application_no',
-            'adv_agencies.zone as zone_id',
+            // 'adv_agencies.zone as zone_id',
             // 'adv_agencies.display_type as display_type_id',
             // 'adv_agencies.installation_location as installation_location_id',
             // 'il.string_parameter as installation_location',
@@ -335,9 +335,9 @@ class AdvAgency extends Model
             // 'typo.descriptions as typology',
             'adv_agencies.entity_name',
             'adv_agencies.address',
-            'w.ward_name',
-            'pw.ward_name as permanent_ward_name',
-            'ew.ward_name as entity_ward_name',
+            // 'w.ward_name',
+            // 'pw.ward_name as permanent_ward_name',
+            // 'ew.ward_name as entity_ward_name',
             'ulb.ulb_name',
         )
             // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_agencies.installation_location::int'))

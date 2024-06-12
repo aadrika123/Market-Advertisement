@@ -11,6 +11,7 @@ use App\Http\Requests\Agency\StoreLicenceRequest;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvActiveAgency;
+use App\Models\Advertisements\AdvActiveAgencydirector;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyAmount;
 use App\Models\Advertisements\AdvRejectedAgency;
@@ -1847,6 +1848,7 @@ class AgencyController extends Controller
             $applicationId = $req->applicationId;
             $mAdvAgency = new AdvAgency();
             $mtransaction = new AdvMarTransaction();
+            $mDirectors = new AdvActiveAgencydirector();
 
             // Fetch details from the model
             $data = $mAdvAgency->getDetailsById($applicationId)->first();
@@ -1858,7 +1860,11 @@ class AgencyController extends Controller
             // Fetch transaction details
             $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
 
+            # Director Name 
+            $Directors = $mDirectors->getDirectors($applicationId)->get();
+
             $approveApplicationDetails['basicDetails'] = $data;
+            $approveApplicationDetails['DirectorsName'] = $Directors;
 
             if ($tranDetails) {
                 $approveApplicationDetails['paymentDetails'] = $tranDetails;
