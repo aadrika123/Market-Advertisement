@@ -6,8 +6,12 @@ use App\BLL\Market\ShopPaymentBll;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\ShopRequest;
 use App\MicroServices\DocumentUpload;
+use App\MicroServices\IdGeneration;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
+use App\Models\Rentals\MarDailycollection;
+use App\Models\Rentals\MarDailycollectiondetail;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarShopLog;
 use App\Models\Rentals\MarTollPayment;
@@ -1647,15 +1651,15 @@ class ShopController extends Controller
             $userId =  $req->userId;
             $date = date('Y-m-d', strtotime($req->date));
             $details = $mRigTransaction->cashDtl($date, $userId)
-                ->where('emp_dtl_id', $userId)
+                ->where('user_id', $userId)
                 ->get();
-            return $details;
+            // $details;
 
             if (collect($details)->isEmpty())
                 throw new Exception("No Application Found for this id");
 
             $data['tranDtl'] = collect($details)->values();
-            $data['Cash'] = collect($details)->where('payment_mode', 'CASH')->sum('amount');
+            $data['Cash'] = collect($details)->where('pmt_mode', 'CASH')->sum('amount');
             $data['totalAmount'] =  $details->sum('amount');
             $data['numberOfTransaction'] =  $details->count();
             $data['date'] = Carbon::parse($date)->format('d-m-Y');
@@ -1663,6 +1667,63 @@ class ShopController extends Controller
 
             return responseMsgs(true, "Cash Verification Details", remove_null($data), $apiId, $version, responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function verifyCash(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "date"          => "required|date",
+            "tcId"          => "required|int",
+            "id"            => "required|array",
+        ]);
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $apiId = "0705";
+            $version = "01";
+            $user = authUser($req);
+            $userId = $user->id;
+            $ulbId = $user->ulb_id;
+            $mShopTransaction           = new shopPayment();
+            $mShopDailycollection       = new MarDailycollection();
+            $mShopDailycollectiondetail = new MarDailycollectiondetail();
+            $receiptIdParam                = Config::get('constants.ID_GENERATION_PARAMS.CASH_VERIFICATION_ID');
+            DB::beginTransaction();
+            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $user->ulb_id, 000, 0);
+            $receiptNo = $idGeneration->generate();
+
+            $totalAmount = $mShopTransaction->whereIn('id', $req->id)->sum('amount');
+
+            $mReqs = [
+                "receipt_no"     => $receiptNo,
+                "user_id"        => $userId,
+                "tran_date"      => Carbon::parse($req->date)->format('Y-m-d'),
+                "deposit_date"   => Carbon::now(),
+                "deposit_amount" => $totalAmount,
+                "tc_id"          => $req->tcId,
+            ];
+
+            $collectionDtl =  $mShopDailycollection->store($mReqs);
+            //Update collection details table
+
+            foreach ($req->id as $id) {
+                $collectionDtlsReqs = [
+                    "collection_id"  => $collectionDtl->id,
+                    "transaction_id" => $id,
+                ];
+                $mShopDailycollectiondetail->store($collectionDtlsReqs);
+            }
+
+            //Update transaction table
+            $mShopTransaction->whereIn('id', $req->id)
+                ->update(['verify_status' => 1]);
+
+            DB::commit();
+            return responseMsgs(true, "Cash Verified", ["receipt_no" => $receiptNo], $apiId, $version, responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
     }
