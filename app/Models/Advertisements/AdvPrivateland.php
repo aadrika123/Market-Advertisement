@@ -193,6 +193,8 @@ class AdvPrivateland extends Model
             $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
             $pay_id = $idGeneration->generate();
 
+            $mAdvPrivateland->payment_id = $pay_id;
+
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
