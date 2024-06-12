@@ -264,6 +264,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         # Arshad 
         Route::post('advert/agency/list-jsk-applied-application', 'listJskAppliedApplication');
         Route::post('advert/agency/approved/get-details-by-id', 'getApproveDetailsById');
+        Route::post('advert/agency/view-approve-document', 'getUploadDocuments');
     });
 
     /**
