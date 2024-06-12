@@ -1910,4 +1910,5 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+    
 }

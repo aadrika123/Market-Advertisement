@@ -268,7 +268,7 @@ class AdvAgency extends Model
             $mAdvAgency->payment_mode = "Cash";
             // $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
-            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvAgency->ulb_id);
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvAgency->ulb_id);
             $pay_id = $idGeneration->generate();
 
             $mAdvAgency->payment_id = $pay_id;
