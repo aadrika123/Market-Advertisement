@@ -2,10 +2,14 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGeneration;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\IdGenerationParam;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class AdvPrivateland extends Model
 {
@@ -184,12 +188,16 @@ class AdvPrivateland extends Model
             $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
             $mAdvPrivateland->payment_status = $req->status;
             $mAdvPrivateland->payment_mode = "Cash";
-            $pay_id = $mAdvPrivateland->payment_id = "Cash-$req->applicationId-" . time();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            // $pay_id = $mAdvPrivateland->payment_id = "Cash-$req->applicationId-" . time();
+            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
+            $pay_id = $idGeneration->generate();
+
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvPrivateland->payment_details = json_encode($payDetails);
             if ($mAdvPrivateland->renew_no == NULL) {
