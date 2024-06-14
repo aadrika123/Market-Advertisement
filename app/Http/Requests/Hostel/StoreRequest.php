@@ -57,13 +57,13 @@ class StoreRequest extends FormRequest
             'exitGate' => 'required|integer',
             'twoWheelersParking' => 'required|integer',
             'fourWheelersParking' => 'required|integer',
-            'aadharCard' => 'required|integer',
+            'aadharCard' => 'required',
             'panCard' => 'required|string',
             'ulbId' => 'required|integer',
             // 'isSchoolCollegeUniv' => 'required|boolean',
             // 'schoolCollegeUnivName' => $this->isSchoolCollegeUniv==true?'required|String':'nullable|string',
             // 'isApproveByGovt' => $this->isSchoolCollegeUniv==true?'required|boolean':'nullable|boolean',
-            'isApproveByGovt' =>'required|boolean',
+            'isApproveByGovt' => 'required|boolean',
             // 'govtType' => $this->isApproveByGovt==true?'required|String':'nullable|string',
 
             'documents' => 'required|array',
@@ -73,7 +73,7 @@ class StoreRequest extends FormRequest
         ];
     }
 
-     
+
     /**
      * | Error Message
      */

@@ -362,6 +362,7 @@ class ShopPayment extends Model
     return self::select('mar_shop_payments.*', 'users.name', 'users.id as user_id', 'mobile')
       ->join('users', 'users.id', 'mar_shop_payments.user_id')
       ->where('mar_shop_payments.is_active', 1)
+      ->where('mar_shop_payments.pmt_mode','CASH')
       ->where('is_verified', 0)
       ->where('payment_date', $date);
   }
