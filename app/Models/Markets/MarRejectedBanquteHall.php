@@ -22,7 +22,9 @@ class MarRejectedBanquteHall extends Model
                 'mar_rejected_banqute_halls.application_date',
                 'mar_rejected_banqute_halls.rejected_date',
                 'um.ulb_name as ulb_name',
-                'workflow_tracks.message as remarks'
+                'workflow_tracks.message as remarks',
+                'mar_rejected_banqute_halls.entity_name',
+                'mar_rejected_banqute_halls.entity_address',
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_banqute_halls.ulb_id')
             ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {

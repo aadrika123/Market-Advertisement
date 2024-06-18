@@ -24,7 +24,9 @@ class MarRejectedDharamshala extends Model
                 'mar_rejected_dharamshalas.rejected_date',
                 'mar_rejected_dharamshalas.citizen_id',
                 'um.ulb_name as ulb_name',
-                'workflow_tracks.message as remarks'
+                'workflow_tracks.message as remarks',
+                'mar_rejected_dharamshalas.entity_name',
+                'mar_rejected_dharamshalas.entity_address'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_dharamshalas.ulb_id')
             ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {

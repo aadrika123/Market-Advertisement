@@ -24,7 +24,9 @@ class MarRejectedLodge extends Model
                 'mar_rejected_lodges.rejected_date',
                 'mar_rejected_lodges.citizen_id',
                 'um.ulb_name as ulb_name',
-                'workflow_tracks.message as remarks'
+                'workflow_tracks.message as remarks',
+                'mar_rejected_lodges.entity_name',
+                'mar_rejected_lodges.entity_address'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_lodges.ulb_id')
             ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {
