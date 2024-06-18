@@ -2,10 +2,12 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class AdvHoarding extends Model
@@ -259,8 +261,8 @@ class AdvHoarding extends Model
 
         $data['totalYearlyHoarding'] = $data['countRejectAppl']['totalRejected'] + $data['countPendindAppl']['totalPending'] + $data['countApprovedAppl']['totalApproved'];
         $data['totalYearlyRenewalHoarding'] = $this->getRenewalApplication($citizenId, $licenseYear);
-        $data['getMonthallyTotalApplication']=$this->getMonthallyTotalApplication($citizenId, $licenseYear);
-        $data['getMonthallyRenewApplication']=$this->getMonthallyRenewApplication($citizenId,$licenseYear);
+        $data['getMonthallyTotalApplication'] = $this->getMonthallyTotalApplication($citizenId, $licenseYear);
+        $data['getMonthallyRenewApplication'] = $this->getMonthallyRenewApplication($citizenId, $licenseYear);
         $data3['payment'] = AdvHoardingRenewal::select('payment_date', 'payment_amount', 'application_type')
             ->where(['citizen_id' => $citizenId, 'license_year' => $licenseYear])
             ->get();
@@ -298,21 +300,21 @@ class AdvHoarding extends Model
      */
     public function getMonthallyTotalApplication($citizenId, $licenseYear)
     {
-        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
-        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
-        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->count();
+        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->count();
+        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->count();
+        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->count();
         return ($activeAppl + $approveAppl + $rejectAppl);
     }
 
-    
+
     /**
      * | Get Applied Yearly Renewal Application By Agency
      */
     public function getMonthallyRenewApplication($citizenId, $licenseYear)
     {
-        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
-        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
-        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date',">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        $activeAppl = AdvActiveHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        $approveAppl = AdvHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
+        $rejectAppl = AdvRejectedHoarding::where('citizen_id', $citizenId)->where('license_year', $licenseYear)->where('application_date', ">=", Carbon::now()->startOfMonth())->where('application_type', 'Renew')->count();
         return ($activeAppl + $approveAppl + $rejectAppl);
     }
 
@@ -476,11 +478,15 @@ class AdvHoarding extends Model
             $mAdvHoarding = AdvHoarding::find($req->applicationId);        // Application ID
             $mAdvHoarding->payment_status = $req->status;
             $mAdvHoarding->payment_mode = "Cash";
-            $pay_id = $mAdvHoarding->payment_id = "Cash-$req->applicationId-" . time();
+            // $pay_id = $mAdvHoarding->payment_id = "Cash-$req->applicationId-" . time();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvHoarding->ulb_id);
+            $pay_id = $idGeneration->generate();
+            $mAdvHoarding->payment_id = $pay_id;
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvHoarding->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount, 'demand_amount' => $mAdvHoarding->demand_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvHoarding->payment_amount, 'demand_amount' => $mAdvHoarding->demand_amount, 'workflowId' => $mAdvHoarding->workflow_id, 'userId' => $mAdvHoarding->citizen_id, 'ulbId' => $mAdvHoarding->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvHoarding->payment_details = json_encode($payDetails);
             if ($mAdvHoarding->renew_no == NULL) {

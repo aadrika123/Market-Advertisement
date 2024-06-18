@@ -212,7 +212,7 @@ class LodgeController extends Controller
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
 
-             
+
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "mar_active_lodges.id";                         // Static
@@ -498,7 +498,7 @@ class LodgeController extends Controller
         //     return $value;
         // });
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -552,7 +552,7 @@ class LodgeController extends Controller
     //     });
     //     return responseMsgs(true, "Data Fetched", remove_null($data1), "050712", "1.0", responseTime(), "POST", "");
     // }
-    
+
     public function viewDocumentsOnWorkflow(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -688,11 +688,26 @@ class LodgeController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                $LodgeTrack                 = new WorkflowTrack();
                 //Lodge Application replication
                 $rejectedlodge = $mMarActiveLodge->replicate();
                 $rejectedlodge->setTable('mar_rejected_lodges');
                 $rejectedlodge->id = $mMarActiveLodge->id;
                 $rejectedlodge->rejected_date = Carbon::now();
+
+                $metaReqs = [
+                    'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                    'workflowId'        => $mMarActiveLodge->workflow_id,
+                    'refTableDotId'     => 'mar_active_lodges.id',                                   // Static
+                    'refTableIdValue'   => $req->applicationId,
+                    'user_id'           => authUser($req)->id,
+                    'ulb_id'            =>  $mMarActiveLodge->ulb_id,
+                    'verificationStatus' => 3,
+                    'citizenId'         =>  $mMarActiveLodge->citizen_id
+                ];
+                $req->request->add($metaReqs);
+                $LodgeTrack->saveTrack($req);
+                
                 $rejectedlodge->save();
                 $mMarActiveLodge->delete();
                 $msg = "Application Successfully Rejected !!";

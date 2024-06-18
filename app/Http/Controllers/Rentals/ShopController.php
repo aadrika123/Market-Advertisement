@@ -6,8 +6,12 @@ use App\BLL\Market\ShopPaymentBll;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\ShopRequest;
 use App\MicroServices\DocumentUpload;
+use App\MicroServices\IdGeneration;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
+use App\Models\Rentals\MarDailycollection;
+use App\Models\Rentals\MarDailycollectiondetail;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarShopLog;
 use App\Models\Rentals\MarTollPayment;
@@ -27,6 +31,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Traits\ShopDetailsTraits;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pipeline\Pipeline;
 
 class ShopController extends Controller
@@ -108,6 +113,7 @@ class ShopController extends Controller
                 // $absolutePath = $relativePath;
                 $imageName2Absolute = $relativePath;
             }
+
             $shopNo = $this->shopIdGeneration($req->marketId);
             $metaReqs = [
                 'circle_id' => $req->circleId,
@@ -520,54 +526,68 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
-            'empId'   => 'nullable'
+            'empId' => 'nullable',
+            'perPage' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
-            return  $validator->errors();
+            return response()->json($validator->errors(), 422);
         }
+
         try {
             $authUrl = Config::get('constants.AUTH_URL');
-            if ($req->fromDate == NULL) {
-                $fromDate = date('Y-m-d');
-                $toDate = date('Y-m-d');
-            } else {
-                $fromDate = $req->fromDate;
-                $toDate = $req->toDate;
-            }
-            $mShopPayment = new ShopPayment();
-            $shopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
-            if ($req->shopCategoempIdryId != 0)
-                $shopPayment = $shopPayment->where('user_id', $req->empId)->get();
-            // $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
-            $todayShopPayment = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
-            $mMarTollPayment = new MarTollPayment();
-            $tollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
-            if ($req->shopCategoempIdryId != 0)
-                $tollPayment = $tollPayment->where('user_id', $req->empId)->get()
-                    ->get();
-            // $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->where('payment_date', date('Y-m-d'))->sum('amount');
-            $todayTollPayment = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->sum('amount');
-            $totalCollection = collect($shopPayment)->merge($tollPayment);
-            $refValues = collect($totalCollection)->pluck('user_id')->unique();
-            $ids['ids'] = $refValues;
-            $userDetails = Http::withToken($req->token)
-                ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
+            $fromDate = $req->fromDate ?? date('Y-m-d');
+            $toDate = $req->toDate ?? date('Y-m-d');
+            $perPage = $req->perPage ?? 15;
+            $page = $req->page ?? 1;
 
-            $userDetails = json_decode($userDetails);
-            $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
-                $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
-                $ref['userId'] = $values;
-                $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
-                return $ref;
-            });
-            $list1['list'] = $list->values();
-            $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
-            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            $mShopPayment = new ShopPayment();
+            $shopPaymentQuery = $mShopPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
+                ->whereBetween('payment_date', [$fromDate, $toDate]);
+            if (!empty($req->empId)) {
+                $shopPaymentQuery->where('user_id', $req->empId);
+            }
+            // $shopPayments = $shopPaymentQuery->get();
+            $ShopPayment = $shopPaymentQuery->sum('amount');
+
+            $mMarTollPayment = new MarTollPayment();
+            $tollPaymentQuery = $mMarTollPayment->paymentListForTcCollection($req->auth['ulb_id'], $req->empId)
+                ->whereBetween('payment_date', [$fromDate, $toDate])
+
+                ->union($shopPaymentQuery);
+
+            if (!empty($req->empId)) {
+                $tollPaymentQuery->where('user_id', $req->empId);
+            }
+
+            // $tollPayments = $tollPaymentQuery->get();
+
+            $TollPayment = $tollPaymentQuery->sum('amount');
+
+            // Merge results
+            // $totalCollection = $shopPaymentdtl->merge($tollPaymentdtl);
+            $allPayments =  $tollPaymentQuery;
+
+            // Paginate the merged results
+            $paginator = $allPayments->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'totalCollection' => $ShopPayment + $TollPayment,
+                'summary' => [
+                    'shop_payment_total' => $ShopPayment,
+                    'toll_payment_total' => $TollPayment,
+                ]
+            ];
+
+            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list, "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
 
     /**
      * | Shop Payment By Admin
@@ -1407,8 +1427,8 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'shopCategoryId' => 'nullable|integer',
             'marketId' => 'nullable|integer',
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
             'paymentMode'  => 'nullable'
         ]);
         if ($validator->fails()) {
@@ -1417,14 +1437,14 @@ class ShopController extends Controller
         // return $req->all();
         try {
             $paymentMode = null;
-            if (!isset($req->fromDate))
+            if (!isset($req->dateFrom))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
-                $fromDate = $req->fromDate;
-            if (!isset($req->toDate))
+                $fromDate = $req->dateFrom;
+            if (!isset($req->dateTo))
                 $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
             else
-                $toDate = $req->toDate;
+                $toDate = $req->dateTo;
 
             if ($req->paymentMode) {
                 $paymentMode = $req->paymentMode;
@@ -1439,8 +1459,23 @@ class ShopController extends Controller
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+            // Calculate counts
+            $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->count();
+            // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
+            $onlineCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
+            $chequeCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
+            $cashAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
+            $onlineAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
+            $chequeAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
+
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
+            $list['cashCount'] = $cashCount;
+            $list['onlineCount'] = $onlineCount;
+            $list['chequeCount'] = $chequeCount;
+            $list['cashAmount'] = $cashAmount;
+            $list['onlineAmount'] = $onlineAmount;
+            $list['chequeAmount'] = $chequeAmount;
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1544,4 +1579,8 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
+
+    
+
+   
 }

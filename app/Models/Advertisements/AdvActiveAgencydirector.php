@@ -37,4 +37,14 @@ class AdvActiveAgencydirector extends Model
 
         AdvActiveAgencydirector::create($metaReqs);
     }
+
+    #get director name
+    public function getDirectors($applicationId)
+    {
+        return self::select(
+            'adv_active_agencydirectors.*'
+        )
+            ->where('adv_active_agencydirectors.agency_id', $applicationId)
+            ->where('status', 1);
+    }
 }

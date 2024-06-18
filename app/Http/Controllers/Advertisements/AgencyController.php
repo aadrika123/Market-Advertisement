@@ -11,6 +11,7 @@ use App\Http\Requests\Agency\StoreLicenceRequest;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvActiveAgency;
+use App\Models\Advertisements\AdvActiveAgencydirector;
 use App\Models\Advertisements\AdvAgency;
 use App\Models\Advertisements\AdvAgencyAmount;
 use App\Models\Advertisements\AdvRejectedAgency;
@@ -1468,7 +1469,7 @@ class AgencyController extends Controller
             $mAdvActiveAgency = new AdvActiveAgency();
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mAdvActiveAgency->reuploadDocument($req);
+            $appId = $this->reuploadDocumentAgency($req);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
@@ -1479,6 +1480,47 @@ class AgencyController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050529", 1.0, "", "POST", "", "");
         }
     }
+
+    /**
+     * |Arshad 
+     */
+
+    public function reuploadDocumentAgency($req)
+    {
+        try {
+            #initiatialise variable 
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+
+
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+                'relative_path' => $relativePath
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Search application by mobile no., entity name, and owner name
      * | Function - 34
@@ -1767,4 +1809,148 @@ class AgencyController extends Controller
             return responseMsgs(false, "", $e->getMessage(), "050535", 1.0, "271ms", "POST", "", "");
         }
     }
+
+    /**
+     * |Arshad 
+     */
+    public function listJskAppliedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Applied application list";
+            $mActiveAgency = new AdvActiveAgency();
+            $applications = $mActiveAgency->listAppliedApplicationsjsk();
+            if ($key && $parameter) {
+                $msg = "Agency application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('adv_active_agencies.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                        // case 'applicantName':
+                        //     $applications = $applications->where('adv_active_agencies.applicant', 'LIKE', "%$parameter%");
+                        //     break;
+                    case 'applicationNo':
+                        $applications = $applications->where('adv_active_agencies.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvAgency = new AdvAgency();
+            $mtransaction = new AdvMarTransaction();
+            $mDirectors = new AdvActiveAgencydirector();
+
+            // Fetch details from the model
+            $data = $mAdvAgency->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            # Director Name 
+            $Directors = $mDirectors->getDirectors($applicationId)->get();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+            $approveApplicationDetails['DirectorsName'] = $Directors;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    # Arshad 
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvAgency             = new AdvAgency();
+            $refDocUpload           = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvAgency->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+    
 }

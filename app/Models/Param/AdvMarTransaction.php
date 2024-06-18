@@ -6,6 +6,7 @@ use App\Models\Advertisements\AdvSelfadvertisement;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdvMarTransaction extends Model
 {
@@ -49,7 +50,7 @@ class AdvMarTransaction extends Model
         $addData->application_id    = $req->id;
         $addData->module_type       = $moduleType;
         $addData->transaction_id    = $req->payment_id;
-        $addData->transaction_no    = "$req->id-" . time();
+        $addData->transaction_no    = $req->payment_id;
         $addData->transaction_date  = $req->payment_date;
         $addData->amount            = $req->payment_amount;
         if (isset($req->demand_amount)) {
@@ -79,7 +80,7 @@ class AdvMarTransaction extends Model
         return AdvMarTransaction::select(
             'adv_mar_transactions.id',
             'adv_mar_transactions.transaction_no',
-            'adv_mar_transactions.transaction_date',
+            DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
             'adv_mar_transactions.amount',
             'adv_mar_transactions.payment_mode',
             'adv_mar_transactions.demand_amount',

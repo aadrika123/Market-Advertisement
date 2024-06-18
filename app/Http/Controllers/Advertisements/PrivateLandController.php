@@ -1545,7 +1545,7 @@ class PrivateLandController extends Controller
             $mAdvActivePrivateland = new AdvActivePrivateland();
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mAdvActivePrivateland->reuploadDocument($req, $req->auth);
+            $appId = $this->reuploadDocumenTPri($req, $req->auth);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
@@ -1556,6 +1556,47 @@ class PrivateLandController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050430", 1.0, "271ms", "POST", "", "");
         }
     }
+
+    /**
+     * |Arshad 
+     */
+
+    public function reuploadDocumenTPri($req)
+    {
+        try {
+            #initiatialise variable 
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+
+
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+                'relative_path' => $relativePath
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
 
 
     /**

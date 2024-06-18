@@ -40,7 +40,7 @@ class WfActiveDocument extends Model
         $metaReqs->ulb_id               = $req->ulbId;
         $metaReqs->module_id            = $req->moduleId;
         $metaReqs->relative_path        = $req->relativePath;
-        $metaReqs->document             = $req->document;
+        // $metaReqs->document             = $req->document;
         $metaReqs->uploaded_by          = $auth['id'];
         $metaReqs->uploaded_by_type     = $auth['user_type'];
         $metaReqs->remarks              = $req->remarks ?? null;
@@ -77,6 +77,24 @@ class WfActiveDocument extends Model
             $mWfActiveDocument->verify_status = $req->verifyStatus;
         }
         $mWfActiveDocument->save();
+    }
+
+    /**
+     * | Upload document funcation
+     */
+    public function updateDocuments($req, $auth, $docId)
+    {
+        $metaReqs =  WfActiveDocument::where('id', $docId)->first();
+        $metaReqs->module_id            = $req->moduleId;
+        $metaReqs->uploaded_by          = $auth['id'];
+        $metaReqs->uploaded_by_type     = $auth['user_type'];
+        $metaReqs->verify_status        = 0;
+        $metaReqs->unique_id            = $req->unique_id ?? null;
+        $metaReqs->reference_no         = $req->reference_no ?? null;
+        $metaReqs->relative_path         = $req->relative_path ?? null;
+
+        $metaReqs->save();
+        return $metaReqs->active_id;
     }
 
     /**
@@ -139,8 +157,9 @@ class WfActiveDocument extends Model
                 'verify_status'
             )
             ->where('workflow_id', $req->workflowId)
-            ->where('module_id', $req->moduleId)
-            ->where('verify_status', '!=', 2)
+            ->where('module_id',  $req->moduleId)
+            // ->where('verify_status', '!=', 2)
+            ->where('verify_status', '=', 1)
             ->where('status', 1)
             ->get();
     }

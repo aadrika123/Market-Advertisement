@@ -2,10 +2,14 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGeneration;
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\IdGenerationParam;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class AdvPrivateland extends Model
 {
@@ -28,7 +32,10 @@ class AdvPrivateland extends Model
             'adv_privatelands.mobile_no',
             'adv_privatelands.entity_address',
             'adv_privatelands.payment_amount',
-            'adv_privatelands.payment_status',
+            DB::raw("CASE 
+            WHEN adv_privatelands.payment_amount = '0' THEN '1'
+            ELSE adv_privatelands.payment_status
+              END AS payment_status"),
             'adv_privatelands.valid_upto',
             'adv_privatelands.valid_from',
             'adv_privatelands.approve_date',
@@ -105,7 +112,7 @@ class AdvPrivateland extends Model
         )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_privatelands.ulb_id')
             ->orderByDesc('adv_privatelands.id');
-            //->get();
+        //->get();
     }
 
 
@@ -151,6 +158,7 @@ class AdvPrivateland extends Model
             'adv_privatelands.payment_mode',
             'adv_privatelands.application_date as applyDate',
             'adv_privatelands.trade_license_no',
+            'adv_privatelands.ulb_id',
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             'wn.ward_name as wardNo',
@@ -180,12 +188,18 @@ class AdvPrivateland extends Model
             $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
             $mAdvPrivateland->payment_status = $req->status;
             $mAdvPrivateland->payment_mode = "Cash";
-            $pay_id = $mAdvPrivateland->payment_id = "Cash-$req->applicationId-" . time();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            // $pay_id = $mAdvPrivateland->payment_id = "Cash-$req->applicationId-" . time();
+            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
+            $pay_id = $idGeneration->generate();
+
+            $mAdvPrivateland->payment_id = $pay_id;
+
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
             // $mAdvPrivateland->payment_details = "By Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvPrivateland->payment_details = json_encode($payDetails);
             if ($mAdvPrivateland->renew_no == NULL) {

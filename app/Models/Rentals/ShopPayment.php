@@ -55,9 +55,22 @@ class ShopPayment extends Model
   /**
    * | Get List of Tc Collection
    */
-  public function paymentListForTcCollection($ulbId)
+  public function paymentListForTcCollection($ulbId, $empID)
   {
-    return self::select('user_id', 'payment_date', 'amount')->where('ulb_id', $ulbId);
+    return self::select(
+      'user_id',
+      'payment_date',
+      'amount',
+      'users.name',
+      'users.user_type'
+    )
+      ->leftJoin('users', function ($join) use ($empID) {
+        $join->on('users.id', 'mar_shop_payments.user_id');
+        if (!is_null($empID)) {
+          $join->where('mar_shop_payments.user_id', $empID);
+        }
+      })
+      ->where('mar_shop_payments.ulb_id', $ulbId);
   }
 
   /**
@@ -299,7 +312,7 @@ class ShopPayment extends Model
       'mar_shop_payments.amount',
       'mar_shops.allottee',
       'mar_shop_payments.pmt_mode',
-      'mar_shop_payments.payment_date',
+      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
     )
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('mar_shop_payments.shop_id', $shopId)
@@ -339,5 +352,18 @@ class ShopPayment extends Model
       ->where('mar_shop_payments.payment_date', '>=', $fromDate)
       ->where('mar_shop_payments.payment_date', '<=', $toDate)
       ->whereIn('mar_shop_payments.payment_status', [1, 2]);
+  }
+
+  /**
+   * | Details for Cash Verification
+   */
+  public function cashDtl($date)
+  {
+    return self::select('mar_shop_payments.*', 'users.name', 'users.id as user_id', 'mobile')
+      ->join('users', 'users.id', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.is_active', 1)
+      ->where('mar_shop_payments.pmt_mode','CASH')
+      ->where('is_verified', 0)
+      ->where('payment_date', $date);
   }
 }

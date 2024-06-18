@@ -317,7 +317,7 @@ if (!function_exists('getClientIpAddress')) {
             $key = trim($req->key);
             return $orm->where(function ($query) use ($key) {
                 $query->orwhere('application_no', 'ILIKE', '%' . $key . '%')
-                    ->orwhere("applicant", 'ILIKE', '%' . $key . '%')
+                    // ->orwhere("applicant", 'ILIKE', '%' . $key . '%')
                     // ->orwhere(DB::raw("TO_CHAR(application_date, 'DD/MM/YYYY')"), 'ILIKE', '%' . $key . '%')
                     ->orwhere("entity_name", 'ILIKE', '%' . $key . '%');
             });

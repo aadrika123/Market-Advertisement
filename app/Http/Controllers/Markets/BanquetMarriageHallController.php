@@ -213,7 +213,7 @@ class BanquetMarriageHallController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
- 
+
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "mar_active_banqute_halls.id";                         // Static
@@ -692,11 +692,27 @@ class BanquetMarriageHallController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                $BanquetMarHallTrack                 = new WorkflowTrack();
                 // Banqute Hall Application replication
                 $rejectedbanqutehall = $mMarActiveBanquteHall->replicate();
                 $rejectedbanqutehall->setTable('mar_rejected_banqute_halls');
                 $rejectedbanqutehall->id = $mMarActiveBanquteHall->id;
                 $rejectedbanqutehall->rejected_date = Carbon::now();
+
+                $metaReqs = [
+                    'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                    'workflowId'        => $mMarActiveBanquteHall->workflow_id,
+                    'refTableDotId'     => 'mar_active_lodges.id',                                   // Static
+                    'refTableIdValue'   => $req->applicationId,
+                    'user_id'           => authUser($req)->id,
+                    'ulb_id'            =>  $mMarActiveBanquteHall->ulb_id,
+                    'verificationStatus' => 3,
+                    'citizenId'         =>  $mMarActiveBanquteHall->citizen_id
+                ];
+
+                $req->request->add($metaReqs);
+                $BanquetMarHallTrack->saveTrack($req);
+
                 $rejectedbanqutehall->save();
                 $mMarActiveBanquteHall->delete();
                 $msg = "Application Successfully Rejected !!";
@@ -980,10 +996,10 @@ class BanquetMarriageHallController extends Controller
 
             $redis = Redis::connection();
             $mMarActiveBanquteHall = MarActiveBanquteHall::find($req->applicationId);
-            if($mMarActiveBanquteHall -> doc_verify_status == 1)
+            if ($mMarActiveBanquteHall->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
-            if($mMarActiveBanquteHall -> doc_upload_status == 1)
-                    throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
+            if ($mMarActiveBanquteHall->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
             $workflowId = $mMarActiveBanquteHall->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
             if (!$backId) {

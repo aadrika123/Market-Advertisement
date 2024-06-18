@@ -57,7 +57,7 @@ class StoreRequest extends FormRequest
             'exitGate' => 'required|integer',
             'twoWheelersParking' => 'required|integer',
             'fourWheelersParking' => 'required|integer',
-            'aadharCard' => 'required|integer',
+            'aadharCard' => 'required',
             'panCard' => 'required|string',
             'ulbId' => 'required|integer',
 

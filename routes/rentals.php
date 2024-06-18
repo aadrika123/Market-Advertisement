@@ -12,6 +12,7 @@ use App\Http\Controllers\Master\CircleController;
 use App\Http\Controllers\Master\MarketController;
 use App\Http\Controllers\Rentals\ShopController;
 use App\Http\Controllers\Rentals\TollsController;
+use App\Http\Controllers\Rentals\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['checkToken']], function () {
@@ -64,6 +65,20 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-shop-collection', 'listShopCollection');                                                   // 36  List Shop Collection
         Route::post('rental/save-tran-dtl', 'storeTransactionDtl');                                                         // 37  END Online Payment
         Route::post('rental/search-shop-by-parameters', 'searchShopPipeline');                                              // 37  END Online Payment
+
+
+    });
+
+    /**
+     * | Author - Arshad Hussain 
+     * | payment Related Function 
+     */
+
+    Route::controller(PaymentController::class)->group(function () {
+        #cash verification 
+        Route::post('rental/cash-verification-list', 'listCashVerificationDtl');                                             #_List of Cash Verification --------------- 0703
+        Route::post('cash-verification-dtl', 'cashVerificationDtl');                                                         #_Cash Verification Detail ---------------- 0704
+        Route::post('verify-cash', 'verifyCash');                                                                            #_Verify Cash ----------------------------- 0705  
     });
 
     /**

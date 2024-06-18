@@ -123,6 +123,7 @@ class Shop extends Model
   {
     return Shop::select(
       'mar_shops.*',
+      'mar_shops.circle_id',
       'mc.circle_name',
       'mm.market_name',
       'sc.construction_type',
@@ -146,11 +147,13 @@ class Shop extends Model
       'mc.circle_name',
       'mm.market_name',
       'sc.construction_type',
-      DB::raw("(msp.payment_date) as last_payment_date"),
+      // DB::raw("(msp.payment_date) as last_payment_date"),
+      DB::raw("TO_CHAR(msp.payment_date::date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
       'msp.pmt_mode as payment_mode',
       'msp.transaction_no',
-      DB::raw("(msp.paid_to) as payment_upto"),
+      // DB::raw("(msp.paid_to) as payment_upto"),
+      DB::raw("TO_CHAR(msp.paid_to::date, 'DD-MM-YYYY') as payment_upto"),
       'usr.mobile as reciever_mobile',
       'usr.name as reciever_name',
       'ulb.ulb_name',

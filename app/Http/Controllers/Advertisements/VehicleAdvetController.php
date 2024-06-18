@@ -604,7 +604,7 @@ class VehicleAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-       
+
         $details = AdvActiveVehicle::find($req->applicationId);
         $workflowId = $details->workflow_id;
         $mWfActiveDocument = new WfActiveDocument();
@@ -1539,7 +1539,7 @@ class VehicleAdvetController extends Controller
             $mAdvActiveVehicle = new AdvActiveVehicle();
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mAdvActiveVehicle->reuploadDocument($req);
+            $appId = $this->reuploadDocumentveh($req);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
@@ -1550,6 +1550,47 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050330", 1.0, "271ms", "POST", "", "");
         }
     }
+
+    /**
+     * |Arshad 
+     */
+
+    public function reuploadDocumentveh($req)
+    {
+        try {
+            #initiatialise variable 
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $relativePath =  Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+
+
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            #_Doc Upload through a DMS
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID'),
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+                'relative_path' => $relativePath
+            ];
+
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
 
     /**
      * | Get Application Between Two Dates
@@ -1667,7 +1708,7 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
         }
     }
-    
+
 
     //written by prity pandey
     public function getApproveDetailsById(Request $req)

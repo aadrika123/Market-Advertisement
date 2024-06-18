@@ -10,6 +10,7 @@ use App\Http\Requests\Hostel\UpdateRequest;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
+use App\Models\Advertisements\RefRequiredDocument;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveHostel;
 use App\Models\Markets\MarHostel;
@@ -107,7 +108,7 @@ class HostelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, [$e->getMessage(),$e->getLine(),$e->getFile()], "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
+            return responseMsgs(false, [$e->getMessage(), $e->getLine(), $e->getFile()], "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
 
@@ -212,7 +213,7 @@ class HostelController extends Controller
             $metaReqs['wfRoleId'] = $data['current_role_id'];
             $metaReqs['workflowId'] = $data['workflow_id'];
             $metaReqs['lastRoleId'] = $data['last_role_id'];
-             
+
             # Level comment
             $mtableId = $req->applicationId;
             $mRefTable = "mar_active_hostels.id";                         // Static
@@ -497,7 +498,7 @@ class HostelController extends Controller
         //     return $value;
         // });
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -700,11 +701,26 @@ class HostelController extends Controller
             }
             // Rejection
             if ($req->status == 0) {
+                $hostTrack                 = new WorkflowTrack();
                 //Hostel Application replication
                 $rejectedhostel = $mMarActiveHostel->replicate();
                 $rejectedhostel->setTable('mar_rejected_hostels');
                 $rejectedhostel->id = $mMarActiveHostel->id;
                 $rejectedhostel->rejected_date = Carbon::now();
+                # Send record in the track table 
+                $metaReqs = [
+                    'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
+                    'workflowId'        => $mMarActiveHostel->workflow_id,
+                    'refTableDotId'     => 'mar_active_hoastels.id',                                   // Static
+                    'refTableIdValue'   => $req->applicationId,
+                    'user_id'           => authUser($req)->id,
+                    'ulb_id'            =>  $mMarActiveHostel->ulb_id,
+                    'verificationStatus' => 3,
+                    'citizenId'         =>  $mMarActiveHostel->citizen_id
+                ];
+                $req->request->add($metaReqs);
+                $hostTrack->saveTrack($req);
+
                 $rejectedhostel->save();
                 $mMarActiveHostel->delete();
                 $msg = "Application Successfully Rejected !!";
@@ -925,12 +941,21 @@ class HostelController extends Controller
                 'action_taken_by' => $userId
             ];
             $mWfDocument->docVerifyReject($wfDocId, $reqs);
-            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+            if ($req->docStatus == 'Verified')
+                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId, $req->docStatus);
+            else
+                $ifFullDocVerifiedV1 = 0;                                         // In Case of Rejection the Document Verification Status will always remain false
 
             if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
-                $appDetails->doc_verify_status = 1;
+                $appDetails->doc_verify_status = TRUE;
                 $appDetails->save();
             }
+            // $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+
+            // if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+            //     $appDetails->doc_verify_status = 1;
+            //     $appDetails->save();
+            // }
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "050918", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -955,21 +980,68 @@ class HostelController extends Controller
             'workflowId' => $mMarActiveHostel->workflow_id,
             'moduleId' =>  $this->_moduleIds
         ];
-        $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $totalApproveDoc = $refDocList->count();
-        // self Advertiesement List Documents
-        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
-        if ($totalApproveDoc >= $totalNoOfDoc) {
-            if ($ifAdvDocUnverified == 1)
-                return 0;
-            else
-                return 1;
-        } else {
-            return 0;
-        }
+        // $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
+        return $this->isAllDocs($applicationId, $refDocList, $mMarActiveHostel);
     }
+
+    /**
+     * | Checks the Document Upload Or Verify Status
+     * | @param activeApplicationId
+     * | @param refDocList list of Verified and Uploaded Documents
+     * | @param refSafs saf Details
+     */
+    public function isAllDocs($applicationId, $refDocList, $refapp)
+    {
+        $docList = array();
+        $verifiedDocList = array();
+        $verifiedDocList['hostDocs'] = $refDocList->where('owner_dtl_id', null)->values();
+        $collectUploadDocList = collect();
+        $rigListDocs = $this->getHostelDocument($refapp);
+        $docList['hostDocs'] = explode('#', $rigListDocs);
+        collect($verifiedDocList['hostDocs'])->map(function ($item) use ($collectUploadDocList) {
+            return $collectUploadDocList->push($item['doc_code']);
+        });
+        $mhostDocs = collect($docList['hostDocs']);
+        // List Documents
+        $flag = 1;
+        foreach ($mhostDocs as $item) {
+            if (!$item) {
+                continue;
+            }
+            $explodeDocs = explode(',', $item);
+            array_shift($explodeDocs);
+            foreach ($explodeDocs as $explodeDoc) {
+                $changeStatus = 0;
+                if (in_array($explodeDoc, $collectUploadDocList->toArray())) {
+                    $changeStatus = 1;
+                    break;
+                }
+            }
+            if ($changeStatus == 0) {
+                $flag = 0;
+                break;
+            }
+        }
+
+        if ($flag == 0)
+            return 0;
+        else
+            return 1;
+    }
+
+    #get doc which is required 
+    public function getHostelDocument($refapps)
+    {
+        $moduleId = 5;
+        $mrefRequiredDoc = RefRequiredDocument::where('module_id', $moduleId)
+            ->where('code', 'HOSTEL')
+            ->first();
+        $documentLists = $mrefRequiredDoc ? $mrefRequiredDoc->requirements : [];
+
+        return $documentLists;
+    }
+
 
     /**
      * | Send back to citizen
@@ -986,11 +1058,11 @@ class HostelController extends Controller
 
             $redis = Redis::connection();
             $mMarActiveHostel = MarActiveHostel::find($req->applicationId);
-            if($mMarActiveHostel -> doc_verify_status == 1)
+            if ($mMarActiveHostel->doc_verify_status == 1)
                 throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
-                
+
             if ($mMarActiveHostel->doc_upload_status == 1)
-            throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
 
             $workflowId = $mMarActiveHostel->workflow_id;
             $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));

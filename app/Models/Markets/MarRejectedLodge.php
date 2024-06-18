@@ -24,8 +24,18 @@ class MarRejectedLodge extends Model
                 'mar_rejected_lodges.rejected_date',
                 'mar_rejected_lodges.citizen_id',
                 'um.ulb_name as ulb_name',
+                'workflow_tracks.message as remarks'
             )
             ->join('ulb_masters as um', 'um.id', '=', 'mar_rejected_lodges.ulb_id')
+            ->leftJoin('workflow_tracks', function ($join) use ($citizenId) {
+                $join->on('workflow_tracks.ref_table_id_value', 'mar_rejected_lodges.id')
+                    ->where('workflow_tracks.status', true)
+                    ->where('workflow_tracks.message', '<>', null)
+                    ->where('workflow_tracks.verification_status', 3)
+                    ->where('workflow_tracks.workflow_id', 25)
+                    ->where('workflow_tracks.module_id', 5)
+                    ->where('workflow_tracks.citizen_id', $citizenId);
+            })
             ->orderByDesc('mar_rejected_lodges.id')
             ->get();
     }
