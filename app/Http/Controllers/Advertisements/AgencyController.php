@@ -664,7 +664,8 @@ class AgencyController extends Controller
             $validator = Validator::make($req->all(), [
                 'roleId' => 'required',
                 'applicationId' => 'required',
-                'status' => 'required|integer'
+                'status' => 'required|integer',
+                'remarks'=>'nullable|string'
             ]);
             if ($validator->fails()) {
                 return ['status' => false, 'message' => $validator->errors()];
@@ -760,6 +761,7 @@ class AgencyController extends Controller
                 $rejectedAgency->setTable('adv_rejected_agencies');
                 $rejectedAgency->id = $mAdvActiveAgency->id;
                 $rejectedAgency->rejected_date = Carbon::now();
+                $rejectedAgency->remarks =  $req->remarks;
                 $rejectedAgency->save();
                 $mAdvActiveAgency->delete();
                 $msg = "Application Successfully Rejected !!";

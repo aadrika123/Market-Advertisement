@@ -681,7 +681,8 @@ class PrivateLandController extends Controller
         $validator = Validator::make($req->all(), [
             'roleId' => 'required',
             'applicationId' => 'required|integer',
-            'status' => 'required|integer'
+            'status' => 'required|integer',
+            'remarks'=>'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -781,6 +782,7 @@ class PrivateLandController extends Controller
                 $rejectedPrivateland->setTable('adv_rejected_privatelands');
                 $rejectedPrivateland->id = $mAdvActivePrivateland->id;
                 $rejectedPrivateland->rejected_date = Carbon::now();
+                $rejectedPrivateland->remarks = $req->remarks;
                 $rejectedPrivateland->save();
                 $mAdvActivePrivateland->delete();
                 $msg = "Application Successfully Rejected !!";

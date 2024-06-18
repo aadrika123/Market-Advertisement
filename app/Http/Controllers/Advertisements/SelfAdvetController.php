@@ -771,6 +771,8 @@ class SelfAdvetController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
+            'remarks'=>'nullable|string'
+
         ]);
         try {
             // Variable initialization
@@ -871,6 +873,7 @@ class SelfAdvetController extends Controller
                 $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
                 $rejectedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                 $rejectedSelfadvertisement->rejected_date = Carbon::now();
+                $rejectedSelfadvertisement->remarks = $req->remarks;
                 $rejectedSelfadvertisement->save();
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";

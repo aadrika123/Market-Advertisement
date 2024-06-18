@@ -691,7 +691,9 @@ class VehicleAdvetController extends Controller
         $validator = Validator::make($req->all(), [
             'roleId' => 'required',
             'applicationId' => 'required|integer',
-            'status' => 'required|integer'
+            'status' => 'required|integer',
+            'remarks'=>'nullable|string'
+            
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -793,6 +795,7 @@ class VehicleAdvetController extends Controller
                 $rejectedVehicle->setTable('adv_rejected_vehicles');
                 $rejectedVehicle->id = $mAdvActiveVehicle->id;
                 $rejectedVehicle->rejected_date = Carbon::now();
+                $rejectedVehicle->remarks = $req->remarks;
                 $rejectedVehicle->save();
                 $mAdvActiveVehicle->delete();
                 $msg = "Application Successfully Rejected !!";
