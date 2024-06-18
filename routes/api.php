@@ -244,6 +244,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
         //written by prity pandey
         Route::post('advert/agency/list-jsk-approved-application', 'listjskApprovedApplication');                   // 18 ( Approved list for JSK)
+        Route::post('advert/agency/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('advert/agency/list-jsk-rejected-application', 'listJskRejectedApplication');                   // 19 ( Rejected list for JSK)  
         Route::post('advert/agency/generate-payment-order-id', 'generatePaymentOrderId');                           // 20 ( Generate Payment Order ID)
         Route::post('advert/agency/get-application-details-for-payment', 'getApplicationDetailsForPayment');        // 21 ( Application Details For Payments )

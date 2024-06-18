@@ -667,7 +667,7 @@ class AgencyController extends Controller
             ]);
             if ($validator->fails()) {
                 return ['status' => false, 'message' => $validator->errors()];
-            }      
+            }
             $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
             $getFinisherQuery = $this->getFinisherId($mAdvActiveAgency->workflow_id);                                 // Get Finisher using Trait
             $refGetFinisher = collect(DB::select($getFinisherQuery))->first();
@@ -891,7 +891,7 @@ class AgencyController extends Controller
             $mAdvAgency = new AdvAgency();
             $applications = $mAdvAgency->listjskApprovedApplication();
             if ($key && $parameter) {
-                $msg = "Self Advertisement application details according to $key";
+                $msg = "Agency application details according to $key";
                 switch ($key) {
                     case 'mobileNo':
                         $applications = $applications->where('adv_agencies.mobile_no', 'LIKE', "%$parameter%");
@@ -925,6 +925,48 @@ class AgencyController extends Controller
             return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    //written by prity pandey
+    public function getApproveDetailsById(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new AdvAgency();
+            $mtransaction = new AdvMarTransaction();
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 

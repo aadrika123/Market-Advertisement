@@ -124,7 +124,7 @@ class AdvAgency extends Model
         )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
             ->orderByDesc('adv_agencies.id');
-            //->get();
+        //->get();
     }
 
     /**
@@ -313,5 +313,31 @@ class AdvAgency extends Model
     public function approveListForReport()
     {
         return AdvAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
+    }
+    public function getDetailsById($appId)
+    {
+        return AdvAgency::select(
+            'adv_agencies.payment_amount',
+            'adv_agencies.payment_id',
+            'adv_agencies.payment_date',
+            'adv_agencies.address',
+            'adv_agencies.entity_name',
+            'adv_agencies.application_no',
+            'adv_agencies.license_no',
+            'adv_agencies.workflow_id',
+            'adv_agencies.payment_details',
+            'adv_agencies.payment_mode',
+            'adv_agencies.valid_from',
+            'adv_agencies.valid_upto',
+            'et.string_parameter as entityType',
+            'adv_agencies.application_date as applyDate',
+            'adv_agencies.ulb_id',
+            'ulb_masters.toll_free_no',
+            'ulb_masters.current_website as website',
+            DB::raw("'Advertisement' as module")
+        )
+            ->leftjoin('ulb_masters', 'adv_agencies.ulb_id', '=', 'ulb_masters.id')
+            ->leftjoin('ref_adv_paramstrings as et', 'adv_agencies.entity_type', '=', 'et.id')
+            ->where('adv_agencies.id',$appId);
     }
 }
