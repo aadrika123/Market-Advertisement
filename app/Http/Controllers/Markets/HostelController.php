@@ -611,6 +611,7 @@ class HostelController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
+            'remarks'=>'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -707,6 +708,7 @@ class HostelController extends Controller
                 $rejectedhostel->setTable('mar_rejected_hostels');
                 $rejectedhostel->id = $mMarActiveHostel->id;
                 $rejectedhostel->rejected_date = Carbon::now();
+                $rejectedhostel->remarks = $req->remarks;
                 # Send record in the track table 
                 $metaReqs = [
                     'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),

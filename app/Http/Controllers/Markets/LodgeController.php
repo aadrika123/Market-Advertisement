@@ -602,7 +602,8 @@ class LodgeController extends Controller
         $validator = Validator::make($req->all(), [
             'roleId' => 'required',
             'applicationId' => 'required|integer',
-            'status' => 'required|integer'
+            'status' => 'required|integer',
+            'remarks'=>'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -694,7 +695,7 @@ class LodgeController extends Controller
                 $rejectedlodge->setTable('mar_rejected_lodges');
                 $rejectedlodge->id = $mMarActiveLodge->id;
                 $rejectedlodge->rejected_date = Carbon::now();
-
+                $rejectedlodge->remarks = $req->remarks;
                 $metaReqs = [
                     'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
                     'workflowId'        => $mMarActiveLodge->workflow_id,

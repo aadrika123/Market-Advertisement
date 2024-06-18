@@ -595,6 +595,7 @@ class DharamshalaController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
+             'remarks'=>'nullable|string'
             // 'payment_amount' => 'required',
         ]);
         if ($validator->fails()) {
@@ -688,6 +689,7 @@ class DharamshalaController extends Controller
                 $rejecteddharamshala->setTable('mar_rejected_dharamshalas');
                 $rejecteddharamshala->id = $mMarActiveDharamshala->id;
                 $rejecteddharamshala->rejected_date = Carbon::now();
+                $rejecteddharamshala->remarks = $req->remarks;
 
                 $metaReqs = [
                     'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),
