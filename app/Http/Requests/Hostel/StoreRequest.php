@@ -59,7 +59,7 @@ class StoreRequest extends FormRequest
             'fourWheelersParking' => 'required|integer',
             'aadharCard' => 'required',
             'panCard' => 'required|string',
-            'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
             // 'isSchoolCollegeUniv' => 'required|boolean',
             // 'schoolCollegeUnivName' => $this->isSchoolCollegeUniv==true?'required|String':'nullable|string',
             // 'isApproveByGovt' => $this->isSchoolCollegeUniv==true?'required|boolean':'nullable|boolean',

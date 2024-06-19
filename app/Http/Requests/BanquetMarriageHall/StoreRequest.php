@@ -36,7 +36,7 @@ class StoreRequest extends FormRequest
             'permanentWardId' => 'required|integer',
             'email' => 'required|email',
             'mobile' => 'required|numeric|digits:10',
-            'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
 
             'hallType' => 'required|string',
             'entityName' => 'required|string',

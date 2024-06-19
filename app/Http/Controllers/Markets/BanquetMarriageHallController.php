@@ -90,8 +90,11 @@ class BanquetMarriageHallController extends Controller
         try {
             // Variable initialization
             $mMarActiveBanquteHall = $this->_modelObj;
-            $citizenId = ['citizenId' => $req->auth['id']];
+            $user                       = authUser($req);
+            $citizenId = ['citizenId' => $user->id];
+            $ulbId     = $user->ulb_id ?? $req->UlbId;
             $req->request->add($citizenId);
+            $req->request->add(['ulbId' => $ulbId]);
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
