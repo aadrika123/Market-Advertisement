@@ -86,8 +86,11 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser($req)->id];
+            $user                       = authUser($req);
+            $citizenId = ['citizenId' => $user->id];
+            $ulbId     = $user->ulb_id ?? $req->ulbId;
             $req->request->add($citizenId);
+            $req->request->add(['ulbId' => $ulbId]);
 
             // Generate Application No
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
@@ -611,7 +614,7 @@ class HostelController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            'remarks'=>'nullable|string'
+            'remarks' => 'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
