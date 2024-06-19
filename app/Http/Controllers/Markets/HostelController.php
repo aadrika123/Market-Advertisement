@@ -86,12 +86,13 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
-            $user                       = authUser($req);
-            $citizenId = ['citizenId' => $user->id];
-            $ulbId     = $user->ulb_id ?? $req->ulbId;
-            $req->request->add($citizenId);
-            $req->request->add(['ulbId' => $ulbId]);
+            $citizenId = ['citizenId' => $req->auth['id']];
+            $user = authUser($req);
+            $ulbId = $user->ulb_id ?? $req->ulbId;
 
+            // Merge additional data into the request
+            $req->merge($citizenId);
+            $req->merge(['ulbId' => $ulbId]);
             // Generate Application No
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
