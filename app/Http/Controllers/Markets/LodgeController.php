@@ -87,12 +87,9 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
-            $mMarActiveLodge       = $this->_modelObj;
-            $user                  = authUser($req);
-            $citizenId             = ['citizenId' => $user->id];
-            $ulbId                 = $user->ulb_id ?? $req->UlbId;
+            $mMarActiveLodge = $this->_modelObj;
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
-            $req->request->add(['ulbId' => $ulbId]);
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
             $generatedId = $idGeneration->generate();
@@ -606,7 +603,7 @@ class LodgeController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            'remarks' => 'nullable|string'
+            'remarks'=>'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -711,7 +708,7 @@ class LodgeController extends Controller
                 ];
                 $req->request->add($metaReqs);
                 $LodgeTrack->saveTrack($req);
-
+                
                 $rejectedlodge->save();
                 $mMarActiveLodge->delete();
                 $msg = "Application Successfully Rejected !!";
