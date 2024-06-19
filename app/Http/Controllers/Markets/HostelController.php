@@ -86,11 +86,8 @@ class HostelController extends Controller
         try {
             // Variable initialization
             $mMarActiveHostel = $this->_modelObj;
-            $user                       = authUser($req);
-            $citizenId = ['citizenId' => $user->id];
-            $ulbId     = $user->ulb_id ?? $req->UlbId;
+            $citizenId = ['citizenId' => authUser($req)->id];
             $req->request->add($citizenId);
-            $req->request->add(['ulbId' => $ulbId]);
 
             // Generate Application No
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
@@ -104,7 +101,7 @@ class HostelController extends Controller
 
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $applicationNo = $mMarActiveHostel->addNew($req, $ulbId);       //<--------------- Model function to store 
+            $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
@@ -114,7 +111,6 @@ class HostelController extends Controller
             return responseMsgs(false, [$e->getMessage(), $e->getLine(), $e->getFile()], "", "050901", "1.0", "", 'POST', $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Inbox List
@@ -615,7 +611,7 @@ class HostelController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            'remarks' => 'nullable|string'
+            'remarks'=>'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
