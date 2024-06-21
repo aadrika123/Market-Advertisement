@@ -89,6 +89,7 @@ class MarActiveHostel extends Model
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+            
         ];
         $mDocuments = $req->documents;
 

@@ -104,7 +104,7 @@ class HostelController extends Controller
             $applicationNo = $mMarActiveHostel->addNew($req);       //<--------------- Model function to store 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            return responseMsg(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $applicationNo], "050901", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
