@@ -287,13 +287,13 @@ class MarBanquteHall extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+        $approved = MarBanquteHall::select('id','entity_name', 'application_no', 'applicant','application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+        $active = MarActiveBanquteHall::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedBanquteHall::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
