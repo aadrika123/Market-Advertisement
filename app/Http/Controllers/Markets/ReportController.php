@@ -254,7 +254,7 @@ class ReportController extends Controller
     public function organizationTypeWiseApplication(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:Banquet/Marriage Hall',
+            'reportType' => 'required|in:Banquet/Marriage Hall,Dharmshala',
             'wardNo' => 'nullable',
             'applicationType' => 'nullable|in:New Apply,Renew',
             'applicationStatus' => 'nullable|in:Approved,Reject',
@@ -272,12 +272,17 @@ class ReportController extends Controller
         }
         try {
             $banquet = new MarBanquteHall();
+            $dharamshala = new MarDharamshala();
             $user = Auth()->user();
             $ulbId = $user->ulb_id ?? null;
             $response = [];
             $perPage = $request->perPage ?: 10;
             if ($request->reportType == 'Banquet/Marriage Hall') {
                 $response = $banquet->getOrganizationTypeApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala') {
+                $response = $dharamshala->getOrganizationTypeApplication($request);
                 $response['user_name'] = $user->name;
             }
             if ($response) {
