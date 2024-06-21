@@ -595,7 +595,7 @@ class DharamshalaController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-             'remarks'=>'nullable|string'
+            'remarks' => 'nullable|string'
             // 'payment_amount' => 'required',
         ]);
         if ($validator->fails()) {

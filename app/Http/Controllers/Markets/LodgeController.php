@@ -1522,7 +1522,7 @@ class LodgeController extends Controller
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
-            'ruleType' => 'required|in:All,New Rule,Old Rule',
+            'ruleType' => 'required|in:New Rule,Old Rule',
             'entityWard' => 'required|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',

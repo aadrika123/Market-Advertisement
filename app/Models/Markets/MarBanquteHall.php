@@ -4,6 +4,7 @@ namespace App\Models\Markets;
 
 use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -275,5 +276,412 @@ class MarBanquteHall extends Model
             ->where('mar_banqute_halls.id', $applicationId)
             ->first();
         return $recieptDetails;
+    }
+
+    public function getApplicationFinancialYearWise($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $fyear = $request->fyear;
+        list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
+        $currentfyStartDate = $currentfyStartDate . "-04-01";
+        $currentfyEndDate = $currentfyEndDate . "-03-31";
+        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId);
+
+        $active = MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId);
+
+        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId);
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_banqute_halls.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_halls.application_type', $request->applicationType);
+            $active->where('mar_active_banqute_halls.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_banqute_halls.application_type', $request->applicationType);
+        }
+        if ($request->fyear) {
+            $approved->whereBetween('mar_banqute_halls.application_date', [$currentfyStartDate, $currentfyEndDate]);
+            $active->whereBetween('mar_active_banqute_halls.application_date',  [$currentfyStartDate, $currentfyEndDate]);
+            $rejected->whereBetween('mar_rejected_banqute_halls.application_date',  [$currentfyStartDate, $currentfyEndDate]);
+        }
+        $data = $approved->union($active)->union($rejected);
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
+    }
+
+    public function payCollection($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = DB::table('mar_banqute_hall_renewals')
+            ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+            ->where('payment_status', '1')
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
+
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_hall_renewals.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_hall_renewals.application_type', $request->applicationType);
+        }
+        if ($request->payMode == 'All') {
+            $data = $approved;
+        }
+        if ($request->payMode == 'Online') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cash') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cheque/DD') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        $data = $approved;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
+    }
+
+    public function getApplicationWithStatus($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+
+        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);;
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_banqute_halls.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_halls.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_banqute_halls.application_type', $request->applicationType);
+        }
+
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
+    }
+
+    public function getApplicationWithRule($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+
+        $active = MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_banqute_halls.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_halls.application_type', $request->applicationType);
+            $active->where('mar_active_banqute_halls.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_banqute_halls.application_type', $request->applicationType);
+        }
+
+        if ($request->ruleType) {
+            $approved->where('mar_banqute_halls.rule', $request->ruleType);
+            $active->where('mar_active_banqute_halls.rule', $request->ruleType);
+            $rejected->where('mar_rejected_banqute_halls.rule', $request->ruleType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($active)->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
+    }
+
+    public function getHallTypeApplication($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+
+        $approved = MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.application_date',
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.entity_ward_id',
+            'mar_banqute_halls.rule',
+            'mar_banqute_halls.hall_type as hall_id',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.license_year',
+            'mar_banqute_halls.organization_type',
+            DB::raw("'Approved' as application_status"),
+            'ref_adv_paramstrings.string_parameter as hallType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_banqute_halls.hall_type')
+            ->where('mar_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        $active = MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.application_no',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.application_date',
+            'mar_active_banqute_halls.application_type',
+            'mar_active_banqute_halls.entity_ward_id',
+            'mar_active_banqute_halls.rule',
+            'mar_active_banqute_halls.hall_type as hall_id',
+            'mar_active_banqute_halls.ulb_id',
+            'mar_active_banqute_halls.license_year',
+            'mar_active_banqute_halls.organization_type',
+            DB::raw("'Active' as application_status"),
+            'ref_adv_paramstrings.string_parameter as hallType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_banqute_halls.hall_type')
+            ->where('mar_active_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_active_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        $rejected = MarRejectedBanquteHall::select(
+            'mar_rejected_banqute_halls.id',
+            'mar_rejected_banqute_halls.application_no',
+            'mar_rejected_banqute_halls.applicant',
+            'mar_rejected_banqute_halls.application_date',
+            'mar_rejected_banqute_halls.application_type',
+            'mar_rejected_banqute_halls.entity_ward_id',
+            'mar_rejected_banqute_halls.rule',
+            'mar_rejected_banqute_halls.hall_type as hall_id',
+            'mar_rejected_banqute_halls.ulb_id',
+            'mar_rejected_banqute_halls.license_year',
+            'mar_rejected_banqute_halls.organization_type',
+            DB::raw("'Reject' as application_status"),
+            'ref_adv_paramstrings.string_parameter as hallType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_banqute_halls.hall_type')
+            ->where('mar_rejected_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_rejected_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_banqute_halls.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_halls.application_type', $request->applicationType);
+            $active->where('mar_active_banqute_halls.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_banqute_halls.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_banqute_halls.rule', $request->ruleType);
+            $active->where('mar_active_banqute_halls.rule', $request->ruleType);
+            $rejected->where('mar_rejected_banqute_halls.rule', $request->ruleType);
+        }
+        if ($request->hallType) {
+            $approved->where('ref_adv_paramstrings.string_parameter', $request->hallType);
+            $active->where('ref_adv_paramstrings.string_parameter', $request->hallType);
+            $rejected->where('ref_adv_paramstrings.string_parameter', $request->hallType);
+        }
+
+        $data = collect();
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else {
+            $data = $approved->union($active)->union($rejected);
+        }
+
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
+    }
+
+    public function getOrganizationTypeApplication($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+
+        $approved = MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.application_date',
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.entity_ward_id',
+            'mar_banqute_halls.rule',
+            'mar_banqute_halls.hall_type as hall_id',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.license_year',
+            'mar_banqute_halls.organization_type as organization_id',
+            DB::raw("'Approved' as application_status"),
+            'ref_adv_paramstrings.string_parameter as organizationType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_banqute_halls.organization_type')
+            ->where('mar_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        $active = MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.application_no',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.application_date',
+            'mar_active_banqute_halls.application_type',
+            'mar_active_banqute_halls.entity_ward_id',
+            'mar_active_banqute_halls.rule',
+            'mar_active_banqute_halls.hall_type as hall_id',
+            'mar_active_banqute_halls.ulb_id',
+            'mar_active_banqute_halls.license_year',
+            'mar_active_banqute_halls.organization_type as organization_id',
+            DB::raw("'Active' as application_status"),
+            'ref_adv_paramstrings.string_parameter as organizationType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_banqute_halls.organization_type')
+            ->where('mar_active_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_active_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        $rejected = MarRejectedBanquteHall::select(
+            'mar_rejected_banqute_halls.id',
+            'mar_rejected_banqute_halls.application_no',
+            'mar_rejected_banqute_halls.applicant',
+            'mar_rejected_banqute_halls.application_date',
+            'mar_rejected_banqute_halls.application_type',
+            'mar_rejected_banqute_halls.entity_ward_id',
+            'mar_rejected_banqute_halls.rule',
+            'mar_rejected_banqute_halls.hall_type as hall_id',
+            'mar_rejected_banqute_halls.ulb_id',
+            'mar_rejected_banqute_halls.license_year',
+            'mar_rejected_banqute_halls.organization_type as organization_id',
+            DB::raw("'Reject' as application_status"),
+            'ref_adv_paramstrings.string_parameter as organizationType'
+        )
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_banqute_halls.organization_type')
+            ->where('mar_rejected_banqute_halls.ulb_id', $ulbId)
+            ->whereBetween('mar_rejected_banqute_halls.application_date', [$dateFrom, $dateUpto]);
+
+        if ($request->wardNo) {
+            $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_banqute_halls.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_banqute_halls.application_type', $request->applicationType);
+            $active->where('mar_active_banqute_halls.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_banqute_halls.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_banqute_halls.rule', $request->ruleType);
+            $active->where('mar_active_banqute_halls.rule', $request->ruleType);
+            $rejected->where('mar_rejected_banqute_halls.rule', $request->ruleType);
+        }
+        if ($request->organizationType) {
+            $approved->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
+            $active->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
+            $rejected->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
+        }
+
+        $data = collect();
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else {
+            $data = $approved->union($active)->union($rejected);
+        }
+
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+        ];
     }
 }

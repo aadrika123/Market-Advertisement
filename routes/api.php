@@ -11,9 +11,11 @@ use App\Http\Controllers\Markets\BanquetMarriageHallController;
 use App\Http\Controllers\Markets\LodgeController;
 use App\Http\Controllers\Markets\HostelController;
 use App\Http\Controllers\Markets\DharamshalaController;
+use App\Http\Controllers\Markets\ReportController;
 use App\Http\Controllers\Params\ParamController;
 use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
+use SebastianBergmann\CodeCoverage\Report\Xml\Report;
 
 /*
 |--------------------------------------------------------------------------
@@ -535,5 +537,18 @@ Route::group(['middleware' => ['checkToken']], function () {
     Route::controller(SearchController::class)->group(function () {
         Route::post('advert/search/list-all-advertisement-records', 'listAllAdvertisementRecords');                  // 01   ( All Advertisement records List  of citizen )
         Route::post('advert/search/list-all-market-records', 'listAllMarketRecords');                                // 02   ( All Market records List  of citizen )
+    });
+
+
+    //Written by prity pandey
+    Route::controller(ReportController::class)->group(function(){
+        Route::post('market/financialYearWiseReport','finacialYearWiseApplication');
+        Route::post('market/paymentCollectionReport','paymentCollection');
+        Route::post('market/applicationStatusWiseReport','applicationStatusWiseApplication');
+        Route::post('market/ruleWiseApplicationReport','ruleWiseApplication');
+        Route::post('market/hallTypeApplicationReport','hallTypeWiseApplication');
+        Route::post('market/organizationTypeApplicationReport','organizationTypeWiseApplication');
+        Route::post('market/hostelTypeApplicationReport','hostelTypeWiseApplication');
+        Route::post('market/lodgeTypeApplicationReport','lodgeTypeWiseApplication');
     });
 });
