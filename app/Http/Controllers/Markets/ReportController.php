@@ -172,7 +172,7 @@ class ReportController extends Controller
             'applicationStatus' => 'nullable|in:Approved,Reject',
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
-            'ruleType' => 'required|in:All,New Rule,Old Rule'
+            'ruleType' => 'nullable|in:All,New Rule,Old Rule'
         ]);
         if ($validator->fails()) {
             return response()->json([
