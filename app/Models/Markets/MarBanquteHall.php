@@ -354,6 +354,12 @@ class MarBanquteHall extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total_payments' => $totalPayments,
+            'total_amount' => $totalAmount,
+        ];
         $data = $approved;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -363,7 +369,8 @@ class MarBanquteHall extends Model
         return [
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'summary' => $summary
         ];
     }
 

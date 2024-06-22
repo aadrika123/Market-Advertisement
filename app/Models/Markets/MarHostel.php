@@ -291,13 +291,13 @@ class MarHostel extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id','entity_name', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveHostel::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_hostels.entity_ward_id', $request->wardNo);
@@ -358,6 +358,12 @@ class MarHostel extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total_payments' => $totalPayments,
+            'total_amount' => $totalAmount,
+        ];
         $data = $approved;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -367,7 +373,8 @@ class MarHostel extends Model
         return [
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'summary' => $summary
         ];
     }
 

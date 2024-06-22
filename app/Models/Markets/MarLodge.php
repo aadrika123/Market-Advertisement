@@ -285,13 +285,13 @@ class MarLodge extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+        $approved = MarLodge::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
+        $active = MarActiveLodge::select('id','entity_name', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedLodge::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
@@ -352,6 +352,12 @@ class MarLodge extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total_payments' => $totalPayments,
+            'total_amount' => $totalAmount,
+        ];
         $data = $approved;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -361,7 +367,8 @@ class MarLodge extends Model
         return [
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'summary' => $summary
         ];
     }
 

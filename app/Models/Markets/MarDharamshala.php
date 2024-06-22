@@ -278,13 +278,13 @@ class MarDharamshala extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarDharamshala::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveDharamshala::select('id', 'entity_name','application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedDharamshala::select('id','entity_name', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_dharamshalas.entity_ward_id', $request->wardNo);
@@ -345,6 +345,12 @@ class MarDharamshala extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total_payments' => $totalPayments,
+            'total_amount' => $totalAmount,
+        ];
         $data = $approved;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -354,7 +360,8 @@ class MarDharamshala extends Model
         return [
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'summary' => $summary
         ];
     }
 
