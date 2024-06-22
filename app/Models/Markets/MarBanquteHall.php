@@ -320,7 +320,7 @@ class MarBanquteHall extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -358,7 +358,7 @@ class MarBanquteHall extends Model
         $totalPayments = $approved->count();
         $totalAmount = $approved->sum('payment_amount');
         $summary = [
-            'totalCount' => $totalPayments,
+            'total' => $totalPayments,
             'totalAmount' => $totalAmount,
         ];
         $data = $approved;
@@ -415,7 +415,8 @@ class MarBanquteHall extends Model
         return [
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
         ];
     }
 
@@ -470,7 +471,7 @@ class MarBanquteHall extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -484,6 +485,7 @@ class MarBanquteHall extends Model
 
         $approved = MarBanquteHall::select(
             'mar_banqute_halls.id',
+            'mar_banqute_halls.entity_name',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -503,6 +505,7 @@ class MarBanquteHall extends Model
 
         $active = MarActiveBanquteHall::select(
             'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.entity_name',
             'mar_active_banqute_halls.application_no',
             'mar_active_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -522,6 +525,7 @@ class MarBanquteHall extends Model
 
         $rejected = MarRejectedBanquteHall::select(
             'mar_rejected_banqute_halls.id',
+            'mar_active_banqute_halls.entity_name',
             'mar_rejected_banqute_halls.application_no',
             'mar_rejected_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -581,7 +585,7 @@ class MarBanquteHall extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -595,6 +599,7 @@ class MarBanquteHall extends Model
 
         $approved = MarBanquteHall::select(
             'mar_banqute_halls.id',
+            'mar_banqute_halls.entity_name',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -614,6 +619,7 @@ class MarBanquteHall extends Model
 
         $active = MarActiveBanquteHall::select(
             'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.entity_name',
             'mar_active_banqute_halls.application_no',
             'mar_active_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -633,6 +639,7 @@ class MarBanquteHall extends Model
 
         $rejected = MarRejectedBanquteHall::select(
             'mar_rejected_banqute_halls.id',
+            'mar_rejected_banqute_halls.entity_name',
             'mar_rejected_banqute_halls.application_no',
             'mar_rejected_banqute_halls.applicant',
             DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -692,7 +699,7 @@ class MarBanquteHall extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+           'total' => $data->total()
         ];
     }
 }

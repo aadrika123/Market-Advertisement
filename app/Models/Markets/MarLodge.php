@@ -318,7 +318,7 @@ class MarLodge extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -356,7 +356,7 @@ class MarLodge extends Model
         $totalPayments = $approved->count();
         $totalAmount = $approved->sum('payment_amount');
         $summary = [
-            'totalCount' => $totalPayments,
+            'total' => $totalPayments,
             'totalAmount' => $totalAmount,
         ];
         $data = $approved;
@@ -413,7 +413,7 @@ class MarLodge extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -466,7 +466,7 @@ class MarLodge extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -477,15 +477,15 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('mar_lodges.id', 'mar_lodges.application_no', 'mar_lodges.applicant', DB::raw("TO_CHAR(mar_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodges.application_type', 'mar_lodges.entity_ward_id', 'mar_lodges.rule', 'mar_lodges.organization_type', 'mar_lodges.lodge_type as lodge_id', 'mar_lodges.license_year', 'mar_lodges.ulb_id', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $approved = MarLodge::select('mar_lodges.id', 'mar_lodges.entity_name','mar_lodges.application_no', 'mar_lodges.applicant', DB::raw("TO_CHAR(mar_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodges.application_type', 'mar_lodges.entity_ward_id', 'mar_lodges.rule', 'mar_lodges.organization_type', 'mar_lodges.lodge_type as lodge_id', 'mar_lodges.license_year', 'mar_lodges.ulb_id', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_lodges.lodge_type')
             ->where('mar_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveLodge::select('mar_active_lodges.id', 'mar_active_lodges.application_no', 'mar_active_lodges.applicant', DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_lodges.application_type', 'mar_active_lodges.entity_ward_id', 'mar_active_lodges.rule', 'mar_active_lodges.organization_type', 'mar_active_lodges.lodge_type as lodge_id', 'mar_active_lodges.license_year', 'mar_active_lodges.ulb_id', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $active = MarActiveLodge::select('mar_active_lodges.id', 'mar_active_lodges.entity_name','mar_active_lodges.application_no', 'mar_active_lodges.applicant', DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_lodges.application_type', 'mar_active_lodges.entity_ward_id', 'mar_active_lodges.rule', 'mar_active_lodges.organization_type', 'mar_active_lodges.lodge_type as lodge_id', 'mar_active_lodges.license_year', 'mar_active_lodges.ulb_id', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_lodges.lodge_type')
             ->where('mar_active_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedLodge::select('mar_rejected_lodges.id', 'mar_rejected_lodges.application_no', 'mar_rejected_lodges.applicant', DB::raw("TO_CHAR(mar_rejected_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_lodges.application_type', 'mar_rejected_lodges.entity_ward_id', 'mar_rejected_lodges.rule', 'mar_rejected_lodges.organization_type', 'mar_rejected_lodges.lodge_type as lodge_id', 'mar_rejected_lodges.license_year', 'mar_rejected_lodges.ulb_id', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $rejected = MarRejectedLodge::select('mar_rejected_lodges.id','mar_rejected_lodges.entity_name', 'mar_rejected_lodges.application_no', 'mar_rejected_lodges.applicant', DB::raw("TO_CHAR(mar_rejected_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_lodges.application_type', 'mar_rejected_lodges.entity_ward_id', 'mar_rejected_lodges.rule', 'mar_rejected_lodges.organization_type', 'mar_rejected_lodges.lodge_type as lodge_id', 'mar_rejected_lodges.license_year', 'mar_rejected_lodges.ulb_id', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_lodges.lodge_type')
             ->where('mar_rejected_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
@@ -528,7 +528,7 @@ class MarLodge extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'totalCount' => $data->total()
+            'total' => $data->total()
         ];
     }
 }
