@@ -330,9 +330,10 @@ class MarLodge extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_lodge_renewals')
-            ->select('id', 'entity_name','application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'payment_mode')
+            ->select('mar_lodge_renewals.id', 'mar_lodge_renewals.entity_name','mar_lodge_renewals.application_no', 'mar_lodge_renewals.applicant',  DB::raw("TO_CHAR(mar_lodge_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodge_renewals.application_type', 'mar_lodge_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_lodge_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_lodge_renewals.payment_mode','adv_mar_transactions.transaction_no')
+            ->join('adv_mar_transactions' ,'adv_mar_transactions.transaction_id','=','mar_lodge_renewals.payment_id')
             ->where('payment_status', '1')
-            ->where('ulb_id', $ulbId)
+            ->where('mar_lodge_renewals.ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
 
         if ($request->wardNo) {
@@ -369,6 +370,7 @@ class MarLodge extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total(),
             'summary' => $summary
         ];
     }
