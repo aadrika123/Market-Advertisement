@@ -335,7 +335,7 @@ class MarHostel extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_hostel_renewals')
-            ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+            ->select('id', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'payment_mode')
             ->where('payment_status', '1')
             ->where('ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -385,11 +385,11 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -429,13 +429,13 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveHostel::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -481,15 +481,15 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('mar_hostels.id', 'mar_hostels.application_no', 'mar_hostels.applicant', 'mar_hostels.application_date', 'mar_hostels.application_type', 'mar_hostels.entity_ward_id', 'mar_hostels.rule', 'mar_hostels.organization_type', 'mar_hostels.hostel_type as hostel_id', 'mar_hostels.ulb_id', 'mar_hostels.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $approved = MarHostel::select('mar_hostels.id', 'mar_hostels.application_no', 'mar_hostels.applicant', DB::raw("TO_CHAR(mar_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostels.application_type', 'mar_hostels.entity_ward_id', 'mar_hostels.rule', 'mar_hostels.organization_type', 'mar_hostels.hostel_type as hostel_id', 'mar_hostels.ulb_id', 'mar_hostels.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_hostels.hostel_type')
             ->where('mar_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveHostel::select('mar_active_hostels.id', 'mar_active_hostels.application_no', 'mar_active_hostels.applicant', 'mar_active_hostels.application_date', 'mar_active_hostels.application_type', 'mar_active_hostels.entity_ward_id', 'mar_active_hostels.rule', 'mar_active_hostels.organization_type', 'mar_active_hostels.hostel_type as hostel_id', 'mar_active_hostels.ulb_id', 'mar_active_hostels.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $active = MarActiveHostel::select('mar_active_hostels.id', 'mar_active_hostels.application_no', 'mar_active_hostels.applicant',  DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"),'mar_active_hostels.application_type', 'mar_active_hostels.entity_ward_id', 'mar_active_hostels.rule', 'mar_active_hostels.organization_type', 'mar_active_hostels.hostel_type as hostel_id', 'mar_active_hostels.ulb_id', 'mar_active_hostels.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_hostels.hostel_type')
             ->where('mar_active_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedHostel::select('mar_rejected_hostels.id', 'mar_rejected_hostels.application_no', 'mar_rejected_hostels.applicant', 'mar_rejected_hostels.application_date', 'mar_rejected_hostels.application_type', 'mar_rejected_hostels.entity_ward_id', 'mar_rejected_hostels.rule', 'mar_rejected_hostels.organization_type', 'mar_rejected_hostels.hostel_type as hostel_id', 'mar_rejected_hostels.ulb_id', 'mar_rejected_hostels.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $rejected = MarRejectedHostel::select('mar_rejected_hostels.id', 'mar_rejected_hostels.application_no', 'mar_rejected_hostels.applicant',  DB::raw("TO_CHAR(mar_rejected_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_hostels.application_type', 'mar_rejected_hostels.entity_ward_id', 'mar_rejected_hostels.rule', 'mar_rejected_hostels.organization_type', 'mar_rejected_hostels.hostel_type as hostel_id', 'mar_rejected_hostels.ulb_id', 'mar_rejected_hostels.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_hostels.hostel_type')
             ->where('mar_rejected_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);

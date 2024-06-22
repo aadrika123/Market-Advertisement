@@ -335,7 +335,7 @@ class MarDharamshala extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_dharamshala_renewals')
-            ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+            ->select('id', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'payment_mode')
             ->where('payment_status', '1')
             ->where('ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -385,11 +385,11 @@ class MarDharamshala extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -429,13 +429,13 @@ class MarDharamshala extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -481,15 +481,15 @@ class MarDharamshala extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarDharamshala::select('mar_dharamshalas.id', 'mar_dharamshalas.application_no', 'mar_dharamshalas.applicant', 'mar_dharamshalas.application_date', 'mar_dharamshalas.application_type', 'mar_dharamshalas.entity_ward_id', 'mar_dharamshalas.rule', 'mar_dharamshalas.organization_type as organization_id', 'mar_dharamshalas.ulb_id', 'mar_dharamshalas.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+        $approved = MarDharamshala::select('mar_dharamshalas.id', 'mar_dharamshalas.application_no', 'mar_dharamshalas.applicant', DB::raw("TO_CHAR(mar_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_dharamshalas.application_type', 'mar_dharamshalas.entity_ward_id', 'mar_dharamshalas.rule', 'mar_dharamshalas.organization_type as organization_id', 'mar_dharamshalas.ulb_id', 'mar_dharamshalas.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_dharamshalas.organization_type')
             ->where('mar_dharamshalas.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveDharamshala::select('mar_active_dharamshalas.id', 'mar_active_dharamshalas.application_no', 'mar_active_dharamshalas.applicant', 'mar_active_dharamshalas.application_date', 'mar_active_dharamshalas.application_type', 'mar_active_dharamshalas.entity_ward_id', 'mar_active_dharamshalas.rule', 'mar_active_dharamshalas.organization_type  as organization_id', 'mar_active_dharamshalas.ulb_id', 'mar_active_dharamshalas.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+        $active = MarActiveDharamshala::select('mar_active_dharamshalas.id', 'mar_active_dharamshalas.application_no', 'mar_active_dharamshalas.applicant', DB::raw("TO_CHAR(mar_active_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_dharamshalas.application_type', 'mar_active_dharamshalas.entity_ward_id', 'mar_active_dharamshalas.rule', 'mar_active_dharamshalas.organization_type  as organization_id', 'mar_active_dharamshalas.ulb_id', 'mar_active_dharamshalas.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_dharamshalas.organization_type')
             ->where('mar_active_dharamshalas.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedDharamshala::select('mar_rejected_dharamshalas.id', 'mar_rejected_dharamshalas.application_no', 'mar_rejected_dharamshalas.applicant', 'mar_rejected_dharamshalas.application_date', 'mar_rejected_dharamshalas.application_type', 'mar_rejected_dharamshalas.entity_ward_id', 'mar_rejected_dharamshalas.rule', 'mar_rejected_dharamshalas.organization_type  as organization_id', 'mar_rejected_dharamshalas.ulb_id', 'mar_rejected_dharamshalas.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+        $rejected = MarRejectedDharamshala::select('mar_rejected_dharamshalas.id', 'mar_rejected_dharamshalas.application_no', 'mar_rejected_dharamshalas.applicant', DB::raw("TO_CHAR(mar_rejected_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_dharamshalas.application_type', 'mar_rejected_dharamshalas.entity_ward_id', 'mar_rejected_dharamshalas.rule', 'mar_rejected_dharamshalas.organization_type  as organization_id', 'mar_rejected_dharamshalas.ulb_id', 'mar_rejected_dharamshalas.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_dharamshalas.organization_type')
             ->where('mar_rejected_dharamshalas.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);

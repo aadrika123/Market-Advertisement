@@ -329,7 +329,7 @@ class MarLodge extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_lodge_renewals')
-            ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+            ->select('id', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'payment_mode')
             ->where('payment_status', '1')
             ->where('ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -379,11 +379,11 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+        $approved = MarLodge::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedLodge::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -422,13 +422,13 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+        $approved = MarLodge::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
+        $active = MarActiveLodge::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedLodge::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -474,15 +474,15 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('mar_lodges.id', 'mar_lodges.application_no', 'mar_lodges.applicant', 'mar_lodges.application_date', 'mar_lodges.application_type', 'mar_lodges.entity_ward_id', 'mar_lodges.rule', 'mar_lodges.organization_type', 'mar_lodges.lodge_type as lodge_id', 'mar_lodges.license_year', 'mar_lodges.ulb_id', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $approved = MarLodge::select('mar_lodges.id', 'mar_lodges.application_no', 'mar_lodges.applicant', DB::raw("TO_CHAR(mar_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodges.application_type', 'mar_lodges.entity_ward_id', 'mar_lodges.rule', 'mar_lodges.organization_type', 'mar_lodges.lodge_type as lodge_id', 'mar_lodges.license_year', 'mar_lodges.ulb_id', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_lodges.lodge_type')
             ->where('mar_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveLodge::select('mar_active_lodges.id', 'mar_active_lodges.application_no', 'mar_active_lodges.applicant', 'mar_active_lodges.application_date', 'mar_active_lodges.application_type', 'mar_active_lodges.entity_ward_id', 'mar_active_lodges.rule', 'mar_active_lodges.organization_type', 'mar_active_lodges.lodge_type as lodge_id', 'mar_active_lodges.license_year', 'mar_active_lodges.ulb_id', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $active = MarActiveLodge::select('mar_active_lodges.id', 'mar_active_lodges.application_no', 'mar_active_lodges.applicant', DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_lodges.application_type', 'mar_active_lodges.entity_ward_id', 'mar_active_lodges.rule', 'mar_active_lodges.organization_type', 'mar_active_lodges.lodge_type as lodge_id', 'mar_active_lodges.license_year', 'mar_active_lodges.ulb_id', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_lodges.lodge_type')
             ->where('mar_active_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedLodge::select('mar_rejected_lodges.id', 'mar_rejected_lodges.application_no', 'mar_rejected_lodges.applicant', 'mar_rejected_lodges.application_date', 'mar_rejected_lodges.application_type', 'mar_rejected_lodges.entity_ward_id', 'mar_rejected_lodges.rule', 'mar_rejected_lodges.organization_type', 'mar_rejected_lodges.lodge_type as lodge_id', 'mar_rejected_lodges.license_year', 'mar_rejected_lodges.ulb_id', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+        $rejected = MarRejectedLodge::select('mar_rejected_lodges.id', 'mar_rejected_lodges.application_no', 'mar_rejected_lodges.applicant', DB::raw("TO_CHAR(mar_rejected_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_lodges.application_type', 'mar_rejected_lodges.entity_ward_id', 'mar_rejected_lodges.rule', 'mar_rejected_lodges.organization_type', 'mar_rejected_lodges.lodge_type as lodge_id', 'mar_rejected_lodges.license_year', 'mar_rejected_lodges.ulb_id', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_lodges.lodge_type')
             ->where('mar_rejected_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);

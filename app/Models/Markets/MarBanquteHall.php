@@ -287,13 +287,13 @@ class MarBanquteHall extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarBanquteHall::select('id','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+        $approved = MarBanquteHall::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveBanquteHall::select('id', 'entity_name','application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedBanquteHall::select('id', 'entity_name','application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);
@@ -331,7 +331,7 @@ class MarBanquteHall extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_banqute_hall_renewals')
-            ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+            ->select('id', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'payment_mode')
             ->where('payment_status', '1')
             ->where('ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -381,11 +381,11 @@ class MarBanquteHall extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);;
         if ($request->wardNo) {
@@ -425,14 +425,14 @@ class MarBanquteHall extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+        $approved = MarBanquteHall::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $active = MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+        $active = MarActiveBanquteHall::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedBanquteHall::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -484,7 +484,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.id',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.applicant',
-            'mar_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_banqute_halls.application_type',
             'mar_banqute_halls.entity_ward_id',
             'mar_banqute_halls.rule',
@@ -503,7 +503,7 @@ class MarBanquteHall extends Model
             'mar_active_banqute_halls.id',
             'mar_active_banqute_halls.application_no',
             'mar_active_banqute_halls.applicant',
-            'mar_active_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_active_banqute_halls.application_type',
             'mar_active_banqute_halls.entity_ward_id',
             'mar_active_banqute_halls.rule',
@@ -522,7 +522,7 @@ class MarBanquteHall extends Model
             'mar_rejected_banqute_halls.id',
             'mar_rejected_banqute_halls.application_no',
             'mar_rejected_banqute_halls.applicant',
-            'mar_rejected_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_rejected_banqute_halls.application_type',
             'mar_rejected_banqute_halls.entity_ward_id',
             'mar_rejected_banqute_halls.rule',
@@ -594,7 +594,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.id',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.applicant',
-            'mar_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_banqute_halls.application_type',
             'mar_banqute_halls.entity_ward_id',
             'mar_banqute_halls.rule',
@@ -613,7 +613,7 @@ class MarBanquteHall extends Model
             'mar_active_banqute_halls.id',
             'mar_active_banqute_halls.application_no',
             'mar_active_banqute_halls.applicant',
-            'mar_active_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_active_banqute_halls.application_type',
             'mar_active_banqute_halls.entity_ward_id',
             'mar_active_banqute_halls.rule',
@@ -632,7 +632,7 @@ class MarBanquteHall extends Model
             'mar_rejected_banqute_halls.id',
             'mar_rejected_banqute_halls.application_no',
             'mar_rejected_banqute_halls.applicant',
-            'mar_rejected_banqute_halls.application_date',
+            DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_rejected_banqute_halls.application_type',
             'mar_rejected_banqute_halls.entity_ward_id',
             'mar_rejected_banqute_halls.rule',
