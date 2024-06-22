@@ -559,9 +559,9 @@ class MarBanquteHall extends Model
             $rejected->where('mar_rejected_banqute_halls.rule', $request->ruleType);
         }
         if ($request->hallType) {
-            $approved->where('ref_adv_paramstrings.string_parameter', $request->hallType);
-            $active->where('ref_adv_paramstrings.string_parameter', $request->hallType);
-            $rejected->where('ref_adv_paramstrings.string_parameter', $request->hallType);
+            $approved->where('ref_adv_paramstrings.id', $request->hallType);
+            $active->where('ref_adv_paramstrings.id', $request->hallType);
+            $rejected->where('ref_adv_paramstrings.id', $request->hallType);
         }
 
         $data = collect();
@@ -674,9 +674,9 @@ class MarBanquteHall extends Model
             $rejected->where('mar_rejected_banqute_halls.rule', $request->ruleType);
         }
         if ($request->organizationType) {
-            $approved->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
-            $active->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
-            $rejected->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
+            $approved->where('ref_adv_paramstrings.id', $request->organizationType);
+            $active->where('ref_adv_paramstrings.id', $request->organizationType);
+            $rejected->where('ref_adv_paramstrings.id', $request->organizationType);
         }
 
         $data = collect();

@@ -512,9 +512,9 @@ class MarDharamshala extends Model
             $rejected->where('mar_rejected_dharamshalas.rule', $request->ruleType);
         }
         if ($request->organizationType) {
-            $approved->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
-            $active->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
-            $rejected->where('ref_adv_paramstrings.string_parameter', $request->organizationType);
+            $approved->where('ref_adv_paramstrings.id', $request->organizationType);
+            $active->where('ref_adv_paramstrings.id', $request->organizationType);
+            $rejected->where('ref_adv_paramstrings.id', $request->organizationType);
         }
         $data = null;
         if ($request->applicationStatus == 'All') {

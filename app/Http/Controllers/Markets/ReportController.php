@@ -224,7 +224,8 @@ class ReportController extends Controller
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'ruleType' => 'nullable|in:All,New Rule,Old Rule',
-            'hallType' => 'nullable|in:MARRIAGE HALL,BANQUET HALL,BANQUET+MARRIAGE HALL'
+            //'hallType' => 'nullable|in:MARRIAGE HALL,BANQUET HALL,BANQUET+MARRIAGE HALL'
+            'hallType' => 'nullable|integer'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -261,7 +262,8 @@ class ReportController extends Controller
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'ruleType' => 'nullable|in:All,New Rule,Old Rule',
-            'organizationType' => 'nullable|in:PRIVATE,GOVERNMENT'
+            // 'organizationType' => 'nullable|in:PRIVATE,GOVERNMENT'
+            'organizationType' => 'nullable|integer'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -303,7 +305,8 @@ class ReportController extends Controller
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'ruleType' => 'nullable|in:All,New Rule,Old Rule',
-            'hostelType' => 'nullable|in:BOYS,GIRLS'
+            // 'hostelType' => 'nullable|in:BOYS,GIRLS'
+            'hostelType' => 'nullable|integer'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -340,7 +343,8 @@ class ReportController extends Controller
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'ruleType' => 'nullable|in:All,New Rule,Old Rule',
-            'lodgeType' => 'nullable|in:BOYS,GIRLS'
+            // 'lodgeType' => 'nullable|in:BOYS,GIRLS'
+            'lodgeType' => 'nullable|integer'
         ]);
         if ($validator->fails()) {
             return response()->json([

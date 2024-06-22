@@ -513,9 +513,9 @@ class MarHostel extends Model
         }
 
         if ($request->hostelType) {
-            $approved->where('ref_adv_paramstrings.string_parameter', $request->hostelType);
-            $active->where('ref_adv_paramstrings.string_parameter', $request->hostelType);
-            $rejected->where('ref_adv_paramstrings.string_parameter', $request->hostelType);
+            $approved->where('ref_adv_paramstrings.id', $request->hostelType);
+            $active->where('ref_adv_paramstrings.id', $request->hostelType);
+            $rejected->where('ref_adv_paramstrings.id', $request->hostelType);
         }
         $data = null;
         if ($request->applicationStatus == 'All') {

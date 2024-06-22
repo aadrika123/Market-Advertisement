@@ -506,9 +506,9 @@ class MarLodge extends Model
         }
 
         if ($request->lodgeType) {
-            $approved->where('ref_adv_paramstrings.string_parameter', $request->lodgeType);
-            $active->where('ref_adv_paramstrings.string_parameter', $request->lodgeType);
-            $rejected->where('ref_adv_paramstrings.string_parameter', $request->lodgeType);
+            $approved->where('ref_adv_paramstrings.id', $request->lodgeType);
+            $active->where('ref_adv_paramstrings.id', $request->lodgeType);
+            $rejected->where('ref_adv_paramstrings.id', $request->lodgeType);
         }
         $data = null;
         if ($request->applicationStatus == 'All') {
