@@ -11,7 +11,7 @@ class RefAdvParamstring extends Model
     use HasFactory;
     protected $guarded = [];
 
-    // Get all Masters 
+    //Get all Masters 
     public function masters()
     {
         return DB::table('ref_adv_paramstrings')
@@ -27,4 +27,6 @@ class RefAdvParamstring extends Model
             ->orderBy('ref_adv_paramstrings.id','Asc')
             ->get();
     }
+
+    
 }

@@ -268,4 +268,275 @@ class MarDharamshala extends Model
             ->first();
         return $recieptDetails;
     }
+
+    public function getApplicationFinancialYearWise($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $fyear = $request->fyear;
+        list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
+        $currentfyStartDate = $currentfyStartDate . "-04-01";
+        $currentfyEndDate = $currentfyEndDate . "-03-31";
+        $approved = MarDharamshala::select(
+            'id',
+            'entity_name',
+            'application_no',
+            'applicant',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'application_type',
+            'entity_ward_id',
+            'rule',
+            'organization_type',
+            'ulb_id',
+            'license_year',
+            DB::raw("'Approved' as application_status")
+        )
+            ->where('ulb_id', $ulbId);
+
+        $active = MarActiveDharamshala::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId);
+
+        $rejected = MarRejectedDharamshala::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId);
+        if ($request->wardNo) {
+            $approved->where('mar_dharamshalas.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_dharamshalas.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_dharamshalas.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_dharamshalas.application_type', $request->applicationType);
+            $active->where('mar_active_dharamshalas.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_dharamshalas.application_type', $request->applicationType);
+        }
+        if ($request->fyear) {
+            $approved->whereBetween('mar_dharamshalas.application_date', [$currentfyStartDate, $currentfyEndDate]);
+            $active->whereBetween('mar_active_dharamshalas.application_date', [$currentfyStartDate, $currentfyEndDate]);
+            $rejected->whereBetween('mar_rejected_dharamshalas.application_date', [$currentfyStartDate, $currentfyEndDate]);
+        }
+        $data = $approved->union($active)->union($rejected);
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data, 
+            'total' => $data->total()
+        ];
+    }
+
+    public function payCollection($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = DB::table('mar_dharamshala_renewals')
+            ->select('mar_dharamshala_renewals.id', 'mar_dharamshala_renewals.application_no', 'mar_dharamshala_renewals.applicant',  DB::raw("TO_CHAR(mar_dharamshala_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_dharamshala_renewals.application_type', 'mar_dharamshala_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_dharamshala_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_dharamshala_renewals.payment_mode','mar_dharamshala_renewals.entity_name','adv_mar_transactions.transaction_no')
+            ->join('adv_mar_transactions' ,'adv_mar_transactions.transaction_id','=','mar_dharamshala_renewals.payment_id')
+            ->where('payment_status', '1')
+            ->where('mar_dharamshala_renewals.ulb_id', $ulbId)
+            ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
+
+        if ($request->wardNo) {
+            $approved->where('mar_dharamshala_renewals.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_dharamshala_renewals.application_type', $request->applicationType);
+        }
+        if ($request->payMode == 'All') {
+            $data = $approved;
+        }
+        if ($request->payMode == 'Online') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cash') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cheque/DD') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total' => $totalPayments,
+            'totalAmount' => $totalAmount,
+        ];
+        $data = $approved;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total(),
+            'summary' => $summary
+        ];
+    }
+
+    public function getApplicationWithStatus($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarDharamshala::select('id','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+
+        $rejected = MarRejectedDharamshala::select('id','entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_dharamshalas.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_dharamshalas.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_dharamshalas.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_dharamshalas.application_type', $request->applicationType);
+        }
+
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function getApplicationWithRule($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarDharamshala::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $active = MarActiveDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $rejected = MarRejectedDharamshala::select('id', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_dharamshalas.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_dharamshalas.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_dharamshalas.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_dharamshalas.application_type', $request->applicationType);
+            $active->where('mar_active_dharamshalas.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_dharamshalas.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_dharamshalas.rule', $request->ruleType);
+            $active->where('mar_active_dharamshalas.rule', $request->ruleType);
+            $rejected->where('mar_rejected_dharamshalas.rule', $request->ruleType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($active)->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function getOrganizationTypeApplication($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarDharamshala::select('mar_dharamshalas.id','mar_dharamshalas.entity_name','mar_dharamshalas.application_no', 'mar_dharamshalas.applicant', DB::raw("TO_CHAR(mar_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_dharamshalas.application_type', 'mar_dharamshalas.entity_ward_id', 'mar_dharamshalas.rule', 'mar_dharamshalas.organization_type as organization_id', 'mar_dharamshalas.ulb_id', 'mar_dharamshalas.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_dharamshalas.organization_type')
+            ->where('mar_dharamshalas.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $active = MarActiveDharamshala::select('mar_active_dharamshalas.id', 'mar_active_dharamshalas.entity_name','mar_active_dharamshalas.application_no', 'mar_active_dharamshalas.applicant', DB::raw("TO_CHAR(mar_active_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_dharamshalas.application_type', 'mar_active_dharamshalas.entity_ward_id', 'mar_active_dharamshalas.rule', 'mar_active_dharamshalas.organization_type  as organization_id', 'mar_active_dharamshalas.ulb_id', 'mar_active_dharamshalas.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_dharamshalas.organization_type')
+            ->where('mar_active_dharamshalas.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $rejected = MarRejectedDharamshala::select('mar_rejected_dharamshalas.id', 'mar_rejected_dharamshalas.entity_name','mar_rejected_dharamshalas.application_no', 'mar_rejected_dharamshalas.applicant', DB::raw("TO_CHAR(mar_rejected_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_dharamshalas.application_type', 'mar_rejected_dharamshalas.entity_ward_id', 'mar_rejected_dharamshalas.rule', 'mar_rejected_dharamshalas.organization_type  as organization_id', 'mar_rejected_dharamshalas.ulb_id', 'mar_rejected_dharamshalas.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as organizationType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_dharamshalas.organization_type')
+            ->where('mar_rejected_dharamshalas.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_dharamshalas.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_dharamshalas.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_dharamshalas.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_dharamshalas.application_type', $request->applicationType);
+            $active->where('mar_active_dharamshalas.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_dharamshalas.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_dharamshalas.rule', $request->ruleType);
+            $active->where('mar_active_dharamshalas.rule', $request->ruleType);
+            $rejected->where('mar_rejected_dharamshalas.rule', $request->ruleType);
+        }
+        if ($request->organizationType) {
+            $approved->where('ref_adv_paramstrings.id', $request->organizationType);
+            $active->where('ref_adv_paramstrings.id', $request->organizationType);
+            $rejected->where('ref_adv_paramstrings.id', $request->organizationType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($active)->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
 }

@@ -275,4 +275,262 @@ class MarLodge extends Model
             ->first();
         return $recieptDetails;
     }
+
+    public function getApplicationFinancialYearWise($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $fyear = $request->fyear;
+        list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
+        $currentfyStartDate = $currentfyStartDate . "-04-01";
+        $currentfyEndDate = $currentfyEndDate . "-03-31";
+        $approved = MarLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId);
+
+        $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId);
+
+        $rejected = MarRejectedLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId);
+        if ($request->wardNo) {
+            $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_lodges.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_lodges.application_type', $request->applicationType);
+            $active->where('mar_active_lodges.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_lodges.application_type', $request->applicationType);
+        }
+        if ($request->fyear) {
+            $approved->whereBetween('mar_lodges.application_date', [$currentfyStartDate, $currentfyEndDate]);
+            $active->whereBetween('mar_active_lodges.application_date', [$currentfyStartDate, $currentfyEndDate]);
+            $rejected->whereBetween('mar_rejected_lodges.application_date', [$currentfyStartDate, $currentfyEndDate]);
+        }
+        $data = $approved->union($active)->union($rejected);
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function payCollection($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = DB::table('mar_lodge_renewals')
+            ->select('mar_lodge_renewals.id', 'mar_lodge_renewals.entity_name','mar_lodge_renewals.application_no', 'mar_lodge_renewals.applicant',  DB::raw("TO_CHAR(mar_lodge_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodge_renewals.application_type', 'mar_lodge_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_lodge_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_lodge_renewals.payment_mode','adv_mar_transactions.transaction_no')
+            ->join('adv_mar_transactions' ,'adv_mar_transactions.transaction_id','=','mar_lodge_renewals.payment_id')
+            ->where('payment_status', '1')
+            ->where('mar_lodge_renewals.ulb_id', $ulbId)
+            ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
+
+        if ($request->wardNo) {
+            $approved->where('mar_lodge_renewals.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_lodge_renewals.application_type', $request->applicationType);
+        }
+        if ($request->payMode == 'All') {
+            $data = $approved;
+        }
+        if ($request->payMode == 'Online') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cash') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'Cheque/DD') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        $totalPayments = $approved->count();
+        $totalAmount = $approved->sum('payment_amount');
+        $summary = [
+            'total' => $totalPayments,
+            'totalAmount' => $totalAmount,
+        ];
+        $data = $approved;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total(),
+            'summary' => $summary
+        ];
+    }
+
+    public function getApplicationWithStatus($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarLodge::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+
+        $rejected = MarRejectedLodge::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_lodges.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_lodges.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_lodges.application_type', $request->applicationType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($rejected);
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($rejected);
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function getApplicationWithRule($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarLodge::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $active = MarActiveLodge::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $rejected = MarRejectedLodge::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_lodges.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_lodges.application_type', $request->applicationType);
+            $active->where('mar_active_lodges.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_lodges.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_lodges.rule', $request->ruleType);
+            $active->where('mar_active_lodges.rule', $request->ruleType);
+            $rejected->where('mar_rejected_lodges.rule', $request->ruleType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);;
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($active)->union($rejected);;
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function getApplicationWithLodgeType($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approved = MarLodge::select('mar_lodges.id', 'mar_lodges.entity_name','mar_lodges.application_no', 'mar_lodges.applicant', DB::raw("TO_CHAR(mar_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodges.application_type', 'mar_lodges.entity_ward_id', 'mar_lodges.rule', 'mar_lodges.organization_type', 'mar_lodges.lodge_type as lodge_id', 'mar_lodges.license_year', 'mar_lodges.ulb_id', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_lodges.lodge_type')
+            ->where('mar_lodges.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $active = MarActiveLodge::select('mar_active_lodges.id', 'mar_active_lodges.entity_name','mar_active_lodges.application_no', 'mar_active_lodges.applicant', DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_lodges.application_type', 'mar_active_lodges.entity_ward_id', 'mar_active_lodges.rule', 'mar_active_lodges.organization_type', 'mar_active_lodges.lodge_type as lodge_id', 'mar_active_lodges.license_year', 'mar_active_lodges.ulb_id', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_lodges.lodge_type')
+            ->where('mar_active_lodges.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        $rejected = MarRejectedLodge::select('mar_rejected_lodges.id','mar_rejected_lodges.entity_name', 'mar_rejected_lodges.application_no', 'mar_rejected_lodges.applicant', DB::raw("TO_CHAR(mar_rejected_lodges.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_lodges.application_type', 'mar_rejected_lodges.entity_ward_id', 'mar_rejected_lodges.rule', 'mar_rejected_lodges.organization_type', 'mar_rejected_lodges.lodge_type as lodge_id', 'mar_rejected_lodges.license_year', 'mar_rejected_lodges.ulb_id', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as lodgeType')
+            ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_lodges.lodge_type')
+            ->where('mar_rejected_lodges.ulb_id', $ulbId)
+            ->whereBetween('application_date', [$dateFrom, $dateUpto]);
+        if ($request->wardNo) {
+            $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
+            $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
+            $rejected->where('mar_rejected_lodges.entity_ward_id', $request->wardNo);
+        }
+        if ($request->applicationType) {
+            $approved->where('mar_lodges.application_type', $request->applicationType);
+            $active->where('mar_active_lodges.application_type', $request->applicationType);
+            $rejected->where('mar_rejected_lodges.application_type', $request->applicationType);
+        }
+        if ($request->ruleType) {
+            $approved->where('mar_lodges.rule', $request->ruleType);
+            $active->where('mar_active_lodges.rule', $request->ruleType);
+            $rejected->where('mar_rejected_lodges.rule', $request->ruleType);
+        }
+
+        if ($request->lodgeType) {
+            $approved->where('ref_adv_paramstrings.id', $request->lodgeType);
+            $active->where('ref_adv_paramstrings.id', $request->lodgeType);
+            $rejected->where('ref_adv_paramstrings.id', $request->lodgeType);
+        }
+        $data = null;
+        if ($request->applicationStatus == 'All') {
+            $data = $approved->union($active)->union($rejected);;
+        } elseif ($request->applicationStatus == 'Reject') {
+            $data = $rejected;
+        } elseif ($request->applicationStatus == 'Approved') {
+            $data = $approved;
+        } else $data = $approved->union($active)->union($rejected);;
+        if ($data) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = collect([]);
+        }
+
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
 }
