@@ -78,7 +78,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         #cash verification 
         Route::post('rental/cash-verification-list', 'listCashVerificationDtl');                                             #_List of Cash Verification --------------- 0703
         Route::post('cash-verification-dtl', 'cashVerificationDtl');                                                         #_Cash Verification Detail ---------------- 0704
-        Route::post('verify-cash', 'verifyCash');                                                                            #_Verify Cash ----------------------------- 0705  
+        Route::post('verify-cash', 'verifyCash');     
+                                                                               #_Verify Cash ----------------------------- 0705  
     });
 
     /**
