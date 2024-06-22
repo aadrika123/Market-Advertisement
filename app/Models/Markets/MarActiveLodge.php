@@ -93,7 +93,8 @@ class MarActiveLodge extends Model
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
                 'ip_address' => $req->ipAddress,
-                'application_type' => "New Apply"
+                'application_type' => "New Apply",
+                'user_id'      => $req->userId
             ],
             $this->metaReqs($req),
             //  $mApplicationNo,
@@ -140,7 +141,7 @@ class MarActiveLodge extends Model
             $ulbWorkflowReqs
         );                                                                                          // Add Relative Path as Request and Client Ip Address etc.
         $tempId = MarActiveLodge::create($metaReqs)->id;
-        $this->uploadDocument($tempId, $mDocuments,$req->auth);
+        $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
         return $mRenewNo['renew_no'];
     }
@@ -425,7 +426,7 @@ class MarActiveLodge extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
+        $mWfActiveDocument->postDocuments($a, $req->auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];

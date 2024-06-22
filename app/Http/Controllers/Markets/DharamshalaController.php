@@ -55,6 +55,7 @@ class DharamshalaController extends Controller
     protected $_baseUrl;
     protected $_wfMasterId;
     protected $_fileUrl;
+    protected $_userType;
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
@@ -69,6 +70,7 @@ class DharamshalaController extends Controller
         $this->_tempParamId = Config::get('workflow-constants.T_DRSL_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
+        $this->_userType = Config::get('workflow-constants.USER_TYPES');
 
         $this->_wfMasterId = Config::get('workflow-constants.DHARAMSHALA_WF_MASTER_ID');
     }
@@ -84,17 +86,26 @@ class DharamshalaController extends Controller
             // Variable initialization
 
             $mMarActiveDharamshala = $this->_modelObj;
-            $citizenId = ['citizenId' => $req->auth['id']];
-            $req->request->add($citizenId);
+            $user         = authUser($req);
+            $dataToAdd = [];
 
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            if ($user->user_type == $this->_userType['1']) {
+                $dataToAdd['citizenId'] = $user->id;
+            } else {
+                $dataToAdd['userId'] = $user->id;
+            }
+            $ulbId = $req->ulbId ?? $user->ulb_id;
+            $dataToAdd['ulbId'] = $ulbId;
+            if(!$ulbId){
+                throw new Exception ('Ulb Not Found');
+            }
+
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $ulbId);
             $generatedId = $idGeneration->generate();
-            $applicationNo = ['application_no' => $generatedId];
-            $req->request->add($applicationNo);
-
+            $dataToAdd['application_no'] = $generatedId;
             // $mWfWorkflow=new WfWorkflow();
-            $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
-            $req->request->add($WfMasterId);
+            $dataToAdd['WfMasterId'] = $this->_wfMasterId;
+            $req->merge($dataToAdd);
 
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
@@ -595,7 +606,7 @@ class DharamshalaController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-             'remarks'=>'nullable|string'
+            'remarks' => 'nullable|string'
             // 'payment_amount' => 'required',
         ]);
         if ($validator->fails()) {

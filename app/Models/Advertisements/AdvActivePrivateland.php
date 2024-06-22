@@ -129,7 +129,8 @@ class AdvActivePrivateland extends Model
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
                 'ip_address' => $req->ipAddress,
-                'application_type' => "New Apply"
+                'application_type' => "New Apply",
+                'user_id'      => $req->userId
             ],
             $this->metaReqs($req),
             // $mApplicationNo,
@@ -203,7 +204,7 @@ class AdvActivePrivateland extends Model
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
             $documentImg = $doc['image'];
             $newRequest = new Request([
-                'document'=>$documentImg
+                'document' => $documentImg
             ]);
             //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
             $imageName = $docUpload->upload($newRequest);
@@ -222,8 +223,7 @@ class AdvActivePrivateland extends Model
             // $mWfActiveDocument->postDocuments($a, $auth);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
             // $mWfActiveDocument->create($metaReqs);
-            foreach($metaReqs as $key=>$val)
-            {
+            foreach ($metaReqs as $key => $val) {
                 $mWfActiveDocument->$key = $val;
             }
             $mWfActiveDocument->save();
@@ -443,7 +443,7 @@ class AdvActivePrivateland extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$auth)
+    public function reuploadDocument($req, $auth)
     {
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
@@ -464,7 +464,7 @@ class AdvActivePrivateland extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$auth);
+        $mWfActiveDocument->postDocuments($a, $auth);
         $docDetails->current_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
@@ -491,25 +491,25 @@ class AdvActivePrivateland extends Model
     public function listAppliedApplicationsjsk()
     {
         return AdvActivePrivateland::select(
-                'adv_active_privatelands.id',
-                'adv_active_privatelands.application_no',
-                'adv_active_privatelands.application_date',
-                'adv_active_privatelands.application_type',
-                'adv_active_privatelands.applicant',
-                'adv_active_privatelands.entity_name',
-                'adv_active_privatelands.entity_address',
-                'adv_active_privatelands.parked',
-                'adv_active_privatelands.doc_upload_status',
-                'adv_active_privatelands.mobile_no',
-                'adv_active_privatelands.payment_status',
-                DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
-                'wr.role_name',
-                'um.ulb_name',
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
-            )
+            'adv_active_privatelands.id',
+            'adv_active_privatelands.application_no',
+            'adv_active_privatelands.application_date',
+            'adv_active_privatelands.application_type',
+            'adv_active_privatelands.applicant',
+            'adv_active_privatelands.entity_name',
+            'adv_active_privatelands.entity_address',
+            'adv_active_privatelands.parked',
+            'adv_active_privatelands.doc_upload_status',
+            'adv_active_privatelands.mobile_no',
+            'adv_active_privatelands.payment_status',
+            DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+            'wr.role_name',
+            'um.ulb_name',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+        )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_privatelands.ulb_id')
             ->orderByDesc('adv_active_privatelands.id');
-            //->get();
+        //->get();
     }
 }

@@ -91,7 +91,8 @@ class MarActiveDharamshala extends Model
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
                 'ip_address' => $req->ipAddress,
-                'application_type' => "New Apply"
+                'application_type' => "New Apply",
+                'user_id'      => $req->userId
             ],
             $this->metaReqs($req),
             //  $mApplicationNo,
@@ -163,7 +164,7 @@ class MarActiveDharamshala extends Model
             $documentImg = $doc['image'];
             //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
             $newRequest = new Request([
-                'document'=>$documentImg
+                'document' => $documentImg
             ]);
             $imageName = $docUpload->upload($newRequest);
             $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');

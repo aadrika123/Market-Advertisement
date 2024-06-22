@@ -89,7 +89,7 @@ class MarActiveHostel extends Model
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
             'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-            
+
         ];
         $mDocuments = $req->documents;
 
@@ -99,7 +99,8 @@ class MarActiveHostel extends Model
                 'citizen_id' => $req->citizenId,
                 'application_date' => $this->_applicationDate,
                 'ip_address' => $req->ipAddress,
-                'application_type' => "New Apply"
+                'application_type' => "New Apply",
+                'user_id'      => $req->userId
             ],
             $this->metaReqs($req),
             $ulbWorkflowReqs
