@@ -120,7 +120,7 @@ class MarLodge extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mMarLodge->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->user_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarLodge->payment_details = json_encode($payDetails);
 
