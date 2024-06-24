@@ -2,10 +2,12 @@
 
 namespace App\Models\Markets;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class MarDharamshala extends Model
@@ -105,12 +107,16 @@ class MarDharamshala extends Model
             // Dharamshala Table Update
             $mMarDharamshala = MarDharamshala::find($req->applicationId);
             $mMarDharamshala->payment_status = $req->status;
-            $mMarDharamshala->payment_mode = "Cash";
-            $pay_id = $mMarDharamshala->payment_id = "Cash-$req->applicationId-" . time();
+            // $mMarDharamshala->payment_mode = "Cash";
+            // $pay_id = $mMarDharamshala->payment_id = "Cash-$req->applicationId-" . time();
             // $mAdvCheckDtls->remarks = $req->remarks;
+            $paymentMode= $req->paymentMode;
             $mMarDharamshala->payment_date = Carbon::now();
-
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarDharamshala->payment_amount, 'demand_amount' => $mMarDharamshala->demand_amount, 'workflowId' => $mMarDharamshala->workflow_id, 'userId' => $mMarDharamshala->citizen_id, 'ulbId' => $mMarDharamshala->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $mMarDharamshala->payment_date = Carbon::now();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarDharamshala->ulb_id);
+            $pay_id = $idGeneration->generate();
+            $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarDharamshala->payment_amount, 'demand_amount' => $mMarDharamshala->demand_amount, 'workflowId' => $mMarDharamshala->workflow_id, 'userId' => $mMarDharamshala->user_id, 'ulbId' => $mMarDharamshala->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarDharamshala->payment_details = json_encode($payDetails);
             if ($mMarDharamshala->renew_no == NULL) {
@@ -127,7 +133,7 @@ class MarDharamshala extends Model
             // Renewal Table Updation
             $mMarDharamshalaRenewal = MarDharamshalaRenewal::find($renewal_id);
             $mMarDharamshalaRenewal->payment_status = 1;
-            $mMarDharamshalaRenewal->payment_mode = "Cash";
+            $mMarDharamshalaRenewal->payment_mode = $paymentMode;
             $mMarDharamshalaRenewal->payment_id =  $pay_id;
             $mMarDharamshalaRenewal->payment_amount =  $mMarDharamshala->payment_amount;
             $mMarDharamshalaRenewal->demand_amount =  $mMarDharamshala->demand_amount;

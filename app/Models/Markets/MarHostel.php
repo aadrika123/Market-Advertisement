@@ -2,10 +2,12 @@
 
 namespace App\Models\Markets;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Node\Stmt\Return_;
 
@@ -108,11 +110,17 @@ class MarHostel extends Model
             // Hostel Table Update
             $mMarHostel = MarHostel::find($req->applicationId);
             $mMarHostel->payment_status = $req->status;
-            $mMarHostel->payment_mode = "Cash";
-            $pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
+            //$mMarHostel->payment_mode = "Cash";
+            //$pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
-
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $paymentMode= $req->paymentMode;
+            //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
+            $mMarHostel->payment_date = Carbon::now();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarHostel->ulb_id);
+            $pay_id = $idGeneration->generate();
+           
+            $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarHostel->payment_details = json_encode($payDetails);
 
@@ -130,7 +138,7 @@ class MarHostel extends Model
             // Renewal Table Updation
             $mMarHostelRenewal = MarHostelRenewal::find($renewal_id);
             $mMarHostelRenewal->payment_status = 1;
-            $mMarHostelRenewal->payment_mode = "Cash";
+            $mMarHostelRenewal->payment_mode = $paymentMode;
             $mMarHostelRenewal->payment_id =  $pay_id;
             $mMarHostelRenewal->payment_date = Carbon::now();
             $mMarHostelRenewal->payment_amount = $mMarHostel->payment_amount;
