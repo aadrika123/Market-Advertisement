@@ -183,7 +183,7 @@ class MarActiveHostel extends Model
                 'document' => $imageName,
                 'doc_category' => $req->docCategory,
                 'docCode' => $document['docCode'],
-                'ownerDtlId' => $document['ownerDtlId'],
+                'ownerDtlId' => $document['ownerDtlId']??null,
                 'unique_id' => $imageName['data']['uniqueId'] ?? null,
                 'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
             ];

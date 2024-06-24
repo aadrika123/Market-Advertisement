@@ -58,7 +58,7 @@ class StoreRequest extends FormRequest
             'fourWheelersParking' => 'required|integer',
             'aadharCard' => 'required|',
             'panCard' => 'required|string',
-            'ulbId' => 'required|integer',
+            'ulbId' => 'nullable|integer',
 
             'documents' => 'required|array',
             'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',

@@ -481,10 +481,12 @@ class AdvActiveSelfadvertisement extends Model
                 'adv_active_selfadvertisements.parked',
                 'adv_active_selfadvertisements.workflow_id',
                 'adv_active_selfadvertisements.mobile_no',
+                'adv_active_selfadvertisements.current_role_id',
                 DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
                 'wr.role_name',
                 'um.ulb_name',
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type"),
+                'wr.role_name as pending_at'
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_selfadvertisements.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
