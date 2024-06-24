@@ -503,7 +503,9 @@ class AdvActiveAgency extends Model
             DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
             'wr.role_name',
             'um.ulb_name',
-            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type")
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS user_type"),
+            'adv_active_agencies.current_role_id',
+            'wr.role_name as pending_at'
         )
             ->join('adv_active_agencydirectors as agd', 'agd.agency_id', '=', 'adv_active_agencies.id')
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
