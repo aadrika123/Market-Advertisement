@@ -177,7 +177,7 @@ class MarActiveLodge extends Model
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId']??null;
             $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
             $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
