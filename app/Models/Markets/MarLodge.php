@@ -2,11 +2,13 @@
 
 namespace App\Models\Markets;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class MarLodge extends Model
 {
@@ -106,11 +108,19 @@ class MarLodge extends Model
             // Lodge Table Update
             $mMarLodge = MarLodge::find($req->applicationId);
             $mMarLodge->payment_status = $req->status;
-            $mMarLodge->payment_mode = "Cash";
-            $pay_id = $mMarLodge->payment_id = "Cash-$req->applicationId-" . time();
+            //$mMarLodge->payment_mode = "Cash";
+            $PaymentMode = $req->paymentMode;
+            // $pay_id = $mMarLodge->payment_id = "Cash-$req->applicationId-" . time();
+            // $mMarLodge->payment_date = Carbon::now();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarLodge->ulb_id);
+            $pay_id = $idGeneration->generate();
+
+            $mMarLodge->payment_id = $pay_id;
+            // $mAdvCheckDtls->remarks = $req->remarks;
             $mMarLodge->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->citizen_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mMarLodge->payment_amount, 'demand_amount' => $mMarLodge->demand_amount, 'workflowId' => $mMarLodge->workflow_id, 'userId' => $mMarLodge->user_id, 'ulbId' => $mMarLodge->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarLodge->payment_details = json_encode($payDetails);
 
@@ -128,7 +138,7 @@ class MarLodge extends Model
             // Renewal Table Updation
             $mMarLodgeRenewal = MarLodgeRenewal::find($renewal_id);
             $mMarLodgeRenewal->payment_status = 1;
-            $mMarLodgeRenewal->payment_mode = "Cash";
+            $mMarLodgeRenewal->payment_mode = $PaymentMode;
             $mMarLodgeRenewal->payment_id =  $pay_id;
             $mMarLodgeRenewal->payment_amount =  $mMarLodge->payment_amount;
             $mMarLodgeRenewal->demand_amount =  $mMarLodge->demand_amount;

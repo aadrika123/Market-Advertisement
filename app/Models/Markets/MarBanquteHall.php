@@ -2,11 +2,13 @@
 
 namespace App\Models\Markets;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class MarBanquteHall extends Model
@@ -111,11 +113,15 @@ class MarBanquteHall extends Model
             // Banquet Hall Table Update
             $mMarBanquteHall = MarBanquteHall::find($req->applicationId);
             $mMarBanquteHall->payment_status = $req->status;
-            $mMarBanquteHall->payment_mode = "Cash";
-            $pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
+            $paymentMode= $req->paymentMode;
+            //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarBanquteHall->payment_date = Carbon::now();
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarBanquteHall->ulb_id);
+            $pay_id = $idGeneration->generate();
+           
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount, 'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->citizen_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount, 'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->user_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarBanquteHall->payment_details = json_encode($payDetails);
             if ($mMarBanquteHall->renew_no == NULL) {
@@ -132,7 +138,7 @@ class MarBanquteHall extends Model
             // Renewal Table Updation
             $mMarBanquteHallRenewal = MarBanquteHallRenewal::find($renewal_id);
             $mMarBanquteHallRenewal->payment_status = 1;
-            $mMarBanquteHallRenewal->payment_mode = "Cash";
+            $mMarBanquteHallRenewal->payment_mode = $paymentMode;
             $mMarBanquteHallRenewal->payment_id =  $pay_id;
             $mMarBanquteHallRenewal->payment_amount =  $mMarBanquteHall->payment_amount;
             $mMarBanquteHallRenewal->demand_amount =  $mMarBanquteHall->demand_amount;
