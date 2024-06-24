@@ -258,14 +258,14 @@ class AdvAgency extends Model
     /**
      * | Payment via Cash
      */
-    public function paymentByCash($req)
+    public function offlinePayment($req)
     {
 
         if ($req->status == '1') {
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $mAdvAgency->payment_status = $req->status;
-            $mAdvAgency->payment_mode = "Cash";
+            $PaymentMode = $req->paymentMode;
             // $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvAgency->ulb_id);
@@ -275,7 +275,7 @@ class AdvAgency extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvAgency->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvAgency->payment_details = json_encode($payDetails);
             if ($mAdvAgency->renew_no == NULL) {

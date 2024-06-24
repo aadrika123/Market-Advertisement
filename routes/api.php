@@ -250,7 +250,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/generate-payment-order-id', 'generatePaymentOrderId');                           // 20 ( Generate Payment Order ID)
         Route::post('advert/agency/get-application-details-for-payment', 'getApplicationDetailsForPayment');        // 21 ( Application Details For Payments )
         Route::post('advert/agency/renewal-agency', 'renewalAgency');                                               // 22 ( Application Apply For Agency Renewal )
-        Route::post('advert/agency/payment-by-cash', 'agencyPaymentByCash');                                        // 23 ( Make Agency Payment By Cash )
+        Route::post('advert/agency/payment-by-cash', 'agencyPayment');                                        // 23 ( Make Agency Payment By Cash )
         Route::post('advert/agency/entry-cheque-dd', 'entryChequeDd');                                              // 24 ( Entry Cheque or DD For Payments )
         Route::post('advert/agency/clear-or-bounce-cheque', 'clearOrBounceCheque');                                 // 25 ( Entry Cheque or DD For Clear or Bounce )
         Route::post('advert/agency/verify-or-reject-doc', 'verifyOrRejectDoc');                                     // 26 ( Verify or Rejecect Documents )

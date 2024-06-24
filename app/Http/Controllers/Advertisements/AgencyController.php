@@ -26,6 +26,7 @@ use App\Models\Advertisements\AdvRejectedHoarding;
 use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\Payment\TempTransaction;
 use App\Models\User;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
@@ -72,6 +73,7 @@ class AgencyController extends Controller
     protected $_baseUrl;
     protected $_wfMasterId;
     protected $_fileUrl;
+    protected $_offlineMode;
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
         $this->_modelObj = new AdvActiveAgency();
@@ -82,6 +84,7 @@ class AgencyController extends Controller
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
+        $this->_offlineMode                 = Config::get("workflow-constants.OFFLINE_PAYMENT_MODE");
         $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
@@ -665,7 +668,7 @@ class AgencyController extends Controller
                 'roleId' => 'required',
                 'applicationId' => 'required',
                 'status' => 'required|integer',
-                'remarks'=>'nullable|string'
+                'remarks' => 'nullable|string'
             ]);
             if ($validator->fails()) {
                 return ['status' => false, 'message' => $validator->errors()];
@@ -1120,28 +1123,57 @@ class AgencyController extends Controller
      * | Function - 25
      * | API - 23
      */
-    public function agencyPaymentByCash(Request $req)
+    public function agencyPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|string',
             'status' => 'required|integer'
         ]);
+
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+
         try {
             // Variable initialization
-
+            $todayDate = Carbon::now();
+            $user = authUser($req);
             $mAdvAgency = new AdvAgency();
             $mAdvMarTransaction = new AdvMarTransaction();
+
             DB::beginTransaction();
-            $d = $mAdvAgency->paymentByCash($req);
+            $d = $mAdvAgency->offlinePayment($req);
             $appDetails = AdvAgency::find($req->applicationId);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
+
+           $transactionId= $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleId, "Advertisement");
+           
+
+            // Prepare request data
+          $req->merge([
+                'empId' => $user->id,
+                'userType' => $user->user_type,
+                'todayDate' => $todayDate->format('Y-m-d'),
+                'tranNo' => $appDetails->payment_id,
+                'ulbId' => $user->ulb_id,
+                'isJsk' => true,
+                'tranType' => $appDetails->application_type,
+                'amount' => $appDetails->payment_amount,
+                'applicationId' => $appDetails->id,
+                'workflowId' => $appDetails->workflow_id,
+                'transactionId'=> $transactionId
+            ]);
+
+            // Save data in temp transaction
+            $this->postOtherPaymentModes($req);
+
             DB::commit();
 
-            if ($req->status == '1' && $d['status'] == 1) {
-                return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $d['paymentId'], 'workflowId' => $appDetails->workflow_id], "050523", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
+            if ($req->status == 1 && $d['status'] == 1) {
+                return responseMsgs(true, "Payment Successfully !!", [
+                    'status' => true,
+                    'transactionNo' => $d['paymentId'],
+                    'workflowId' => $appDetails->workflow_id
+                ], "050523", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
             } else {
                 return responseMsgs(false, "Payment Rejected !!", '', "050523", "1.0", "", 'POST', $req->deviceId ?? "");
             }
@@ -1149,6 +1181,48 @@ class AgencyController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050523", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+
+    # save Transaction data 
+    public function postOtherPaymentModes($req)
+    {
+        $paymentMode = $this->_offlineMode;
+        $moduleId = $this->_moduleId;
+        $mTempTransaction = new TempTransaction();
+        $mChequeDtl = new AdvChequeDtl();
+
+        if ($req->paymentMode != $paymentMode[3]) {  // Not Cash
+            $chequeReqs = [
+                'user_id' => $req['empId'],
+                'application_id' => $req->applicationId,
+                'transaction_id' => $req['tranNo'],
+                'cheque_date' => $req['chequeDate'],
+                'bank_name' => $req['bankName'],
+                'branch_name' => $req['branchName'],
+                'cheque_no' => $req['chequeNo'],
+                'workflow_id' => $req['workflowId']
+            ];
+            $mChequeDtl->entryChequeDd($chequeReqs);
+        }
+
+        $tranReqs = [
+            'transaction_id' => $req['transactionId'],
+            'application_id' => $req->applicationId,
+            'module_id' => $moduleId,
+            'workflow_id' => $req['workflowId'],
+            'transaction_no' => $req['tranNo'],
+            'application_no' => $req['applicationId'],
+            'amount' => $req['amount'],
+            'payment_mode' => strtoupper($req['paymentMode']),
+            'cheque_dd_no' => $req['chequeNo'],
+            'bank_name' => $req['bankName'],
+            'tran_date' => $req['todayDate'],
+            'user_id' => $req['empId'],
+            'ulb_id' => $req['ulbId'],
+            'ward_no' => $req['ref_ward_id']
+        ];
+
+        $mTempTransaction->tempTransaction($tranReqs);
     }
 
     /**
@@ -1802,7 +1876,7 @@ class AgencyController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             $count = (DB::table('users')->where('email', $req->email))->count();
+            $count = (DB::table('users')->where('email', $req->email))->count();
             if ($count > 0)
                 return ['status' => true, 'data' => 0];                                      // Email is Taken ( Alraedy Exist )
             else
@@ -1955,5 +2029,4 @@ class AgencyController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-    
 }

@@ -59,17 +59,17 @@ class AdvChequeDtl extends Model
     {
         $date = date('Y-m-d');
         $financial_year = $this->getFinancialYear($date);
-        $metaReqs = array_merge(
-            [
-                'application_id' => $req->applicationId,                        //  temp_id of Application
-                'workflow_id' => $req->workflowId,
-                'bank_name' => $req->bankName,
-                'branch_name' => $req->branchName,
-                'cheque_no' => $req->chequeNo,
-                'cheque_date' => Carbon::now(),
-                'transaction_no' => $financial_year
-            ],
-        );
+
+        $metaReqs = array_merge([
+            'application_id' => $req['application_id'],
+            'workflow_id' => $req['workflow_id'],
+            'bank_name' => $req['bank_name'],
+            'branch_name' => $req['branch_name'],
+            'cheque_no' => $req['cheque_no'],
+            'cheque_date' => Carbon::now(),
+            'transaction_no' => $financial_year
+        ]);
+
         $id = AdvChequeDtl::create($metaReqs)->id;
         return $financial_year . "-" . $id;
     }

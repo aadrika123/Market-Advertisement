@@ -3,6 +3,7 @@
 namespace App\Models\Param;
 
 use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Payment\TempTransaction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,30 +42,36 @@ class AdvMarTransaction extends Model
     //     $addData->save();
     // }
 
-    public function addTransaction($req, $moduleId, $moduleType, $paymentMode)
+    public function addTransaction($req, $appDetails, $moduleId, $moduleType,)
     {
         $addData = new AdvMarTransaction();
+        $user    = authuser($req);
+        $ulbId    = $user->ulb_id;
+        $isjsk  = false;
+        if ($user->user_type == 'jsk') {
+            $isjsk == true;
+        }
 
         $addData->module_id         = $moduleId;
-        $addData->workflow_id       = $req->workflow_id;
-        $addData->application_id    = $req->id;
+        $addData->workflow_id       = $appDetails->workflow_id;
+        $addData->application_id    = $appDetails->id;
         $addData->module_type       = $moduleType;
-        $addData->transaction_id    = $req->payment_id;
-        $addData->transaction_no    = $req->payment_id;
-        $addData->transaction_date  = $req->payment_date;
-        $addData->amount            = $req->payment_amount;
+        $addData->transaction_id    = $appDetails->payment_id;
+        $addData->transaction_no    = $appDetails->payment_id;
+        $addData->transaction_date  = $appDetails->payment_date;
+        $addData->amount            = $appDetails->payment_amount;
         if (isset($req->demand_amount)) {
             $addData->demand_amount     = $req->demand_amount;
         }
         $addData->payment_details   = $req->payment_details;
-        $addData->payment_mode      = $paymentMode;
+        $addData->payment_mode      = $req->paymentMode;
         if (isset($req->entity_ward_id)) {
             $addData->entity_ward_id    = $req->entity_ward_id;
         }
-        $addData->ulb_id            = $req->ulb_id;
-        $addData->user_id           = $req->userId;
+        $addData->ulb_id            = $ulbId;
+        $addData->user_id           = $user->id;
         $addData->citizen_id        = $req->citizenId;
-        $addData->is_jsk            = $req->isJsk;
+        $addData->is_jsk            = $isjsk;
 
         $addData->cheque_dd_no      = $req->chequeNo;
         $addData->cheque_date       = $req->chequeDate;
@@ -73,7 +80,8 @@ class AdvMarTransaction extends Model
         // $addData->verify_date       = Carbon::now();
         // $addData->verify_status     = 0;
         $addData->save();
-        return $addData->id;
+        $transactionId = $addData->id;
+        return $transactionId;
     }
     public function getTranByApplicationId($applicationId)
     {
