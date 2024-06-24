@@ -2,9 +2,11 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class AdvVehicle extends Model
@@ -81,26 +83,26 @@ class AdvVehicle extends Model
     public function listjskApprovedApplication()
     {
         return AdvVehicle::select(
-                'adv_vehicles.id',
-                'application_no',
-                DB::raw("TO_CHAR(adv_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
-                'adv_vehicles.application_type',
-                'adv_vehicles.applicant',
-                'adv_vehicles.applicant as owner_name',
-                'adv_vehicles.entity_name',
-                'adv_vehicles.mobile_no',
-                'adv_vehicles.license_no',
-                'adv_vehicles.payment_status',
-                'adv_vehicles.payment_amount',
-                'adv_vehicles.approve_date',
-                'adv_vehicles.citizen_id',
-                'adv_vehicles.valid_upto',
-                'adv_vehicles.valid_from',
-                'adv_vehicles.user_id',
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
-            )
+            'adv_vehicles.id',
+            'application_no',
+            DB::raw("TO_CHAR(adv_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_vehicles.application_type',
+            'adv_vehicles.applicant',
+            'adv_vehicles.applicant as owner_name',
+            'adv_vehicles.entity_name',
+            'adv_vehicles.mobile_no',
+            'adv_vehicles.license_no',
+            'adv_vehicles.payment_status',
+            'adv_vehicles.payment_amount',
+            'adv_vehicles.approve_date',
+            'adv_vehicles.citizen_id',
+            'adv_vehicles.valid_upto',
+            'adv_vehicles.valid_from',
+            'adv_vehicles.user_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
             ->orderByDesc('id');
-            //->get();
+        //->get();
     }
 
     /**
@@ -174,14 +176,19 @@ class AdvVehicle extends Model
         if ($req->status == '1') {
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $mAdvVehicle->payment_status = $req->status;
-            $mAdvVehicle->payment_mode = "Cash";
-            $pay_id = $mAdvVehicle->payment_id = "Cash-$req->applicationId-" . time();
+            $PaymentMode = $req->paymentMode;
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvVehicle->ulb_id);
+            $pay_id = $idGeneration->generate();
+
+            $mAdvVehicle->payment_id = $pay_id;
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvVehicle->payment_date = Carbon::now();
 
+
             // Payment Details
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvVehicle->payment_details =  json_encode($payDetails);
             if ($mAdvVehicle->renew_no == NULL) {
@@ -303,7 +310,6 @@ class AdvVehicle extends Model
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_vehicles.permanent_ward_id')
             ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'adv_vehicles.ulb_id')
             ->where('adv_vehicles.id', $appId);
-            //->first();
+        //->first();
     }
-
 }

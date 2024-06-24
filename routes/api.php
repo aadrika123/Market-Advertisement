@@ -363,6 +363,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/payment-collection', 'paymentCollection');                                        // 31 ( Get Application Financial Year Wise )
         Route::post('market/lodge/rule-wise-applications', 'ruleWiseApplications');                                 // 32 ( Get Application Rule Wise )
         Route::post('market/lodge/get-application-by-lodge-type', 'getApplicationByLodgelType');                    // 33 ( Get Application hostel type Wise )
+        #Arshad
+        Route::post('advert/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+
     });
 
     /**
@@ -407,6 +410,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/rule-wise-applications', 'ruleWiseApplications');                               // 32 ( Get Application Rule Wise )
         Route::post('market/bm-hall/get-application-by-hall-type', 'getApplicationByHallType');                     // 32 ( Get Application Rule Wise )
         Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');     // 33 ( Get Application organization type Wise )
+        #Arshad
+        Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
     });
 
     /**
@@ -450,6 +455,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/payment-collection', 'paymentCollection');                                       // 31 ( Get List of Payment Collection )
         Route::post('market/hostel/rule-wise-applications', 'ruleWiseApplications');                                // 32 ( Get Application Rule Wise )
         Route::post('market/hostel/get-application-by-hostel-type', 'getApplicationByHostelType');                  // 33 ( Get Application Hostel type Wise )
+        #Arshad
+        Route::post('advert/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
     });
 
     /**
@@ -493,6 +500,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/payment-collection', 'paymentCollection');                                  // 31 ( Get List of Payment Collection )
         Route::post('market/dharamshala/rule-wise-applications', 'ruleWiseApplications');                           // 32 ( Get Application Rule Wise )
         Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType'); // 33 ( Get Application Organization type Wise )
+        #ARSHAD
+        Route::post('advert/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
     });
 
     /**
@@ -541,14 +550,14 @@ Route::group(['middleware' => ['checkToken']], function () {
 
 
     //Written by prity pandey
-    Route::controller(ReportController::class)->group(function(){
-        Route::post('market/financialYearWiseReport','finacialYearWiseApplication');
-        Route::post('market/paymentCollectionReport','paymentCollection');
-        Route::post('market/applicationStatusWiseReport','applicationStatusWiseApplication');
-        Route::post('market/ruleWiseApplicationReport','ruleWiseApplication');
-        Route::post('market/hallTypeApplicationReport','hallTypeWiseApplication');
-        Route::post('market/organizationTypeApplicationReport','organizationTypeWiseApplication');
-        Route::post('market/hostelTypeApplicationReport','hostelTypeWiseApplication');
-        Route::post('market/lodgeTypeApplicationReport','lodgeTypeWiseApplication');
+    Route::controller(ReportController::class)->group(function () {
+        Route::post('market/financialYearWiseReport', 'finacialYearWiseApplication');
+        Route::post('market/paymentCollectionReport', 'paymentCollection');
+        Route::post('market/applicationStatusWiseReport', 'applicationStatusWiseApplication');
+        Route::post('market/ruleWiseApplicationReport', 'ruleWiseApplication');
+        Route::post('market/hallTypeApplicationReport', 'hallTypeWiseApplication');
+        Route::post('market/organizationTypeApplicationReport', 'organizationTypeWiseApplication');
+        Route::post('market/hostelTypeApplicationReport', 'hostelTypeWiseApplication');
+        Route::post('market/lodgeTypeApplicationReport', 'lodgeTypeWiseApplication');
     });
 });

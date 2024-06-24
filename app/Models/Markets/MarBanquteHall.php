@@ -705,4 +705,31 @@ class MarBanquteHall extends Model
             'total' => $data->total()
         ];
     }
+
+   /** 
+     * | Get Application Approve List by Role Ids
+     */
+    public function listjskApprovedApplication()
+    {
+        return MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'application_no',
+            DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.applicant as owner_name',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.license_no',
+            'mar_banqute_halls.payment_status',
+            'mar_banqute_halls.payment_amount',
+            'mar_banqute_halls.approve_date',
+            'mar_banqute_halls.citizen_id',
+            'mar_banqute_halls.valid_upto',
+            'mar_banqute_halls.valid_from',
+            'mar_banqute_halls.user_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->orderByDesc('id');
+        //->get();
+    }
 }

@@ -103,8 +103,8 @@ class BanquetMarriageHallController extends Controller
             }
             $ulbId = $req->ulbId ?? $user->ulb_id;
             $dataToAdd['ulbId'] = $ulbId;
-            if(!$ulbId){
-                throw new Exception ('Ulb Not Found');
+            if (!$ulbId) {
+                throw new Exception('Ulb Not Found');
             }
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $ulbId);
@@ -1714,6 +1714,66 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "Application Fetched Successfully", $data, "050834", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050834", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    public function listjskApprovedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            //$userId = $request->auth['id'];
+            $mMarBanquteHall = new MarBanquteHall();
+            $applications = $mMarBanquteHall->listjskApprovedApplication();
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mar_banqute_halls.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('mar_banqute_halls.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('mar_banqute_halls.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 }

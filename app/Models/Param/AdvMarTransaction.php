@@ -48,7 +48,7 @@ class AdvMarTransaction extends Model
         $user    = authuser($req);
         $ulbId    = $user->ulb_id;
         $isjsk  = false;
-        if ($user->user_type == 'jsk') {
+        if ($user->user_type == 'JSK') {
             $isjsk == true;
         }
 

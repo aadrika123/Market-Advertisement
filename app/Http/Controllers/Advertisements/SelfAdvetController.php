@@ -38,6 +38,7 @@ use App\BLL\Advert\CalculateRate;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Param\AdvMartransactions;
+use App\Models\Payment\TempTransaction;
 
 // use App\Repository\WorkflowMaster\Concrete\WorkflowMap;
 
@@ -67,6 +68,7 @@ class SelfAdvetController extends Controller
 
     protected $_wfMasterId;
     protected $_fileUrl;
+    protected $_offlineMode;
 
     //Constructor
     public function __construct(iSelfAdvetRepo $self_repo)
@@ -81,6 +83,7 @@ class SelfAdvetController extends Controller
         $this->_tempParamId = Config::get('workflow-constants.TEMP_SELF_ID');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_offlineMode                 = Config::get("workflow-constants.OFFLINE_PAYMENT_MODE");
 
         $this->_wfMasterId = Config::get('workflow-constants.ADVERTISEMENT_WF_MASTER_ID');
     }
@@ -2027,6 +2030,7 @@ class SelfAdvetController extends Controller
         }
         try {
             $user = Auth()->user();
+            $todayDate = Carbon::now();
             $userId = $user->id ?? null;
             $isCitizen = $user && $user->getTable() != "users" ? true : false;
             $isJsk = (!$isCitizen) && $user->user_type == "JSK" ? true : false;
@@ -2042,8 +2046,24 @@ class SelfAdvetController extends Controller
             $data = $mAdvSelfadvertisement->paymentByCash($req);
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $req->merge($appDetails->toArray());
-            $mAdvMarTransaction->addTransaction($req, $this->_moduleIds, "Advertisement", $req->paymentMode);
 
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
+
+            return  $req->merge([
+                'empId' => $user->id,
+                'userType' => $user->user_type,
+                'todayDate' => $todayDate->format('Y-m-d'),
+                'tranNo' => $appDetails->payment_id,
+                'ulbId' => $user->ulb_id,
+                'isJsk' => true,
+                'tranType' => $appDetails->application_type,
+                'amount' => $appDetails->payment_amount,
+                'applicationId' => $appDetails->id,
+                'workflowId' => $appDetails->workflow_id,
+                'transactionId' => $transactionId
+            ]);
+            // Save data in temp transaction
+            $this->postOtherPaymentModes($req);
             DB::commit();
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050127", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
@@ -2054,5 +2074,46 @@ class SelfAdvetController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050127", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+    # save Transaction data 
+    public function postOtherPaymentModes($req)
+    {
+        $paymentMode = $this->_offlineMode;
+        $moduleId = $this->_moduleIds;
+        $mTempTransaction = new TempTransaction();
+        $mChequeDtl = new AdvChequeDtl();
+
+        if ($req->paymentMode != $paymentMode[3]) {  // Not Cash
+            $chequeReqs = [
+                'user_id' => $req['empId'],
+                'application_id' => $req->applicationId,
+                'transaction_id' => $req['tranNo'],
+                'cheque_date' => $req['chequeDate'],
+                'bank_name' => $req['bankName'],
+                'branch_name' => $req['branchName'],
+                'cheque_no' => $req['chequeNo'],
+                'workflow_id' => $req['workflowId']
+            ];
+            $mChequeDtl->entryChequeDd($chequeReqs);
+        }
+
+        $tranReqs = [
+            'transaction_id' => $req['transactionId'],
+            'application_id' => $req->applicationId,
+            'module_id' => $moduleId,
+            'workflow_id' => $req['workflowId'],
+            'transaction_no' => $req['tranNo'],
+            'application_no' => $req['applicationId'],
+            'amount' => $req['amount'],
+            'payment_mode' => strtoupper($req['paymentMode']),
+            'cheque_dd_no' => $req['chequeNo'],
+            'bank_name' => $req['bankName'],
+            'tran_date' => $req['todayDate'],
+            'user_id' => $req['empId'],
+            'ulb_id' => $req['ulbId'],
+            'ward_no' => $req['ref_ward_id']
+        ];
+
+        $mTempTransaction->tempTransaction($tranReqs);
     }
 }

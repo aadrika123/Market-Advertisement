@@ -540,4 +540,31 @@ class MarHostel extends Model
             'total' => $data->total()
         ];
     }
+
+     /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function listjskApprovedApplication()
+    {
+        return MarHostel::select(
+            'mar_hostels.id',
+            'application_no',
+            DB::raw("TO_CHAR(mar_hostels.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_hostels.application_type',
+            'mar_hostels.applicant',
+            'mar_hostels.applicant as owner_name',
+            'mar_hostels.entity_name',
+            'mar_hostels.license_no',
+            'mar_hostels.payment_status',
+            'mar_hostels.payment_amount',
+            'mar_hostels.approve_date',
+            'mar_hostels.citizen_id',
+            'mar_hostels.valid_upto',
+            'mar_hostels.valid_from',
+            'mar_hostels.user_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->orderByDesc('id');
+        //->get();
+    }
 }

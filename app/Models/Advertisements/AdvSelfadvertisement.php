@@ -2,10 +2,12 @@
 
 namespace App\Models\Advertisements;
 
+use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Param\AdvMarTransaction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class AdvSelfadvertisement extends Model
@@ -176,16 +178,17 @@ class AdvSelfadvertisement extends Model
         if ($req->status == '1') {
             // Self Advertisement Table Update
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
+            $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $mAdvSelfadvertisement->payment_status = $req->status;
-            $pay_id = $mAdvSelfadvertisement->payment_id = "Cash-$req->applicationId-" . time();
-            if($req->paymentMode == 'Cheque')
-            {
-                $pay_id = $mAdvSelfadvertisement->payment_id = "Cheque-$req->applicationId-" . time();
-            }
-            $mAdvSelfadvertisement->payment_date = Carbon::now();
-            $mAdvSelfadvertisement->payment_mode = "Cash";
+            $PaymentMode = $req->paymentMode;
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvSelfadvertisement->ulb_id);
+            $pay_id = $idGeneration->generate();
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $mAdvSelfadvertisement->payment_id = $pay_id;
+            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mAdvSelfadvertisement->payment_date = Carbon::now();
+
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
             if ($mAdvSelfadvertisement->renew_no == NULL) {                             // Fresh Application Time 
@@ -343,17 +346,17 @@ class AdvSelfadvertisement extends Model
     public function getDetailsById($applicationId)
     {
         return  AdvSelfadvertisement::select(
-                'adv_selfadvertisements.*',
-                'u.ulb_name',
-                'p.string_parameter as m_license_year',
-                'w.ward_name as ward_no',
-                'pw.ward_name as permanent_ward_no',
-                'ew.ward_name as entity_ward_no',
-                'dp.string_parameter as m_display_type',
-                'il.string_parameter as m_installation_location',
-                'r.role_name as m_current_role',
-                'cat.type as advt_category_type'
-            )
+            'adv_selfadvertisements.*',
+            'u.ulb_name',
+            'p.string_parameter as m_license_year',
+            'w.ward_name as ward_no',
+            'pw.ward_name as permanent_ward_no',
+            'ew.ward_name as entity_ward_no',
+            'dp.string_parameter as m_display_type',
+            'il.string_parameter as m_installation_location',
+            'r.role_name as m_current_role',
+            'cat.type as advt_category_type'
+        )
             ->where('adv_selfadvertisements.id', $applicationId)
             ->leftJoin('ulb_masters as u', 'u.id', '=', 'adv_selfadvertisements.ulb_id')
             ->leftJoin('ref_adv_paramstrings as p', 'p.id', '=', 'adv_selfadvertisements.license_year')
@@ -364,10 +367,8 @@ class AdvSelfadvertisement extends Model
             ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', 'adv_selfadvertisements.installation_location')
             ->leftJoin('wf_roles as r', 'r.id', '=', 'adv_selfadvertisements.current_role_id')
             ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_selfadvertisements.advt_category');
-            //->first();
+        //->first();
 
         //return $details;
     }
-    
-  
 }

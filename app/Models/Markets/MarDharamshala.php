@@ -539,4 +539,31 @@ class MarDharamshala extends Model
             'total' => $data->total()
         ];
     }
+
+    /**
+     * | Get Application Approve List by Role Ids
+     */
+    public function listjskApprovedApplication()
+    {
+        return MarDharamshala::select(
+            'mar_dharamshalas.id',
+            'application_no',
+            DB::raw("TO_CHAR(mar_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_dharamshalas.application_type',
+            'mar_dharamshalas.applicant',
+            'mar_dharamshalas.applicant as owner_name',
+            'mar_dharamshalas.entity_name',
+            'mar_dharamshalas.license_no',
+            'mar_dharamshalas.payment_status',
+            'mar_dharamshalas.payment_amount',
+            'mar_dharamshalas.approve_date',
+            'mar_dharamshalas.citizen_id',
+            'mar_dharamshalas.valid_upto',
+            'mar_dharamshalas.valid_from',
+            'mar_dharamshalas.user_id',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
+            ->orderByDesc('id');
+        //->get();
+    }
 }
