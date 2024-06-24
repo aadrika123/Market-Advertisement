@@ -1802,7 +1802,7 @@ class AgencyController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $count = (DB::table('users')->where('email', $req->email))->count();
+             $count = (DB::table('users')->where('email', $req->email))->count();
             if ($count > 0)
                 return ['status' => true, 'data' => 0];                                      // Email is Taken ( Alraedy Exist )
             else
@@ -1874,7 +1874,7 @@ class AgencyController extends Controller
         }
     }
 
-    public function getApproveDetailsById(Request $req)
+    // public function getApproveDetailsById(Request $req)
     // {
     //     // Validate the request
     //     $validated = Validator::make(
@@ -1925,6 +1925,7 @@ class AgencyController extends Controller
     // }
 
     # Arshad 
+
     public function getUploadDocuments(Request $req)
     {
         $validated = Validator::make(
