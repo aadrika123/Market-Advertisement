@@ -1802,7 +1802,7 @@ class AgencyController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $count = (DB::table('users')->where('email', $req->email))->count();
+             $count = (DB::table('users')->where('email', $req->email))->count();
             if ($count > 0)
                 return ['status' => true, 'data' => 0];                                      // Email is Taken ( Alraedy Exist )
             else
@@ -1874,57 +1874,58 @@ class AgencyController extends Controller
         }
     }
 
-    public function getApproveDetailsById(Request $req)
-    {
-        // Validate the request
-        $validated = Validator::make(
-            $req->all(),
-            [
-                'applicationId' => 'required|integer'
-            ]
-        );
+    // public function getApproveDetailsById(Request $req)
+    // {
+    //     // Validate the request
+    //     $validated = Validator::make(
+    //         $req->all(),
+    //         [
+    //             'applicationId' => 'required|integer'
+    //         ]
+    //     );
 
-        if ($validated->fails()) {
-            return validationError($validated);
-        }
+    //     if ($validated->fails()) {
+    //         return validationError($validated);
+    //     }
 
-        try {
-            $applicationId = $req->applicationId;
-            $mAdvAgency = new AdvAgency();
-            $mtransaction = new AdvMarTransaction();
-            $mDirectors = new AdvActiveAgencydirector();
+    //     try {
+    //         $applicationId = $req->applicationId;
+    //         $mAdvAgency = new AdvAgency();
+    //         $mtransaction = new AdvMarTransaction();
+    //         $mDirectors = new AdvActiveAgencydirector();
 
-            // Fetch details from the model
-            $data = $mAdvAgency->getDetailsById($applicationId)->first();
+    //         // Fetch details from the model
+    //         $data = $mAdvAgency->getDetailsById($applicationId)->first();
 
-            if (!$data) {
-                throw new Exception("Application Not Found");
-            }
+    //         if (!$data) {
+    //             throw new Exception("Application Not Found");
+    //         }
 
-            // Fetch transaction details
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+    //         // Fetch transaction details
+    //         $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
 
-            # Director Name 
-            $Directors = $mDirectors->getDirectors($applicationId)->get();
+    //         # Director Name 
+    //         $Directors = $mDirectors->getDirectors($applicationId)->get();
 
-            $approveApplicationDetails['basicDetails'] = $data;
-            $approveApplicationDetails['DirectorsName'] = $Directors;
+    //         $approveApplicationDetails['basicDetails'] = $data;
+    //         $approveApplicationDetails['DirectorsName'] = $Directors;
 
-            if ($tranDetails) {
-                $approveApplicationDetails['paymentDetails'] = $tranDetails;
-            } else {
-                $approveApplicationDetails['paymentDetails'] = null;
-            }
+    //         if ($tranDetails) {
+    //             $approveApplicationDetails['paymentDetails'] = $tranDetails;
+    //         } else {
+    //             $approveApplicationDetails['paymentDetails'] = null;
+    //         }
 
-            // Return success response with the data
-            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
-        } catch (Exception $e) {
-            // Handle exception and return error message
-            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
-        }
-    }
+    //         // Return success response with the data
+    //         return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+    //     } catch (Exception $e) {
+    //         // Handle exception and return error message
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+    //     }
+    // }
 
     # Arshad 
+
     public function getUploadDocuments(Request $req)
     {
         $validated = Validator::make(
