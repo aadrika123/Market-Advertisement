@@ -16,6 +16,7 @@ use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarLodge;
 use App\Models\Markets\MarRejectedLodge;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\Payment\TempTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use App\Models\Workflows\WfWardUser;
 use App\Models\Workflows\WfWorkflow;
@@ -60,7 +61,7 @@ class LodgeController extends Controller
     protected $_wfMasterId;
     protected $_fileUrl;
     protected $_userType;
-
+    protected $_offlineMode;
     //Constructor
     public function __construct(iMarketRepo $mar_repo)
     {
@@ -103,8 +104,8 @@ class LodgeController extends Controller
             }
             $ulbId = $req->ulbId ?? $user->ulb_id;
             $dataToAdd['ulbId'] = $ulbId;
-            if(!$ulbId){
-                throw new Exception ('Ulb Not Found');
+            if (!$ulbId) {
+                throw new Exception('Ulb Not Found');
             }
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $ulbId);
@@ -1155,13 +1156,30 @@ class LodgeController extends Controller
         }
         try {
             // Variable initialization
-
+            $todayDate = Carbon::now();
+            $user = authUser($req);
             $mMarLodge = new MarLodge();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
             $data = $mMarLodge->paymentByCash($req);
             $appDetails = MarLodge::find($req->applicationId);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Market", "Cash");
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
+            // Prepare request data
+            $req->merge([
+                'empId' => $user->id,
+                'userType' => $user->user_type,
+                'todayDate' => $todayDate->format('Y-m-d'),
+                'tranNo' => $appDetails->payment_id,
+                'ulbId' => $user->ulb_id,
+                'isJsk' => true,
+                'tranType' => $appDetails->application_type,
+                'amount' => $appDetails->payment_amount,
+                'applicationId' => $appDetails->id,
+                'workflowId' => $appDetails->workflow_id,
+                'transactionId' => $transactionId
+            ]);
+            // Save data in temp transaction
+            $this->postOtherPaymentModes($req);
             DB::commit();
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' => $appDetails->workflow_id], "050722", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
@@ -1172,6 +1190,48 @@ class LodgeController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050722", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+
+    # save Transaction data 
+    public function postOtherPaymentModes($req)
+    {
+        $paymentMode = $this->_offlineMode;
+        $moduleId = $this->_moduleIds;
+        $mTempTransaction = new TempTransaction();
+        $mChequeDtl = new AdvChequeDtl();
+
+        if ($req->paymentMode != $paymentMode[3]) {  // Not Cash
+            $chequeReqs = [
+                'user_id' => $req['empId'],
+                'application_id' => $req->applicationId,
+                'transaction_id' => $req['tranNo'],
+                'cheque_date' => $req['chequeDate'],
+                'bank_name' => $req['bankName'],
+                'branch_name' => $req['branchName'],
+                'cheque_no' => $req['chequeNo'],
+                'workflow_id' => $req['workflowId']
+            ];
+            $mChequeDtl->entryChequeDd($chequeReqs);
+        }
+
+        $tranReqs = [
+            'transaction_id' => $req['transactionId'],
+            'application_id' => $req->applicationId,
+            'module_id' => $moduleId,
+            'workflow_id' => $req['workflowId'],
+            'transaction_no' => $req['tranNo'],
+            'application_no' => $req['applicationId'],
+            'amount' => $req['amount'],
+            'payment_mode' => strtoupper($req['paymentMode']),
+            'cheque_dd_no' => $req['chequeNo'],
+            'bank_name' => $req['bankName'],
+            'tran_date' => $req['todayDate'],
+            'user_id' => $req['empId'],
+            'ulb_id' => $req['ulbId'],
+            'ward_no' => $req['ref_ward_id']
+        ];
+
+        $mTempTransaction->tempTransaction($tranReqs);
     }
 
     /**
