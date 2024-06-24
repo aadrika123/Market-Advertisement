@@ -771,7 +771,7 @@ class SelfAdvetController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            'remarks'=>'nullable|string'
+            'remarks' => 'nullable|string'
 
         ]);
         try {
@@ -2015,7 +2015,7 @@ class SelfAdvetController extends Controller
             "paymentMode"   => "required|string|in:" . collect(Config::get("constants.PAYMENT_MODE_OFFLINE"))->implode(","),
             'status'        => 'required|integer'
         ];
-        if (isset($req->paymentMode) && $req->paymentMode != "Cash") {
+        if (isset($req->paymentMode) && $req->paymentMode != "CASH") {
             $rules["chequeNo"] = "required";
             $rules["chequeDate"] = "required|date|date_format:Y-m-d|after_or_equal:" . Carbon::now()->format("Y-m-d");
             $rules["bankName"] = "required";

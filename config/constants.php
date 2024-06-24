@@ -89,8 +89,8 @@ return [
     ],
 
     'PAYMENT_MODE_OFFLINE' => [
-        'Cash',
-        'Cheque',
+        'CASH',
+        'CHEQUE',
         'DD',
         'NEFT',
         'RTGS'
