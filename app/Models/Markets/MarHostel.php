@@ -113,14 +113,14 @@ class MarHostel extends Model
             //$mMarHostel->payment_mode = "Cash";
             //$pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
-            $paymentMode= $req->paymentMode;
+            $mMarHostel->payment_mode= $req->paymentMode;
             //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarHostel->ulb_id);
             $pay_id = $idGeneration->generate();
-           
-            $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $mMarHostel->payment_id = $pay_id;
+            $payDetails = array('paymentMode' => $mMarHostel->paymentMode, 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->user_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarHostel->payment_details = json_encode($payDetails);
 
@@ -138,7 +138,7 @@ class MarHostel extends Model
             // Renewal Table Updation
             $mMarHostelRenewal = MarHostelRenewal::find($renewal_id);
             $mMarHostelRenewal->payment_status = 1;
-            $mMarHostelRenewal->payment_mode = $paymentMode;
+            $mMarHostelRenewal->payment_mode = $mMarHostel->paymentMode;
             $mMarHostelRenewal->payment_id =  $pay_id;
             $mMarHostelRenewal->payment_date = Carbon::now();
             $mMarHostelRenewal->payment_amount = $mMarHostel->payment_amount;

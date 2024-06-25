@@ -78,7 +78,7 @@ class BanquetMarriageHallController extends Controller
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->_userType = Config::get('workflow-constants.USER_TYPES');
-
+        $this->_offlineMode = Config::get('workflow-constants.OFFLINE_PAYMENT_MODE');
 
         $this->_wfMasterId = Config::get('workflow-constants.BANQUTE_HALL_WF_MASTER_ID');
     }
