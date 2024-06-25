@@ -576,4 +576,34 @@ class MarHostel extends Model
             ->orderByDesc('id');
         //->get();
     }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarHostel::select(
+            'mar_hostels.id',
+            'mar_hostels.application_no',
+            'mar_hostels.application_date',
+            'mar_hostels.entity_address',
+            'mar_hostels.entity_name',
+            'mar_hostels.applicant',
+            'mar_hostels.applicant as owner_name',
+            'mar_hostels.mobile as mobile_no',
+            'mar_hostels.payment_status',
+            'mar_hostels.payment_amount',
+            'mar_hostels.approve_date',
+            'mar_hostels.citizen_id',
+            'mar_hostels.ulb_id',
+            'mar_hostels.valid_upto',
+            'mar_hostels.workflow_id',
+            'mar_hostels.license_no',
+            'mar_hostels.application_type',
+            'mar_hostels.payment_id',
+            DB::raw("'hostel' as type"),
+            'um.ulb_name as ulb_name',
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
+            ->where('mar_hostels.id', $applicationId)
+            ->orderByDesc('mar_hostels.id');
+            //->get();
+    }
 }

@@ -739,4 +739,35 @@ class MarBanquteHall extends Model
             ->orderByDesc('id');
         //->get();
     }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.application_date',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.applicant as owner_name',
+            'mar_banqute_halls.entity_address',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.mobile as mobile_no',
+            'mar_banqute_halls.payment_status',
+            'mar_banqute_halls.payment_amount',
+            'mar_banqute_halls.approve_date',
+            'mar_banqute_halls.citizen_id',
+            'mar_banqute_halls.user_id',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.valid_upto',
+            'mar_banqute_halls.workflow_id',
+            'mar_banqute_halls.license_no',
+            'mar_banqute_halls.payment_id',
+            DB::raw("'banquetMarriageHall' as type"),
+            'um.ulb_name as ulb_name'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
+            ->where('mar_banqute_halls.id',$applicationId)
+            ->orderByDesc('mar_banqute_halls.id');
+            ////->get();
+    }
 }

@@ -573,4 +573,34 @@ class MarDharamshala extends Model
             ->orderByDesc('id');
         //->get();
     }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarDharamshala::select(
+            'mar_dharamshalas.id',
+            'mar_dharamshalas.application_no',
+            'mar_dharamshalas.application_date',
+            'mar_dharamshalas.entity_address',
+            'mar_dharamshalas.payment_amount',
+            'mar_dharamshalas.entity_name',
+            'mar_dharamshalas.applicant',
+            'mar_dharamshalas.applicant as owner_name',
+            'mar_dharamshalas.mobile as mobile_no',
+            'mar_dharamshalas.approve_date',
+            'mar_dharamshalas.payment_status',
+            'mar_dharamshalas.citizen_id',
+            'mar_dharamshalas.ulb_id',
+            'mar_dharamshalas.valid_upto',
+            'mar_dharamshalas.workflow_id',
+            'mar_dharamshalas.license_no',
+            'mar_dharamshalas.application_type',
+            'mar_dharamshalas.payment_id',
+            DB::raw("'dharamshala' as type"),
+            'um.ulb_name as ulb_name',
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_dharamshalas.ulb_id')
+            ->where('mar_dharamshalas.id', $applicationId)
+            ->orderByDesc('id');
+            //->get();
+    }
 }

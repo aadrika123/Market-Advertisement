@@ -416,6 +416,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
         Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
+        Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
     });
 
     /**
@@ -463,6 +464,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
         Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');
+        Route::post('market/hostel/approved/get-details-by-id', 'getApproveDetailsById');
     });
 
     /**
@@ -510,6 +512,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
+        Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
+    });
     });
 
     /**

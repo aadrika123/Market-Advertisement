@@ -595,7 +595,7 @@ class MarLodge extends Model
             'mar_lodges.payment_id',
             'um.ulb_name as ulb_name',
         )
-            ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
             ->where('mar_lodges.id', $applicationId)
             ->orderByDesc('mar_lodges.id');
             //->get();
