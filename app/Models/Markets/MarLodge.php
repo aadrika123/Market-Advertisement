@@ -565,9 +565,39 @@ class MarLodge extends Model
             'mar_lodges.valid_upto',
             'mar_lodges.valid_from',
             'mar_lodges.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();
+    }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarLodge::select(
+            'mar_lodges.id',
+            'mar_lodges.application_no',
+            'mar_lodges.application_date',
+            'mar_lodges.entity_address',
+            'mar_lodges.entity_name',
+            'mar_lodges.applicant',
+            'mar_lodges.applicant as owner_name',
+            'mar_lodges.mobile as mobile_no',
+            'mar_lodges.payment_amount',
+            'mar_lodges.payment_status',
+            'mar_lodges.approve_date',
+            'mar_lodges.citizen_id',
+            'mar_lodges.ulb_id',
+            'mar_lodges.valid_upto',
+            'mar_lodges.workflow_id',
+            'mar_lodges.license_no',
+            'mar_lodges.application_type',
+            'mar_lodges.payment_id',
+            'um.ulb_name as ulb_name',
+        )
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+            ->where('mar_lodges.id', $applicationId)
+            ->orderByDesc('mar_lodges.id');
+            //->get();
     }
 }

@@ -733,6 +733,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.valid_upto',
             'mar_banqute_halls.valid_from',
             'mar_banqute_halls.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');

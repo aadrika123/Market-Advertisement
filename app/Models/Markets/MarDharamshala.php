@@ -567,6 +567,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.valid_upto',
             'mar_dharamshalas.valid_from',
             'mar_dharamshalas.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');

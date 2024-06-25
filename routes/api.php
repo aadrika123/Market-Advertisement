@@ -364,7 +364,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/rule-wise-applications', 'ruleWiseApplications');                                 // 32 ( Get Application Rule Wise )
         Route::post('market/lodge/get-application-by-lodge-type', 'getApplicationByLodgelType');                    // 33 ( Get Application hostel type Wise )
         #Arshad
-        Route::post('advert/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+
+        Route::post('market/lodge/list-jsk-rejected-application', 'listJskRejectedApplication');
+        Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
 
     });
 
@@ -412,6 +415,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');     // 33 ( Get Application organization type Wise )
         #Arshad
         Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
     });
 
     /**
@@ -456,7 +460,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/rule-wise-applications', 'ruleWiseApplications');                                // 32 ( Get Application Rule Wise )
         Route::post('market/hostel/get-application-by-hostel-type', 'getApplicationByHostelType');                  // 33 ( Get Application Hostel type Wise )
         #Arshad
-        Route::post('advert/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+
+        Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');
     });
 
     /**
@@ -501,7 +507,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/rule-wise-applications', 'ruleWiseApplications');                           // 32 ( Get Application Rule Wise )
         Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType'); // 33 ( Get Application Organization type Wise )
         #ARSHAD
-        Route::post('advert/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+
+        Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
     });
 
     /**

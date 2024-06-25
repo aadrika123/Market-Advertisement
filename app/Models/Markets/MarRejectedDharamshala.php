@@ -67,4 +67,21 @@ class MarRejectedDharamshala extends Model
     {
         return MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"));
     }
+
+    public function listjskRejectedApplication()
+    {
+        return MarRejectedDharamshala::select(
+            'id',
+            'application_no',
+            'applicant',
+            DB::raw("TO_CHAR(mar_rejected_dharamshalas.application_date, 'DD-MM-YYYY') as application_date"),
+            'application_type',
+            'entity_ward_id',
+            'rule','entity_name',
+            'license_year',
+            'ulb_id',
+            DB::raw("TO_CHAR(rejected_date,'DD-MM-YYYY') as rejected_date"),
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        );
+    }
 }

@@ -570,6 +570,7 @@ class MarHostel extends Model
             'mar_hostels.valid_upto',
             'mar_hostels.valid_from',
             'mar_hostels.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
