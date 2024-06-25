@@ -225,6 +225,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.payment_details',
             'mar_dharamshalas.payment_mode',
             'mar_dharamshalas.floor_area',
+            'mar_dharamshalas.ulb_id',
             'mar_dharamshalas.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',

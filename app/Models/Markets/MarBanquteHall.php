@@ -232,6 +232,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.workflow_id',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.rule',
+            'mar_banqute_halls.ulb_id',
             'ly.string_parameter as licenseYear',
             'ht.string_parameter as HallType',
             'wn.ward_name as wardNo',
