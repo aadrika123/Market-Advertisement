@@ -368,6 +368,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
         Route::post('market/lodge/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
+        Route::post('market/lodge/view-approve-document', 'getUploadDocuments');
 
     });
 
