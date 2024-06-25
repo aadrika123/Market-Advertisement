@@ -268,6 +268,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.applicant as applicant_name',
             'mar_dharamshalas.application_no',
             'mar_dharamshalas.license_no',
+            'ulb_id',
             'mar_dharamshalas.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )

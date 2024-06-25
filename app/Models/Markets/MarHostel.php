@@ -283,6 +283,7 @@ class MarHostel extends Model
             'mar_hostels.applicant as applicant_name',
             'mar_hostels.application_no',
             'mar_hostels.license_no',
+            'ulb_id',
             'mar_hostels.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )

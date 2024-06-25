@@ -277,6 +277,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.applicant as applicant_name',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.license_no',
+            'ulb_id',
             'mar_banqute_halls.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )

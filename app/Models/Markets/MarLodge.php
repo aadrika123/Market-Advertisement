@@ -279,6 +279,7 @@ class MarLodge extends Model
             'mar_lodges.applicant as applicant_name',
             'mar_lodges.application_no',
             'mar_lodges.license_no',
+            'ulb_id',
             'mar_lodges.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
