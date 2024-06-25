@@ -513,7 +513,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
-    });
+
     });
 
     /**
