@@ -1938,6 +1938,7 @@ class DharamshalaController extends Controller
             $approved = MarDharamshala::select(
                 'id',
                 'mobile',
+                'entity_address',
                 'entity_name',
                 'application_no',
                 'applicant',
@@ -1948,13 +1949,15 @@ class DharamshalaController extends Controller
                 'organization_type',
                 'ulb_id',
                 'license_year',
-                DB::raw("'Approved' as application_status")
+                DB::raw("'Approved' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )->where('ulb_id', $ulbId);
 
             $active = MarActiveDharamshala::select(
                 'id',
                 'mobile',
-                DB::raw("'' as entity_name"),
+                'entity_address',
+                'entity_name',
                 'application_no',
                 'applicant',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
@@ -1964,13 +1967,15 @@ class DharamshalaController extends Controller
                 'organization_type',
                 'ulb_id',
                 'license_year',
-                DB::raw("'Active' as application_status")
+                DB::raw("'Active' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )->where('ulb_id', $ulbId);
 
             $rejected = MarRejectedDharamshala::select(
                 'id',
                 'mobile',
-                DB::raw("'' as entity_name"),
+                'entity_address',
+                'entity_name',
                 'application_no',
                 'applicant',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
@@ -1980,7 +1985,8 @@ class DharamshalaController extends Controller
                 'organization_type',
                 'ulb_id',
                 'license_year',
-                DB::raw("'Reject' as application_status")
+                DB::raw("'Reject' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )->where('ulb_id', $ulbId);
 
             // Combine queries with union
