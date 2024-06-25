@@ -597,6 +597,13 @@ class MarDharamshala extends Model
             'mar_dharamshalas.payment_id',
             DB::raw("'dharamshala' as type"),
             'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_dharamshalas.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_dharamshalas.ulb_id')
             ->where('mar_dharamshalas.id', $applicationId)

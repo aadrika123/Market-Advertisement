@@ -594,6 +594,13 @@ class MarLodge extends Model
             'mar_lodges.application_type',
             'mar_lodges.payment_id',
             'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_lodges.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
             ->where('mar_lodges.id', $applicationId)

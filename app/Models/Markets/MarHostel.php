@@ -600,6 +600,13 @@ class MarHostel extends Model
             'mar_hostels.payment_id',
             DB::raw("'hostel' as type"),
             'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_hostels.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
             ->where('mar_hostels.id', $applicationId)
