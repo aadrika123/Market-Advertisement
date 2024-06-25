@@ -606,7 +606,8 @@ class MarHostel extends Model
             'mar_hostels.email',
             'aadhar_card as aadhar_no',
             'permanent_ward_id as permanent_ward_no',
-            'permanent_address'
+            'permanent_address',
+            'doc_upload_status'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
             ->where('mar_hostels.id', $applicationId)
