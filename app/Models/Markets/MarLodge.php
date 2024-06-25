@@ -236,6 +236,7 @@ class MarLodge extends Model
             'mar_lodges.valid_from',
             'mar_lodges.valid_upto',
             'mar_lodges.ulb_id',
+            'mar_lodges.no_of_beds',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
             'ulb_masters.toll_free_no',

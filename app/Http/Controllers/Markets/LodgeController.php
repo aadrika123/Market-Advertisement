@@ -1874,7 +1874,7 @@ class LodgeController extends Controller
         }
     }
 
-    
+
     public function getUploadDocuments(Request $req)
     {
         $validated = Validator::make(
@@ -1905,57 +1905,77 @@ class LodgeController extends Controller
         }
     }
 
-    
-    public function searchApplication($request)
+    public function searchApplication(Request $request)
     {
-        $user = Auth()->user();
-        $ulbId = $user->ulb_id ?? null;
-        $perPage = $request->perPage ?: 10;
-        // $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
-        // $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
-            ->where('ulb_id', $ulbId);
-            //->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
-            ->where('ulb_id', $ulbId);
-            //->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedLodge::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
-            ->where('ulb_id', $ulbId);
-           // ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        if ($request->wardNo) {
-            $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
-            $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
-            $rejected->where('mar_rejected_lodges.entity_ward_id', $request->wardNo);
-        }
-        if ($request->applicationType) {
-            $approved->where('mar_lodges.application_type', $request->applicationType);
-            $active->where('mar_active_lodges.application_type', $request->applicationType);
-            $rejected->where('mar_rejected_lodges.application_type', $request->applicationType);
-        }
-        if ($request->ruleType) {
-            $approved->where('mar_lodges.rule', $request->ruleType);
-            $active->where('mar_active_lodges.rule', $request->ruleType);
-            $rejected->where('mar_rejected_lodges.rule', $request->ruleType);
-        }
-        $data = null;
-        if ($request->applicationStatus == 'All') {
-            $data = $approved->union($active)->union($rejected);;
-        } elseif ($request->applicationStatus == 'Reject') {
-            $data = $rejected;
-        } elseif ($request->applicationStatus == 'Approved') {
-            $data = $approved;
-        } else $data = $approved->union($active)->union($rejected);;
-        if ($data) {
-            $data = $data->paginate($perPage);
-        } else {
-            $data = collect([]);
+        // Validate the request
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy' => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
         }
 
-        return [
-            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
-            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'total' => $data->total()
-        ];
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $user = Auth()->user();
+            $ulbId = $user->ulb_id ?? null;
+
+            // Fetch data from various tables
+            $approved = MarLodge::select('id', 'mobile', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"))
+                ->where('ulb_id', $ulbId);
+            $active = MarActiveLodge::select('id', 'mobile', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
+                ->where('ulb_id', $ulbId);
+            $rejected = MarRejectedLodge::select('id', 'mobile', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
+                ->where('ulb_id', $ulbId);
+
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
+
+            // Apply filters if present
+            if ($key && $parameter) {
+                $msg = "Lodge application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            // Paginate the results
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
     }
 }

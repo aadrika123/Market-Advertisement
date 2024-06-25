@@ -420,6 +420,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/bm-hall/view-approve-document', 'getUploadDocuments');
+        Route::post('market/bm-hall/search-application', 'searchApplication');
     });
 
     /**
@@ -469,6 +470,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/hostel/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/hostel/view-approve-document', 'getUploadDocuments');
+        Route::post('market/hostel/search-application', 'searchApplication');
     });
 
     /**
@@ -518,6 +520,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/dharamshala/view-approve-document', 'getUploadDocuments');
+        Route::post('market/dharamshala/search-application', 'searchApplication');
 
     });
 

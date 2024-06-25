@@ -1170,7 +1170,7 @@ class BanquetMarriageHallController extends Controller
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
             $appDetails = MarBanquteHall::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req,$appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1968,6 +1968,78 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function searchApplication(Request $request)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy' => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $user = Auth()->user();
+            $ulbId = $user->ulb_id ?? null;
+
+            $approved = MarBanquteHall::select('id', 'mobile','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"))
+                ->where('ulb_id', $ulbId);
+            $active = MarActiveBanquteHall::select('id', 'mobile','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"))
+                ->where('ulb_id', $ulbId);
+            $rejected = MarRejectedBanquteHall::select('id', 'mobile','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
+                ->where('ulb_id', $ulbId);
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
+
+            // Apply filters if present
+            if ($key && $parameter) {
+                $msg = "Lodge application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            // Paginate the results
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 }
