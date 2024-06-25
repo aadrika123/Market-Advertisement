@@ -67,7 +67,7 @@ class MarRejectedBanquteHall extends Model
     public function listjskRejectedApplication()
     {
         return MarRejectedBanquteHall::select(
-            'id',
+            'mar_rejected_banqute_halls.id',
             'application_no',
             'applicant',
             DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
@@ -78,7 +78,10 @@ class MarRejectedBanquteHall extends Model
             'ulb_id',
             'mobile as mobile_no',
             DB::raw("TO_CHAR(rejected_date,'DD-MM-YYYY') as rejected_date"),
-            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
-        );
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'wr.role_name as rejected_by',
+            'remarks as reason'
+        )
+        ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_banqute_halls.current_role_id');
     }
 }
