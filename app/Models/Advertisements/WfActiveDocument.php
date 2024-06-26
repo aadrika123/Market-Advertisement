@@ -184,7 +184,7 @@ class WfActiveDocument extends Model
         return WfActiveDocument::where('active_id', $applicationId)
             ->where('workflow_id', $workflowId)
             ->where('module_id', $moduleId)
-            ->where('current_status', '1')
+            ->whereBetween('current_status', [0,1])
             ->where('verify_status', '!=', 2)
             ->count();
     }
