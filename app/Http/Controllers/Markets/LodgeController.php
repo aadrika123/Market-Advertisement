@@ -1874,6 +1874,50 @@ class LodgeController extends Controller
         }
     }
 
+    public function getRejectedDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new MarRejectedLodge();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            //$tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            // if ($tranDetails) {
+            //     $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            // } else {
+            //     $approveApplicationDetails['paymentDetails'] = null;
+            // }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 
     public function getUploadDocuments(Request $req)
     {
@@ -1976,6 +2020,44 @@ class LodgeController extends Controller
             return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function listBtcInboxJsk(Request $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id']??2;
+            $wardId = $this->getWardByUserId($userId);
+
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mMarActiveLodge = new MarActiveLodge();
+            $btcList = $mMarActiveLodge->getLodgeList($ulbId)
+                //->whereIn('mar_active_lodges.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('mar_active_lodges.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
+
+            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
         }
     }
 }
