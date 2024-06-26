@@ -408,7 +408,7 @@ class MarActiveLodge extends Model
             'mar_active_lodges.id',
             'application_no',
             'entity_ward_id',
-            'btc_date',
+            DB::raw("TO_CHAR(mar_active_lodges.btc_date, 'DD-MM-YYYY') as btc_date"),
             'remarks',
             DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_active_lodges.application_type',
@@ -541,5 +541,37 @@ class MarActiveLodge extends Model
     public function pendingListForReport()
     {
         return MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveLodge::select(
+            'mar_active_lodges.id',
+            'mar_active_lodges.application_no',
+            'mar_active_lodges.applicant',
+            'mar_active_lodges.application_date',
+            'mar_active_lodges.entity_address',
+            'mar_active_lodges.entity_name',
+            'mar_active_lodges.mobile as mobile_no',
+            'mar_active_lodges.citizen_id',
+            'mar_active_lodges.ulb_id',
+           
+            'mar_active_lodges.workflow_id',
+            'mar_active_lodges.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_active_lodges.email',
+            'mar_active_lodges.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_lodges.ulb_id')
+            ->where('mar_active_lodges.id', $applicationId)
+            ->orderByDesc('mar_active_lodges.id');
+        //->get();
     }
 }

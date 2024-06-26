@@ -1892,11 +1892,11 @@ class LodgeController extends Controller
 
         try {
             $applicationId = $req->applicationId;
-            $mAdvActiveSelfadvertisement = new MarRejectedLodge();
+            $mAdvActiveSelfadvertisement = new MarActiveLodge();
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
 
             if (!$data) {
                 throw new Exception("Application Not Found");
