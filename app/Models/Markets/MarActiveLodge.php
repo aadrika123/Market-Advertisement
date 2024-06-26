@@ -407,6 +407,7 @@ class MarActiveLodge extends Model
         return MarActiveLodge::select(
             'mar_active_lodges.id',
             'application_no',
+            'entity_ward_id',
             DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_active_lodges.application_type',
             'mar_active_lodges.applicant',
@@ -414,8 +415,9 @@ class MarActiveLodge extends Model
             'mar_active_lodges.entity_name',
             'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
-            DB::raw("'DA' as btc_by")
+            'wr.role_name as btc_by',
         )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_lodges.current_role_id')
             ->where('mar_active_lodges.ulb_id', $ulbId);
     }
 
