@@ -1050,7 +1050,7 @@ class LodgeController extends Controller
 
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id'];
+            $ulbId = $req->auth['ulb_id']??2;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User

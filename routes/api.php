@@ -123,8 +123,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/search', 'selfAdvertisementsearchApplication');
         Route::post('advert/jsk/approved-list', 'selfAdvertisementApprovedApplication');
         // ==================end of api ===================
-        Route::post('advert/cash-verification-list', 'listCashVerification');
-        Route::post('cash-verification-dtl', 'cashVerificationDtl');
+        // Route::post('advert/cash-verification-list', 'listCashVerification');
+        // Route::post('cash-verification-dtl', 'cashVerificationDtl');
     });
 
     /**
@@ -368,10 +368,12 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
+         //Written by prity pandey
         Route::post('market/lodge/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/lodge/view-approve-document', 'getUploadDocuments');
         Route::post('market/lodge/search-application', 'searchApplication');
+        Route::post('market/lodge/rejected/get-details-by-id', 'getRejectedDetailsById');
 
     });
 
@@ -419,6 +421,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');     // 33 ( Get Application organization type Wise )
         #Arshad
         Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+
+         //Written by prity pandey
         Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/bm-hall/view-approve-document', 'getUploadDocuments');
@@ -469,6 +473,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
+         //Written by prity pandey
         Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/hostel/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/hostel/view-approve-document', 'getUploadDocuments');
@@ -519,6 +524,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         #ARSHAD
         Route::post('market/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
+         //Written by prity pandey
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/dharamshala/view-approve-document', 'getUploadDocuments');
@@ -592,6 +598,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/list-cash-verification', 'cashVerificationList');              //01
         Route::post('advert/tc-collections', 'tcCollectionDtl');                           //03
         Route::post('advert/verify-cash', 'cashVerify');                                   //05
+
+        //written by prity pandey
+        Route::post('market/list-cash-verification', 'cashVerificationListMarket');
+        Route::post('market/cash-verification-dtl', 'cashVerificationDtl'); 
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
