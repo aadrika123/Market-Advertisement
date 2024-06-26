@@ -232,6 +232,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.workflow_id',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.rule',
+            'mar_banqute_halls.ulb_id',
             'ly.string_parameter as licenseYear',
             'ht.string_parameter as HallType',
             'wn.ward_name as wardNo',
@@ -276,6 +277,7 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.applicant as applicant_name',
             'mar_banqute_halls.application_no',
             'mar_banqute_halls.license_no',
+            'ulb_id',
             'mar_banqute_halls.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
@@ -733,9 +735,49 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.valid_upto',
             'mar_banqute_halls.valid_from',
             'mar_banqute_halls.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();
+    }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.application_date',
+            'mar_banqute_halls.applicant',
+            'mar_banqute_halls.applicant as owner_name',
+            'mar_banqute_halls.entity_address',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.mobile as mobile_no',
+            'mar_banqute_halls.payment_status',
+            'mar_banqute_halls.payment_amount',
+            'mar_banqute_halls.approve_date',
+            'mar_banqute_halls.citizen_id',
+            'mar_banqute_halls.user_id',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.application_type',
+            'mar_banqute_halls.valid_upto',
+            'mar_banqute_halls.workflow_id',
+            'mar_banqute_halls.license_no',
+            'mar_banqute_halls.payment_id',
+            DB::raw("'banquetMarriageHall' as type"),
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_banqute_halls.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
+            ->where('mar_banqute_halls.id',$applicationId)
+            ->orderByDesc('mar_banqute_halls.id');
+            ////->get();
     }
 }

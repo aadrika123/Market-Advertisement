@@ -78,7 +78,7 @@ class BanquetMarriageHallController extends Controller
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->_userType = Config::get('workflow-constants.USER_TYPES');
-
+        $this->_offlineMode = Config::get('workflow-constants.OFFLINE_PAYMENT_MODE');
 
         $this->_wfMasterId = Config::get('workflow-constants.BANQUTE_HALL_WF_MASTER_ID');
     }
@@ -1170,7 +1170,7 @@ class BanquetMarriageHallController extends Controller
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
             $appDetails = MarBanquteHall::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req,$appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1801,7 +1801,7 @@ class BanquetMarriageHallController extends Controller
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
                     case 'mobileNo':
-                        $applications = $applications->where('mar_banqute_halls.mobile_no', 'LIKE', "%$parameter%");
+                        $applications = $applications->where('mar_banqute_halls.mobile', 'LIKE', "%$parameter%");
                         break;
                     case 'applicantName':
                         $applications = $applications->where('mar_banqute_halls.applicant', 'LIKE', "%$parameter%");
@@ -1814,6 +1814,214 @@ class BanquetMarriageHallController extends Controller
                 }
             }
 
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+
+    public function listJskRejectedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            //$userId = $request->auth['id'];
+            $mMarLodge = new MarRejectedBanquteHall();
+            $applications = $mMarLodge->listjskRejectedApplication();
+            if ($key && $parameter) {
+                $msg = "Banquet Hall application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mar_rejected_banqute_halls.mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('mar_rejected_banqute_halls.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('mar_rejected_banqute_halls.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new MarBanquteHall();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvAgency             = new MarBanquteHall();
+            $refDocUpload           = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvAgency->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function searchApplication(Request $request)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy' => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $user = Auth()->user();
+            $ulbId = $user->ulb_id ?? null;
+
+            $approved = MarBanquteHall::select('id', 'mobile','entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approved' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),'payment_status')
+                ->where('ulb_id', $ulbId);
+            $active = MarActiveBanquteHall::select('id', 'mobile','entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+                ->where('ulb_id', $ulbId);
+            $rejected = MarRejectedBanquteHall::select('id', 'mobile','entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+                ->where('ulb_id', $ulbId);
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
+
+            // Apply filters if present
+            if ($key && $parameter) {
+                $msg = "Lodge application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            // Paginate the results
             $paginatedData = $applications->paginate($pages);
 
             // Customize the pagination response

@@ -113,14 +113,14 @@ class MarHostel extends Model
             //$mMarHostel->payment_mode = "Cash";
             //$pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
-            $paymentMode= $req->paymentMode;
+            $mMarHostel->payment_mode= $req->paymentMode;
             //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarHostel->ulb_id);
             $pay_id = $idGeneration->generate();
-           
-            $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->citizen_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $mMarHostel->payment_id = $pay_id;
+            $payDetails = array('paymentMode' => $mMarHostel->paymentMode, 'id' => $req->applicationId, 'amount' => $mMarHostel->payment_amount, 'demand_amount' => $mMarHostel->demand_amount, 'workflowId' => $mMarHostel->workflow_id, 'userId' => $mMarHostel->user_id, 'ulbId' => $mMarHostel->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarHostel->payment_details = json_encode($payDetails);
 
@@ -138,7 +138,7 @@ class MarHostel extends Model
             // Renewal Table Updation
             $mMarHostelRenewal = MarHostelRenewal::find($renewal_id);
             $mMarHostelRenewal->payment_status = 1;
-            $mMarHostelRenewal->payment_mode = $paymentMode;
+            $mMarHostelRenewal->payment_mode = $mMarHostel->paymentMode;
             $mMarHostelRenewal->payment_id =  $pay_id;
             $mMarHostelRenewal->payment_date = Carbon::now();
             $mMarHostelRenewal->payment_amount = $mMarHostel->payment_amount;
@@ -238,6 +238,8 @@ class MarHostel extends Model
             'mar_hostels.license_no',
             'mar_hostels.workflow_id',
             'mar_hostels.application_no',
+            'mar_hostels.ulb_id',
+            'mar_hostels.no_of_beds',
             'mar_hostels.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
@@ -282,6 +284,7 @@ class MarHostel extends Model
             'mar_hostels.applicant as applicant_name',
             'mar_hostels.application_no',
             'mar_hostels.license_no',
+            'ulb_id',
             'mar_hostels.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
@@ -570,9 +573,48 @@ class MarHostel extends Model
             'mar_hostels.valid_upto',
             'mar_hostels.valid_from',
             'mar_hostels.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();
+    }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarHostel::select(
+            'mar_hostels.id',
+            'mar_hostels.application_no',
+            'mar_hostels.application_date',
+            'mar_hostels.entity_address',
+            'mar_hostels.entity_name',
+            'mar_hostels.applicant',
+            'mar_hostels.applicant as owner_name',
+            'mar_hostels.mobile as mobile_no',
+            'mar_hostels.payment_status',
+            'mar_hostels.payment_amount',
+            'mar_hostels.approve_date',
+            'mar_hostels.citizen_id',
+            'mar_hostels.ulb_id',
+            'mar_hostels.valid_upto',
+            'mar_hostels.workflow_id',
+            'mar_hostels.license_no',
+            'mar_hostels.application_type',
+            'mar_hostels.payment_id',
+            DB::raw("'hostel' as type"),
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_hostels.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
+            ->where('mar_hostels.id', $applicationId)
+            ->orderByDesc('mar_hostels.id');
+            //->get();
     }
 }

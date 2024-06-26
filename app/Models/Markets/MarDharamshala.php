@@ -225,6 +225,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.payment_details',
             'mar_dharamshalas.payment_mode',
             'mar_dharamshalas.floor_area',
+            'mar_dharamshalas.ulb_id',
             'mar_dharamshalas.application_date as applyDate',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
@@ -267,6 +268,7 @@ class MarDharamshala extends Model
             'mar_dharamshalas.applicant as applicant_name',
             'mar_dharamshalas.application_no',
             'mar_dharamshalas.license_no',
+            'ulb_id',
             'mar_dharamshalas.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
@@ -567,9 +569,48 @@ class MarDharamshala extends Model
             'mar_dharamshalas.valid_upto',
             'mar_dharamshalas.valid_from',
             'mar_dharamshalas.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();
+    }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarDharamshala::select(
+            'mar_dharamshalas.id',
+            'mar_dharamshalas.application_no',
+            'mar_dharamshalas.application_date',
+            'mar_dharamshalas.entity_address',
+            'mar_dharamshalas.payment_amount',
+            'mar_dharamshalas.entity_name',
+            'mar_dharamshalas.applicant',
+            'mar_dharamshalas.applicant as owner_name',
+            'mar_dharamshalas.mobile as mobile_no',
+            'mar_dharamshalas.approve_date',
+            'mar_dharamshalas.payment_status',
+            'mar_dharamshalas.citizen_id',
+            'mar_dharamshalas.ulb_id',
+            'mar_dharamshalas.valid_upto',
+            'mar_dharamshalas.workflow_id',
+            'mar_dharamshalas.license_no',
+            'mar_dharamshalas.application_type',
+            'mar_dharamshalas.payment_id',
+            DB::raw("'dharamshala' as type"),
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_dharamshalas.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_dharamshalas.ulb_id')
+            ->where('mar_dharamshalas.id', $applicationId)
+            ->orderByDesc('id');
+            //->get();
     }
 }

@@ -235,6 +235,8 @@ class MarLodge extends Model
             'mar_lodges.workflow_id',
             'mar_lodges.valid_from',
             'mar_lodges.valid_upto',
+            'mar_lodges.ulb_id',
+            'mar_lodges.no_of_beds',
             'ulb_masters.ulb_name as ulbName',
             'ulb_masters.logo as ulbLogo',
             'ulb_masters.toll_free_no',
@@ -278,6 +280,7 @@ class MarLodge extends Model
             'mar_lodges.applicant as applicant_name',
             'mar_lodges.application_no',
             'mar_lodges.license_no',
+            'ulb_id',
             'mar_lodges.payment_date as license_start_date',
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
@@ -565,9 +568,47 @@ class MarLodge extends Model
             'mar_lodges.valid_upto',
             'mar_lodges.valid_from',
             'mar_lodges.user_id',
+            'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->orderByDesc('id');
         //->get();
+    }
+
+    public function getDetailsById($applicationId)
+    {
+        return MarLodge::select(
+            'mar_lodges.id',
+            'mar_lodges.application_no',
+            'mar_lodges.application_date',
+            'mar_lodges.entity_address',
+            'mar_lodges.entity_name',
+            'mar_lodges.applicant',
+            'mar_lodges.applicant as owner_name',
+            'mar_lodges.mobile as mobile_no',
+            'mar_lodges.payment_amount',
+            'mar_lodges.payment_status',
+            'mar_lodges.approve_date',
+            'mar_lodges.citizen_id',
+            'mar_lodges.ulb_id',
+            'mar_lodges.valid_upto',
+            'mar_lodges.workflow_id',
+            'mar_lodges.license_no',
+            'mar_lodges.application_type',
+            'mar_lodges.payment_id',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'holding_no',
+            'father',
+            'mar_lodges.email',
+            'aadhar_card as aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+            ->where('mar_lodges.id', $applicationId)
+            ->orderByDesc('mar_lodges.id');
+            //->get();
     }
 }

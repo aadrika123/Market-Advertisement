@@ -100,7 +100,7 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.verify_status'
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId)
-            ->where('adv_mar_transactions.module_type', '=', "Advertisement");
+            ->where('adv_mar_transactions.module_type', '=', "Market");
         //->get();
     }
 

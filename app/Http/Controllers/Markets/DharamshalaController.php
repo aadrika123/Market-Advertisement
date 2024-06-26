@@ -73,7 +73,7 @@ class DharamshalaController extends Controller
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->_userType = Config::get('workflow-constants.USER_TYPES');
-
+        $this->_offlineMode = Config::get('workflow-constants.OFFLINE_PAYMENT_MODE');
         $this->_wfMasterId = Config::get('workflow-constants.DHARAMSHALA_WF_MASTER_ID');
     }
     /**
@@ -1172,7 +1172,7 @@ class DharamshalaController extends Controller
             DB::beginTransaction();
             $data = $mMarDharamshala->paymentByCash($req);
             $appDetails = MarDharamshala::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req,$appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1741,7 +1741,7 @@ class DharamshalaController extends Controller
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
                     case 'mobileNo':
-                        $applications = $applications->where('mar_dharamshalas.mobile_no', 'LIKE', "%$parameter%");
+                        $applications = $applications->where('mar_dharamshalas.mobile', 'LIKE', "%$parameter%");
                         break;
                     case 'applicantName':
                         $applications = $applications->where('mar_dharamshalas.applicant', 'LIKE', "%$parameter%");
@@ -1754,6 +1754,266 @@ class DharamshalaController extends Controller
                 }
             }
 
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function listJskRejectedApplication(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            //$userId = $request->auth['id'];
+            $mMarLodge = new MarRejectedDharamshala();
+            $applications = $mMarLodge->listjskRejectedApplication();
+            if ($key && $parameter) {
+                $msg = "Hostel application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mar_rejected_dharamshalas.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('mar_rejected_dharamshalas.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('mar_rejected_dharamshalas.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            $paginatedData = $applications->paginate($pages);
+
+            // Customize the pagination response
+            $customData = [
+                'current_page' => $paginatedData->currentPage(),
+                'data' => $paginatedData->items(),
+                'last_page' => $paginatedData->lastPage(),
+                'per_page' => $paginatedData->perPage(),
+                'total' => $paginatedData->total()
+            ];
+
+            if ($paginatedData->isEmpty()) {
+                $msg = "No data found";
+            }
+
+            return responseMsgs(true, $msg, $customData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function getApproveDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new MarDharamshala();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvAgency             = new MarDharamshala();
+            $refDocUpload           = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvAgency->getDetailsById($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function searchApplication(Request $request)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy' => 'nullable|in:mobileNo,applicantName,applicationNo',
+                'parameter' => 'nullable',
+                'perPage' => 'nullable|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $key = $request->filterBy;
+            $parameter = $request->parameter;
+            $pages = $request->perPage ?? 10;
+            $msg = "Pending application list";
+            $user = Auth()->user();
+            $ulbId = $user->ulb_id ?? null;
+
+            // Base queries with placeholders for missing columns
+            $approved = MarDharamshala::select(
+                'id',
+                'mobile',
+                'entity_address',
+                'entity_name',
+                'application_no',
+                'applicant',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+                'application_type',
+                'entity_ward_id',
+                'rule',
+                'organization_type',
+                'ulb_id',
+                'license_year',
+                DB::raw("'Approved' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                'payment_status'
+            )->where('ulb_id', $ulbId);
+
+            $active = MarActiveDharamshala::select(
+                'id',
+                'mobile',
+                'entity_address',
+                'entity_name',
+                'application_no',
+                'applicant',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+                'application_type',
+                'entity_ward_id',
+                'rule',
+                'organization_type',
+                'ulb_id',
+                'license_year',
+                DB::raw("'Active' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                DB::raw(" 0 as payment_status")
+            )->where('ulb_id', $ulbId);
+
+            $rejected = MarRejectedDharamshala::select(
+                'id',
+                'mobile',
+                'entity_address',
+                'entity_name',
+                'application_no',
+                'applicant',
+                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+                'application_type',
+                'entity_ward_id',
+                'rule',
+                'organization_type',
+                'ulb_id',
+                'license_year',
+                DB::raw("'Reject' as application_status"),
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                DB::raw(" 0 as payment_status")
+            )->where('ulb_id', $ulbId);
+
+            // Combine queries with union
+            $applications = $approved->union($active)->union($rejected);
+
+            // Apply filters if present
+            if ($key && $parameter) {
+                $msg = "Lodge application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
+
+            // Paginate the results
             $paginatedData = $applications->paginate($pages);
 
             // Customize the pagination response
