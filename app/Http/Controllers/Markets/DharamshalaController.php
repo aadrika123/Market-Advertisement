@@ -1950,7 +1950,8 @@ class DharamshalaController extends Controller
                 'ulb_id',
                 'license_year',
                 DB::raw("'Approved' as application_status"),
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                'payment_status'
             )->where('ulb_id', $ulbId);
 
             $active = MarActiveDharamshala::select(
@@ -1968,7 +1969,8 @@ class DharamshalaController extends Controller
                 'ulb_id',
                 'license_year',
                 DB::raw("'Active' as application_status"),
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                DB::raw(" 0 as payment_status")
             )->where('ulb_id', $ulbId);
 
             $rejected = MarRejectedDharamshala::select(
@@ -1986,7 +1988,8 @@ class DharamshalaController extends Controller
                 'ulb_id',
                 'license_year',
                 DB::raw("'Reject' as application_status"),
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+                DB::raw(" 0 as payment_status")
             )->where('ulb_id', $ulbId);
 
             // Combine queries with union
