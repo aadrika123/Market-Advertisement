@@ -408,6 +408,8 @@ class MarActiveLodge extends Model
             'mar_active_lodges.id',
             'application_no',
             'entity_ward_id',
+            'btc_date',
+            'remarks',
             DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
             'mar_active_lodges.application_type',
             'mar_active_lodges.applicant',
