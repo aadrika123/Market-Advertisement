@@ -1020,6 +1020,8 @@ class DharamshalaController extends Controller
             }
 
             $mMarActiveDharamshala->current_role_id = $backId->wf_role_id;
+            $mMarActiveDharamshala->btc_date =  Carbon::now()->format('Y-m-d');
+            $mMarActiveDharamshala->remarks = $req->comment;
             $mMarActiveDharamshala->parked = 1;
             $mMarActiveDharamshala->save();
 

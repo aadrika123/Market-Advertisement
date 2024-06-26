@@ -544,4 +544,27 @@ class MarActiveBanquteHall extends Model
     {
         return MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"));
     }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_banqute_halls.application_type',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.applicant as owner_name',
+            'mar_active_banqute_halls.entity_name',
+            'mar_active_banqute_halls.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_banqute_halls.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_banqute_halls.user_id')
+            ->where('mar_active_banqute_halls.ulb_id', $ulbId);
+    }
 }

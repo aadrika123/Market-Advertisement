@@ -1091,6 +1091,8 @@ class HostelController extends Controller
             }
 
             $mMarActiveHostel->current_role_id = $backId->wf_role_id;
+            $mMarActiveHostel->btc_date =  Carbon::now()->format('Y-m-d');
+            $mMarActiveHostel->remarks = $req->comment;
             $mMarActiveHostel->parked = 1;
             $mMarActiveHostel->save();
 

@@ -429,6 +429,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/bm-hall/view-approve-document', 'getUploadDocuments');
         Route::post('market/bm-hall/search-application', 'searchApplication');
+        Route::post('market/bm-hall/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
     });
 
     /**
