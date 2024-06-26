@@ -1015,6 +1015,8 @@ class LodgeController extends Controller
             }
 
             $mMarActiveLodge->current_role_id = $backId->wf_role_id;
+            $mMarActiveLodge->btc_date =  Carbon::now()->format('Y-m-d');
+            $mMarActiveLodge->remarks = $req->comment;
             $mMarActiveLodge->parked = 1;
             $mMarActiveLodge->save();
 
