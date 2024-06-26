@@ -2045,7 +2045,7 @@ class LodgeController extends Controller
             });
 
             $mMarActiveLodge = new MarActiveLodge();
-            $btcList = $mMarActiveLodge->getLodgeList($ulbId)
+            $btcList = $mMarActiveLodge->getLodgeListJsk($ulbId)
                 //->whereIn('mar_active_lodges.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)

@@ -177,7 +177,7 @@ class MarActiveLodge extends Model
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId']??null;
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
             $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
             $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
@@ -399,6 +399,23 @@ class MarActiveLodge extends Model
     public function getLodgeList($ulbId)
     {
         return MarActiveLodge::select('*')
+            ->where('mar_active_lodges.ulb_id', $ulbId);
+    }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveLodge::select(
+            'mar_active_lodges.id',
+            'application_no',
+            DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_lodges.application_type',
+            'mar_active_lodges.applicant',
+            'mar_active_lodges.applicant as owner_name',
+            'mar_active_lodges.entity_name',
+            'mobile as mobile_no',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            DB::raw("'DA' as btc_by")
+        )
             ->where('mar_active_lodges.ulb_id', $ulbId);
     }
 
