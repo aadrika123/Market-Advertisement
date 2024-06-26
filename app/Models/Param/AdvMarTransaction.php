@@ -110,4 +110,59 @@ class AdvMarTransaction extends Model
             ->where('verify_status', 0)
             ->where('transaction_date', $date);
     }
+
+    public function getTransByTranNo($tranNo)
+    {
+        return DB::table('adv_mar_transactions as t')
+            ->select(
+                't.id as transaction_id',
+                't.tran_no as transaction_no',
+                't.amount',
+                't.payment_mode',
+                't.tran_date',
+                't.tran_type as module_name',
+                DB::raw("
+                CASE
+                    WHEN t.property_id is not null THEN t.property_id
+                    ELSE t.saf_id
+                END as application_id
+            "),
+                DB::raw('1 as moduleId'),
+                't.status'
+            )
+            ->where('t.tran_no', $tranNo)
+            ->where('status', 1);
+            
+    }
+
+    /**
+     * | Cheque Dtl And Transaction Dtl
+     */
+    public function chequeTranDtl($ulbId)
+    {
+        return AdvMarTransaction::select(
+            'adv_cheque_dtls.*',
+            DB::raw("1 as module_id"),
+            DB::raw(
+                "case when prop_transactions.property_id is not null then 'Property' when 
+                prop_transactions.saf_id is not null then 'Saf' end as tran_type"
+            ),
+            DB::raw("TO_CHAR(tran_date, 'DD-MM-YYYY') as tran_date"),
+            'tran_no',
+            'payment_mode',
+            'amount',
+            DB::raw("TO_CHAR(cheque_date, 'DD-MM-YYYY') as cheque_date"),
+            "bank_name",
+            "branch_name",
+            "bounce_status",
+            "cheque_no",
+            DB::raw("TO_CHAR(clear_bounce_date, 'DD-MM-YYYY') as clear_bounce_date"),
+            "users.name as user_name"
+        )
+            ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', 'prop_transactions.id')
+            ->join('users', 'users.id', 'prop_cheque_dtls.user_id')
+            ->whereIn('payment_mode', ['CHEQUE', 'DD'])
+            // ->where('prop_transactions.status', 1)
+            ->where('prop_transactions.ulb_id', $ulbId);
+    }
 }

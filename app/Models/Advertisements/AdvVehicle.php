@@ -168,9 +168,9 @@ class AdvVehicle extends Model
     }
 
     /**
-     * | Payment By Cash
+     * | offline Payment
      */
-    public function paymentByCash($req)
+    public function offlinePayment($req)
     {
 
         if ($req->status == '1') {
@@ -207,7 +207,7 @@ class AdvVehicle extends Model
             $mAdvVehicleRenewal->payment_status = 1;
             $mAdvVehicleRenewal->payment_id =  $pay_id;
             $mAdvVehicleRenewal->payment_date = Carbon::now();
-            $mAdvVehicleRenewal->payment_mode = "Cash";
+            $mAdvVehicleRenewal->payment_mode = $PaymentMode;
             $mAdvVehicleRenewal->payment_amount = $mAdvVehicle->payment_amount;
             $mAdvVehicleRenewal->demand_amount = $mAdvVehicle->demand_amount;
             $mAdvVehicleRenewal->valid_from = $mAdvVehicle->valid_from;

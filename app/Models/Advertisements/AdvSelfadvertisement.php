@@ -171,9 +171,9 @@ class AdvSelfadvertisement extends Model
         return $details;
     }
     /**
-     * | Payment By Cash
+     * | offline Payment
      */
-    public function paymentByCash($req)
+    public function offlinePayment($req)
     {
         if ($req->status == '1') {
             // Self Advertisement Table Update
@@ -207,7 +207,7 @@ class AdvSelfadvertisement extends Model
             $mAdvSelfAdvertRenewal->payment_status = 1;
             $mAdvSelfAdvertRenewal->payment_id =  $pay_id;
             $mAdvSelfAdvertRenewal->payment_date = Carbon::now();
-            $mAdvSelfAdvertRenewal->payment_mode = "Cash";
+            $mAdvSelfAdvertRenewal->payment_mode = $PaymentMode;
             $mAdvSelfAdvertRenewal->payment_amount =  $mAdvSelfadvertisement->payment_amount;
             $mAdvSelfAdvertRenewal->demand_amount =  $mAdvSelfadvertisement->demand_amount;
             $mAdvSelfAdvertRenewal->valid_from = $mAdvSelfadvertisement->valid_from;

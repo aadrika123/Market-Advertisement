@@ -2010,7 +2010,7 @@ class SelfAdvetController extends Controller
     }
 
 
-    public function paymentByCash(Request $req)
+    public function selfAdvPayment(Request $req)
     {
         $mAdvSelfadvertisement = new AdvSelfadvertisement();
         $rules = [
@@ -2043,7 +2043,7 @@ class SelfAdvetController extends Controller
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
 
-            $data = $mAdvSelfadvertisement->paymentByCash($req);
+            $data = $mAdvSelfadvertisement->offlinePayment($req);
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $req->merge($appDetails->toArray());
 

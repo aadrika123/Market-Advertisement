@@ -15,6 +15,7 @@ use App\Models\Advertisements\AdvRejectedVehicle;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Param\AdvMarTransactions;
+use App\Models\Payment\TempTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Http\Request;
@@ -1163,7 +1164,7 @@ class VehicleAdvetController extends Controller
      * | Function - 24
      * | API - 23
      */
-    public function paymentByCash(Request $req)
+    public function vehiclePayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'applicationId' => 'required|string',
@@ -1179,7 +1180,7 @@ class VehicleAdvetController extends Controller
             $todayDate = Carbon::now();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
-            $data = $mAdvVehicle->paymentByCash($req);
+            $data = $mAdvVehicle->offlinePayment($req);
             $appDetails = AdvVehicle::find($req->applicationId);
             $transactionId = $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
 

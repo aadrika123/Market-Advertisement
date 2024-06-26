@@ -1237,7 +1237,7 @@ class HostelController extends Controller
             DB::beginTransaction();
             $data = $mMarHostel->paymentByCash($req);
             $appDetails = MarHostel::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req,$appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1276,12 +1276,13 @@ class HostelController extends Controller
             $chequeReqs = [
                 'user_id' => $req['empId'],
                 'application_id' => $req->applicationId,
-                'transaction_id' => $req['tranNo'],
+                'transaction_id' => $req['transactionId'],
                 'cheque_date' => $req['chequeDate'],
                 'bank_name' => $req['bankName'],
                 'branch_name' => $req['branchName'],
                 'cheque_no' => $req['chequeNo'],
-                'workflow_id' => $req['workflowId']
+                'workflow_id' => $req['workflowId'],
+                'transaction_no' => $req['tranNo']
             ];
             $mChequeDtl->entryChequeDd($chequeReqs);
         }

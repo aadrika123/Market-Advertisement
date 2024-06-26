@@ -186,20 +186,17 @@ class AdvPrivateland extends Model
         if ($req->status == '1') {
             // Self Privateland Table Update
             $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
-            $mAdvPrivateland->payment_status = $req->status;
-            $mAdvPrivateland->payment_mode = "Cash";
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
-            // $pay_id = $mAdvPrivateland->payment_id = "Cash-$req->applicationId-" . time();
-            $idGeneration  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
+            $mAdvPrivateland->payment_status = $req->status;
+            $PaymentMode = $req->paymentMode;
+            $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
             $pay_id = $idGeneration->generate();
 
             $mAdvPrivateland->payment_id = $pay_id;
-
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvPrivateland->payment_date = Carbon::now();
-            // $mAdvPrivateland->payment_details = "By Cash";
 
-            $payDetails = array('paymentMode' => 'Cash', 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
+            $payDetails = array('paymentMode' =>  $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvPrivateland->payment_amount, 'demand_amount' => $mAdvPrivateland->demand_amount, 'workflowId' => $mAdvPrivateland->workflow_id, 'userId' => $mAdvPrivateland->citizen_id, 'ulbId' => $mAdvPrivateland->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvPrivateland->payment_details = json_encode($payDetails);
             if ($mAdvPrivateland->renew_no == NULL) {
@@ -217,7 +214,7 @@ class AdvPrivateland extends Model
             // Privateland Renewal Table Updation
             $mAdvPrivatelandRenewal = AdvPrivatelandRenewal::find($renewal_id);
             $mAdvPrivatelandRenewal->payment_status = 1;
-            $mAdvPrivatelandRenewal->payment_mode = "Cash";
+            $mAdvPrivatelandRenewal->payment_mode =  $PaymentMode;
             $mAdvPrivatelandRenewal->payment_id =  $pay_id;
             $mAdvPrivatelandRenewal->payment_date = Carbon::now();
             $mAdvPrivatelandRenewal->payment_amount = $mAdvPrivateland->payment_amount;

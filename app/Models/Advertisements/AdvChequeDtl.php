@@ -66,6 +66,7 @@ class AdvChequeDtl extends Model
             'bank_name' => $req['bank_name'],
             'branch_name' => $req['branch_name'],
             'cheque_no' => $req['cheque_no'],
+            'transaction_id' => $req['cheque_no'],
             'cheque_date' => Carbon::now(),
             'transaction_no' => $financial_year
         ]);

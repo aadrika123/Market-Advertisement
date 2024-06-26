@@ -143,4 +143,10 @@ return [
   "API_KEY" => "eff41ef6-d430-4887-aa55-9fcf46c72c99",
   "FILE_URL" => env("FILE_URL"),
 
+  "SELF-ADVERTISEMENT"      => "18",
+  "MOVABLE-VEHICLE"         => "19",
+  "PRIVATE-LAND"            => "21",
+  "AGENCY"                  => "20",
+  "CASH_VERIFICATION_PARAM_ID"  => 33,
+
 ];

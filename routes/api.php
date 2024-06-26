@@ -13,6 +13,8 @@ use App\Http\Controllers\Markets\HostelController;
 use App\Http\Controllers\Markets\DharamshalaController;
 use App\Http\Controllers\Markets\ReportController;
 use App\Http\Controllers\Params\ParamController;
+use App\Http\Controllers\Payment\BankReconcillationController;
+use App\Http\Controllers\Payment\CashVerificationController;
 use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
 use SebastianBergmann\CodeCoverage\Report\Xml\Report;
@@ -82,7 +84,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/generate-payment-order-id', 'generatePaymentOrderId');                         // 25 ( Generate Payment Order ID)
         Route::post('advert/self/get-application-details-for-payment', 'applicationDetailsForPayment');         // 26 ( Application Details For Payments )
         // Route::post('advert/self/get-payment-details', 'getPaymentDetails');                                 // 19 ( Payments Details )
-        Route::post('advert/self/payment-by-cash', 'paymentByCash');                                            // 27 ( Payment via Cash )
+        Route::post('advert/self/payment-by-cash', 'selfAdvPayment');                                            // 27 ( Payment via Cash )
         Route::post('advert/self/entry-cheque-dd', 'entryChequeDd');                                            // 28 ( Entry Cheque or DD For Payments )
         Route::post('advert/self/clear-or-bounce-cheque', 'clearOrBounceCheque');                               // 29 ( Clear Cheque or DD )
         Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');                                   // 30 ( Verify or Reject Document )
@@ -159,7 +161,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle/generate-payment-order-id', 'generatePaymentOrderId');                      // 21 ( Generate Payment Order ID)
         Route::post('advert/vehicle/get-application-details-for-payment', 'getApplicationDetailsForPayment');   // 22 ( Application Details For Payments )
         // Route::post('advert/vehicle/get-payment-details', 'getPaymentDetails');                              // 19 ( Application Details For Payments )
-        Route::post('advert/vehicle/payment-by-cash', 'paymentByCash');                                         // 23 ( Payment Via Cash )
+        Route::post('advert/vehicle/payment-by-cash', 'vehiclePayment');                                         // 23 ( Payment Via Cash )
         Route::post('advert/vehicle/entry-cheque-dd', 'entryChequeDd');                                         // 24 ( Entry Cheque or DD For Payments )
         Route::post('advert/vehicle/clear-or-bounce-cheque', 'clearOrBounceCheque');                            // 25 ( Clear or Bouns Cheque For Payments )
         Route::post('advert/vehicle/entry-zone', 'entryZone');                                                  // 26 ( Entry Zone by Permitted Canidate )
@@ -559,5 +561,20 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/organizationTypeApplicationReport', 'organizationTypeWiseApplication');
         Route::post('market/hostelTypeApplicationReport', 'hostelTypeWiseApplication');
         Route::post('market/lodgeTypeApplicationReport', 'lodgeTypeWiseApplication');
+    });
+
+    /**
+     * | created on = 25/06/2024
+     * | created by = Arshad Hussain 
+     * | Payment Cash Verification
+     */
+    Route::controller(CashVerificationController::class)->group(function () {
+        Route::post('advert/list-cash-verification', 'cashVerificationList');              //01
+        Route::post('advert/tc-collections', 'tcCollectionDtl');                           //03
+        Route::post('advert/verify-cash', 'cashVerify');                                   //05
+    });
+
+    Route::controller(BankReconcillationController::class)->group(function () {
+        Route::post('search-transaction', 'searchTransaction');
     });
 });

@@ -14,6 +14,7 @@ use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvRejectedPrivateland;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\Payment\TempTransaction;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 
@@ -63,9 +64,12 @@ class PrivateLandController extends Controller
     protected $_baseUrl;
     protected $_wfMasterId;
     protected $_fileUrl;
+    protected $_offlineMode;
+    protected $_moduleIds;
     public function __construct(iSelfAdvetRepo $privateland_repo)
     {
         $this->_modelObj = new AdvActivePrivateland();
+        $this->_moduleIds = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         // $this->_workflowIds = Config::get('workflow-constants.PRIVATE_LANDS_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.PRIVATE_LANDS_DOC_CODE');
@@ -74,6 +78,7 @@ class PrivateLandController extends Controller
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
         $this->Repository = $privateland_repo;
+        $this->_offlineMode                 = Config::get("workflow-constants.OFFLINE_PAYMENT_MODE");
 
         $this->_wfMasterId = Config::get('workflow-constants.PRIVATE_LAND_WF_MASTER_ID');
     }
@@ -682,7 +687,7 @@ class PrivateLandController extends Controller
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
-            'remarks'=>'nullable|string'
+            'remarks' => 'nullable|string'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1172,13 +1177,29 @@ class PrivateLandController extends Controller
         }
         try {
             // Variable initialization
-
+            $user = authUser($req);
+            $todayDate = Carbon::now();
             $mAdvPrivateland = new AdvPrivateland();
             $mAdvMarTransaction = new AdvMarTransaction();
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
             $appDetails = AdvPrivateland::find($req->applicationId);
-            $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
+            $transactionId = $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
+            $req->merge([
+                'empId' => $user->id,
+                'userType' => $user->user_type,
+                'todayDate' => $todayDate->format('Y-m-d'),
+                'tranNo' => $appDetails->payment_id,
+                'ulbId' => $user->ulb_id,
+                'isJsk' => true,
+                'tranType' => $appDetails->application_type,
+                'amount' => $appDetails->payment_amount,
+                'applicationId' => $appDetails->id,
+                'workflowId' => $appDetails->workflow_id,
+                'transactionId' => $transactionId
+            ]);
+            // Save data in temp transaction
+            $this->postOtherPaymentModes($req);
             DB::commit();
 
 
@@ -1192,6 +1213,51 @@ class PrivateLandController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050423", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+    # save Transaction data 
+    public function postOtherPaymentModes($req)
+    {
+        $paymentMode = $this->_offlineMode;
+        $moduleId = $this->_moduleIds;
+        $mTempTransaction = new TempTransaction();
+        $mChequeDtl = new AdvChequeDtl();
+
+        if ($req->paymentMode != $paymentMode[3]) {  // Not Cash
+            $chequeReqs = [
+                'user_id' => $req['empId'],
+                'application_id' => $req->applicationId,
+                'transaction_id' => $req['tranNo'],
+                'cheque_date' => $req['chequeDate'],
+                'bank_name' => $req['bankName'],
+                'branch_name' => $req['branchName'],
+                'cheque_no' => $req['chequeNo'],
+                'workflow_id' => $req['workflowId']
+            ];
+            $mChequeDtl->entryChequeDd($chequeReqs);
+        }
+
+        $tranReqs = [
+            'transaction_id' => $req['transactionId'],
+            'application_id' => $req->applicationId,
+            'module_id' => $moduleId,
+            'workflow_id' => $req['workflowId'],
+            'transaction_no' => $req['tranNo'],
+            'application_no' => $req['applicationId'],
+            'amount' => $req['amount'],
+            'payment_mode' => strtoupper($req['paymentMode']),
+            'cheque_dd_no' => $req['chequeNo'],
+            'bank_name' => $req['bankName'],
+            'tran_date' => $req['todayDate'],
+            'user_id' => $req['empId'],
+            'ulb_id' => $req['ulbId'],
+            'ward_no' => $req['ref_ward_id']
+        ];
+
+        $mTempTransaction->tempTransaction($tranReqs);
+    }
+
+
+
 
     /**
      * | Entry Cheque or dd for payment
