@@ -413,11 +413,13 @@ class MarActiveLodge extends Model
             'mar_active_lodges.applicant',
             'mar_active_lodges.applicant as owner_name',
             'mar_active_lodges.entity_name',
-            'mobile as mobile_no',
-            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'mar_active_lodges.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
             'wr.role_name as btc_by',
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_lodges.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_lodges.user_id')
             ->where('mar_active_lodges.ulb_id', $ulbId);
     }
 
