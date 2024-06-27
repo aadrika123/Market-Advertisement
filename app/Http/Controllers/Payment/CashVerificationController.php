@@ -306,6 +306,7 @@ class CashVerificationController extends Controller
     }
 
     #================================================================ Market =======================================#
+    #============================== Lodge ========= #
     /**
      * lodge Cash Verification
      */
@@ -321,13 +322,85 @@ class CashVerificationController extends Controller
         return $this->getCollectionByWorkflow($request, $selfAdvertisementworkflow);
     }
     /**
-     * |SELF SDVERTISEMENT
+     * |
      */
     public function lodgeCashVerify(Request $request)
     {
         return $this->verifyCash($request, 'lodge');
     }
+    #================ Banquet ======================#  
+    /**
+     * | 
+     */
+    public function banquetCashVerificationList(Request $request)
+    {
+        $lodgewWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        return $this->cashVerificationListByWorkflow($request, $lodgewWorkflow);
+    }
+    /**
+     * |
+     */
+    public function  banquetCollection(Request $request)
+    {
+        $selfAdvertisementworkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+        return $this->getCollectionByWorkflow($request, $selfAdvertisementworkflow);
+    }
+    /**
+     * |
+     */
+    public function banquetCashVerify(Request $request)
+    {
+        return $this->verifyCash($request, 'banquet');
+    }
+    #================ DharamShala ======================#  
+    /**
+     * | 
+     */
+    public function dharamCashVerificationList(Request $request)
 
+    {
+        $lodgewWorkflow = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+        return $this->cashVerificationListByWorkflow($request, $lodgewWorkflow);
+    }
+    /**
+     * |
+     */
+    public function  dharamCollection(Request $request)
+    {
+        $selfAdvertisementworkflow = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+        return $this->getCollectionByWorkflow($request, $selfAdvertisementworkflow);
+    }
+    /**
+     * |
+     */
+    public function dharamCashVerify(Request $request)
+    {
+        return $this->verifyCash($request, 'dharamshala');
+    }
+    #================ Hostel ======================#  
+    /**
+     * | 
+     */
+    public function hostelCashVerificationList(Request $request)
+    {
+        $lodgewWorkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        return $this->cashVerificationListByWorkflow($request, $lodgewWorkflow);
+    }
+    /**
+     * |
+     */
+    public function  hostelCollection(Request $request)
+    {
+        $selfAdvertisementworkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+        return $this->getCollectionByWorkflow($request, $selfAdvertisementworkflow);
+    }
+    /**
+     * |
+     */
+    public function hostelCashVerify(Request $request)
+    {
+        return $this->verifyCash($request, 'hostel');
+    }
     #================================================================== End ============================================================================# 
     /**
      * | For Verification of cash
