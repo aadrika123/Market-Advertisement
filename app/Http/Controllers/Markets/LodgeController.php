@@ -391,7 +391,7 @@ class LodgeController extends Controller
             'applicationId' => 'required|integer',
             'senderRoleId' => 'required|integer',
             'receiverRoleId' => 'required|integer',
-            'comment' => 'required',
+            'comment' => 'nullable',
         ]);
 
         try {
