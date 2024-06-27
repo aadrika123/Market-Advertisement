@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Param\AdvMarTransaction;
 use Carbon\Carbon;
 use Exception;
@@ -22,7 +23,7 @@ class BankReconcillationController extends Controller
             $validator = Validator::make($request->all(), [
                 'fromDate' => 'required',
                 'toDate' => 'required',
-                'moduleId' => 'required'
+                'workflowID' => 'required'
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -32,7 +33,7 @@ class BankReconcillationController extends Controller
                 ]);
             }
             $ulbId = authUser($request)->ulb_id;
-            $moduleId = $request->moduleId;
+            $workflowID = $request->workflowID;
             $paymentMode = $request->paymentMode;
             $verifyStatus = $request->verificationType;
             $fromDate = Carbon::create($request->fromDate)->format('Y-m-d');
@@ -44,11 +45,10 @@ class BankReconcillationController extends Controller
             $mAdvMarTransaction = new AdvMarTransaction();
             // $mTradeTransaction = new TradeTransaction();
             // $mWaterTran = new WaterTran();
-
-            if ($moduleId == $selfAdvertisementworkflow) {
+            if ($workflowID == $selfAdvertisementworkflow) {
                 $chequeTranDtl  = $mAdvMarTransaction->chequeTranDtl($ulbId);
                 if ($request->verificationType != "bounce") {
-                    $chequeTranDtl = $chequeTranDtl->where("prop_transactions.status", 1);
+                    $chequeTranDtl = $chequeTranDtl->where("adv_mar_transactions.status", 1);
                 }
                 if ($request->chequeNo) {
                     $data =  $chequeTranDtl
@@ -57,16 +57,16 @@ class BankReconcillationController extends Controller
                 }
                 if (!isset($data)) {
                     $data = $chequeTranDtl
-                        ->whereBetween('tran_date', [$fromDate, $toDate])
+                        ->whereBetween('transaction_date', [$fromDate, $toDate])
                         ->get();
                 }
             }
 
-            if ($moduleId == $movablevehicleWorkflow) {
+            if ($workflowID == $movablevehicleWorkflow) {
 
                 $chequeTranDtl  = $mAdvMarTransaction->chequeTranDtl($ulbId);
                 if ($request->verificationType != "bounce") {
-                    $chequeTranDtl = $chequeTranDtl->where("water_trans.status", 1);
+                    $chequeTranDtl = $chequeTranDtl->where("adv_mar_transactions.status", 1);
                 }
 
                 if ($request->chequeNo) {
@@ -76,12 +76,12 @@ class BankReconcillationController extends Controller
                 }
                 if (!isset($data)) {
                     $data = $chequeTranDtl
-                        ->whereBetween('tran_date', [$fromDate, $toDate])
+                        ->whereBetween('transaction_date', [$fromDate, $toDate])
                         ->get();
                 }
             }
 
-            if ($moduleId == $privateLandWorkflow) {
+            if ($workflowID == $privateLandWorkflow) {
                 $chequeTranDtl  = $mAdvMarTransaction->chequeTranDtl($ulbId);
 
                 if ($request->chequeNo) {
@@ -91,11 +91,11 @@ class BankReconcillationController extends Controller
                 }
                 if (!isset($data)) {
                     $data = $chequeTranDtl
-                        ->whereBetween('tran_date', [$fromDate, $toDate])
+                        ->whereBetween('transaction_date', [$fromDate, $toDate])
                         ->get();
                 }
             }
-            if ($moduleId == $agencyWorkflow) {
+            if ($workflowID == $agencyWorkflow) {
                 $chequeTranDtl  = $mAdvMarTransaction->chequeTranDtl($ulbId);
 
                 if ($request->chequeNo) {
@@ -105,7 +105,7 @@ class BankReconcillationController extends Controller
                 }
                 if (!isset($data)) {
                     $data = $chequeTranDtl
-                        ->whereBetween('tran_date', [$fromDate, $toDate])
+                        ->whereBetween('transaction_date', [$fromDate, $toDate])
                         ->get();
                 }
             }
@@ -145,6 +145,57 @@ class BankReconcillationController extends Controller
                 return responseMsgs(true, "Data Acording to request!", $data, '010801', '01', '382ms-547ms', 'Post', '');
             }
             return responseMsg(false, "data not found!", "");
+        } catch (Exception $error) {
+            return responseMsg(false, "ERROR!", $error->getMessage());
+        }
+    }
+
+
+    /**
+     * | 2
+     */
+    public function chequeDtlById(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'moduleId' => 'required',
+                'chequeId' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['status' => False, 'msg' => $validator()->errors()]);
+            }
+
+            $moduleId = $request->moduleId;
+            $propertyModuleId = Config::get('module-constants.PROPERTY_MODULE_ID');
+            $waterModuleId = Config::get('module-constants.WATER_MODULE_ID');
+            $tradeModuleId = Config::get('module-constants.TRADE_MODULE_ID');
+            $mAdvChequDtl = new AdvChequeDtl();
+            // $mTradeChequeDtl = new TradeChequeDtl();
+            // $mWaterChequeDtl = new WaterChequeDtl();
+
+
+            switch ($moduleId) {
+                    //Property
+                case ($propertyModuleId):
+                    $data = $mAdvChequDtl->chequeDtlById($request);
+                    break;
+
+                    //Water
+                case ($waterModuleId):
+                    $data = $mAdvChequDtl->chequeDtlById($request);
+                    break;
+
+                    //Trade
+                case ($tradeModuleId):
+                    $data = $mAdvChequDtl->chequeDtlById($request);
+                    break;
+            }
+
+            if ($data)
+                return responseMsg(true, "data found", $data);
+            else
+                return responseMsg(false, "data not found!", "");
         } catch (Exception $error) {
             return responseMsg(false, "ERROR!", $error->getMessage());
         }

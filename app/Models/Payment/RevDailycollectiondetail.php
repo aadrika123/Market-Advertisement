@@ -12,7 +12,7 @@ class RevDailycollectiondetail extends Model
 
     protected $fillable = [
         "collection_id", "module_id", "demand", "deposit_amount", "cheq_dd_no",
-        "bank_name", "deposit_mode", "application_no", "transaction_id"
+        "bank_name", "deposit_mode", "application_no", "transaction_id","workflow_id"
     ];
 
     public function store($req)

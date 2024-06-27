@@ -15,6 +15,7 @@ use App\Models\Advertisements\AdvRejectedPrivateland;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\TempTransaction;
+use App\Models\Property\PropProperty;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 
@@ -1226,12 +1227,13 @@ class PrivateLandController extends Controller
             $chequeReqs = [
                 'user_id' => $req['empId'],
                 'application_id' => $req->applicationId,
-                'transaction_id' => $req['tranNo'],
+                'transaction_id' => $req['transactionId'],
                 'cheque_date' => $req['chequeDate'],
                 'bank_name' => $req['bankName'],
                 'branch_name' => $req['branchName'],
                 'cheque_no' => $req['chequeNo'],
-                'workflow_id' => $req['workflowId']
+                'workflow_id' => $req['workflowId'],
+                'transaction_no' => $req['tranNo']
             ];
             $mChequeDtl->entryChequeDd($chequeReqs);
         }
@@ -1924,4 +1926,25 @@ class PrivateLandController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+
+    /**
+     * |Search Holding 
+     */
+    // public function searchHoldings(Request $request)
+    // {
+    //     $validated = Validator::make(
+    //         $request->all(),
+    //         [
+    //             'holdingNo' => 'required|'
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+    //     $mPropProperty          = new PropProperty();
+    //     $user                   = authUser($request);
+    //     $holdingNo              = $request->holdingNo;
+    //     $ulbId                  = $user->ulb_id;
+    //     $propertyDetails        = $mPropProperty->getHoldingDetails($holdingNo);
+    // }
 }
