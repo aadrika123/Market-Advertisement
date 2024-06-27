@@ -225,6 +225,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');                   // 35 ( Get Application Between two date )
         Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');                   // 36 ( Get Application Financial Year Wise )
         Route::post('advert/pvt-land/payment-collection', 'paymentCollection');                                     // 37 ( Get Application Financial Year Wise )
+        Route::post('advert/pvt-land/search-holding', 'searchHoldings');                                            // 38 ( Get Holding Details by Holding Number)
     });
 
     /**
@@ -378,11 +379,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/lodge/view-approve-document', 'getUploadDocuments');
         Route::post('market/lodge/search-application', 'searchApplication');
-        Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');
-        Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
-        Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('market/lodge/reupload-document', 'reuploadDocument');
-        Route::post('market/lodge/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
@@ -547,12 +543,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/dharamshala/view-approve-document', 'getUploadDocuments');
         Route::post('market/dharamshala/search-application', 'searchApplication');
-
-        Route::post('market/dharamshala/list-btc-inbox-jsk', 'listBtcInboxJsk');
-        Route::post('market/dharamshala/btc/get-details-by-id', 'getRejectedDetailsById');
-        Route::post('market/dharamshala/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('market/dharamshala/reupload-document', 'reuploadDocument');
-        Route::post('market/dharamshala/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
@@ -613,21 +603,36 @@ Route::group(['middleware' => ['checkToken']], function () {
     });
 
     /**
-     * | created on = 25/06/2024
      * | created by = Arshad Hussain 
      * | Payment Cash Verification
      */
     Route::controller(CashVerificationController::class)->group(function () {
-        Route::post('advert/list-cash-verification', 'cashVerificationList');              //01
-        Route::post('advert/tc-collections', 'tcCollectionDtl');                           //03
-        Route::post('advert/verify-cash', 'cashVerify');                                   //05
-
-        //written by prity pandey
-        Route::post('market/list-cash-verification', 'cashVerificationListMarket');
-        Route::post('market/cash-verification-dtl', 'cashVerificationDtl');
+        Route::post('advert/list-cash-verification', 'cashVerificationList');                                                    //01
+        Route::post('advert/tc-collections', 'tcCollectionDtl');                                                                 //03
+        Route::post('advert/verify-cash', 'cashVerify');                                                                         //05
+        #Self Advert
+        Route::post('advert/self-advert-cash-varification', 'selfAdvertCashVerificationList');                                   //05
+        Route::post('advert/collection/self-advertisement', 'selfAdvertisementCollection');                                      //05
+        Route::post('advert/verify-cash/self-advertisement', 'selfAdvertisementCashVerify');                                      //05
+        #Movacle Vehcile
+        Route::post('advert/movable-vahicle-cash-varification', 'movableVehicleCashVerificationList');                           //05
+        Route::post('advert/collection/movable-vehicle', 'movableVehicleCollection');                                            //05
+        Route::post('advert/verify-cash/movable-vehicle', 'movableVehicleCashVerify');                                            //05
+        #Private Land 
+        Route::post('advert/private-land-cash-varification', 'privateLandCashVerificationList');                                 //05
+        Route::post('advert/collection/private-land', 'privateLandCollection');                                                  //05
+        Route::post('advert/verify-cash/private-land', 'privateLandCashVerify');                                                  //05
+        #Agency
+        Route::post('advert/agency-cash-varification', 'agencyCashVerificationList');                                            //05
+        Route::post('advert/collection/agency', 'agencyCollection');                                                             //05
+        Route::post('advert/verify-cash/agency', 'agencyCashVerify');                                                             //05
+        
     });
 
+
+
+
     Route::controller(BankReconcillationController::class)->group(function () {
-        Route::post('search-transaction', 'searchTransaction');
+        Route::post('advert/search-transaction', 'searchTransaction');
     });
 });

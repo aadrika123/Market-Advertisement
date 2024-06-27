@@ -119,7 +119,7 @@ class AdvMarTransaction extends Model
                 't.tran_no as transaction_no',
                 't.amount',
                 't.payment_mode',
-                't.tran_date',
+                't.transaction_date',
                 't.tran_type as module_name',
                 DB::raw("
                 CASE
@@ -132,7 +132,6 @@ class AdvMarTransaction extends Model
             )
             ->where('t.tran_no', $tranNo)
             ->where('status', 1);
-            
     }
 
     /**
@@ -141,28 +140,23 @@ class AdvMarTransaction extends Model
     public function chequeTranDtl($ulbId)
     {
         return AdvMarTransaction::select(
-            'adv_cheque_dtls.*',
-            DB::raw("1 as module_id"),
-            DB::raw(
-                "case when prop_transactions.property_id is not null then 'Property' when 
-                prop_transactions.saf_id is not null then 'Saf' end as tran_type"
-            ),
-            DB::raw("TO_CHAR(tran_date, 'DD-MM-YYYY') as tran_date"),
-            'tran_no',
+            'adv_cheque_dtls.id',
+            DB::raw("TO_CHAR(transaction_date, 'DD-MM-YYYY') as transaction_date"),
+            'adv_mar_transactions.transaction_no',
             'payment_mode',
             'amount',
-            DB::raw("TO_CHAR(cheque_date, 'DD-MM-YYYY') as cheque_date"),
-            "bank_name",
-            "branch_name",
-            "bounce_status",
-            "cheque_no",
+            DB::raw("TO_CHAR(adv_cheque_dtls.cheque_date, 'DD-MM-YYYY') as cheque_date"),
+            "adv_cheque_dtls.bank_name",
+            "adv_cheque_dtls.branch_name",
+            "adv_cheque_dtls.cheque_no",
             DB::raw("TO_CHAR(clear_bounce_date, 'DD-MM-YYYY') as clear_bounce_date"),
-            "users.name as user_name"
+            "users.name as user_name",
+            DB::raw("2 as module_id"),
         )
-            ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', 'prop_transactions.id')
-            ->join('users', 'users.id', 'prop_cheque_dtls.user_id')
+            ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', '=', 'adv_mar_transactions.id')
+            ->leftJoin('users', 'users.id', 'adv_cheque_dtls.user_id')
             ->whereIn('payment_mode', ['CHEQUE', 'DD'])
-            // ->where('prop_transactions.status', 1)
-            ->where('prop_transactions.ulb_id', $ulbId);
+            ->where('adv_mar_transactions.ulb_id', $ulbId)
+            ->orderby('adv_cheque_dtls.id','Desc');
     }
 }

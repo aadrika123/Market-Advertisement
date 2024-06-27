@@ -2053,7 +2053,7 @@ class SelfAdvetController extends Controller
 
             $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
 
-            return  $req->merge([
+             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
                 'todayDate' => $todayDate->format('Y-m-d'),
@@ -2091,12 +2091,13 @@ class SelfAdvetController extends Controller
             $chequeReqs = [
                 'user_id' => $req['empId'],
                 'application_id' => $req->applicationId,
-                'transaction_id' => $req['tranNo'],
+                'transaction_id' => $req['transactionId'],
                 'cheque_date' => $req['chequeDate'],
                 'bank_name' => $req['bankName'],
                 'branch_name' => $req['branchName'],
                 'cheque_no' => $req['chequeNo'],
-                'workflow_id' => $req['workflowId']
+                'workflow_id' => $req['workflowId'],
+                'transaction_no' => $req['tranNo']
             ];
             $mChequeDtl->entryChequeDd($chequeReqs);
         }

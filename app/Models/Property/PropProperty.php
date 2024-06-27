@@ -113,4 +113,33 @@ class PropProperty extends Model
             ->orderByDesc('id')
             ->get();
     }
+
+    /**
+     * | Get Proprty Details By Holding No
+     */
+    public function getHoldingDetails($holdingNo, $ulbId)
+    {
+        $oldHolding = PropProperty::select(
+            'prop_properties.id',
+            'prop_properties.holding_no',
+            'prop_properties.new_holding_no',
+            'prop_properties.ward_mstr_id',
+            'prop_properties.new_ward_mstr_id',
+            'prop_properties.prop_pin_code',
+            'prop_properties.corr_pin_code',
+            'prop_properties.prop_address',
+            'prop_properties.corr_address',
+            'prop_properties.apartment_details_id',
+            'prop_properties.area_of_plot as total_area_in_desimal',
+            'prop_properties.prop_type_mstr_id',
+            'ulb_ward_masters.ward_name as old_ward_no',
+            'u.ward_name as new_ward_no',
+        )
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'prop_properties.ward_mstr_id')
+            ->leftJoin('ulb_ward_masters as u', 'u.id', '=', 'prop_properties.new_ward_mstr_id')
+            ->where('prop_properties.holding_no', $holdingNo)
+            ->where('prop_properties.ulb_id', $ulbId)
+            ->where('prop_properties.status', 1)
+            ->first();
+    }
 }
