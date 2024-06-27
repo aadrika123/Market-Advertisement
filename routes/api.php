@@ -103,6 +103,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('advert/self/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('advert/self/reupload-document', 'reuploadDocument');
+        Route::post('advert/self/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
