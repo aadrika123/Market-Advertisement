@@ -558,11 +558,12 @@ class MarActiveLodge extends Model
             'mar_active_lodges.mobile as mobile_no',
             'mar_active_lodges.citizen_id',
             'mar_active_lodges.ulb_id',
-           
+           'mar_active_lodges.user_id',
             'mar_active_lodges.workflow_id',
             'mar_active_lodges.application_type',
             'um.ulb_name as ulb_name',
             'entity_ward_id as ward_no',
+            'current_role_id',
             'holding_no',
             'father',
             'mar_active_lodges.email',
