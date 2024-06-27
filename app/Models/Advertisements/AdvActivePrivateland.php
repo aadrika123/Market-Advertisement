@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
 use App\Traits\WorkflowTrait;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class AdvActivePrivateland extends Model
@@ -443,31 +444,34 @@ class AdvActivePrivateland extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req, $auth)
+    public function reuploadDocument($req ,$Image, $docId)
     {
+        try{
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.LAND_ADVET.RELATIVE_PATH');
 
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
+        $data = [];
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
 
@@ -533,8 +537,41 @@ class AdvActivePrivateland extends Model
             'users.name as applied_by',
             'wr.role_name as btc_by',
         )
-            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_roles')
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
             ->join('users', 'users.id', '=', 'adv_active_privatelands.user_id')
             ->where('adv_active_privatelands.ulb_id', $ulbId);
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return AdvActivePrivateland::select(
+            'adv_active_privatelands.id',
+            'adv_active_privatelands.application_no',
+            'adv_active_privatelands.applicant',
+            'adv_active_privatelands.application_date',
+            'adv_active_privatelands.entity_address',
+            'adv_active_privatelands.entity_name',
+            'adv_active_privatelands.mobile_no as mobile_no',
+            'adv_active_privatelands.citizen_id',
+            'adv_active_privatelands.ulb_id',
+           'adv_active_privatelands.user_id',
+            'adv_active_privatelands.workflow_id',
+            'adv_active_privatelands.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'adv_active_privatelands.email',
+            'adv_active_privatelands.aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'adv_active_privatelands.ulb_id')
+            ->where('adv_active_privatelands.id', $applicationId)
+            ->orderByDesc('adv_active_privatelands.id');
+        //->get();
     }
 }
