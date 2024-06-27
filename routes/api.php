@@ -633,8 +633,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodgeTypeApplicationReport', 'lodgeTypeWiseApplication');
     });
 
-    /**
-     * | created on = 25/06/2024
+    /*
      * | created by = Arshad Hussain 
      * | Payment Cash Verification
      */
@@ -664,12 +663,22 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge-cash-varification-list', 'lodgeCashVerificationList');                                        //05
         Route::post('market/collection-lodge', 'lodgeCollection');                                            //05
         Route::post('market/verify-cash-lodge', 'lodgeCashVerify');                                            //05
-        //written by prity pandey
-        Route::post('market/list-cash-verification', 'cashVerificationListMarket');
-        Route::post('market/cash-verification-dtl', 'cashVerificationDtl');
-        Route::post('advert/list-cash-verification', 'cashVerificationList');              //01
-        Route::post('advert/tc-collections', 'tcCollectionDtl');                           //03
-        Route::post('advert/verify-cash', 'cashVerify');                                   //05
+
+        #Banquet
+        Route::post('market/banquet-cash-varification-list', 'banquetCashVerificationList');                                        //05
+        Route::post('market/collection-banquet', 'banquetCollection');                                            //05
+        Route::post('market/verify-cash-banquet', 'banquetCashVerify');                                            //05
+
+        #DharamShala
+        Route::post('market/dharam-shala-varification-list', 'dharamCashVerificationList');                                        //05
+        Route::post('market/collection-dharam', 'dharamCollection');                                            //05
+        Route::post('market/verify-cash-dharam', 'dharamCashVerify');                                            //05
+
+        #Hostel
+        Route::post('market/hostel-varification-list', 'hostelCashVerificationList');                                        //05
+        Route::post('market/collection-hostel', 'hostelCollection');                                            //05
+        Route::post('market/verify-cash-hostel', 'hostelCashVerify');                                            //05
+
 
         //written by prity pandey
         Route::post('market/list-cash-verification', 'cashVerificationListMarket');
