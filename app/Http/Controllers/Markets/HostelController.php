@@ -2161,4 +2161,27 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+    public function forwardNextLevelBtc(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            // Variable initialization
+            // Marriage Banqute Hall Application Update Current Role Updation
+            $mMarActiveLodge = MarActiveHostel::find($request->applicationId);
+            $mMarActiveLodge->parked = false;
+            $mMarActiveLodge->save();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
 }

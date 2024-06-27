@@ -491,6 +491,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/hostel/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/hostel/reupload-document', 'reuploadDocument');
+        Route::post('market/hostel/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
