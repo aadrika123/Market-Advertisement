@@ -430,6 +430,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/search-application', 'searchApplication');
 
         Route::post('market/bm-hall/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/bm-hall/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/bm-hall/reupload-document', 'reuploadDocument');
 
         // Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');

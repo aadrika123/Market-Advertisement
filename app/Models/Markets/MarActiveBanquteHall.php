@@ -567,4 +567,37 @@ class MarActiveBanquteHall extends Model
             ->join('users', 'users.id', '=', 'mar_active_banqute_halls.user_id')
             ->where('mar_active_banqute_halls.ulb_id', $ulbId);
     }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.application_no',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.application_date',
+            'mar_active_banqute_halls.entity_address',
+            'mar_active_banqute_halls.entity_name',
+            'mar_active_banqute_halls.mobile as mobile_no',
+            'mar_active_banqute_halls.citizen_id',
+            'mar_active_banqute_halls.ulb_id',
+           'mar_active_banqute_halls.user_id',
+            'mar_active_banqute_halls.workflow_id',
+            'mar_active_banqute_halls.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_banqute_halls.email',
+            'mar_active_banqute_halls.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_banqute_halls.ulb_id')
+            ->where('mar_active_banqute_halls.id', $applicationId)
+            ->orderByDesc('mar_active_banqute_halls.id');
+        //->get();
+    }
 }
