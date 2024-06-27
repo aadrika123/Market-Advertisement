@@ -552,7 +552,7 @@ class AdvActiveVehicle extends Model
 
     public function getDetailsByIdjsk($applicationId)
     {
-        return AdvActiveSelfadvertisement::select(
+        return AdvActiveVehicle::select(
             'adv_active_vehicles.id',
             'adv_active_vehicles.application_no',
             'adv_active_vehicles.applicant',

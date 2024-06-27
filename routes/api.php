@@ -233,6 +233,13 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');                   // 35 ( Get Application Between two date )
         Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');                   // 36 ( Get Application Financial Year Wise )
         Route::post('advert/pvt-land/payment-collection', 'paymentCollection');                                     // 37 ( Get Application Financial Year Wise )
+
+        //written by prity pandey
+        Route::post('advert/pvt-land/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
+        Route::post('advert/pvt-land/btc/get-details-by-id', 'getRejectedDetailsById');
+        Route::post('advert/pvt-land/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');
+        Route::post('advert/pvt-land/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
