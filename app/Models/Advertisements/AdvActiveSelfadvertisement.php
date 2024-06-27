@@ -5,6 +5,7 @@ namespace App\Models\Advertisements;
 use App\MicroServices\DocumentUpload;
 use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -412,31 +413,34 @@ class AdvActiveSelfadvertisement extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.SELF_ADVET_RELATIVE_PATH');
 
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
+        $data = [];
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
     /**
@@ -492,5 +496,61 @@ class AdvActiveSelfadvertisement extends Model
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
             ->orderByDesc('adv_active_selfadvertisements.id');
             //->get();
+    }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return AdvActiveSelfadvertisement::select(
+            'adv_active_selfadvertisements.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(adv_active_selfadvertisements.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(adv_active_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_active_selfadvertisements.application_type',
+            'adv_active_selfadvertisements.applicant',
+            'adv_active_selfadvertisements.applicant as owner_name',
+            'adv_active_selfadvertisements.entity_name',
+            'adv_active_selfadvertisements.mobile_no as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_selfadvertisements.current_role_id')
+            ->join('users', 'users.id', '=', 'adv_active_selfadvertisements.user_id')
+            ->where('adv_active_selfadvertisements.ulb_id', $ulbId);
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return AdvActiveSelfadvertisement::select(
+            'adv_active_selfadvertisements.id',
+            'adv_active_selfadvertisements.application_no',
+            'adv_active_selfadvertisements.applicant',
+            'adv_active_selfadvertisements.application_date',
+            'adv_active_selfadvertisements.entity_address',
+            'adv_active_selfadvertisements.entity_name',
+            'adv_active_selfadvertisements.mobile_no as mobile_no',
+            'adv_active_selfadvertisements.citizen_id',
+            'adv_active_selfadvertisements.ulb_id',
+           'adv_active_selfadvertisements.user_id',
+            'adv_active_selfadvertisements.workflow_id',
+            'adv_active_selfadvertisements.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'adv_active_selfadvertisements.email',
+            'adv_active_selfadvertisements.aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
+            ->where('adv_active_selfadvertisements.id', $applicationId)
+            ->orderByDesc('adv_active_selfadvertisements.id');
+        //->get();
     }
 }

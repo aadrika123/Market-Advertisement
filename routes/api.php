@@ -97,6 +97,12 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/get-application-financial-year-wise', 'getApplicationFinancialYearWise');      // 36 ( Get Application Financial Year Wise )
         Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');                   // 37 ( Get Application Financial Year Wise )
         Route::post('advert/self/payment-collection', 'paymentCollection');                                     // 38 ( Get Application Financial Year Wise )
+
+        //written by prity pandey
+        Route::post('advert/self/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
+        Route::post('advert/self/btc/get-details-by-id', 'getRejectedDetailsById');
+        Route::post('advert/self/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('advert/self/reupload-document', 'reuploadDocument');
     });
 
     /**
