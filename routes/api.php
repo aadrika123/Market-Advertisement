@@ -180,6 +180,13 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle/get-application-between-date', 'getApplicationBetweenDate');                // 31 ( Get Application Between two date )
         Route::post('advert/vehicle/payment-collection', 'paymentCollection');                                  // 32 ( Get Application Financial Year Wise )
 
+        //written by prity pandey
+        Route::post('advert/vehicle/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
+        Route::post('advert/vehicle/btc/get-details-by-id', 'getRejectedDetailsById');
+        Route::post('advert/vehicle/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('advert/vehicle/reupload-document', 'reuploadDocument');
+        Route::post('advert/vehicle/forward-next-level-btc', 'forwardNextLevelBtc');
+
     });
 
     /**

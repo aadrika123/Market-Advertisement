@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\WorkflowTrait;
+use Exception;
 
 class AdvActiveVehicle extends Model
 {
@@ -450,31 +451,34 @@ class AdvActiveVehicle extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.VEHICLE_ADVET.RELATIVE_PATH');
 
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
+        $data = [];
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a,$req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
     /**
@@ -521,5 +525,61 @@ class AdvActiveVehicle extends Model
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
             ->orderByDesc('adv_active_vehicles.id');
             //->get();
+    }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return AdvActiveVehicle::select(
+            'adv_active_vehicles.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(adv_active_vehicles.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_active_vehicles.application_type',
+            'adv_active_vehicles.applicant',
+            'adv_active_vehicles.applicant as owner_name',
+            'adv_active_vehicles.entity_name',
+            'adv_active_vehicles.mobile_no as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_role_id')
+            ->join('users', 'users.id', '=', 'adv_active_vehicles.user_id')
+            ->where('adv_active_vehicles.ulb_id', $ulbId);
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return AdvActiveSelfadvertisement::select(
+            'adv_active_vehicles.id',
+            'adv_active_vehicles.application_no',
+            'adv_active_vehicles.applicant',
+            'adv_active_vehicles.application_date',
+            'adv_active_vehicles.entity_address',
+            'adv_active_vehicles.entity_name',
+            'adv_active_vehicles.mobile_no as mobile_no',
+            'adv_active_vehicles.citizen_id',
+            'adv_active_vehicles.ulb_id',
+           'adv_active_vehicles.user_id',
+            'adv_active_vehicles.workflow_id',
+            'adv_active_vehicles.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'adv_active_vehicles.email',
+            'adv_active_vehicles.aadhar_no',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
+            ->where('adv_active_vehicles.id', $applicationId)
+            ->orderByDesc('adv_active_vehicles.id');
+        //->get();
     }
 }
