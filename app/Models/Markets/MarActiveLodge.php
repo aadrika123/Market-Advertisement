@@ -6,6 +6,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -428,31 +429,33 @@ class MarActiveLodge extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
+        $data = [];
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
-
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
 

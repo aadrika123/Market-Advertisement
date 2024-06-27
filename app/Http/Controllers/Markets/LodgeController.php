@@ -1129,9 +1129,11 @@ class LodgeController extends Controller
         try {
             // Variable initialization
             $mMarActiveLodge = new MarActiveLodge();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mMarActiveLodge->reuploadDocument($req);
+            $appId = $mMarActiveLodge->reuploadDocument($req, $Image, $docId);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();

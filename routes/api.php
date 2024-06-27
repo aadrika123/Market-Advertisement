@@ -352,7 +352,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/verify-or-reject-doc', 'verifyOrRejectDoc');                                      // 18 ( Application Details For Payments )
         Route::post('market/lodge/back-to-citizen', 'backToCitizen');                                               // 19 ( Application Details For Payments )
         Route::post('market/lodge/list-btc-inbox', 'listBtcInbox');                                                 // 20 ( Application Details For Payments )
-        Route::post('market/lodge/reupload-document', 'reuploadDocument');                                          // 21 ( Application Details For Payments )
         Route::post('market/lodge/payment-by-cash', 'paymentByCash');                                               // 22 ( Application Details For Payments )
         Route::post('market/lodge/entry-cheque-dd', 'entryChequeDd');                                               // 23 ( Application Details For Payments )
         Route::post('market/lodge/clear-or-bounce-cheque', 'clearOrBounceCheque');                                  // 24 ( Application Details For Payments )
@@ -368,15 +367,15 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
-         //Written by prity pandey
+        //Written by prity pandey
         Route::post('market/lodge/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/lodge/view-approve-document', 'getUploadDocuments');
         Route::post('market/lodge/search-application', 'searchApplication');
         Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');
-        Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
-        Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc'); 
-
+        Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('market/lodge/reupload-document', 'reuploadDocument');
     });
 
     /**
@@ -407,7 +406,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/verify-or-reject-doc', 'verifyOrRejectDoc');                                    // 18 ( Verify or Reject Documents )
         Route::post('market/bm-hall/back-to-citizen', 'backToCitizen');                                             // 19 ( Application Back to Citizen )
         Route::post('market/bm-hall/list-btc-inbox', 'listBtcInbox');                                               // 20 ( List Application Back to Citizen )
-        Route::post('market/bm-hall/reupload-document', 'reuploadDocument');                                        // 21 ( Reupload Document for Pending Documents)
         Route::post('market/bm-hall/payment-by-cash', 'paymentByCash');                                             // 22 ( Cash Payments )
         Route::post('market/bm-hall/entry-cheque-dd', 'entryChequeDd');                                             // 23 ( Entry Cheque or DD For Payments )
         Route::post('market/bm-hall/clear-or-bounce-cheque', 'clearOrBounceCheque');                                // 24 (Clear or Bouns Cheque For Payments )
@@ -424,12 +422,13 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
-         //Written by prity pandey
+        //Written by prity pandey
         Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/bm-hall/view-approve-document', 'getUploadDocuments');
         Route::post('market/bm-hall/search-application', 'searchApplication');
-        Route::post('market/bm-hall/list-btc-inbox-jsk', 'listBtcInboxJsk'); 
+        Route::post('market/bm-hall/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/bm-hall/reupload-document', 'reuploadDocument');
     });
 
     /**
@@ -476,7 +475,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         #Arshad
         Route::post('market/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
-         //Written by prity pandey
+        //Written by prity pandey
         Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/hostel/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/hostel/view-approve-document', 'getUploadDocuments');
@@ -527,12 +526,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         #ARSHAD
         Route::post('market/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
 
-         //Written by prity pandey
+        //Written by prity pandey
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/dharamshala/view-approve-document', 'getUploadDocuments');
         Route::post('market/dharamshala/search-application', 'searchApplication');
-
     });
 
     /**
@@ -604,7 +602,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
         //written by prity pandey
         Route::post('market/list-cash-verification', 'cashVerificationListMarket');
-        Route::post('market/cash-verification-dtl', 'cashVerificationDtl'); 
+        Route::post('market/cash-verification-dtl', 'cashVerificationDtl');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
