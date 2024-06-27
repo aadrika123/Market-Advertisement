@@ -466,7 +466,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/verify-or-reject-doc', 'verifyOrRejectDoc');                                     // 18 ( Verify or Reject a Particular Document )
         Route::post('market/hostel/back-to-citizen', 'backToCitizen');                                              // 19 ( Application Sent to Back to citizen )
         Route::post('market/hostel/list-btc-inbox', 'listBtcInbox');                                                // 20 ( Get List Back to Citizen )
-        Route::post('market/hostel/reupload-document', 'reuploadDocument');                                         // 21 ( Re-Upload Rejected Documents )
         Route::post('market/hostel/payment-by-cash', 'paymentByCash');                                              // 22 ( Application Payments via Cash )
         Route::post('market/hostel/entry-cheque-dd', 'entryChequeDd');                                              // 23 ( Entry Cheque or DD For Application Payments )
         Route::post('market/hostel/clear-or-bounce-cheque', 'clearOrBounceCheque');                                 // 24 ( Entry Cheque or DD Celar Or Bounse )
@@ -491,6 +490,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/hostel/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/hostel/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('market/hostel/reupload-document', 'reuploadDocument');
     });
 
     /**

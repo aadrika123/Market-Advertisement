@@ -1200,21 +1200,23 @@ class HostelController extends Controller
         }
         try {
             // Variable initialization
-
-            $mMarActiveHostel = new MarActiveHostel();
+            $mMarActiveLodge = new MarActiveHostel();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mMarActiveHostel->reuploadDocument($req);
+            $appId = $mMarActiveLodge->reuploadDocument($req, $Image, $docId);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050921", 1.0, responseTime(), "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "", "050921", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
         }
     }
+
 
     /**
      * | Payment Application Via Cash
