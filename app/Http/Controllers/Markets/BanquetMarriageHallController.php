@@ -1134,18 +1134,20 @@ class BanquetMarriageHallController extends Controller
         }
         try {
             // Variable initialization
-            $mMarActiveBanquteHall = new MarActiveBanquteHall();
+            $mMarActiveLodge = new MarActiveBanquteHall();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mMarActiveBanquteHall->reuploadDocument($req);
+            $appId = $mMarActiveLodge->reuploadDocument($req, $Image, $docId);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050821", 1.0, responseTime(), "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "050821", 010717, 1.0, "", "POST", "", "");
+            return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
         }
     }
 
@@ -2155,6 +2157,29 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function forwardNextLevelBtc(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            // Variable initialization
+            // Marriage Banqute Hall Application Update Current Role Updation
+            $mMarActiveLodge = MarActiveBanquteHall::find($request->applicationId);
+            $mMarActiveLodge->parked = false;
+            $mMarActiveLodge->save();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 }

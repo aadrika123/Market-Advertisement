@@ -433,6 +433,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/bm-hall/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/bm-hall/reupload-document', 'reuploadDocument');
+        Route::post('market/bm-hall/forward-next-level-btc', 'forwardNextLevelBtc');
 
         // Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');
         // Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
