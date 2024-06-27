@@ -664,7 +664,7 @@ Route::group(['middleware' => ['checkToken']], function () {
     });
 
 
-// 
+
 
         Route::post('advert/list-cash-verification', 'cashVerificationList');              //01
         Route::post('advert/tc-collections', 'tcCollectionDtl');                           //03
@@ -679,4 +679,4 @@ Route::group(['middleware' => ['checkToken']], function () {
     Route::controller(BankReconcillationController::class)->group(function () {
         Route::post('search-transaction', 'searchTransaction');
     });
-});
+
