@@ -546,6 +546,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/dharamshala/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/dharamshala/reupload-document', 'reuploadDocument');
+        Route::post('market/dharamshala/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
