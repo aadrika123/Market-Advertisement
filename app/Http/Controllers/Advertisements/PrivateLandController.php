@@ -1508,6 +1508,8 @@ class PrivateLandController extends Controller
             }
 
             $mAdvActivePrivateland->current_role_id = $backId->wf_role_id;
+            $mAdvActivePrivateland->btc_date =  Carbon::now()->format('Y-m-d');
+            $mAdvActivePrivateland->remarks = $req->comment;
             $mAdvActivePrivateland->parked = 1;
             $mAdvActivePrivateland->save();
 
@@ -1947,4 +1949,42 @@ class PrivateLandController extends Controller
     //     $ulbId                  = $user->ulb_id;
     //     $propertyDetails        = $mPropProperty->getHoldingDetails($holdingNo);
     // }
+
+    public function listBtcInboxJsk(Request $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'] ?? 2;
+            $wardId = $this->getWardByUserId($userId);
+
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mMarActiveLodge = new AdvActivePrivateland();
+            $btcList = $mMarActiveLodge->getLodgeListJsk($ulbId)
+                //->whereIn('mar_active_lodges.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('adv_active_privatelands.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
+
+            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }

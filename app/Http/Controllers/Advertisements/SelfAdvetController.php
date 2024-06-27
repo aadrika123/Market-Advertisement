@@ -1516,6 +1516,8 @@ class SelfAdvetController extends Controller
             }
 
             $mAdvActiveSelfadvertisement->current_role_id = $backId->wf_role_id;
+            $mAdvActiveSelfadvertisement->btc_date =  Carbon::now()->format('Y-m-d');
+            $mAdvActiveSelfadvertisement->remarks = $req->comment;
             $mAdvActiveSelfadvertisement->parked = 1;
             $mAdvActiveSelfadvertisement->save();
 
@@ -1619,18 +1621,20 @@ class SelfAdvetController extends Controller
         }
         try {
             // Variable initialization
-            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $mMarActiveLodge = new AdvActiveSelfadvertisement();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $this->reuploadDocumentAdv($req);
+            $appId = $mMarActiveLodge->reuploadDocument($req, $Image, $docId);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050133", 1.0, responseTime(), "POST", "", "");
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
         }
     }
     /**
@@ -2116,5 +2120,141 @@ class SelfAdvetController extends Controller
         ];
 
         $mTempTransaction->tempTransaction($tranReqs);
+    }
+
+    public function listBtcInboxJsk(Request $req)
+    {
+        try {
+            // Variable initialization
+            $startTime = microtime(true);
+
+            // $auth = auth()->user();
+            $userId = $req->auth['id'];
+            $ulbId = $req->auth['ulb_id'] ?? 2;
+            $wardId = $this->getWardByUserId($userId);
+
+            $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
+                return $ward->ward_id;
+            });
+
+            $roles = $this->getRoleIdByUserId($userId);
+
+            $roleId = collect($roles)->map(function ($role) {                                       // get Roles of the user
+                return $role->wf_role_id;
+            });
+
+            $mMarActiveLodge = new AdvActiveSelfadvertisement();
+            $btcList = $mMarActiveLodge->getLodgeListJsk($ulbId)
+                //->whereIn('mar_active_lodges.current_role_id', $roleId)
+                // ->whereIn('a.ward_mstr_id', $occupiedWards)
+                ->where('parked', true)
+                ->orderByDesc('adv_active_selfadvertisements.id');
+            // ->get();
+            if (trim($req->key))
+                $btcList =  searchFilter($btcList, $req);
+            $list = paginator($btcList, $req);
+
+            return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    public function getRejectedDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            //$tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            // if ($tranDetails) {
+            //     $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            // } else {
+            //     $approveApplicationDetails['paymentDetails'] = null;
+            // }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function getUploadDocumentsBtc(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument      = new WfActiveDocument();
+            $mAdvAgency             = new AdvActiveSelfadvertisement();
+            $refDocUpload           = new DocumentUpload;
+            $applicationId          = $req->applicationId;
+
+            $AdvDetails = $mAdvAgency->getDetailsByIdjsk($applicationId)->first();
+            if (!$AdvDetails)
+                throw new Exception("Application not found for this ($applicationId) application Id!");
+
+            $workflowId = $AdvDetails->workflow_id;
+            $data = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $data = $refDocUpload->getDocUrl($data);
+            return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function forwardNextLevelBtc(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            // Variable initialization
+            // Marriage Banqute Hall Application Update Current Role Updation
+            $mMarActiveLodge = AdvActiveSelfadvertisement::find($request->applicationId);
+            $mMarActiveLodge->parked = false;
+            $mMarActiveLodge->save();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
+        }
     }
 }
