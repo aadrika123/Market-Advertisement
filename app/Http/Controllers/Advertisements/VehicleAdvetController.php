@@ -1535,7 +1535,7 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id'];
+            $ulbId = $req->auth['ulb_id']??null;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
