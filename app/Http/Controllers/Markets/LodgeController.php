@@ -1103,7 +1103,7 @@ class LodgeController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-            $appDetails->parked = NULL;
+            //$appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -2100,38 +2100,20 @@ class LodgeController extends Controller
         $validated = Validator::make(
             $request->all(),
             [
-                'applicationId' => 'required|integer',
-                'senderRoleId' => 'required|integer',
-                'receiverRoleId' => 'required|integer'
+                'applicationId' => 'required|integer'
             ]
         );
         if ($validated->fails())
             return validationError($validated);
-        
+
         try {
             // Variable initialization
             // Marriage Banqute Hall Application Update Current Role Updation
             $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
-            $mMarActiveLodge->last_role_id = $mMarActiveLodge->current_role_id;
-            $mMarActiveLodge->current_role_id = $request->receiverRoleId;
+            $mMarActiveLodge->parked = false;
             $mMarActiveLodge->save();
-
-            $metaReqs['moduleId'] = $this->_moduleIds;
-            $metaReqs['workflowId'] = $mMarActiveLodge->workflow_id;
-            $metaReqs['refTableDotId'] = "mar_active_lodges.id";
-            $metaReqs['refTableIdValue'] = $request->applicationId;
-            $request->request->add($metaReqs);
-
-            $track = new WorkflowTrack();
-            DB::beginTransaction();
-            DB::connection('pgsql_masters')->beginTransaction();
-            $track->saveTrack($request);
-            DB::commit();
-            DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
-            DB::rollBack();
-            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
