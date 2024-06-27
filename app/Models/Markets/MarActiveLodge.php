@@ -6,6 +6,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -177,7 +178,7 @@ class MarActiveLodge extends Model
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId']??null;
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
             $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
             $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
@@ -402,34 +403,59 @@ class MarActiveLodge extends Model
             ->where('mar_active_lodges.ulb_id', $ulbId);
     }
 
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveLodge::select(
+            'mar_active_lodges.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(mar_active_lodges.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(mar_active_lodges.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_lodges.application_type',
+            'mar_active_lodges.applicant',
+            'mar_active_lodges.applicant as owner_name',
+            'mar_active_lodges.entity_name',
+            'mar_active_lodges.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_lodges.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_lodges.user_id')
+            ->where('mar_active_lodges.ulb_id', $ulbId);
+    }
+
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
+        $data = [];
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
-
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
 
@@ -518,5 +544,38 @@ class MarActiveLodge extends Model
     public function pendingListForReport()
     {
         return MarActiveLodge::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveLodge::select(
+            'mar_active_lodges.id',
+            'mar_active_lodges.application_no',
+            'mar_active_lodges.applicant',
+            'mar_active_lodges.application_date',
+            'mar_active_lodges.entity_address',
+            'mar_active_lodges.entity_name',
+            'mar_active_lodges.mobile as mobile_no',
+            'mar_active_lodges.citizen_id',
+            'mar_active_lodges.ulb_id',
+           'mar_active_lodges.user_id',
+            'mar_active_lodges.workflow_id',
+            'mar_active_lodges.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_lodges.email',
+            'mar_active_lodges.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_lodges.ulb_id')
+            ->where('mar_active_lodges.id', $applicationId)
+            ->orderByDesc('mar_active_lodges.id');
+        //->get();
     }
 }

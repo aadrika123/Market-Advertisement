@@ -429,31 +429,34 @@ class MarActiveBanquteHall extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
 
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
+        $data = [];
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
     /**
@@ -543,5 +546,61 @@ class MarActiveBanquteHall extends Model
     public function pendingListForReport()
     {
         return MarActiveBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"));
+    }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(mar_active_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_banqute_halls.application_type',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.applicant as owner_name',
+            'mar_active_banqute_halls.entity_name',
+            'mar_active_banqute_halls.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_banqute_halls.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_banqute_halls.user_id')
+            ->where('mar_active_banqute_halls.ulb_id', $ulbId);
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveBanquteHall::select(
+            'mar_active_banqute_halls.id',
+            'mar_active_banqute_halls.application_no',
+            'mar_active_banqute_halls.applicant',
+            'mar_active_banqute_halls.application_date',
+            'mar_active_banqute_halls.entity_address',
+            'mar_active_banqute_halls.entity_name',
+            'mar_active_banqute_halls.mobile as mobile_no',
+            'mar_active_banqute_halls.citizen_id',
+            'mar_active_banqute_halls.ulb_id',
+           'mar_active_banqute_halls.user_id',
+            'mar_active_banqute_halls.workflow_id',
+            'mar_active_banqute_halls.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_banqute_halls.email',
+            'mar_active_banqute_halls.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_banqute_halls.ulb_id')
+            ->where('mar_active_banqute_halls.id', $applicationId)
+            ->orderByDesc('mar_active_banqute_halls.id');
+        //->get();
     }
 }

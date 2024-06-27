@@ -595,4 +595,99 @@ class CashVerificationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
+
+    public function cashVerificationListMarket(Request $request)
+    {
+        try {
+            $ulbId =  authUser($request)->ulb_id;
+            $userId =  $request->id;
+            $date = date('Y-m-d', strtotime($request->date));
+            $lodgeworkflow = Config::get('workflow-constants.LODGE');
+            $hostelWorkflow = Config::get('workflow-constants.HOSTEL');
+            $dhramshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA');
+            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');
+            $mTempTransaction =  new TempTransaction();
+            $zoneId = $request->zone;
+            $wardId = $request->wardId;
+
+            $data = $mTempTransaction->transactionDtl($date, $ulbId);
+            if ($userId) {
+                $data = $data->where('user_id', $userId);
+            }
+            if ($zoneId) {
+                $data = $data->where('ulb_ward_masters.zone', $zoneId);
+            }
+            if ($wardId) {
+                $data = $data->where('ulb_ward_masters.id', $wardId);
+            }
+            $data = $data->get();
+
+            $collection = collect($data->groupBy("id")->all());
+
+            $data = $collection->map(function ($val) use ($date, $lodgeworkflow, $hostelWorkflow, $dhramshalaWorkflow, $marriageHallWorkflow) {
+                $total =  $val->sum('amount');
+                $lodge  = $val->where("workflow_id", $lodgeworkflow)->sum('amount');
+                $hostel = $val->where("workflow_id", $hostelWorkflow)->sum('amount');
+                $dharamshala  = $val->where("workflow_id", $dhramshalaWorkflow)->sum('amount');
+                $marriageHall = $val->where("workflow_id", $marriageHallWorkflow)->sum('amount');
+                return [
+                    "id" => $val[0]['id'],
+                    "user_name" => $val[0]['name'],
+                    "lodge" => $lodge,
+                    "hostel" => $hostel,
+                    "dharamshala" => $dharamshala,
+                    "marriageHall" => $marriageHall,
+                    "total" => $total,
+                    "date" => Carbon::parse($date)->format('d-m-Y'),
+                    // "verified_amount" => 0,
+                ];
+            });
+
+            $data = (array_values(objtoarray($data)));
+
+            return responseMsgs(true, "List cash Verification", $data, "010201", "1.0", "", "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+
+    public function cashVerificationDtl(Request $request)
+    {
+        try {
+            $request->validate([
+                "date" => "required|date",
+                "userId" => "required|numeric",
+
+            ]);
+            $userId =  $request->userId;
+            $ulbId =  authUser($request)->ulb_id;
+            $date = date('Y-m-d', strtotime($request->date));
+            $lodgeworkflow = Config::get('workflow-constants.LODGE');
+            $hostelWorkflow = Config::get('workflow-constants.HOSTEL');
+            $dhramshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA');
+            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL'); 
+            $mTempTransaction = new TempTransaction();
+            $details = $mTempTransaction->transactionList($date, $userId, $ulbId);
+            if ($details->isEmpty())
+                throw new Exception("No Application Found for this id");
+
+            $data['lodge'] = collect($details)->where('workflow_id', $lodgeworkflow)->values();
+            $data['hostel'] = collect($details)->where('workflow_id', $hostelWorkflow)->values();
+            $data['dharamshala'] = collect($details)->where('workflow_id', $dhramshalaWorkflow)->values();
+            $data['marriageHall'] = collect($details)->where('workflow_id', $marriageHallWorkflow)->values();
+            $data['Cash'] = collect($details)->where('payment_mode', '=', 'CASH')->sum('amount');
+            $data['Cheque'] = collect($details)->where('payment_mode', '=', 'CHEQUE')->sum('amount');
+            $data['DD'] = collect($details)->where('payment_mode', '=', 'DD')->sum('amount');
+            $data['totalAmount'] =  $details->sum('amount');
+            $data['numberOfTransaction'] =  $details->count();
+            $data['collectorName'] =  collect($details)[0]->user_name;
+            $data['date'] = Carbon::parse($date)->format('d-m-Y');
+            $data['verifyStatus'] = false;
+
+            return responseMsgs(true, "Collection Details", remove_null($data), "010201", "1.0", "", "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
 }

@@ -6,6 +6,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Traits\WorkflowTrait;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
@@ -406,31 +407,33 @@ class MarActiveHostel extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req)
+    public function reuploadDocument($req,$Image, $docId)
     {
+        try{
         $docUpload = new DocumentUpload;
         $docDetails = WfActiveDocument::find($req->id);
         $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
-
-        $refImageName = $docDetails['doc_code'];
-        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
-        $documentImg = $req->image;
-        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-        $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
-        $metaReqs['activeId'] = $docDetails['active_id'];
-        $metaReqs['workflowId'] = $docDetails['workflow_id'];
-        $metaReqs['ulbId'] = $docDetails['ulb_id'];
-        $metaReqs['relativePath'] = $relativePath;
-        $metaReqs['document'] = $imageName;
-        $metaReqs['docCode'] = $docDetails['doc_code'];
-        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
-        $a = new Request($metaReqs);
+        $data = [];
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth);
-        $docDetails->current_status = '0';
-        $docDetails->save();
-        return $docDetails['active_id'];
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
     }
 
     /**
@@ -534,5 +537,62 @@ class MarActiveHostel extends Model
             ->update([
                 "doc_upload_status" => $status
             ]);
+    }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveHostel::select(
+            'mar_active_hostels.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(mar_active_hostels.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_hostels.application_type',
+            'mar_active_hostels.applicant',
+            'mar_active_hostels.applicant as owner_name',
+            'mar_active_hostels.entity_name',
+            'mar_active_hostels.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_hostels.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_hostels.user_id')
+            ->where('mar_active_hostels.ulb_id', $ulbId);
+    }
+
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveHostel::select(
+            'mar_active_hostels.id',
+            'mar_active_hostels.application_no',
+            'mar_active_hostels.applicant',
+            'mar_active_hostels.application_date',
+            'mar_active_hostels.entity_address',
+            'mar_active_hostels.entity_name',
+            'mar_active_hostels.mobile as mobile_no',
+            'mar_active_hostels.citizen_id',
+            'mar_active_hostels.ulb_id',
+           'mar_active_hostels.user_id',
+            'mar_active_hostels.workflow_id',
+            'mar_active_hostels.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_hostels.email',
+            'mar_active_hostels.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_hostels.ulb_id')
+            ->where('mar_active_hostels.id', $applicationId)
+            ->orderByDesc('mar_active_hostels.id');
+        //->get();
     }
 }
