@@ -305,6 +305,29 @@ class CashVerificationController extends Controller
         $RevDailycollectiondetail->store($mReqs);
     }
 
+    #================================================================ Market =======================================#
+    /**
+     * lodge Cash Verification
+     */
+    public function lodgeCashVerificationList(Request $request)
+    {
+        $lodgewWorkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        return $this->cashVerificationListByWorkflow($request, $lodgewWorkflow);
+    }
+
+    public function  lodgeCollection(Request $request)
+    {
+        $selfAdvertisementworkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
+        return $this->getCollectionByWorkflow($request, $selfAdvertisementworkflow);
+    }
+    /**
+     * |SELF SDVERTISEMENT
+     */
+    public function lodgeCashVerify(Request $request)
+    {
+        return $this->verifyCash($request, 'lodge');
+    }
+
     #================================================================== End ============================================================================# 
     /**
      * | For Verification of cash
@@ -666,7 +689,7 @@ class CashVerificationController extends Controller
             $lodgeworkflow = Config::get('workflow-constants.LODGE');
             $hostelWorkflow = Config::get('workflow-constants.HOSTEL');
             $dhramshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA');
-            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL'); 
+            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');
             $mTempTransaction = new TempTransaction();
             $details = $mTempTransaction->transactionList($date, $userId, $ulbId);
             if ($details->isEmpty())
