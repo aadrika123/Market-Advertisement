@@ -620,7 +620,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency-cash-varification', 'agencyCashVerificationList');                                            //05
         Route::post('advert/collection/agency', 'agencyCollection');                                                             //05
         Route::post('advert/verify-cash/agency', 'agencyCashVerify');                                                             //05
-        
+
+        #LODGE
+        Route::post('market/lodge-cash-varification-list', 'lodgeCashVerificationList');                                        //05
+        Route::post('market/collection-lodge', 'lodgeCollection');                                            //05
+        Route::post('market/verify-cash-lodge', 'lodgeCashVerify');                                            //05
     });
 
 
