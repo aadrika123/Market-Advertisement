@@ -558,4 +558,38 @@ class MarActiveHostel extends Model
             ->join('users', 'users.id', '=', 'mar_active_hostels.user_id')
             ->where('mar_active_hostels.ulb_id', $ulbId);
     }
+
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveHostel::select(
+            'mar_active_hostels.id',
+            'mar_active_hostels.application_no',
+            'mar_active_hostels.applicant',
+            'mar_active_hostels.application_date',
+            'mar_active_hostels.entity_address',
+            'mar_active_hostels.entity_name',
+            'mar_active_hostels.mobile as mobile_no',
+            'mar_active_hostels.citizen_id',
+            'mar_active_hostels.ulb_id',
+           'mar_active_hostels.user_id',
+            'mar_active_hostels.workflow_id',
+            'mar_active_hostels.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_hostels.email',
+            'mar_active_hostels.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_hostels.ulb_id')
+            ->where('mar_active_hostels.id', $applicationId)
+            ->orderByDesc('mar_active_hostels.id');
+        //->get();
+    }
 }

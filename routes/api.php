@@ -489,6 +489,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/search-application', 'searchApplication');
 
         Route::post('market/hostel/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/hostel/btc/get-details-by-id', 'getRejectedDetailsById');
     });
 
     /**
