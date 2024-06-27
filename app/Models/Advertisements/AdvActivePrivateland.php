@@ -514,4 +514,27 @@ class AdvActivePrivateland extends Model
             ->orderByDesc('adv_active_privatelands.id');
         //->get();
     }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return AdvActivePrivateland::select(
+            'adv_active_privatelands.id',
+            'application_no',
+            'ward_id',
+            DB::raw("TO_CHAR(adv_active_privatelands.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(adv_active_privatelands.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_active_privatelands.application_type',
+            'adv_active_privatelands.applicant',
+            'adv_active_privatelands.applicant as owner_name',
+            'adv_active_privatelands.entity_name',
+            'adv_active_privatelands.mobile_no as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_roles')
+            ->join('users', 'users.id', '=', 'adv_active_privatelands.user_id')
+            ->where('adv_active_privatelands.ulb_id', $ulbId);
+    }
 }

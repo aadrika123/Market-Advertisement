@@ -1508,6 +1508,8 @@ class PrivateLandController extends Controller
             }
 
             $mAdvActivePrivateland->current_role_id = $backId->wf_role_id;
+            $mAdvActivePrivateland->btc_date =  Carbon::now()->format('Y-m-d');
+            $mAdvActivePrivateland->remarks = $req->comment;
             $mAdvActivePrivateland->parked = 1;
             $mAdvActivePrivateland->save();
 
@@ -1969,12 +1971,12 @@ class PrivateLandController extends Controller
                 return $role->wf_role_id;
             });
 
-            $mMarActiveLodge = new AdvActiveSelfadvertisement();
+            $mMarActiveLodge = new AdvActivePrivateland();
             $btcList = $mMarActiveLodge->getLodgeListJsk($ulbId)
                 //->whereIn('mar_active_lodges.current_role_id', $roleId)
                 // ->whereIn('a.ward_mstr_id', $occupiedWards)
                 ->where('parked', true)
-                ->orderByDesc('adv_active_selfadvertisements.id');
+                ->orderByDesc('adv_active_privatelands.id');
             // ->get();
             if (trim($req->key))
                 $btcList =  searchFilter($btcList, $req);
