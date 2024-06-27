@@ -625,6 +625,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge-cash-varification-list', 'lodgeCashVerificationList');                                        //05
         Route::post('market/collection-lodge', 'lodgeCollection');                                            //05
         Route::post('market/verify-cash-lodge', 'lodgeCashVerify');                                            //05
+        //written by prity pandey
+        Route::post('market/list-cash-verification', 'cashVerificationListMarket');
+        Route::post('market/cash-verification-dtl', 'cashVerificationDtl');
     });
 
 
