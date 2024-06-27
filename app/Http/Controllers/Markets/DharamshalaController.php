@@ -2074,4 +2074,49 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050720", 1.0, "271ms", "POST", "", "");
         }
     }
+
+    public function getRejectedDetailsById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mAdvActiveSelfadvertisement = new MarActiveDharamshala();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+
+            // Fetch transaction details
+            //$tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            // if ($tranDetails) {
+            //     $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            // } else {
+            //     $approveApplicationDetails['paymentDetails'] = null;
+            // }
+
+            // Return success response with the data
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 }

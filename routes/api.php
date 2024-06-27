@@ -543,6 +543,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/search-application', 'searchApplication');
 
         Route::post('market/dharamshala/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/dharamshala/btc/get-details-by-id', 'getRejectedDetailsById');
     });
 
     /**

@@ -522,4 +522,37 @@ class MarActiveDharamshala extends Model
             ->join('users', 'users.id', '=', 'mar_active_dharamshalas.user_id')
             ->where('mar_active_dharamshalas.ulb_id', $ulbId);
     }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return MarActiveDharamshala::select(
+            'mar_active_dharamshalas.id',
+            'mar_active_dharamshalas.application_no',
+            'mar_active_dharamshalas.applicant',
+            'mar_active_dharamshalas.application_date',
+            'mar_active_dharamshalas.entity_address',
+            'mar_active_dharamshalas.entity_name',
+            'mar_active_dharamshalas.mobile as mobile_no',
+            'mar_active_dharamshalas.citizen_id',
+            'mar_active_dharamshalas.ulb_id',
+           'mar_active_dharamshalas.user_id',
+            'mar_active_dharamshalas.workflow_id',
+            'mar_active_dharamshalas.application_type',
+            'um.ulb_name as ulb_name',
+            'entity_ward_id as ward_no',
+            'current_role_id',
+            'holding_no',
+            'father',
+            'mar_active_dharamshalas.email',
+            'mar_active_dharamshalas.aadhar_card',
+            'permanent_ward_id as permanent_ward_no',
+            'permanent_address',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_dharamshalas.ulb_id')
+            ->where('mar_active_dharamshalas.id', $applicationId)
+            ->orderByDesc('mar_active_dharamshalas.id');
+        //->get();
+    }
 }
