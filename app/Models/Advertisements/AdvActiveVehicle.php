@@ -532,7 +532,7 @@ class AdvActiveVehicle extends Model
         return AdvActiveVehicle::select(
             'adv_active_vehicles.id',
             'application_no',
-            'entity_ward_id',
+            'ward_id',
             DB::raw("TO_CHAR(adv_active_vehicles.btc_date, 'DD-MM-YYYY') as btc_date"),
             'remarks',
             DB::raw("TO_CHAR(adv_active_vehicles.application_date, 'DD-MM-YYYY') as application_date"),
