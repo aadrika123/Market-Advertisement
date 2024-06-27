@@ -527,4 +527,49 @@ class AdvActiveAgency extends Model
             ->orderByDesc('adv_active_agencies.id');
         //->get();
     }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return AdvActiveAgency::select(
+            'adv_active_agencies.id',
+            'application_no',
+            DB::raw("TO_CHAR(adv_active_agencies.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(adv_active_agencies.application_date, 'DD-MM-YYYY') as application_date"),
+            'adv_active_agencies.application_type',
+            'adv_active_agencies.entity_name',
+            'adv_active_agencies.mobile_no as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
+            ->join('users', 'users.id', '=', 'adv_active_agencies.user_id')
+            ->where('adv_active_agencies.ulb_id', $ulbId);
+    }
+
+    public function getDetailsByIdjsk($applicationId)
+    {
+        return AdvActiveAgency::select(
+            'adv_active_agencies.id',
+            'adv_active_agencies.application_no',
+            'adv_active_agencies.application_date',
+            'adv_active_agencies.entity_name',
+            'adv_active_agencies.mobile_no as mobile_no',
+            'adv_active_agencies.citizen_id',
+            'adv_active_agencies.ulb_id',
+           'adv_active_agencies.user_id',
+            'adv_active_agencies.workflow_id',
+            'adv_active_agencies.application_type',
+            'um.ulb_name as ulb_name',
+            'current_role_id',
+            'adv_active_agencies.email',
+            'doc_upload_status',
+            'doc_verify_status'
+        )
+            ->leftjoin('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
+            ->where('adv_active_agencies.id', $applicationId)
+            ->orderByDesc('adv_active_agencies.id');
+        //->get();
+    }
 }
