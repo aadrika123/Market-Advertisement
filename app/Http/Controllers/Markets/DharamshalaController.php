@@ -1136,9 +1136,11 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $mmMarActiveDharamshala = new MarActiveDharamshala();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mmMarActiveDharamshala->reuploadDocument($req);
+            $appId = $mmMarActiveDharamshala->reuploadDocument($req, $Image, $docId);
             $this->checkFullUpload($appId);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
