@@ -391,7 +391,7 @@ class LodgeController extends Controller
             'applicationId' => 'required|integer',
             'senderRoleId' => 'required|integer',
             'receiverRoleId' => 'required|integer',
-            'comment' => 'nullable',
+            'comment' => 'required',
         ]);
 
         try {
@@ -1052,7 +1052,7 @@ class LodgeController extends Controller
 
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id']??2;
+            $ulbId = $req->auth['ulb_id'] ?? 2;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1977,11 +1977,11 @@ class LodgeController extends Controller
             $ulbId = $user->ulb_id ?? null;
 
             // Fetch data from various tables
-            $approved = MarLodge::select('id', 'mobile', 'entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),'payment_status')
+            $approved = MarLodge::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approved' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), 'payment_status')
                 ->where('ulb_id', $ulbId);
-            $active = MarActiveLodge::select('id', 'mobile', 'entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+            $active = MarActiveLodge::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), DB::raw(" 0 as payment_status"))
                 ->where('ulb_id', $ulbId);
-            $rejected = MarRejectedLodge::select('id', 'mobile','entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+            $rejected = MarRejectedLodge::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), DB::raw(" 0 as payment_status"))
                 ->where('ulb_id', $ulbId);
 
             // Combine the queries using union
@@ -2035,7 +2035,7 @@ class LodgeController extends Controller
 
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id']??2;
+            $ulbId = $req->auth['ulb_id'] ?? 2;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -2092,6 +2092,47 @@ class LodgeController extends Controller
             return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function forwardNextLevelBtc(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|integer',
+                'senderRoleId' => 'required|integer',
+                'receiverRoleId' => 'required|integer'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        
+        try {
+            // Variable initialization
+            // Marriage Banqute Hall Application Update Current Role Updation
+            $mMarActiveLodge = MarActiveLodge::find($request->applicationId);
+            $mMarActiveLodge->last_role_id = $mMarActiveLodge->current_role_id;
+            $mMarActiveLodge->current_role_id = $request->receiverRoleId;
+            $mMarActiveLodge->save();
+
+            $metaReqs['moduleId'] = $this->_moduleIds;
+            $metaReqs['workflowId'] = $mMarActiveLodge->workflow_id;
+            $metaReqs['refTableDotId'] = "mar_active_lodges.id";
+            $metaReqs['refTableIdValue'] = $request->applicationId;
+            $request->request->add($metaReqs);
+
+            $track = new WorkflowTrack();
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+            $track->saveTrack($request);
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 }

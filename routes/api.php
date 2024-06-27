@@ -376,6 +376,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/lodge/reupload-document', 'reuploadDocument');
+        Route::post('market/lodge/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
     /**
@@ -427,8 +428,14 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/bm-hall/view-approve-document', 'getUploadDocuments');
         Route::post('market/bm-hall/search-application', 'searchApplication');
+
         Route::post('market/bm-hall/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/bm-hall/reupload-document', 'reuploadDocument');
+
+        Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');
+        Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
+        Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
+        Route::post('market/lodge/reupload-document', 'reuploadDocument');
     });
 
     /**
