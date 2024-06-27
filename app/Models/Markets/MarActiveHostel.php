@@ -535,4 +535,27 @@ class MarActiveHostel extends Model
                 "doc_upload_status" => $status
             ]);
     }
+
+    public function getLodgeListJsk($ulbId)
+    {
+        return MarActiveHostel::select(
+            'mar_active_hostels.id',
+            'application_no',
+            'entity_ward_id',
+            DB::raw("TO_CHAR(mar_active_hostels.btc_date, 'DD-MM-YYYY') as btc_date"),
+            'remarks',
+            DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_active_hostels.application_type',
+            'mar_active_hostels.applicant',
+            'mar_active_hostels.applicant as owner_name',
+            'mar_active_hostels.entity_name',
+            'mar_active_hostels.mobile as mobile_no',
+            //DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
+            'users.name as applied_by',
+            'wr.role_name as btc_by',
+        )
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_active_hostels.current_role_id')
+            ->join('users', 'users.id', '=', 'mar_active_hostels.user_id')
+            ->where('mar_active_hostels.ulb_id', $ulbId);
+    }
 }
