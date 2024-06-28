@@ -111,7 +111,7 @@ class AdvMarTransaction extends Model
             ->where('transaction_date', $date);
     }
 
-    public function getTransByTranNo($tranNo,$lodgewWorkflow)
+    public function getTransByTranNo($tranNo, $lodgewWorkflow)
     {
         return DB::table('adv_mar_transactions as t')
             ->select(
@@ -128,7 +128,7 @@ class AdvMarTransaction extends Model
                 't.bank_name',
                 'mar_lodges.application_no'
             )
-            ->join('mar_lodges','mar_lodges.id','=','t.application_id')
+            ->join('mar_lodges', 'mar_lodges.id', '=', 't.application_id')
             ->where('t.transaction_no', $tranNo)
             ->where('t.workflow_id', $lodgewWorkflow)
             ->where('t.verify_status', 0)
@@ -172,5 +172,32 @@ class AdvMarTransaction extends Model
                     'status' => 0,
                 ]
             );
+    }
+
+    public function getDeactivatedTran()
+    {
+        return AdvMarTransaction::select(
+            'adv_mar_transactions.id',
+            'adv_mar_transactions.transaction_no',
+            DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
+            'adv_mar_transactions.amount',
+            'adv_mar_transactions.payment_mode',
+            'adv_mar_transactions.demand_amount',
+            'adv_mar_transactions.ulb_id',
+            'adv_mar_transactions.cheque_dd_no',
+            'adv_mar_transactions.cheque_date',
+            'adv_mar_transactions.bank_name',
+            'adv_mar_transactions.branch_name',
+            'adv_mar_transactions.verify_status',
+            'mar_lodges.application_no',
+            "transaction_deactivate_dtls.deactive_date",
+            "transaction_deactivate_dtls.reason",
+            "users.name as deactivated_by"
+        )
+            ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
+            ->join('mar_lodges', 'mar_lodges.id', '=', 'adv_mar_transactions.application_id')
+            ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
+            ->where("adv_mar_transactions.status", 0);
+        //->get();
     }
 }

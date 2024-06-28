@@ -778,4 +778,54 @@ class CashVerificationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
+
+    public function deactivatedTransactionList(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+
+            // Get deactivated transactions for water tankers
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTran()
+                ->whereBetween('adv_mar_transactions.transaction_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 }

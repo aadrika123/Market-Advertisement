@@ -684,6 +684,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         # Lodge Transaction Deactivation
         Route::post('market/lodge-search-transaction-no', 'searchTransactionNo');
         Route::post('market/lodge-deactivate-transaction', 'deactivateTransaction');
+        Route::post('market/lodge-deactivate-transaction-list', 'deactivatedTransactionList');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
