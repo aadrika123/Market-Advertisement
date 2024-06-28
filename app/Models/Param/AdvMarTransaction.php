@@ -119,7 +119,7 @@ class AdvMarTransaction extends Model
                 't.transaction_no as transaction_no',
                 't.amount',
                 't.payment_mode',
-                't.transaction_date',
+                DB::raw("TO_CHAR(t.transaction_date, 'DD-MM-YYYY') as transaction_date"),
                 't.module_type',
                 't.module_id',
                 't.workflow_id',
@@ -174,7 +174,7 @@ class AdvMarTransaction extends Model
             );
     }
 
-    public function getDeactivatedTran()
+    public function getDeactivatedTran($lodgewWorkflow)
     {
         return AdvMarTransaction::select(
             'adv_mar_transactions.id',
@@ -190,13 +190,14 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.branch_name',
             'adv_mar_transactions.verify_status',
             'mar_lodges.application_no',
-            "transaction_deactivate_dtls.deactive_date",
+            DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
             "transaction_deactivate_dtls.reason",
             "users.name as deactivated_by"
         )
             ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
             ->join('mar_lodges', 'mar_lodges.id', '=', 'adv_mar_transactions.application_id')
             ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
+            ->where('adv_mar_transactions.workflow_id', $lodgewWorkflow)
             ->where("adv_mar_transactions.status", 0);
         //->get();
     }

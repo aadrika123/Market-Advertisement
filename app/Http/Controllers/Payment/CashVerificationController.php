@@ -797,10 +797,9 @@ class CashVerificationController extends Controller
             $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
             $paymentMode = $req->paymentMode ?? null;
             $transactionNo = $req->transactionNo ?? null;
-
-            // Get deactivated transactions for water tankers
+            $lodgewWorkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
             $mTransaction = new AdvMarTransaction();
-            $transactionDeactivationDtl = $mTransaction->getDeactivatedTran()
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTran($lodgewWorkflow)
                 ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
 
             if ($paymentMode && $paymentMode != 'ALL') {
