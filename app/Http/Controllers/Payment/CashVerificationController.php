@@ -801,7 +801,7 @@ class CashVerificationController extends Controller
             // Get deactivated transactions for water tankers
             $mTransaction = new AdvMarTransaction();
             $transactionDeactivationDtl = $mTransaction->getDeactivatedTran()
-                ->whereBetween('adv_mar_transactions.transaction_date', [$fromDate, $uptoDate]);
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
 
             if ($paymentMode && $paymentMode != 'ALL') {
                 $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
