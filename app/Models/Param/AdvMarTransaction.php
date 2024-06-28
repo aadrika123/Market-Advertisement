@@ -163,10 +163,10 @@ class AdvMarTransaction extends Model
             ->orderby('adv_cheque_dtls.id', 'Desc');
     }
 
-    public function deactivateTransaction($applicationId)
+    public function deactivateTransaction($transactionId)
     {
 
-        AdvMarTransaction::where('id', $applicationId)
+        AdvMarTransaction::where('id', $transactionId)
             ->update(
                 [
                     'status' => 0,
