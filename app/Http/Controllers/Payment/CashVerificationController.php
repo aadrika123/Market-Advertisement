@@ -733,7 +733,7 @@ class CashVerificationController extends Controller
             $user = Auth()->user();
 
             DB::beginTransaction();
-            DB::connection('pgsql_master')->beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
 
             $imageName = "";
             $deactivationArr = [
@@ -770,12 +770,12 @@ class CashVerificationController extends Controller
                 ->update(['payment_status' => 0]);
 
             DB::commit();
-            DB::connection('pgsql_master')->commit();
+            DB::connection('pgsql_masters')->commit();
 
             return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            DB::connection('pgsql_master')->rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }

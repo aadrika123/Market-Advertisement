@@ -123,8 +123,12 @@ class AdvMarTransaction extends Model
                 't.module_type',
                 't.module_id',
                 't.workflow_id',
-                't.status'
+                't.status',
+                't.cheque_dd_no',
+                't.bank_name',
+                'mar_lodges.application_no'
             )
+            ->join('mar_lodges','mar_lodges.id','=','t.application_id')
             ->where('t.transaction_no', $tranNo)
             ->where('t.workflow_id', $lodgewWorkflow)
             ->where('t.verify_status', 0)
