@@ -111,28 +111,27 @@ class AdvMarTransaction extends Model
             ->where('transaction_date', $date);
     }
 
-    public function getTransByTranNo($tranNo)
+    public function getTransByTranNo($tranNo,$lodgewWorkflow)
     {
         return DB::table('adv_mar_transactions as t')
             ->select(
                 't.id as transaction_id',
-                't.tran_no as transaction_no',
+                't.transaction_no as transaction_no',
                 't.amount',
                 't.payment_mode',
                 't.transaction_date',
-                't.tran_type as module_name',
-                DB::raw("
-                CASE
-                    WHEN t.property_id is not null THEN t.property_id
-                    ELSE t.saf_id
-                END as application_id
-            "),
-                DB::raw('1 as moduleId'),
+                't.module_type',
+                't.module_id',
+                't.workflow_id',
                 't.status'
             )
-            ->where('t.tran_no', $tranNo)
-            ->where('status', 1);
+            ->where('t.transaction_no', $tranNo)
+            ->where('t.workflow_id', $lodgewWorkflow)
+            ->where('t.verify_status', 0)
+            ->where('t.status', 1)
+            ->get();
     }
+
 
     /**
      * | Cheque Dtl And Transaction Dtl
@@ -157,6 +156,17 @@ class AdvMarTransaction extends Model
             ->leftJoin('users', 'users.id', 'adv_cheque_dtls.user_id')
             ->whereIn('payment_mode', ['CHEQUE', 'DD'])
             ->where('adv_mar_transactions.ulb_id', $ulbId)
-            ->orderby('adv_cheque_dtls.id','Desc');
+            ->orderby('adv_cheque_dtls.id', 'Desc');
+    }
+
+    public function deactivateTransaction($applicationId)
+    {
+
+        AdvMarTransaction::where('id', $applicationId)
+            ->update(
+                [
+                    'status' => 0,
+                ]
+            );
     }
 }

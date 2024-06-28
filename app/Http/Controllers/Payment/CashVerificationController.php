@@ -3,25 +3,23 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
+use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Markets\MarLodge;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\RevDailycollection;
 use App\Models\Payment\RevDailycollectiondetail;
 use App\Models\Payment\TempTransaction;
+use App\Models\TransactionDeactivateDtl;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CashVerificationController extends Controller
 {
-
-
-
-
-
-
     /**
      * Self-Advertisement Cash Verification List
      */
@@ -692,98 +690,93 @@ class CashVerificationController extends Controller
         }
     }
 
-
-    public function cashVerificationListMarket(Request $request)
+    public function searchTransactionNo(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
         try {
-            $ulbId =  authUser($request)->ulb_id;
-            $userId =  $request->id;
-            $date = date('Y-m-d', strtotime($request->date));
-            $lodgeworkflow = Config::get('workflow-constants.LODGE');
-            $hostelWorkflow = Config::get('workflow-constants.HOSTEL');
-            $dhramshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA');
-            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');
-            $mTempTransaction =  new TempTransaction();
-            $zoneId = $request->zone;
-            $wardId = $request->wardId;
-
-            $data = $mTempTransaction->transactionDtl($date, $ulbId);
-            if ($userId) {
-                $data = $data->where('user_id', $userId);
-            }
-            if ($zoneId) {
-                $data = $data->where('ulb_ward_masters.zone', $zoneId);
-            }
-            if ($wardId) {
-                $data = $data->where('ulb_ward_masters.id', $wardId);
-            }
-            $data = $data->get();
-
-            $collection = collect($data->groupBy("id")->all());
-
-            $data = $collection->map(function ($val) use ($date, $lodgeworkflow, $hostelWorkflow, $dhramshalaWorkflow, $marriageHallWorkflow) {
-                $total =  $val->sum('amount');
-                $lodge  = $val->where("workflow_id", $lodgeworkflow)->sum('amount');
-                $hostel = $val->where("workflow_id", $hostelWorkflow)->sum('amount');
-                $dharamshala  = $val->where("workflow_id", $dhramshalaWorkflow)->sum('amount');
-                $marriageHall = $val->where("workflow_id", $marriageHallWorkflow)->sum('amount');
-                return [
-                    "id" => $val[0]['id'],
-                    "user_name" => $val[0]['name'],
-                    "lodge" => $lodge,
-                    "hostel" => $hostel,
-                    "dharamshala" => $dharamshala,
-                    "marriageHall" => $marriageHall,
-                    "total" => $total,
-                    "date" => Carbon::parse($date)->format('d-m-Y'),
-                    // "verified_amount" => 0,
-                ];
-            });
-
-            $data = (array_values(objtoarray($data)));
-
-            return responseMsgs(true, "List cash Verification", $data, "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            $lodgewWorkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $lodgewWorkflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 
-    public function cashVerificationDtl(Request $request)
+    public function deactivateTransaction(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
         try {
-            $request->validate([
-                "date" => "required|date",
-                "userId" => "required|numeric",
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
 
-            ]);
-            $userId =  $request->userId;
-            $ulbId =  authUser($request)->ulb_id;
-            $date = date('Y-m-d', strtotime($request->date));
-            $lodgeworkflow = Config::get('workflow-constants.LODGE');
-            $hostelWorkflow = Config::get('workflow-constants.HOSTEL');
-            $dhramshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA');
-            $marriageHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL');
-            $mTempTransaction = new TempTransaction();
-            $details = $mTempTransaction->transactionList($date, $userId, $ulbId);
-            if ($details->isEmpty())
-                throw new Exception("No Application Found for this id");
+            DB::beginTransaction();
+            DB::connection('pgsql_master')->beginTransaction();
 
-            $data['lodge'] = collect($details)->where('workflow_id', $lodgeworkflow)->values();
-            $data['hostel'] = collect($details)->where('workflow_id', $hostelWorkflow)->values();
-            $data['dharamshala'] = collect($details)->where('workflow_id', $dhramshalaWorkflow)->values();
-            $data['marriageHall'] = collect($details)->where('workflow_id', $marriageHallWorkflow)->values();
-            $data['Cash'] = collect($details)->where('payment_mode', '=', 'CASH')->sum('amount');
-            $data['Cheque'] = collect($details)->where('payment_mode', '=', 'CHEQUE')->sum('amount');
-            $data['DD'] = collect($details)->where('payment_mode', '=', 'DD')->sum('amount');
-            $data['totalAmount'] =  $details->sum('amount');
-            $data['numberOfTransaction'] =  $details->count();
-            $data['collectorName'] =  collect($details)[0]->user_name;
-            $data['date'] = Carbon::parse($date)->format('d-m-Y');
-            $data['verifyStatus'] = false;
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
 
-            return responseMsgs(true, "Collection Details", remove_null($data), "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $applicationId = $transaction->application_id;
+            $mTransaction->deactivateTransaction($applicationId);
+
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            MarLodge::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_master')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            DB::rollBack();
+            DB::connection('pgsql_master')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 }

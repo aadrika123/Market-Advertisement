@@ -681,8 +681,9 @@ Route::group(['middleware' => ['checkToken']], function () {
 
 
         //written by prity pandey
-        Route::post('market/list-cash-verification', 'cashVerificationListMarket');
-        Route::post('market/cash-verification-dtl', 'cashVerificationDtl');
+        # Lodge Transaction Deactivation
+        Route::post('market/lodge-search-transaction-no', 'searchTransactionNo');
+        Route::post('market/lodge-deactivate-transaction', 'deactivateTransaction');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
