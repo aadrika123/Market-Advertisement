@@ -276,7 +276,7 @@ class AdvChequeDtl extends Model
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
                         'payment_mode' => "Cheque/DD",
-                    ],
+                    ], 
                 );
                 AdvVehicle::where('id', $applicationId)->update($metaReqs);
                 $amount = DB::table('adv_vehicles')->where('id', $applicationId)->first()->payment_amount;

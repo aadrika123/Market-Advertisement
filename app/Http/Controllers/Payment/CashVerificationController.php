@@ -192,6 +192,7 @@ class CashVerificationController extends Controller
      */
     public function selfAdvertisementCashVerify(Request $request)
     {
+    
         return $this->verifyCash($request, 'selfAdvert');
     }
 
@@ -214,6 +215,7 @@ class CashVerificationController extends Controller
      */
     public function agencyCashVerify(Request $request)
     {
+       
         return $this->verifyCash($request, 'agency');
     }
 

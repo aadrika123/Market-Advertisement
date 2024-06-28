@@ -688,6 +688,6 @@ Route::group(['middleware' => ['checkToken']], function () {
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
-        Route::post('search-transaction', 'searchTransaction');
+        Route::post('advert/search-transaction', 'searchTransaction');
     });
 });
