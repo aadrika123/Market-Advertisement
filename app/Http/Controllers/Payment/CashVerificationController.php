@@ -755,9 +755,8 @@ class CashVerificationController extends Controller
                 throw new Exception("Transaction not found");
             }
 
+            $mTransaction->deactivateTransaction($transactionId);
             $applicationId = $transaction->application_id;
-            $mTransaction->deactivateTransaction($applicationId);
-
             $TranDeativetion = new TransactionDeactivateDtl();
             $TranDeativetion->create($deactivationArr);
 
