@@ -64,7 +64,7 @@ class AdvMarTransaction extends Model
             $addData->demand_amount     = $req->demand_amount;
         }
         $addData->payment_details   = $req->payment_details;
-        $addData->payment_mode      = $req->paymentMode;
+        $addData->payment_mode      = $req->paymentMode ?? 'ONLINE';
         if (isset($req->entity_ward_id)) {
             $addData->entity_ward_id    = $req->entity_ward_id;
         }
@@ -152,6 +152,7 @@ class AdvMarTransaction extends Model
             DB::raw("TO_CHAR(clear_bounce_date, 'DD-MM-YYYY') as clear_bounce_date"),
             "users.name as user_name",
             DB::raw("2 as module_id"),
+            'adv_cheque_dtls.status'
         )
             ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', '=', 'adv_mar_transactions.id')
             ->leftJoin('users', 'users.id', 'adv_cheque_dtls.user_id')
