@@ -685,6 +685,21 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge-search-transaction-no', 'searchTransactionNo');
         Route::post('market/lodge-deactivate-transaction', 'deactivateTransaction');
         Route::post('market/lodge-deactivate-transaction-list', 'deactivatedTransactionList');
+
+        # Banquet/Marriage Hall Transaction Deactivation
+        Route::post('market/bm-hall-search-transaction-no', 'searchTransactionNoBmHall');
+        Route::post('market/bm-hall-deactivate-transaction', 'deactivateTransactionBmHall');
+        Route::post('market/bm-hall-deactivate-transaction-list', 'deactivatedTransactionListBmHall');
+
+        #hostel Transaction Deactivation
+        Route::post('market/hostel-search-transaction-no', 'searchTransactionNoHostel');
+        Route::post('market/hostel-deactivate-transaction', 'deactivateTransactionHostel');
+        Route::post('market/hostel-deactivate-transaction-list', 'deactivatedTransactionListHostel');
+
+        #dhramshala Transaction Deactivation
+        Route::post('market/dharamshala-search-transaction-no', 'searchTransactionNoDharamshala');
+        Route::post('market/dharamshala-deactivate-transaction', 'deactivateTransactionDharamshala');
+        Route::post('market/dharamshala-deactivate-transaction-list', 'deactivatedTransactionListDharamshala');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {

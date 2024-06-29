@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Payment;
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Markets\MarBanquteHall;
+use App\Models\Markets\MarDharamshala;
+use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarLodge;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\RevDailycollection;
@@ -801,7 +804,421 @@ class CashVerificationController extends Controller
             $transactionNo = $req->transactionNo ?? null;
             $lodgewWorkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
             $mTransaction = new AdvMarTransaction();
-            $transactionDeactivationDtl = $mTransaction->getDeactivatedTran($lodgewWorkflow)
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranLodge($lodgewWorkflow)
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function searchTransactionNoBmHall(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $bmwWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $bmwWorkflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransactionBmHall(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->application_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            MarBanquteHall::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionListBmHall(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $bmwWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranBmHall($bmwWorkflow)
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function searchTransactionNoHostel(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $hostelWorkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $hostelWorkflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransactionHostel(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->application_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            MarHostel::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionListHostel(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $hostelWorkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranHostel($hostelWorkflow)
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function searchTransactionNoDharamshala(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $dharamshalalWorkflow = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $dharamshalalWorkflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransactionDharamshala(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->application_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            MarDharamshala::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionListDharamshala(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $dharamshalalWorkflow = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranDh($dharamshalalWorkflow)
                 ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
 
             if ($paymentMode && $paymentMode != 'ALL') {
