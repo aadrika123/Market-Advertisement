@@ -711,6 +711,16 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle-search-transaction-no', 'searchTransactionNovehicle');
         Route::post('advert/vehicle-deactivate-transaction', 'deactivateTransactionvehicle');
         Route::post('advert/vehicle-deactivate-transaction-list', 'deactivatedTransactionListvehicle');
+
+        #private land Transaction Deactivation
+        Route::post('advert/pvt-land-search-transaction-no', 'searchTransactionNoPvtLand');
+        Route::post('advert/pvt-land-deactivate-transaction', 'deactivateTransactionPvtLand');
+        Route::post('advert/pvt-land-deactivate-transaction-list', 'deactivatedTransactionListPvtLand');
+
+         #agency Transaction Deactivation
+         Route::post('advert/agency-search-transaction-no', 'searchTransactionNoAgency');
+         Route::post('advert/agency-deactivate-transaction', 'deactivateTransactionAgency');
+         Route::post('advert/agency-deactivate-transaction-list', 'deactivatedTransactionListAgency');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
