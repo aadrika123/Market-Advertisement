@@ -1253,7 +1253,8 @@ class HostelController extends Controller
                 'amount' => $appDetails->payment_amount,
                 'applicationId' => $appDetails->id,
                 'workflowId' => $appDetails->workflow_id,
-                'transactionId' => $transactionId
+                'transactionId' => $transactionId,
+                'applicationNo' => $appDetails->application_no
             ]);
             // Save data in temp transaction
             $this->postOtherPaymentModes($req);
@@ -1297,7 +1298,7 @@ class HostelController extends Controller
             'module_id' => $moduleId,
             'workflow_id' => $req['workflowId'],
             'transaction_no' => $req['tranNo'],
-            'application_no' => $req['applicationId'],
+            'application_no' => $req['applicationNo'],
             'amount' => $req['amount'],
             'payment_mode' => strtoupper($req['paymentMode']),
             'cheque_dd_no' => $req['chequeNo'],
