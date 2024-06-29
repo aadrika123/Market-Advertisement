@@ -100,7 +100,7 @@ class AdvMarTransaction extends Model
         if (isset($req->demand_amount)) {
             $addData->demand_amount     = $req->demand_amount;
         }
-        $addData->payment_details   = $req->payment_details;
+        $addData->payment_details   = $appDetails->payment_details;
         $addData->payment_mode      = $req->paymentMode;
         if (isset($req->entity_ward_id)) {
             $addData->entity_ward_id    = $req->entity_ward_id;
