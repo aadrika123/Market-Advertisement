@@ -725,5 +725,6 @@ Route::group(['middleware' => ['checkToken']], function () {
 
     Route::controller(BankReconcillationController::class)->group(function () {
         Route::post('advert/search-transaction', 'searchTransaction');
+        Route::post('advert/cheque-dtl-by-id', 'chequeDtlById');
     });
 });

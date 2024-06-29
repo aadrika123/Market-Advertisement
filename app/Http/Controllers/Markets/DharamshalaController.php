@@ -1222,7 +1222,8 @@ class DharamshalaController extends Controller
                 'bank_name' => $req['bankName'],
                 'branch_name' => $req['branchName'],
                 'cheque_no' => $req['chequeNo'],
-                'workflow_id' => $req['workflowId']
+                'workflow_id' => $req['workflowId'],
+                'transaction_no' => $req['tranNo']
             ];
             $mChequeDtl->entryChequeDd($chequeReqs);
         }

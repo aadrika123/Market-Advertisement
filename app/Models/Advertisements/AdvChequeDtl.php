@@ -276,7 +276,7 @@ class AdvChequeDtl extends Model
                         'valid_from' => $valid_from,
                         'valid_upto' => $valid_upto,
                         'payment_mode' => "Cheque/DD",
-                    ], 
+                    ],
                 );
                 AdvVehicle::where('id', $applicationId)->update($metaReqs);
                 $amount = DB::table('adv_vehicles')->where('id', $applicationId)->first()->payment_amount;
@@ -656,11 +656,15 @@ class AdvChequeDtl extends Model
         }
     }
 
+    /**
+     * | Get data of cheque details 
+     */
     public function chequeDtlById($request)
     {
-        return PropChequeDtl::select('*')
+        return AdvChequeDtl::select('*')
             ->where('id', $request->chequeId)
-            ->where('status', 2)
+            ->where('workflow_id', $request->workflowId)
+            ->where('status', 0)
             ->first();
     }
 }
