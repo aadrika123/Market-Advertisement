@@ -111,7 +111,7 @@ class AdvMarTransaction extends Model
             ->where('transaction_date', $date);
     }
 
-    public function getTransByTranNo($tranNo, $lodgewWorkflow)
+    public function getTransByTranNo($tranNo, $bmwWorkflow)
     {
         return DB::table('adv_mar_transactions as t')
             ->select(
@@ -128,9 +128,9 @@ class AdvMarTransaction extends Model
                 't.bank_name',
                 'mar_lodges.application_no'
             )
-            ->join('mar_lodges', 'mar_lodges.id', '=', 't.application_id')
+            ->leftjoin('mar_lodges', 'mar_lodges.id', '=', 't.application_id')
             ->where('t.transaction_no', $tranNo)
-            ->where('t.workflow_id', $lodgewWorkflow)
+            ->where('t.workflow_id', $bmwWorkflow)
             ->where('t.verify_status', 0)
             ->where('t.status', 1)
             ->get();
@@ -174,7 +174,7 @@ class AdvMarTransaction extends Model
             );
     }
 
-    public function getDeactivatedTran($lodgewWorkflow)
+    public function getDeactivatedTranBmHall($bmwWorkflow)
     {
         return AdvMarTransaction::select(
             'adv_mar_transactions.id',
@@ -189,15 +189,99 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.bank_name',
             'adv_mar_transactions.branch_name',
             'adv_mar_transactions.verify_status',
-            'mar_lodges.application_no',
+            'mar_banqute_halls.application_no',
             DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
             "transaction_deactivate_dtls.reason",
             "users.name as deactivated_by"
         )
             ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
-            ->join('mar_lodges', 'mar_lodges.id', '=', 'adv_mar_transactions.application_id')
+            ->join('mar_banqute_halls', 'mar_banqute_halls.id', '=', 'adv_mar_transactions.application_id')
+            ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
+            ->where('adv_mar_transactions.workflow_id', $bmwWorkflow)
+            ->where("adv_mar_transactions.status", 0);
+        //->get();
+    }
+
+    public function getDeactivatedTranLodge($lodgewWorkflow)
+    {
+        return AdvMarTransaction::select(
+            'adv_mar_transactions.id',
+            'adv_mar_transactions.transaction_no',
+            DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
+            'adv_mar_transactions.amount',
+            'adv_mar_transactions.payment_mode',
+            'adv_mar_transactions.demand_amount',
+            'adv_mar_transactions.ulb_id',
+            'adv_mar_transactions.cheque_dd_no',
+            'adv_mar_transactions.cheque_date',
+            'adv_mar_transactions.bank_name',
+            'adv_mar_transactions.branch_name',
+            'adv_mar_transactions.verify_status',
+            'mar_lodge.application_no',
+            DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
+            "transaction_deactivate_dtls.reason",
+            "users.name as deactivated_by"
+        )
+            ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
+            ->join('mar_lodge', 'mar_lodge.id', '=', 'adv_mar_transactions.application_id')
             ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
             ->where('adv_mar_transactions.workflow_id', $lodgewWorkflow)
+            ->where("adv_mar_transactions.status", 0);
+        //->get();
+    }
+
+    public function getDeactivatedTranHostel($hostelWorkflow)
+    {
+        return AdvMarTransaction::select(
+            'adv_mar_transactions.id',
+            'adv_mar_transactions.transaction_no',
+            DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
+            'adv_mar_transactions.amount',
+            'adv_mar_transactions.payment_mode',
+            'adv_mar_transactions.demand_amount',
+            'adv_mar_transactions.ulb_id',
+            'adv_mar_transactions.cheque_dd_no',
+            'adv_mar_transactions.cheque_date',
+            'adv_mar_transactions.bank_name',
+            'adv_mar_transactions.branch_name',
+            'adv_mar_transactions.verify_status',
+            'mar_hostel.application_no',
+            DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
+            "transaction_deactivate_dtls.reason",
+            "users.name as deactivated_by"
+        )
+            ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
+            ->join('mar_hostel', 'mar_hostel.id', '=', 'adv_mar_transactions.application_id')
+            ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
+            ->where('adv_mar_transactions.workflow_id', $hostelWorkflow)
+            ->where("adv_mar_transactions.status", 0);
+        //->get();
+    }
+
+    public function getDeactivatedTranDh($dharamshalalWorkflow)
+    {
+        return AdvMarTransaction::select(
+            'adv_mar_transactions.id',
+            'adv_mar_transactions.transaction_no',
+            DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
+            'adv_mar_transactions.amount',
+            'adv_mar_transactions.payment_mode',
+            'adv_mar_transactions.demand_amount',
+            'adv_mar_transactions.ulb_id',
+            'adv_mar_transactions.cheque_dd_no',
+            'adv_mar_transactions.cheque_date',
+            'adv_mar_transactions.bank_name',
+            'adv_mar_transactions.branch_name',
+            'adv_mar_transactions.verify_status',
+            'mar_dharamshalas.application_no',
+            DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
+            "transaction_deactivate_dtls.reason",
+            "users.name as deactivated_by"
+        )
+            ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
+            ->join('mar_dharamshalas', 'mar_dharamshalas.id', '=', 'adv_mar_transactions.application_id')
+            ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
+            ->where('adv_mar_transactions.workflow_id', $dharamshalalWorkflow)
             ->where("adv_mar_transactions.status", 0);
         //->get();
     }
