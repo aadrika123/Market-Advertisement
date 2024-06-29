@@ -292,7 +292,7 @@ class BankReconcillationController extends Controller
                             'verified_by' => $userId
                         ]
                     );
-                $msg = 'Cheque Clear successfully';
+                $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
