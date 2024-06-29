@@ -1398,7 +1398,7 @@ class CashVerificationController extends Controller
         try {
             $Workflow = Config::get('workflow-constants.MOVABLE-VEHICLE');
             $mTransaction = new AdvMarTransaction();
-            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $Workflow);
+            $transactionDtl = $mTransaction->getTransByTranNovh($req->transactionNo, $Workflow);
             return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
