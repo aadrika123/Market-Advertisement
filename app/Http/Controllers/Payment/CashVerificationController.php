@@ -157,13 +157,13 @@ class CashVerificationController extends Controller
             $date = date('Y-m-d', strtotime($request->date));
             // $workflowId = Config::get('workflow-constants.' . $workflowType);
             $mTempTransaction = new TempTransaction();
-            $details = $mTempTransaction->transactionList($date, $userId, $ulbId);
+            $details = $mTempTransaction->transactionList($date, $userId, $ulbId,$workflowType);
 
             if ($details->isEmpty()) {
                 throw new Exception("No Application Found for this id");
             }
 
-            $data = [
+           $data = [
                 'workflowType' => $workflowType,
                 'transactions' => collect($details)->where('workflow_id', $workflowType)->values(),
                 'cash' => collect($details)->where('payment_mode', 'CASH')->sum('amount'),
