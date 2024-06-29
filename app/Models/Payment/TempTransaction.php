@@ -33,7 +33,7 @@ class TempTransaction extends Model
             ->orderByDesc('temp_transactions.id');
     }
 
-    public function transactionList($date, $userId, $ulbId)
+    public function transactionList($date, $userId, $ulbId,$workflowType)
     {
         return TempTransaction::select(
             'temp_transactions.id',
@@ -56,6 +56,7 @@ class TempTransaction extends Model
             ->where('temp_transactions.status', 1)
             ->where('user_id', $userId)
             ->where('temp_transactions.ulb_id', $ulbId)
+            ->where('temp_transactions.workflow_id', $workflowType)
             ->get();
     }
 }
