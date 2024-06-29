@@ -9,12 +9,13 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class BankReconcillationController extends Controller
 {
     /**
-     * | search chque transactions for Advertisement and Market  
+     * | search chque transactions for Advertisement,Market,  
      * |  
      */
     public function searchTransaction(Request $request)
@@ -38,35 +39,36 @@ class BankReconcillationController extends Controller
             $verifyStatus = $request->verificationType;
             $fromDate = Carbon::create($request->fromDate)->format('Y-m-d');
             $toDate = Carbon::create($request->toDate)->format('Y-m-d');
+            $data = $this->CommonHandleTransaction($ulbId, $request, $fromDate, $toDate, $workflowID);
 
-            switch ($workflowID) {
-                case Config::get('workflow-constants.SELF-ADVERTISEMENT'):
-                    $data = $this->handleSelfAdvertisement($ulbId, $request, $fromDate, $toDate, $workflowID);
-                    break;
-                case Config::get('workflow-constants.MOVABLE-VEHICLE'):
-                    $data = $this->handleMovableVehicle($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.PRIVATE-LAND'):
-                    $data = $this->handlePrivateLand($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.AGENCY'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.BANQUTE_MARRIGE_HALL'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.HOSTEL'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.LODGE'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                case Config::get('workflow-constants.DHARAMSHALA'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
-                    break;
-                default:
-                    return responseMsg(false, "Invalid workflow ID", "");
-            }
+            // switch ($workflowID) {
+            //     case Config::get('workflow-constants.SELF-ADVERTISEMENT'):
+
+            //         break;
+            //     case Config::get('workflow-constants.MOVABLE-VEHICLE'):
+            //         $data = $this->handleMovableVehicle($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.PRIVATE-LAND'):
+            //         $data = $this->handlePrivateLand($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.AGENCY'):
+            //         $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.BANQUTE_MARRIGE_HALL'):
+            //         $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.HOSTEL'):
+            //         $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.LODGE'):
+            //         $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     case Config::get('workflow-constants.DHARAMSHALA'):
+            //         $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate, $workflowID);
+            //         break;
+            //     default:
+            //         return responseMsg(false, "Invalid workflow ID", "");
+            // }
 
             $data = $this->filterDataByPaymentMode($data, $paymentMode);
             $data = $this->filterDataByVerificationStatus($data, $verifyStatus);
@@ -92,58 +94,6 @@ class BankReconcillationController extends Controller
         }
         return $chequeTranDtl->whereBetween('transaction_date', [$fromDate, $toDate])->get();
     }
-    /**
-     * | 2
-     */
-    public function chequeDtlById(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'moduleId' => 'required',
-                'chequeId' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['status' => False, 'msg' => $validator()->errors()]);
-            }
-
-            $moduleId = $request->moduleId;
-            $propertyModuleId = Config::get('module-constants.PROPERTY_MODULE_ID');
-            $waterModuleId = Config::get('module-constants.WATER_MODULE_ID');
-            $tradeModuleId = Config::get('module-constants.TRADE_MODULE_ID');
-            $advchequedtls   = new AdvChequeDtl();
-
-
-            switch ($moduleId) {
-                    //Property
-                case ($propertyModuleId):
-                    $data = $advchequedtls->chequeDtlById($request);
-                    break;
-
-                    //Water
-                case ($waterModuleId):
-                    $data = $advchequedtls->chequeDtlById($request);
-                    break;
-
-                    //Trade
-                case ($tradeModuleId):
-                    $data = $advchequedtls->chequeDtlById($request);
-                    break;
-            }
-
-            if ($data)
-                return responseMsg(true, "data found", $data);
-            else
-                return responseMsg(false, "data not found!", "");
-        } catch (Exception $error) {
-            return responseMsg(false, "ERROR!", $error->getMessage());
-        }
-    }
-
-
-
-
-
 
     private function filterDataByPaymentMode($data, $paymentMode)
     {
@@ -178,4 +128,33 @@ class BankReconcillationController extends Controller
         }
         return $data;
     }
+
+
+    /**
+     * | 2
+     */
+    public function chequeDtlById(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'workflowId' => 'required',
+                'chequeId' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['status' => False, 'msg' => $validator()->errors()]);
+            }
+            $advchequedtls   = new AdvChequeDtl();
+
+            $data = $advchequedtls->chequeDtlById($request);
+            if ($data)
+                return responseMsg(true, "data found", $data);
+            else
+                return responseMsg(false, "data not found!", "");
+        } catch (Exception $error) {
+            return responseMsg(false, "ERROR!", $error->getMessage());
+        }
+    }
+
+    
 }

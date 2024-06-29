@@ -169,7 +169,6 @@ class AdvMarTransaction extends Model
             "adv_cheque_dtls.cheque_no",
             DB::raw("TO_CHAR(clear_bounce_date, 'DD-MM-YYYY') as clear_bounce_date"),
             "users.name as user_name",
-            DB::raw("2 as module_id"),
             'adv_cheque_dtls.status'
         )
             ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', '=', 'adv_mar_transactions.id')
