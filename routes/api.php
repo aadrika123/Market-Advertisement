@@ -700,6 +700,17 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala-search-transaction-no', 'searchTransactionNoDharamshala');
         Route::post('market/dharamshala-deactivate-transaction', 'deactivateTransactionDharamshala');
         Route::post('market/dharamshala-deactivate-transaction-list', 'deactivatedTransactionListDharamshala');
+
+
+        #self Transaction Deactivation
+        Route::post('advert/self-search-transaction-no', 'searchTransactionNoSelf');
+        Route::post('advert/self-deactivate-transaction', 'deactivateTransactionSelf');
+        Route::post('advert/self-deactivate-transaction-list', 'deactivatedTransactionListSelf');
+
+        #vehicle Transaction Deactivation
+        Route::post('advert/vehicle-search-transaction-no', 'searchTransactionNovehicle');
+        Route::post('advert/vehicle-deactivate-transaction', 'deactivateTransactionvehicle');
+        Route::post('advert/vehicle-deactivate-transaction-list', 'deactivatedTransactionListvehicle');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
