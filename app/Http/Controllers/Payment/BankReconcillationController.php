@@ -404,10 +404,10 @@ class BankReconcillationController extends Controller
 
 
 
+//adasdasdgasjdfasndvasn
 
 
 
-            
 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
