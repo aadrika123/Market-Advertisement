@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Payment;
 use App\Http\Controllers\Controller;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Advertisements\AdvAgency;
+use App\Models\Advertisements\AdvPrivateland;
 use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Advertisements\AdvVehicle;
 use App\Models\Markets\MarBanquteHall;
@@ -1399,7 +1401,7 @@ class CashVerificationController extends Controller
         try {
             $Workflow = Config::get('workflow-constants.MOVABLE-VEHICLE');
             $mTransaction = new AdvMarTransaction();
-            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo, $Workflow);
+            $transactionDtl = $mTransaction->getTransByTranNovh($req->transactionNo, $Workflow);
             return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
@@ -1525,4 +1527,281 @@ class CashVerificationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
+
+    public function searchTransactionNoPvtLand(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $Workflow = Config::get('workflow-constants.PRIVATE-LAND');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNoPvtLAnd($req->transactionNo, $Workflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransactionPvtLand(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->application_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            AdvPrivateland::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionListPvtLand(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $Workflow = Config::get('workflow-constants.PRIVATE-LAND');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranPvtLand($Workflow)
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function searchTransactionNoAgency(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $Workflow =  Config::get('workflow-constants.AGENCY');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDtl = $mTransaction->getTransByTranNoAgency($req->transactionNo, $Workflow);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransactionAgency(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required", // Transaction ID
+            "moduleId" => "required",
+            "workflowId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $workflowId = $req->workflowId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            $user = Auth()->user();
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" => $workflowId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new AdvMarTransaction();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->application_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->where('workflow_id', $workflowId)
+                ->update(['status' => 0]);
+
+            AdvAgency::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionListAgency(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $Workflow =  Config::get('workflow-constants.AGENCY');
+            $mTransaction = new AdvMarTransaction();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTranAgency($Workflow)
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('adv_mar_transactions.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('adv_mar_transactions.transaction_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
 }
