@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisements\AdvChequeDtl;
+use App\Models\Advertisements\AdvSelfadvertisement;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\PaymentReconciliation;
@@ -227,6 +228,7 @@ class BankReconcillationController extends Controller
                             'verified_by' => $userId
                         ]
                     );
+                $msg = 'Cheque Clear successfully';
 
                 if ($applicationPaymentStatus == 0) {
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
@@ -240,6 +242,71 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     MarDharamshala::where('id', $applicationId)->update(['payment_status' => 0]);
+                    $msg = 'Cheque Bounce successfully';
+                }
+
+
+                $request->merge([
+                    'id' => $mChequeDtl->id,
+                    'paymentMode' => $transaction->payment_mode,
+                    'transactionNo' => $transaction->transaction_no,
+                    'transactionAmount' => $transaction->amount,
+                    'transactionDate' => $transaction->tran_date,
+                    'wardId' => $wardId,
+                    'chequeNo' => $mChequeDtl->cheque_no,
+                    'branchName' => $mChequeDtl->branch_name,
+                    'bankName' => $mChequeDtl->bank_name,
+                    'clearanceDate' => $mChequeDtl->clear_bounce_date,
+                    'bounceReason' => $mChequeDtl->remarks,
+                    'chequeDate' => $mChequeDtl->cheque_date,
+                    'moduleId' => 5,
+                    'ulbId' => $ulbId,
+                    'userId' => $userId,
+                    'workflowId' => $mChequeDtl->workflow_id
+                ]);
+
+                // return $request;
+                $mPaymentReconciliation->addReconcilation($request);
+            }
+            if ($workfowId == $selfAdvertisementworkflow) {
+                $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+
+                $mChequeDtl->status = $paymentStatus;
+                $mChequeDtl->clear_bounce_date = $request->clearanceDate;
+                $mChequeDtl->bounce_amount = $request->cancellationCharge;
+                $mChequeDtl->remarks = $request->remarks;
+                $mChequeDtl->save();
+
+                $transaction = AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->first();
+                $applicationId = $transaction->application_id;
+
+                if ($applicationId)
+                    $wardId = AdvSelfadvertisement::findorFail($applicationId)->ward_mstr_id;
+
+                AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->update(
+                        [
+                            'verify_status' => $paymentStatus,
+                            'verify_date' => Carbon::now(),
+                            'verified_by' => $userId
+                        ]
+                    );
+                $msg = 'Cheque Clear successfully';
+
+                if ($applicationPaymentStatus == 0) {
+                    $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                    $mChequeDtl->status = 2;
+                    AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                        ->update(
+                            [
+                                'verify_status' => 2,
+                                'verify_date' => Carbon::now(),
+                                'verified_by' => $userId
+                            ]
+                        );
+                    AdvSelfadvertisement::where('id', $applicationId)->update(['payment_status' => 0]);
+                    $msg = 'Cheque Bounce successfully';
                 }
 
 
@@ -266,210 +333,13 @@ class BankReconcillationController extends Controller
                 $mPaymentReconciliation->addReconcilation($request);
             }
 
-            // # For Water module 
-            // if ($moduleId == $waterModuleId) {
 
-            //     # Find Cheque details 
-            //     $mChequeDtl = WaterChequeDtl::find($request->chequeId);
-            //     $mChequeDtl->status             = $paymentStatus;
-            //     $mChequeDtl->clear_bounce_date  = $request->clearanceDate;
-            //     $mChequeDtl->bounce_amount      = $request->cancellationCharge;
-            //     $mChequeDtl->remarks            = $request->remarks;
-            //     $mChequeDtl->save();
-
-            //     $transaction = WaterTran::where('id', $mChequeDtl->transaction_id)
-            //         ->first();
-            //     WaterTran::where('id', $mChequeDtl->transaction_id)
-            //         ->update(
-            //             [
-            //                 'verify_status' => $paymentStatus,
-            //                 'verified_date' => Carbon::now(),
-            //                 'verified_by'   => $userId
-            //             ]
-            //         );
-
-            //     # If the transaction bounce
-            //     if ($paymentStatus == 3) {
-            //         $waterDeactivateTran = new WaterTranDeactivate($transaction->id);
-            //         $waterDeactivateTran->deactivate();
-
-            //         // $waterTranDtls = WaterTranDetail::where('tran_id', $transaction->id)
-            //         //     ->where('status', '<>', 0)
-            //         //     ->get();
-            //         // $demandIds = $waterTranDtls->pluck('demand_id');
-
-            //         // # For demand payment 
-            //         // if ($transaction->tran_type == 'Demand Collection') {
-            //         //     # Map every demand data 
-            //         //     $waterTranDtls->map(function ($values, $key)
-            //         //     use ($applicationPaymentStatus, $transaction) {
-            //         //         $conumserDemand = WaterConsumerDemand::where('id', $values->demand_id)->first();
-            //         //         $conumserDemand->update(
-            //         //             [
-            //         //                 'paid_status'           => $applicationPaymentStatus,
-            //         //                 'is_full_paid'          => false,
-            //         //                 'due_balance_amount'    => (($conumserDemand->due_balance_amount ?? 0) + ($values->paid_amount ?? 0))
-            //         //             ]
-            //         //         );
-
-            //         //         # Update the transaction details 
-            //         //         $values->update([
-            //         //             'status'     => $applicationPaymentStatus,
-            //         //             'updated_at' => Carbon::now()
-            //         //         ]);
-            //         //     });
-
-            //         //     # Update water consumer collection details 
-            //         //     WaterConsumerCollection::where('transaction_id', $transaction->id)
-            //         //         ->update([
-            //         //             "status" => $applicationPaymentStatus
-            //         //         ]);
-            //         //     // $wardId = WaterConsumer::find($transaction->related_id)->ward_mstr_id;
-            //         // }
-
-            //         // # ❗❗❗ Unfinished code For application payment ❗❗❗
-            //         // if ($transaction->tran_type != 'Demand Collection') {
-            //         //     WaterApplication::where('id', $mChequeDtl->application_id)
-            //         //         ->update(
-            //         //             [
-            //         //                 'payment_status' => $applicationPaymentStatus
-            //         //             ]
-            //         //         );
-            //         //     $connectionChargeDtl =  WaterConnectionCharge::find($demandIds);
-            //         //     WaterConnectionCharge::whereIn('id', $demandIds)
-            //         //         ->update(
-            //         //             [
-            //         //                 'paid_status' => $applicationPaymentStatus
-            //         //             ]
-            //         //         );
-
-            //         //     WaterApplication::where('id', $connectionChargeDtl->application_id)
-            //         //         ->update(
-            //         //             [
-            //         //                 'payment_status' => $applicationPaymentStatus,
-
-            //         //             ]
-            //         //         );
-
-            //         //     //after penalty resolved
-            //         //     WaterPenaltyInstallment::where('related_demand_id', $demandIds)
-            //         //         ->update(
-            //         //             [
-            //         //                 'paid_status' => $applicationPaymentStatus
-            //         //             ]
-            //         //         );
-            //         //     // $wardId = WaterApplication::find($transaction->related_id)->ward_id;
-            //         // }
-            //     }
-
-            //     # If the payment got clear
-            //     if ($paymentStatus == 1) {
-            //         # For demand payment 
-            //         if ($transaction->tran_type == 'Demand Collection') {
-            //             # Update consumer demand
-            //             $waterTranDtls = WaterTranDetail::where('tran_id', $transaction->id)
-            //                 ->where('status', '<>', 0)
-            //                 ->get();
-            //             $demandIds = $waterTranDtls->pluck('demand_id');
-            //             WaterConsumerDemand::whereIn('id', $demandIds)
-            //                 ->update([
-            //                     "paid_status" => $paymentStatus
-            //                 ]);
-            //         }
-            //         # ❗❗❗ Unfinished section
-            //         if ($transaction->tran_type != 'Demand Collection') {
-            //         }
-            //     }
-
-            //     $request->merge([
-            //         'id' => $mChequeDtl->id,
-            //         'paymentMode' => $transaction->payment_mode,
-            //         'transactionNo' => $transaction->tran_no,
-            //         'transactionAmount' => $transaction->amount,
-            //         'transactionDate' => $transaction->tran_date,
-            //         // 'wardId' => $wardId,
-            //         'chequeNo' => $mChequeDtl->cheque_no,
-            //         'branchName' => $mChequeDtl->branch_name,
-            //         'bankName' => $mChequeDtl->bank_name,
-            //         'clearanceDate' => $mChequeDtl->clear_bounce_date,
-            //         'bounceReason' => $mChequeDtl->remarks,
-            //         'chequeDate' => $mChequeDtl->cheque_date,
-            //         'moduleId' => $waterModuleId,
-            //         'ulbId' => $ulbId,
-            //         'userId' => $userId,
-            //     ]);
-
-            //     // return $request;
-            //     $mPaymentReconciliation->addReconcilation($request);
-            // }
-
-            // if ($moduleId == $tradeModuleId) {
-            //     $mChequeDtl =  TradeChequeDtl::find($request->chequeId);
-
-            //     $mChequeDtl->status = $paymentStatus;
-            //     $mChequeDtl->clear_bounce_date = $request->clearanceDate;
-            //     $mChequeDtl->bounce_amount = $request->cancellationCharge;
-            //     $mChequeDtl->remarks = $request->remarks;
-            //     $mChequeDtl->save();
-
-            //     $transaction = TradeTransaction::where('id', $mChequeDtl->tran_id)
-            //         ->first();
-
-            //     TradeTransaction::where('id', $mChequeDtl->tran_id)
-            //         ->update(
-            //             [
-            //                 'is_verified' => 1,
-            //                 'verify_date' => Carbon::now(),
-            //                 // 'verify_by' => $userId,
-            //                 'status' => $paymentStatus,
-            //             ]
-            //         );
-
-
-            //     //  Update in trade applications
-            //     $application = ActiveTradeLicence::find($mChequeDtl->temp_id);
-            //     if (!$application) {
-            //         $application = TradeLicence::find($mChequeDtl->temp_id);
-            //     }
-            //     if (!$application) {
-            //         throw new Exception("Application Not Found");
-            //     }
-            //     $application->payment_status = $applicationPaymentStatus;
-            //     $application->update();
-            //     $wardId = $application->ward_id;
-            //     // ActiveTradeLicence::where('id', $transaction->temp_id)
-            //     //     ->update(
-            //     //         ['payment_status' => $applicationPaymentStatus]
-            //     //     );
-
-            //     // $wardId = ActiveTradeLicence::find($mChequeDtl->temp_id)->ward_id;
-
-            //     $request->merge([
-            //         'id' => $mChequeDtl->id,
-            //         'paymentMode' => $transaction->payment_mode,
-            //         'transactionNo' => $transaction->tran_no,
-            //         'transactionAmount' => $transaction->paid_amount,
-            //         'transactionDate' => $transaction->tran_date,
-            //         'wardId' => $wardId,
-            //         'chequeNo' => $mChequeDtl->cheque_no,
-            //         'branchName' => $mChequeDtl->branch_name,
-            //         'bankName' => $mChequeDtl->bank_name,
-            //         'clearanceDate' => $mChequeDtl->clear_bounce_date,
-            //         'chequeDate' => $mChequeDtl->cheque_date,
-            //         'moduleId' => $tradeModuleId,
-            //         // 'ulbId' => $ulbId,
-            //         // 'userId' => $userId,
-            //     ]);
-
-            //     // return $request;
-            //     $mPaymentReconciliation->addReconcilation($request);
-            // }
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsg(true, "Data Updated!", '');
+            return responseMsg(true, $msg, '');
         } catch (Exception $error) {
             DB::rollBack();
-            DB::connection('pgsql_master')->rollBack();
+            DB::connection('pgsql_masters')->rollBack();
             return responseMsg(false, "ERROR!", $error->getMessage());
         }
     }
