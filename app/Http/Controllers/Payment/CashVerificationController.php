@@ -181,6 +181,7 @@ class CashVerificationController extends Controller
                 'collectorName' => collect($details)[0]->user_name,
                 'date' => Carbon::parse($date)->format('d-m-Y'),
                 'verifyStatus' => false,
+                
             ];
 
             return responseMsgs(true, "$workflowType Collection", remove_null($data), "010201", "1.0", "", "POST", $request->deviceId ?? "");
