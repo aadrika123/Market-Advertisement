@@ -30,4 +30,17 @@ class PropOwner extends Model
             ->orderBy('id')
             ->get();
     }
+
+    public function getOwnerByPropIdV2($propId)
+    {
+        return PropOwner::where('property_id', $propId)
+            ->select(
+                'id','property_id',
+                'owner_name as ownerName',
+                'guardian_name as guardianName'
+            )
+            ->where('status', 1)
+            ->orderBy('id')
+            ->get();
+    }
 }

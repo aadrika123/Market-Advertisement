@@ -9,9 +9,13 @@ use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarLodge;
 use App\Models\Markets\MarRejectedBanquteHall;
+use App\Models\Property\PropFloor;
+use App\Models\Property\PropOwner;
+use App\Models\Property\PropProperty;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -370,5 +374,46 @@ class ReportController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
         }
     }
-}
 
+    public function holdingDetails(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'holdingNo' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation error',
+                'errors' => $validator->errors()
+            ], 200);
+        }
+
+        try {
+            $mProperties = new PropProperty();
+            $mPropFloors = new PropFloor();
+            $mPropOwners = new PropOwner();
+
+            if ($request->holdingNo) {
+                $properties = $mProperties->getPropDtlsv2()
+                    ->where('prop_properties.holding_no', $request->holdingNo)
+                    ->first();
+
+                if (!$properties) {
+                    throw new Exception("Property Not Found");
+                }
+
+                $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
+                $owners = $mPropOwners->getOwnerByPropIdV2($properties->id);
+
+                $propertyDtl = collect($properties);
+                $propertyDtl['floors'] = $floors;
+                $propertyDtl['owners'] = $owners;
+
+                return responseMsgs(true, "Property Details", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
+}

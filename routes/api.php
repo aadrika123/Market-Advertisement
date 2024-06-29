@@ -631,6 +631,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/organizationTypeApplicationReport', 'organizationTypeWiseApplication');
         Route::post('market/hostelTypeApplicationReport', 'hostelTypeWiseApplication');
         Route::post('market/lodgeTypeApplicationReport', 'lodgeTypeWiseApplication');
+
+        #Detail by holding_no
+        Route::post('market/holding-details', 'holdingDetails');
     });
 
     /*

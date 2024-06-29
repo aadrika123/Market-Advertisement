@@ -23,6 +23,15 @@ class PropFloor extends Model
             ->where('prop_floors.status', 1);
     }
 
+    public function getPropFloorsV2($propertyId)
+    {
+        return PropFloor::select(
+            'id','property_id','builtup_area','carpet_area'
+        )
+            ->where('property_id', $propertyId)
+            ->where('prop_floors.status', 1);
+    }
+
 
     /**
      * | Get occupancy type according to holding id

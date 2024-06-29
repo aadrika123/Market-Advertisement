@@ -29,6 +29,23 @@ class PropProperty extends Model
             ->leftJoin('ulb_ward_masters as nw', 'nw.id', '=', 'prop_properties.new_ward_mstr_id');
     }
 
+    public function getPropDtlsv2()
+    {
+        return PropProperty::select(
+            'prop_properties.id',
+            'prop_properties.saf_id',
+            'prop_properties.prop_address',
+            'prop_properties.area_of_plot',
+            'w.ward_name as old_ward_no',
+            'nw.ward_name as new_ward_no',
+            'prop_saf_geotag_uploads.latitude',
+             'prop_saf_geotag_uploads.longitude'
+        )
+            ->join('ulb_ward_masters as w', 'w.id', '=', 'prop_properties.ward_mstr_id')
+            ->leftjoin('prop_saf_geotag_uploads', 'prop_saf_geotag_uploads.saf_id', '=', 'prop_properties.saf_id')
+            ->leftJoin('ulb_ward_masters as nw', 'nw.id', '=', 'prop_properties.new_ward_mstr_id');
+    }
+
 
     /**
      * | Get Proprty Details By Holding No
