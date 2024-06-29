@@ -403,6 +403,12 @@ class BankReconcillationController extends Controller
             }
 
 
+
+
+
+
+            
+
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsg(true, $msg, '');
