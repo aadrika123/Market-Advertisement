@@ -1241,7 +1241,7 @@ class HostelController extends Controller
             DB::beginTransaction();
             $data = $mMarHostel->paymentByCash($req);
             $appDetails = MarHostel::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,

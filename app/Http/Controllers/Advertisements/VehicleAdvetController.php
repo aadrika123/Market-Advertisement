@@ -1175,15 +1175,20 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-            $user = authUser($req);
+           $user = Auth()->user();
+            $todayDate = Carbon::now();
             $mAdvVehicle = new AdvVehicle();
             $todayDate = Carbon::now();
             $mAdvMarTransaction = new AdvMarTransaction();
+            //  $req->all();
             DB::beginTransaction();
             $data = $mAdvVehicle->offlinePayment($req);
             $appDetails = AdvVehicle::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
 
+            $req->merge($appDetails->toArray());
+            
+           
+            $transactionId = $mAdvMarTransaction->addTransactions($req,$appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1199,6 +1204,7 @@ class VehicleAdvetController extends Controller
             ]);
             // Save data in temp transaction
             $this->postOtherPaymentModes($req);
+
             DB::commit();
             if ($req->status == '1' && $data['status'] == 1) {
                 return responseMsgs(true, "Payment Successfully !!", ['status' => true, 'transactionNo' => $data['payment_id'], 'workflowId' =>  $appDetails->workflow_id], "050323", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
@@ -1537,7 +1543,7 @@ class VehicleAdvetController extends Controller
             // Variable Initialization
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id']??null;
+            $ulbId = $req->auth['ulb_id'] ?? null;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User

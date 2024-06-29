@@ -264,7 +264,6 @@ class AdvAgency extends Model
         if ($req->status == '1') {
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
-            $mAdvAgency->payment_status = $req->status;
             $PaymentMode = $req->paymentMode;
             // $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');

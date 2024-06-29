@@ -187,7 +187,7 @@ class AdvPrivateland extends Model
             // Self Privateland Table Update
             $mAdvPrivateland = AdvPrivateland::find($req->applicationId);        // Application ID
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
-            $mAdvPrivateland->payment_status = $req->status;
+           $mAdvPrivateland->payment_status = $req->status;
             $PaymentMode = $req->paymentMode;
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvPrivateland->ulb_id);
             $pay_id = $idGeneration->generate();

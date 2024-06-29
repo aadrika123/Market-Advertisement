@@ -113,14 +113,15 @@ class MarBanquteHall extends Model
             // Banquet Hall Table Update
             $mMarBanquteHall = MarBanquteHall::find($req->applicationId);
             $mMarBanquteHall->payment_status = $req->status;
-            $paymentMode= $req->paymentMode;
+            $paymentMode = $req->paymentMode;
             //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarBanquteHall->payment_date = Carbon::now();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarBanquteHall->ulb_id);
             $pay_id = $idGeneration->generate();
-           
 
+            $mMarBanquteHall->payment_id = $pay_id;
+            $mMarBanquteHall->payment_mode = $paymentMode;
             $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarBanquteHall->payment_amount, 'demand_amount' => $mMarBanquteHall->demand_amount, 'workflowId' => $mMarBanquteHall->workflow_id, 'userId' => $mMarBanquteHall->user_id, 'ulbId' => $mMarBanquteHall->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarBanquteHall->payment_details = json_encode($payDetails);
@@ -340,8 +341,8 @@ class MarBanquteHall extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_banqute_hall_renewals')
-            ->select('mar_banqute_hall_renewals.id', 'mar_banqute_hall_renewals.application_no', 'mar_banqute_hall_renewals.applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'mar_banqute_hall_renewals.application_type', 'mar_banqute_hall_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_banqute_hall_renewals.payment_amount',  DB::raw("TO_CHAR(mar_banqute_hall_renewals.payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_banqute_hall_renewals.payment_mode', 'mar_banqute_hall_renewals.entity_name','adv_mar_transactions.transaction_no')
-            ->join('adv_mar_transactions' ,'adv_mar_transactions.transaction_id','=','mar_banqute_hall_renewals.payment_id')
+            ->select('mar_banqute_hall_renewals.id', 'mar_banqute_hall_renewals.application_no', 'mar_banqute_hall_renewals.applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'mar_banqute_hall_renewals.application_type', 'mar_banqute_hall_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_banqute_hall_renewals.payment_amount',  DB::raw("TO_CHAR(mar_banqute_hall_renewals.payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_banqute_hall_renewals.payment_mode', 'mar_banqute_hall_renewals.entity_name', 'adv_mar_transactions.transaction_no')
+            ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_banqute_hall_renewals.payment_id')
             ->where('payment_status', '1')
             ->where('mar_banqute_hall_renewals.ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -714,7 +715,7 @@ class MarBanquteHall extends Model
         ];
     }
 
-   /** 
+    /** 
      * | Get Application Approve List by Role Ids
      */
     public function listjskApprovedApplication()
@@ -776,8 +777,8 @@ class MarBanquteHall extends Model
             'doc_upload_status'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
-            ->where('mar_banqute_halls.id',$applicationId)
+            ->where('mar_banqute_halls.id', $applicationId)
             ->orderByDesc('mar_banqute_halls.id');
-            ////->get();
+        ////->get();
     }
 }
