@@ -163,7 +163,7 @@ class BankReconcillationController extends Controller
     }
 
     /**
-     * | 33333333333333333333333333333333333
+     * | 3
      */
     public function chequeClearance(Request $request)
     {
