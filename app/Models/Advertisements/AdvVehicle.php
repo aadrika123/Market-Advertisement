@@ -172,7 +172,7 @@ class AdvVehicle extends Model
      */
     public function offlinePayment($req)
     {
-
+       
         if ($req->status == '1') {
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID

@@ -42,10 +42,47 @@ class AdvMarTransaction extends Model
     //     $addData->save();
     // }
 
-    public function addTransaction($req, $appDetails, $moduleId, $moduleType,)
+    public function addTransaction($req, $moduleId, $moduleType, $paymentMode)
     {
         $addData = new AdvMarTransaction();
-        $user    = authuser($req);
+
+        $addData->module_id         = $moduleId;
+        $addData->workflow_id       = $req->workflow_id;
+        $addData->application_id    = $req->id;
+        $addData->module_type       = $moduleType;
+        $addData->transaction_id    = $req->payment_id;
+        $addData->transaction_no    = $req->payment_id;
+        $addData->transaction_date  = $req->payment_date;
+        $addData->amount            = $req->payment_amount;
+        if (isset($req->demand_amount)) {
+            $addData->demand_amount     = $req->demand_amount;
+        }
+        $addData->payment_details   = $req->payment_details;
+        $addData->payment_mode      = $paymentMode;
+        if (isset($req->entity_ward_id)) {
+            $addData->entity_ward_id    = $req->entity_ward_id;
+        }
+        $addData->ulb_id            = $req->ulb_id;
+        $addData->user_id           = $req->userId;
+        $addData->citizen_id        = $req->citizenId;
+        $addData->is_jsk            = $req->isJsk;
+
+        $addData->cheque_dd_no      = $req->chequeNo;
+        $addData->cheque_date       = $req->chequeDate;
+        $addData->bank_name         = $req->bankName;
+        $addData->branch_name       = $req->branchName;
+        // $addData->verify_date       = Carbon::now();
+        // $addData->verify_status     = 0;
+        $addData->save();
+        return $addData->id;
+    }
+    /**
+     * |
+     */
+    public function addTransactions($req, $appDetails, $moduleId, $moduleType,)
+    {
+        $addData = new AdvMarTransaction();
+        $user    = authUser($req);
         $ulbId    = $user->ulb_id;
         $isjsk  = false;
         if ($user->user_type == 'JSK') {
@@ -64,7 +101,7 @@ class AdvMarTransaction extends Model
             $addData->demand_amount     = $req->demand_amount;
         }
         $addData->payment_details   = $req->payment_details;
-        $addData->payment_mode      = $req->paymentMode ?? 'ONLINE';
+        $addData->payment_mode      = $req->paymentMode;
         if (isset($req->entity_ward_id)) {
             $addData->entity_ward_id    = $req->entity_ward_id;
         }

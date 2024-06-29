@@ -1169,7 +1169,7 @@ class LodgeController extends Controller
             DB::beginTransaction();
             $data = $mMarLodge->paymentByCash($req);
             $appDetails = MarLodge::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Market");
             // Prepare request data
             $req->merge([
                 'empId' => $user->id,

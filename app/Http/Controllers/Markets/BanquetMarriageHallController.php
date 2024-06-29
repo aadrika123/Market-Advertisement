@@ -1174,7 +1174,7 @@ class BanquetMarriageHallController extends Controller
             DB::beginTransaction();
             $data = $mMarBanquteHall->paymentByCash($req);
             $appDetails = MarBanquteHall::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Market");
+            $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Market");
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,

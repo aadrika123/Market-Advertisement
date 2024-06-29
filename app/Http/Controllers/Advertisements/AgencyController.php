@@ -1145,7 +1145,7 @@ class AgencyController extends Controller
             $d = $mAdvAgency->offlinePayment($req);
             $appDetails = AdvAgency::find($req->applicationId);
 
-           $transactionId= $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleId, "Advertisement");
+           $transactionId= $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleId, "Advertisement", $req->paymentMode);
            
 
             // Prepare request data

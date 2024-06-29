@@ -2033,7 +2033,7 @@ class SelfAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $user = Auth()->user();
+           $user = Auth()->user();
             $todayDate = Carbon::now();
             $userId = $user->id ?? null;
             $isCitizen = $user && $user->getTable() != "users" ? true : false;
@@ -2051,7 +2051,7 @@ class SelfAdvetController extends Controller
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
             $req->merge($appDetails->toArray());
 
-            $transactionId = $mAdvMarTransaction->addTransaction($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
+            $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
 
              $req->merge([
                 'empId' => $user->id,

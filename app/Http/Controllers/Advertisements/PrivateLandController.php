@@ -1185,7 +1185,7 @@ class PrivateLandController extends Controller
             DB::beginTransaction();
             $data = $mAdvPrivateland->paymentByCash($req);
             $appDetails = AdvPrivateland::find($req->applicationId);
-            $transactionId = $mAdvMarTransaction->addTransaction($appDetails, $this->_moduleId, "Advertisement", "Cash");
+            $transactionId = $mAdvMarTransaction->addTransactions($req,$appDetails, $this->_moduleId, "Advertisement", $req->paymentMode);
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
