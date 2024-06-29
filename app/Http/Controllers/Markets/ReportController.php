@@ -393,14 +393,20 @@ class ReportController extends Controller
             $mProperties = new PropProperty();
             $mPropFloors = new PropFloor();
             $mPropOwners = new PropOwner();
-
+            $fiYear = getFY();
+            list($currentfyStartDate, $currentfyEndDate) = explode('-', $fiYear);
+            $currentfyStartDate = $currentfyStartDate . "-04-01";
+            $currentfyEndDate = $currentfyEndDate . "-03-31";
             if ($request->holdingNo) {
-                $properties = $mProperties->getPropDtlsv2()
+                $properties = $mProperties->getPropDtlsv2($fiYear,$currentfyStartDate)
                     ->where('prop_properties.holding_no', $request->holdingNo)
                     ->first();
-
                 if (!$properties) {
                     throw new Exception("Property Not Found");
+                }
+
+                if ($properties->arrear_demand != 0) {
+                    throw new Exception("Demand is not clear, Please pay your demand first");
                 }
 
                 $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();

@@ -29,7 +29,7 @@ class PropProperty extends Model
             ->leftJoin('ulb_ward_masters as nw', 'nw.id', '=', 'prop_properties.new_ward_mstr_id');
     }
 
-    public function getPropDtlsv2()
+    public function getPropDtlsv2($fiYear,$currentfyStartDate)
     {
         return PropProperty::select(
             'prop_properties.id',
@@ -39,11 +39,47 @@ class PropProperty extends Model
             'w.ward_name as old_ward_no',
             'nw.ward_name as new_ward_no',
             'prop_saf_geotag_uploads.latitude',
-             'prop_saf_geotag_uploads.longitude'
+            'prop_saf_geotag_uploads.longitude',
+            // DB::raw(" (CASE WHEN demands.arrear_demand IS NULL THEN '0.00' ELSE demands.arrear_demand END) AS arrear_demand")
+            DB::raw("(CASE WHEN demands.prop_arrear_demand IS NULL THEN '0.00' ELSE demands.prop_arrear_demand END) AS arrear_demand")
         )
             ->join('ulb_ward_masters as w', 'w.id', '=', 'prop_properties.ward_mstr_id')
             ->leftjoin('prop_saf_geotag_uploads', 'prop_saf_geotag_uploads.saf_id', '=', 'prop_properties.saf_id')
+            // ->LEFTJOIN(
+            //     DB::RAW("(
+            //     SELECT 
+            //         property_id, 
+            //         SUM(CASE WHEN fyear < '$fiYear' THEN amount ELSE 0 END) AS arrear_demand
+            //     FROM prop_demands 
+            //     WHERE status=1 AND paid_status IN (0,1)  
+            //     GROUP BY property_id
+            //     )AS demands
+            //     "),
+            //     function ($join) {
+            //         $join->on("demands.property_id", "=", "prop_properties.id");
+            //     }
+            // )
+            ->LEFTJOIN(
+                DB::RAW("(
+                SELECT 
+                    property_id, 
+                    SUM(
+                                    CASE WHEN prop_demands.due_date < '$currentfyStartDate' then COALESCE(prop_demands.amount,0) -COALESCE(prop_demands.adjust_amt,0)
+                                        ELSE 0
+                                        END
+                                    ) AS prop_arrear_demand
+                FROM prop_demands 
+                WHERE status=1 
+                GROUP BY property_id
+                )AS demands
+                "),
+                function ($join) {
+                    $join->on("demands.property_id", "=", "prop_properties.id");
+                }
+            )
+            //->join('prop_demands', 'prop_demands.property_id', '=', 'prop_properties.id')
             ->leftJoin('ulb_ward_masters as nw', 'nw.id', '=', 'prop_properties.new_ward_mstr_id');
+            //->groupby('prop_properties.id');
     }
 
 
