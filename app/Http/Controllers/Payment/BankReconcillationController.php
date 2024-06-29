@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisements\AdvChequeDtl;
+use App\Models\Advertisements\AdvSelfadvertisement;
+use App\Models\Advertisements\AdvVehicle;
+use App\Models\Markets\MarDharamshala;
 use App\Models\Param\AdvMarTransaction;
+use App\Models\Payment\PaymentReconciliation;
+use App\Models\TransactionDeactivateDtl;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -81,6 +86,7 @@ class BankReconcillationController extends Controller
             return responseMsg(false, "ERROR!", $error->getMessage());
         }
     }
+
     private function CommonHandleTransaction($ulbId, $request, $fromDate, $toDate, $workflowID)
     {
         $mAdvMarTransaction = new AdvMarTransaction();
@@ -156,5 +162,264 @@ class BankReconcillationController extends Controller
         }
     }
 
-    
+    /**
+     * | 3333333333333333333333
+     * 
+     * 
+     * 
+     * |
+     */
+    public function chequeClearance(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'workflowId'    => 'required',
+                'chequeId'      => 'required',
+                'status'        => 'required|in:clear,bounce',
+                'clearanceDate' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return validationError($validator);
+            }
+            $user = authUser($request);
+            $ulbId = $user->ulb_id;
+            $userId = $user->id;
+            $workfowId = $request->workflowId;
+            $paymentStatus = 1;
+            $applicationPaymentStatus = 1;
+            $mPaymentReconciliation = new PaymentReconciliation();
+            $selfAdvertisementworkflow = Config::get('workflow-constants.SELF-ADVERTISEMENT');
+            $movablevehicleWorkflow = Config::get('workflow-constants.MOVABLE-VEHICLE');
+            $privateLandWorkflow = Config::get('workflow-constants.PRIVATE-LAND');
+            $agencyWorkflow = Config::get('workflow-constants.AGENCY');
+            $lodgeworkflow = Config::get('workflow-constants.LODGE_WORKFLOWS');
+            $dharamshalaWorkflow = Config::get('workflow-constants.DHARAMSHALA_WORKFLOWS');
+            $banquetHallWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
+            $hostelWorkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
+
+            if ($request->status == 'clear') {
+                $applicationPaymentStatus = $paymentStatus = 1;
+            }
+            if ($request->status == 'bounce') {
+                $paymentStatus = 2;
+                $applicationPaymentStatus = 0;
+            }
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            if ($workfowId == $dharamshalaWorkflow) {
+                $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+
+                $mChequeDtl->status = $paymentStatus;
+                $mChequeDtl->clear_bounce_date = $request->clearanceDate;
+                $mChequeDtl->bounce_amount = $request->cancellationCharge;
+                $mChequeDtl->remarks = $request->remarks;
+                $mChequeDtl->save();
+
+                $transaction = AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->first();
+                $applicationId = $transaction->application_id;
+
+                if ($applicationId)
+                    $wardId = MarDharamshala::findorFail($applicationId)->ward_mstr_id;
+
+                AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->update(
+                        [
+                            'verify_status' => $paymentStatus,
+                            'verify_date' => Carbon::now(),
+                            'verified_by' => $userId
+                        ]
+                    );
+                $msg = 'Cheque Clear successfully';
+
+                if ($applicationPaymentStatus == 0) {
+                    $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                    $mChequeDtl->status = 2;
+                    AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                        ->update(
+                            [
+                                'verify_status' => 2,
+                                'verify_date' => Carbon::now(),
+                                'verified_by' => $userId
+                            ]
+                        );
+                    MarDharamshala::where('id', $applicationId)->update(['payment_status' => 0]);
+                    $msg = 'Cheque Bounce successfully';
+                }
+
+
+                $request->merge([
+                    'id' => $mChequeDtl->id,
+                    'paymentMode' => $transaction->payment_mode,
+                    'transactionNo' => $transaction->transaction_no,
+                    'transactionAmount' => $transaction->amount,
+                    'transactionDate' => $transaction->tran_date,
+                    'wardId' => $wardId,
+                    'chequeNo' => $mChequeDtl->cheque_no,
+                    'branchName' => $mChequeDtl->branch_name,
+                    'bankName' => $mChequeDtl->bank_name,
+                    'clearanceDate' => $mChequeDtl->clear_bounce_date,
+                    'bounceReason' => $mChequeDtl->remarks,
+                    'chequeDate' => $mChequeDtl->cheque_date,
+                    'moduleId' => 5,
+                    'ulbId' => $ulbId,
+                    'userId' => $userId,
+                    'workflowId' => $mChequeDtl->workflow_id
+                ]);
+
+                // return $request;
+                $mPaymentReconciliation->addReconcilation($request);
+            }
+            if ($workfowId == $selfAdvertisementworkflow) {
+                $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+
+                $mChequeDtl->status = $paymentStatus;
+                $mChequeDtl->clear_bounce_date = $request->clearanceDate;
+                $mChequeDtl->bounce_amount = $request->cancellationCharge;
+                $mChequeDtl->remarks = $request->remarks;
+                $mChequeDtl->save();
+
+                $transaction = AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->first();
+                $applicationId = $transaction->application_id;
+
+                if ($applicationId)
+                    $wardId = AdvSelfadvertisement::findorFail($applicationId)->ward_mstr_id;
+
+                AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->update(
+                        [
+                            'verify_status' => $paymentStatus,
+                            'verify_date' => Carbon::now(),
+                            'verified_by' => $userId
+                        ]
+                    );
+                $msg = 'Cheque Clear successfully!';
+
+                if ($applicationPaymentStatus == 0) {
+
+
+                    $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                    $mChequeDtl->status = 2;
+                    AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                        ->update(
+                            [
+                                'verify_status' => 2,
+                                'verify_date' => Carbon::now(),
+                                'verified_by' => $userId
+                            ]
+                        );
+                    AdvSelfadvertisement::where('id', $applicationId)->update(['payment_status' => 0]);
+                    $msg = 'Cheque Bounce successfully';
+                }
+
+
+                $request->merge([
+                    'id' => $mChequeDtl->id,
+                    'paymentMode' => $transaction->payment_mode,
+                    'transactionNo' => $transaction->transaction_no,
+                    'transactionAmount' => $transaction->amount,
+                    'transactionDate' => $transaction->tran_date,
+                    'wardId' => $wardId,
+                    'chequeNo' => $mChequeDtl->cheque_no,
+                    'branchName' => $mChequeDtl->branch_name,
+                    'bankName' => $mChequeDtl->bank_name,
+                    'clearanceDate' => $mChequeDtl->clear_bounce_date,
+                    'bounceReason' => $mChequeDtl->remarks,
+                    'chequeDate' => $mChequeDtl->cheque_date,
+                    'moduleId' => 5,
+                    'ulbId' => $ulbId,
+                    'userId' => $userId,
+                    'workflowId' => $mChequeDtl->workflow_id
+                ]);
+
+                // return $request;
+                $mPaymentReconciliation->addReconcilation($request);
+            }
+            if ($workfowId == $movablevehicleWorkflow) {
+                $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+
+                $mChequeDtl->status = $paymentStatus;
+                $mChequeDtl->clear_bounce_date = $request->clearanceDate;
+                $mChequeDtl->bounce_amount = $request->cancellationCharge;
+                $mChequeDtl->remarks = $request->remarks;
+                $mChequeDtl->save();
+
+                $transaction = AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->first();
+                $applicationId = $transaction->application_id;
+
+                if ($applicationId)
+                    $wardId = AdvVehicle::findorFail($applicationId)->ward_mstr_id;
+
+                AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                    ->update(
+                        [
+                            'verify_status' => $paymentStatus,
+                            'verify_date' => Carbon::now(),
+                            'verified_by' => $userId
+                        ]
+                    );
+                $msg = 'Cheque Clear successfully!';
+
+                if ($applicationPaymentStatus == 0) {
+
+
+                    $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                    $mChequeDtl->status = 2;
+                    AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+                        ->update(
+                            [
+                                'verify_status' => 2,
+                                'verify_date' => Carbon::now(),
+                                'verified_by' => $userId
+                            ]
+                        );
+                        AdvVehicle::where('id', $applicationId)->update(['payment_status' => 0]);
+                    $msg = 'Cheque Bounce successfully';
+                }
+
+
+                $request->merge([
+                    'id' => $mChequeDtl->id,
+                    'paymentMode' => $transaction->payment_mode,
+                    'transactionNo' => $transaction->transaction_no,
+                    'transactionAmount' => $transaction->amount,
+                    'transactionDate' => $transaction->tran_date,
+                    'wardId' => $wardId,
+                    'chequeNo' => $mChequeDtl->cheque_no,
+                    'branchName' => $mChequeDtl->branch_name,
+                    'bankName' => $mChequeDtl->bank_name,
+                    'clearanceDate' => $mChequeDtl->clear_bounce_date,
+                    'bounceReason' => $mChequeDtl->remarks,
+                    'chequeDate' => $mChequeDtl->cheque_date,
+                    'moduleId' => 5,
+                    'ulbId' => $ulbId,
+                    'userId' => $userId,
+                    'workflowId' => $mChequeDtl->workflow_id
+                ]);
+
+                // return $request;
+                $mPaymentReconciliation->addReconcilation($request);
+            }
+
+
+
+//adasdasdgasjdfasndvasn
+
+
+
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+            return responseMsg(true, $msg, '');
+        } catch (Exception $error) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsg(false, "ERROR!", $error->getMessage());
+        }
+    }
 }
