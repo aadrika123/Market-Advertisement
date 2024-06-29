@@ -1144,12 +1144,13 @@ class AgencyController extends Controller
             DB::beginTransaction();
             $d = $mAdvAgency->offlinePayment($req);
             $appDetails = AdvAgency::find($req->applicationId);
+            $req->merge($appDetails->toArray());
 
-           $transactionId= $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleId, "Advertisement", $req->paymentMode);
-           
+            $transactionId = $mAdvMarTransaction->addTransactions($req,$appDetails,$this->_moduleId,"Advertisement",);
+
 
             // Prepare request data
-          $req->merge([
+            $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
                 'todayDate' => $todayDate->format('Y-m-d'),
@@ -1160,7 +1161,7 @@ class AgencyController extends Controller
                 'amount' => $appDetails->payment_amount,
                 'applicationId' => $appDetails->id,
                 'workflowId' => $appDetails->workflow_id,
-                'transactionId'=> $transactionId
+                'transactionId' => $transactionId
             ]);
 
             // Save data in temp transaction

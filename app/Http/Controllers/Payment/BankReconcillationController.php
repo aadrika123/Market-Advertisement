@@ -14,11 +14,72 @@ use Illuminate\Support\Facades\Validator;
 class BankReconcillationController extends Controller
 {
     /**
-     * |self adverrtisement search chque transactions 
+     * | search chque transactions for Advertisement and Market  
      * |  
      */
+    public function searchTransaction(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'fromDate' => 'required',
+                'toDate' => 'required',
+                'workflowID' => 'required'
+            ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validator->errors()
+                ]);
+            }
+            $ulbId = authUser($request)->ulb_id;
+            $workflowID = $request->workflowID;
+            $paymentMode = $request->paymentMode;
+            $verifyStatus = $request->verificationType;
+            $fromDate = Carbon::create($request->fromDate)->format('Y-m-d');
+            $toDate = Carbon::create($request->toDate)->format('Y-m-d');
 
-    private function handleSelfAdvertisement($ulbId, $request, $fromDate, $toDate, $workflowID)
+            switch ($workflowID) {
+                case Config::get('workflow-constants.SELF-ADVERTISEMENT'):
+                    $data = $this->handleSelfAdvertisement($ulbId, $request, $fromDate, $toDate, $workflowID);
+                    break;
+                case Config::get('workflow-constants.MOVABLE-VEHICLE'):
+                    $data = $this->handleMovableVehicle($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.PRIVATE-LAND'):
+                    $data = $this->handlePrivateLand($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.AGENCY'):
+                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.BANQUTE_MARRIGE_HALL'):
+                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.HOSTEL'):
+                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.LODGE'):
+                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                case Config::get('workflow-constants.DHARAMSHALA'):
+                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate,$workflowID);
+                    break;
+                default:
+                    return responseMsg(false, "Invalid workflow ID", "");
+            }
+
+            $data = $this->filterDataByPaymentMode($data, $paymentMode);
+            $data = $this->filterDataByVerificationStatus($data, $verifyStatus);
+
+            if (collect($data)->isNotEmpty()) {
+                return responseMsgs(true, "Data Acording to request!", $data, '010801', '01', '382ms-547ms', 'Post', '');
+            }
+            return responseMsg(false, "data not found!", "");
+        } catch (Exception $error) {
+            return responseMsg(false, "ERROR!", $error->getMessage());
+        }
+    }
+    private function CommonHandleTransaction($ulbId, $request, $fromDate, $toDate, $workflowID)
     {
         $mAdvMarTransaction = new AdvMarTransaction();
         $chequeTranDtl = $mAdvMarTransaction->chequeTranDtl($ulbId);
@@ -81,56 +142,7 @@ class BankReconcillationController extends Controller
 
 
 
-    public function searchTransaction(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'fromDate' => 'required',
-                'toDate' => 'required',
-                'workflowID' => 'required'
-            ]);
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'validation error',
-                    'errors' => $validator->errors()
-                ]);
-            }
-            $ulbId = authUser($request)->ulb_id;
-            $workflowID = $request->workflowID;
-            $paymentMode = $request->paymentMode;
-            $verifyStatus = $request->verificationType;
-            $fromDate = Carbon::create($request->fromDate)->format('Y-m-d');
-            $toDate = Carbon::create($request->toDate)->format('Y-m-d');
 
-            switch ($workflowID) {
-                case Config::get('workflow-constants.SELF-ADVERTISEMENT'):
-                    $data = $this->handleSelfAdvertisement($ulbId, $request, $fromDate, $toDate, $workflowID);
-                    break;
-                case Config::get('workflow-constants.MOVABLE-VEHICLE'):
-                    $data = $this->handleMovableVehicle($ulbId, $request, $fromDate, $toDate);
-                    break;
-                case Config::get('workflow-constants.PRIVATE-LAND'):
-                    $data = $this->handlePrivateLand($ulbId, $request, $fromDate, $toDate);
-                    break;
-                case Config::get('workflow-constants.AGENCY'):
-                    $data = $this->handleAgency($ulbId, $request, $fromDate, $toDate);
-                    break;
-                default:
-                    return responseMsg(false, "Invalid workflow ID", "");
-            }
-
-            $data = $this->filterDataByPaymentMode($data, $paymentMode);
-            $data = $this->filterDataByVerificationStatus($data, $verifyStatus);
-
-            if (collect($data)->isNotEmpty()) {
-                return responseMsgs(true, "Data Acording to request!", $data, '010801', '01', '382ms-547ms', 'Post', '');
-            }
-            return responseMsg(false, "data not found!", "");
-        } catch (Exception $error) {
-            return responseMsg(false, "ERROR!", $error->getMessage());
-        }
-    }
 
 
     private function filterDataByPaymentMode($data, $paymentMode)

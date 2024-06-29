@@ -117,6 +117,7 @@ class MarLodge extends Model
             $pay_id = $idGeneration->generate();
 
             $mMarLodge->payment_id = $pay_id;
+            $mMarLodge->payment_mode = $PaymentMode;
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mMarLodge->payment_date = Carbon::now();
 
@@ -609,6 +610,6 @@ class MarLodge extends Model
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
             ->where('mar_lodges.id', $applicationId)
             ->orderByDesc('mar_lodges.id');
-            //->get();
+        //->get();
     }
 }

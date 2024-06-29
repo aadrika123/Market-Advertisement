@@ -116,6 +116,8 @@ class MarDharamshala extends Model
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mMarDharamshala->ulb_id);
             $pay_id = $idGeneration->generate();
+            $mMarDharamshala->payment_id = $pay_id;
+            $mMarDharamshala->payment_mode= $paymentMode;
             $payDetails = array('paymentMode' => $paymentMode, 'id' => $req->applicationId, 'amount' => $mMarDharamshala->payment_amount, 'demand_amount' => $mMarDharamshala->demand_amount, 'workflowId' => $mMarDharamshala->workflow_id, 'userId' => $mMarDharamshala->user_id, 'ulbId' => $mMarDharamshala->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
 
             $mMarDharamshala->payment_details = json_encode($payDetails);
