@@ -1862,7 +1862,7 @@ class DharamshalaController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+           $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
 
             if (!$data) {
                 throw new Exception("Application Not Found");
