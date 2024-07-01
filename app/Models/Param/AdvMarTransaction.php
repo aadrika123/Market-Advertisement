@@ -134,7 +134,8 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.cheque_date',
             'adv_mar_transactions.bank_name',
             'adv_mar_transactions.branch_name',
-            'adv_mar_transactions.verify_status'
+            'adv_mar_transactions.verify_status',
+            'adv_mar_transactions.status'
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId)
             ->where('adv_mar_transactions.workflow_id',$data->workflow_id)
