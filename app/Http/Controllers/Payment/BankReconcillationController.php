@@ -27,7 +27,7 @@ class BankReconcillationController extends Controller
 {
     /**
      * | search chque transactions for Advertisement,Market,  
-     * |  Function = 111111111111111111111111111111111111111111111111cls
+     * |  Function = 111111111111111111111111111111111111111111111111
      * |
      * |
      */
