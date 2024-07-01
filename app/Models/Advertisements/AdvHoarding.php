@@ -627,6 +627,8 @@ class AdvHoarding extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = AdvHoarding::select(
+            'adv_hoardings.id',
+            'adv_hoardings.workflow_id',
             'adv_hoardings.approve_date',
             'adv_hoardings.applicant as applicant_name',
             'adv_hoardings.application_no',

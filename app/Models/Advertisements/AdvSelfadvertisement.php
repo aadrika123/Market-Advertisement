@@ -5,6 +5,7 @@ namespace App\Models\Advertisements;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Param\AdvMarTransaction;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
@@ -179,6 +180,9 @@ class AdvSelfadvertisement extends Model
             // Self Advertisement Table Update
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
+            if($mAdvSelfadvertisement->payment_status != 0){
+                throw new Exception('pay your bill!');
+            }
             $mAdvSelfadvertisement->payment_status = $req->status;
             $PaymentMode = $req->paymentMode;
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvSelfadvertisement->ulb_id);
@@ -287,6 +291,8 @@ class AdvSelfadvertisement extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = AdvSelfadvertisement::select(
+            'adv_selfadvertisements.id',
+            'adv_selfadvertisements.workflow_id',
             'adv_selfadvertisements.approve_date',
             // DB::raw('CONVERT(date, adv_selfadvertisements.approve_date, 105) as approve_date'),
             'adv_selfadvertisements.applicant as applicant_name',

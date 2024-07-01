@@ -280,6 +280,8 @@ class MarHostel extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = MarHostel::select(
+            'mar_hostels.id',
+            'mar_hostels.workflow_id',
             'mar_hostels.approve_date',
             'mar_hostels.applicant as applicant_name',
             'mar_hostels.application_no',

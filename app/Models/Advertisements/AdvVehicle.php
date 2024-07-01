@@ -267,6 +267,8 @@ class AdvVehicle extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = AdvVehicle::select(
+            'adv_vehicles.id',
+            'adv_vehicles.workflow_id',
             'adv_vehicles.approve_date',
             'adv_vehicles.applicant as applicant_name',
             'adv_vehicles.application_no',
