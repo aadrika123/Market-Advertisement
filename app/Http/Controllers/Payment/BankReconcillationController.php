@@ -199,6 +199,9 @@ class BankReconcillationController extends Controller
             DB::connection('pgsql_masters')->beginTransaction();
             if ($workfowId == $dharamshalaWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -224,6 +227,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully';
 
                 if ($applicationPaymentStatus == 0) {
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
                     AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
@@ -267,6 +273,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $selfAdvertisementworkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -293,7 +302,9 @@ class BankReconcillationController extends Controller
 
                 if ($applicationPaymentStatus == 0) {
 
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
                     AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
@@ -336,6 +347,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $movablevehicleWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -361,7 +375,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
 
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
@@ -405,6 +421,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $privateLandWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -430,7 +449,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
                     AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
@@ -473,6 +494,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $agencyWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -498,7 +522,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
 
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
@@ -542,6 +568,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $lodgeworkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -567,7 +596,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
 
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
@@ -611,6 +642,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $banquetHallWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -637,7 +671,9 @@ class BankReconcillationController extends Controller
 
                 if ($applicationPaymentStatus == 0) {
 
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
                     AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
@@ -680,6 +716,9 @@ class BankReconcillationController extends Controller
             }
             if ($workfowId == $hostelWorkflow) {
                 $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
+                if ($mChequeDtl->status == 2) {
+                    throw new Exception('Cheque Already Deactivated!');
+                }
 
                 $mChequeDtl->status = $paymentStatus;
                 $mChequeDtl->clear_bounce_date = $request->clearanceDate;
@@ -705,7 +744,9 @@ class BankReconcillationController extends Controller
                 $msg = 'Cheque Clear successfully!';
 
                 if ($applicationPaymentStatus == 0) {
-
+                    if ($mChequeDtl->status == 1) {
+                        throw new Exception('Cheque Already Verified!');
+                    }
 
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
