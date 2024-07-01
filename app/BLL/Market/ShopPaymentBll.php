@@ -2,6 +2,7 @@
 
 namespace App\BLL\Market;
 
+use App\Models\Payment\TempTransaction;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarToll;
 use App\Models\Rentals\MarTollDemand;
@@ -28,6 +29,7 @@ class ShopPaymentBll
     private $_tollLastDemand;
     private $_mTollDemand;
     private $_now;
+    private $_mTempTrans;
 
     public function __construct()
     {
@@ -35,6 +37,7 @@ class ShopPaymentBll
         $this->_mShopDemand   = new MarShopDemand();
         $this->_now           = Carbon::now();
         $this->_mTollDemand   = new MarTollDemand();
+        $this->_mTempTrans     = new TempTransaction();
     }
 
     /**
@@ -128,6 +131,7 @@ class ShopPaymentBll
             'pmt_mode' => $req->paymentMode,
             'transaction_no' => time() . $shopDetails->ulb_id . $req->shopId,                   // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
         ];
+
         DB::beginTransaction();
         $createdPayment = $this->_mShopPayments::create($paymentReqs);                          // Insert Payment Records in Payment Table
         $mshop = Shop::find($req->shopId);
@@ -191,7 +195,7 @@ class ShopPaymentBll
      */
     public function getActiveShop(Request $req)
     {
-        try{
+        try {
             $currentYm = Carbon::now()->format("Y-m");
             $sql = "with demand_genrated as (
                 select distinct shop_id
@@ -203,40 +207,35 @@ class ShopPaymentBll
             left join demand_genrated on demand_genrated.shop_id = mar_shops.id
             where status =1 AND demand_genrated.shop_id IS null ";
             $data = DB::select($sql);
-            $excelData=[
-                "shopId","status","errors","response",
+            $excelData = [
+                "shopId", "status", "errors", "response",
             ];
             $size = collect($data)->count("id");
-            foreach($data as $key=>$val)
-            {
+            foreach ($data as $key => $val) {
                 DB::beginTransaction();
-                echo"=========index( ".$key." [remain---->".($size - $key)."]  ".$val->id.")===========\n\n";
-                $newReq = new Request(["shopId"=>$val->id]);
-                $exrow["shopId"]=$val->id;
+                echo "=========index( " . $key . " [remain---->" . ($size - $key) . "]  " . $val->id . ")===========\n\n";
+                $newReq = new Request(["shopId" => $val->id]);
+                $exrow["shopId"] = $val->id;
                 $respons = null;
-                try{
+                try {
                     $respons = $this->shopDemand($newReq);
-                    $exrow["status"]="Success";
+                    $exrow["status"] = "Success";
                     DB::commit();
                     DB::commit();
-                }
-                catch(Exception $e)
-                {
+                } catch (Exception $e) {
                     DB::rollBack();
                     DB::rollBack();
-                    $exrow["status"]="Faild";
-                    $exrow["error"]=$e->getMessage();
+                    $exrow["status"] = "Faild";
+                    $exrow["error"] = $e->getMessage();
                 }
-                echo("=======".$exrow["status"]."=======\n\n");
-                $exrow["response"]=json_decode($respons??"");
-                array_push($excelData,$exrow);
+                echo ("=======" . $exrow["status"] . "=======\n\n");
+                $exrow["response"] = json_decode($respons ?? "");
+                array_push($excelData, $exrow);
             }
-            echo"=========end===========\n";
+            echo "=========end===========\n";
             print_var($excelData);
-        }
-        catch(Exception $e)
-        {
-            dd("fatel Error",$e->getMessage(),$e->getFile(),$e->getLine());
+        } catch (Exception $e) {
+            dd("fatel Error", $e->getMessage(), $e->getFile(), $e->getLine());
         }
     }
 
