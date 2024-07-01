@@ -377,16 +377,77 @@ class ReportController extends Controller
         }
     }
 
+    // public function holdingDetails(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'holdingNo' => 'required',
+    //         'tradeLicense' =>'nullable'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'validation error',
+    //             'errors' => $validator->errors()
+    //         ], 200);
+    //     }
+
+    //     try {
+    //         $mProperties = new PropProperty();
+    //         $mPropFloors = new PropFloor();
+    //         $mPropOwners = new PropOwner();
+    //         $mTrade = new TradeLicence();
+    //         $fiYear = getFY();
+    //         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fiYear);
+    //         $currentfyStartDate = $currentfyStartDate . "-04-01";
+    //         $currentfyEndDate = $currentfyEndDate . "-03-31";
+    //         if ($request->holdingNo) {
+    //             $properties = $mProperties->getPropDtlsv2($fiYear, $currentfyStartDate)
+    //                 ->where('prop_properties.holding_no', $request->holdingNo)
+    //                 ->first();
+    //             if (!$properties) {
+    //                 throw new Exception("Property Not Found");
+    //             }
+
+    //             if ($properties->arrear_demand != 0) {
+    //                 throw new Exception("Demand against this holding is not clear, Please pay your demand first");
+    //             }
+
+    //             if($request->tradeLicense){
+    //             $tradeLicences = $mTrade->getLicenceByHoldingNov2($properties->holding_no);
+    //             #samjhi???
+    //             // dd(collect($tradeLicences)->isEmpty(),collect($tradeLicences),$tradeLicences);
+    //             #change it variable name
+    //             if (collect($tradeLicences)->isEmpty()) {
+    //                 throw new Exception("Invalid Trade License");
+    //             }
+    //         }
+    //             // else {
+    //             //     throw new Exception("License No Validated");
+    //             // }
+    //             $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
+    //             $owners = $mPropOwners->getOwnerByPropIdV2($properties->id);
+    //             $propertyDtl = collect($properties);
+    //             $propertyDtl['floors'] = $floors;
+    //             $propertyDtl['owners'] = $owners;
+    //             $propertyDtl['trade'] = $tradeLicences;
+    //             return responseMsgs(true, "Holding No. Validated Successfully", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
+    //         }
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
+    //     }
+    // }
     public function holdingDetails(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'holdingNo' => 'required',
+            'tradeLicense' => 'nullable'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'validation error',
+                'message' => 'Validation error',
                 'errors' => $validator->errors()
             ], 200);
         }
@@ -400,6 +461,7 @@ class ReportController extends Controller
             list($currentfyStartDate, $currentfyEndDate) = explode('-', $fiYear);
             $currentfyStartDate = $currentfyStartDate . "-04-01";
             $currentfyEndDate = $currentfyEndDate . "-03-31";
+
             if ($request->holdingNo) {
                 $properties = $mProperties->getPropDtlsv2($fiYear, $currentfyStartDate)
                     ->where('prop_properties.holding_no', $request->holdingNo)
@@ -412,17 +474,21 @@ class ReportController extends Controller
                     throw new Exception("Demand against this holding is not clear, Please pay your demand first");
                 }
 
-                $mTrade = $mTrade->getLicenceByHoldingNov2($properties->holding_no);
-                if ($mTrade->isEmpty()) {
-                    throw new Exception("Invalid Trade License");
-                } else {
-                    throw new Exception("License No Validated");
-                }
                 $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
                 $owners = $mPropOwners->getOwnerByPropIdV2($properties->id);
                 $propertyDtl = collect($properties);
                 $propertyDtl['floors'] = $floors;
                 $propertyDtl['owners'] = $owners;
+
+                if ($request->tradeLicense) {
+                    $tradeLicences = $mTrade->getLicenceByHoldingNov2($properties->holding_no);
+                    if (collect($tradeLicences)->isEmpty()) {
+                        throw new Exception("Invalid Trade License");
+                    }
+                    $propertyDtl['tradeLicences'] = $tradeLicences;
+                    return responseMsgs(true, "Trade License Validated Successfully", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
+                }
+
                 return responseMsgs(true, "Holding No. Validated Successfully", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
             }
         } catch (Exception $e) {

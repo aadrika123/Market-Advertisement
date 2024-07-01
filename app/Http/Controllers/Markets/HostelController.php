@@ -1175,7 +1175,7 @@ class HostelController extends Controller
         if ($totalUploadedDocs >= $totalRequireDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-            $appDetails->parked = NULL;
+            //$appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
