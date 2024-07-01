@@ -233,6 +233,9 @@ class BankReconcillationController extends Controller
                     $mChequeDtl =  AdvChequeDtl::find($request->chequeId);
                     $mChequeDtl->status = 2;
                     AdvMarTransaction::where('id', $mChequeDtl->transaction_id)
+
+
+                    
                         ->update(
                             [
                                 'verify_status' => 2,
