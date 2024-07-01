@@ -247,8 +247,6 @@ class BankReconcillationController extends Controller
                         ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
-
-
                 $request->merge([
                     'id' => $mChequeDtl->id,
                     'paymentMode' => $transaction->payment_mode,
