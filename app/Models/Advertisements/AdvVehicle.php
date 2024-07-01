@@ -172,7 +172,7 @@ class AdvVehicle extends Model
      */
     public function offlinePayment($req)
     {
-       
+
         if ($req->status == '1') {
             // Self Privateland Table Update
             $mAdvVehicle = AdvVehicle::find($req->applicationId);        // Application ID
@@ -188,7 +188,7 @@ class AdvVehicle extends Model
 
 
             // Payment Details
-            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvVehicle->payment_amount, 'demand_amount' => $mAdvVehicle->demand_amount, 'workflowId' => $mAdvVehicle->workflow_id, 'userId' => $mAdvVehicle->citizen_id, 'ulbId' => $mAdvVehicle->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvVehicle->payment_details =  json_encode($payDetails);
             if ($mAdvVehicle->renew_no == NULL) {
