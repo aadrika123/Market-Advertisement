@@ -180,9 +180,6 @@ class AdvSelfadvertisement extends Model
             // Self Advertisement Table Update
             $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->applicationId);
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
-            if($mAdvSelfadvertisement->payment_status != 0){
-                throw new Exception('pay your bill!');
-            }
             $mAdvSelfadvertisement->payment_status = $req->status;
             $PaymentMode = $req->paymentMode;
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvSelfadvertisement->ulb_id);
