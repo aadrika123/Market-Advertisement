@@ -406,7 +406,7 @@ class ReportController extends Controller
                 }
 
                 if ($properties->arrear_demand != 0) {
-                    throw new Exception("Demand is not clear, Please pay your demand first");
+                    throw new Exception("Demand against this holding is not clear, Please pay your demand first");
                 }
 
                 $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
@@ -416,7 +416,7 @@ class ReportController extends Controller
                 $propertyDtl['floors'] = $floors;
                 $propertyDtl['owners'] = $owners;
 
-                return responseMsgs(true, "Property Details", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
+                return responseMsgs(true, "Holding No. Validated Successfully", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
             }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
