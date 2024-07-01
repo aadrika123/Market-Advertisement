@@ -1869,7 +1869,7 @@ class DharamshalaController extends Controller
             }
 
             // Fetch transaction details
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
 
             $approveApplicationDetails['basicDetails'] = $data;
 

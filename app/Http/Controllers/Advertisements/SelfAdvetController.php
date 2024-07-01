@@ -1964,7 +1964,7 @@ class SelfAdvetController extends Controller
             }
 
             // Fetch transaction details
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId)->first();
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
 
             $approveApplicationDetails['basicDetails'] = $data;
 
@@ -2033,7 +2033,7 @@ class SelfAdvetController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-           $user = Auth()->user();
+            $user = Auth()->user();
             $todayDate = Carbon::now();
             $userId = $user->id ?? null;
             $isCitizen = $user && $user->getTable() != "users" ? true : false;
@@ -2049,11 +2049,11 @@ class SelfAdvetController extends Controller
 
             $data = $mAdvSelfadvertisement->offlinePayment($req);
             $appDetails = AdvSelfadvertisement::find($req->applicationId);
-           $req->merge($appDetails->toArray());
+            $req->merge($appDetails->toArray());
 
             $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
 
-             $req->merge([
+            $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
                 'todayDate' => $todayDate->format('Y-m-d'),
