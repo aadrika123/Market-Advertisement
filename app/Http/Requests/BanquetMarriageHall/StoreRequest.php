@@ -40,7 +40,7 @@ class StoreRequest extends FormRequest
 
             'hallType' => 'required|string',
             'entityName' => 'required|string',
-            'entityArea' => 'required|numeric',
+            'entityArea' => 'nullable|numeric',
             'entityAddress' => 'nullable|string',
             'entityWardId' => 'nullable|integer',
             'holdingNo' => 'required|string',
