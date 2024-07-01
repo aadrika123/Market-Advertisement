@@ -326,6 +326,8 @@ class AdvAgency extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = AdvAgency::select(
+            'adv_agencies.id',
+            'adv_agencies.workflow_id',
             'adv_agencies.approve_date',
             'adv_agencies.entity_name as applicant_name',
             'adv_agencies.application_no',

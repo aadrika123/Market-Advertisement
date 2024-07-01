@@ -274,6 +274,8 @@ class MarBanquteHall extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.workflow_id',
             'mar_banqute_halls.approve_date',
             'mar_banqute_halls.applicant as applicant_name',
             'mar_banqute_halls.application_no',

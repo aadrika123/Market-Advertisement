@@ -266,6 +266,8 @@ class MarDharamshala extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = MarDharamshala::select(
+            'mar_dharamshalas.id',
+            'mar_dharamshalas.workflow_id',
             'mar_dharamshalas.approve_date',
             'mar_dharamshalas.applicant as applicant_name',
             'mar_dharamshalas.application_no',
