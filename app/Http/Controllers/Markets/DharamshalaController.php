@@ -1999,26 +1999,33 @@ class DharamshalaController extends Controller
                 DB::raw(" 0 as payment_status")
             )->where('ulb_id', $ulbId);
 
-            // Combine queries with union
-            $applications = $approved->union($active)->union($rejected);
-
             // Apply filters if present
             if ($key && $parameter) {
                 $msg = "Lodge application details according to $key";
-                switch ($key) {
-                    case 'mobileNo':
-                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
-                        break;
-                    case 'applicantName':
-                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
-                        break;
-                    case 'applicationNo':
-                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
-                        break;
-                    default:
-                        throw new Exception("Invalid Data");
+                if ($key && $parameter) {
+                    $msg = "Lodge application details according to $key";
+                    switch ($key) {
+                        case 'mobileNo':
+                            $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
+                            $active = $active->where('mobile', 'LIKE', "%$parameter%");
+                            $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
+                            break;
+                        case 'applicantName':
+                            $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
+                            $active = $active->where('applicant', 'LIKE', "%$parameter%");
+                            $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
+                            break;
+                        case 'applicationNo':
+                            $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
+                            $active = $active->where('application_no', 'LIKE', "%$parameter%");
+                            $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
+                            break;
+                        default:
+                            throw new Exception("Invalid Data");
+                    }
                 }
-            }
+                 // Combine the queries using union
+                 $applications = $approved->union($active)->union($rejected);
 
             // Paginate the results
             $paginatedData = $applications->paginate($pages);
