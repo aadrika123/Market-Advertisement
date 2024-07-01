@@ -108,6 +108,6 @@ class MarRejectedLodge extends Model
             'remarks as reason'
         )
         ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_lodges.current_role_id')
-        ->where('mar_rejected_lodges.id');
+        ->where('mar_rejected_lodges.id',$applicationId);
     }
 }

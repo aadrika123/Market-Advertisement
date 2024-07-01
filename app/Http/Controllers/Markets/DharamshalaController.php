@@ -1862,7 +1862,7 @@ class DharamshalaController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-           $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
 
             if (!$data) {
                 throw new Exception("Application Not Found");
@@ -2002,30 +2002,29 @@ class DharamshalaController extends Controller
             // Apply filters if present
             if ($key && $parameter) {
                 $msg = "Lodge application details according to $key";
-                if ($key && $parameter) {
-                    $msg = "Lodge application details according to $key";
-                    switch ($key) {
-                        case 'mobileNo':
-                            $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
-                            $active = $active->where('mobile', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
-                            break;
-                        case 'applicantName':
-                            $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
-                            $active = $active->where('applicant', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
-                            break;
-                        case 'applicationNo':
-                            $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
-                            $active = $active->where('application_no', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
-                            break;
-                        default:
-                            throw new Exception("Invalid Data");
-                    }
+                switch ($key) {
+                    case 'mobileNo':
+                        $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
+                        $active = $active->where('mobile', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
+                        $active = $active->where('applicant', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
+                        $active = $active->where('application_no', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
                 }
-                 // Combine the queries using union
-                 $applications = $approved->union($active)->union($rejected);
+            }
+
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
 
             // Paginate the results
             $paginatedData = $applications->paginate($pages);
@@ -2048,6 +2047,7 @@ class DharamshalaController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
 
     public function listBtcInboxJsk(Request $req)
     {

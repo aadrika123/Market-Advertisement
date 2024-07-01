@@ -399,6 +399,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/lodge/view-approve-document', 'getUploadDocuments');
         Route::post('market/lodge/search-application', 'searchApplication');
+        Route::post('market/lodge/search-application-view-by-id', 'searchApplicationViewById');
         Route::post('market/lodge/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/lodge/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
