@@ -277,6 +277,8 @@ class MarLodge extends Model
     public function getApprovalLetter($applicationId)
     {
         $recieptDetails = MarLodge::select(
+            'mar_lodges.id',
+            'mar_lodges.workflow_id',
             'mar_lodges.approve_date',
             'mar_lodges.applicant as applicant_name',
             'mar_lodges.application_no',
