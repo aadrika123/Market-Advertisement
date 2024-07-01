@@ -140,6 +140,69 @@ return [
             ],
         ],
 
+         #_For Trade Service
+         'pgsql_trade' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_TRADE_HOST', '127.0.0.1'),
+            'read' => [
+                'host' => [
+                    env('DB_TRADE_READ_HOST', env('DB_TRADE_HOST', '127.0.0.1')),
+                ],
+                'port' => env('DB_TRADE_READ_PORT', env('DB_TRADE_PORT', '5432')),
+                'database' => env('DB_TRADE_READ_DATABASE', env('DB_TRADE_DATABASE', 'juidco_trade')),
+                'username' => env('DB_TRADE_READ_USERNAME', env('DB_TRADE_USERNAME', 'postgres')),
+                "password" => env('DB_TRADE_READ_PASSWORD', env('DB_TRADE_PASSWORD', 'root')),
+            ],
+            'write' => [
+                'host' => env('DB_TRADE_HOST', '127.0.0.1'),
+            ],
+            'port' => env('DB_TRADE_PORT', '5432'),
+            'database' => env('DB_TRADE_DATABASE', 'forge'),
+            'username' => env('DB_TRADE_USERNAME', 'forge'),
+            'password' => env('DB_TRADE_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+            'options'   => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
+        ],
+
+        #_For Notice Service
+        'pgsql_notice' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_NOTICE_HOST', '127.0.0.1'),
+            'read' => [
+                'host' => [
+                    env('DB_NOTICE_READ_HOST', env('DB_NOTICE_HOST', '127.0.0.1')),
+                ],
+                'port' => env('DB_NOTICE_READ_PORT', env('DB_NOTICE_PORT', '5432')),
+                'database' => env('DB_NOTICE_READ_DATABASE', env('DB_NOTICE_DATABASE', 'juidco_notice')),
+                'username' => env('DB_NOTICE_READ_USERNAME', env('DB_NOTICE_USERNAME', 'postgres')),
+                "password" => env('DB_NOTICE_READ_PASSWORD', env('DB_NOTICE_PASSWORD', 'root')),
+            ],
+            'write' => [
+                'host' => env('DB_TRADE_HOST', '127.0.0.1'),
+            ],
+            'port' => env('DB_NOTICE_PORT', '5432'),
+            'database' => env('DB_NOTICE_DATABASE', 'juidco_notice'),
+            'username' => env('DB_NOTICE_USERNAME', 'postgres'),
+            'password' => env('DB_NOTICE_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+            'options'   => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
+        ],
+
+
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

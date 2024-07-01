@@ -12,6 +12,7 @@ use App\Models\Markets\MarRejectedBanquteHall;
 use App\Models\Property\PropFloor;
 use App\Models\Property\PropOwner;
 use App\Models\Property\PropProperty;
+use App\Models\TradeLicence;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -393,12 +394,13 @@ class ReportController extends Controller
             $mProperties = new PropProperty();
             $mPropFloors = new PropFloor();
             $mPropOwners = new PropOwner();
+            //$mTrade = new TradeLicence();
             $fiYear = getFY();
             list($currentfyStartDate, $currentfyEndDate) = explode('-', $fiYear);
             $currentfyStartDate = $currentfyStartDate . "-04-01";
             $currentfyEndDate = $currentfyEndDate . "-03-31";
             if ($request->holdingNo) {
-                $properties = $mProperties->getPropDtlsv2($fiYear,$currentfyStartDate)
+                $properties = $mProperties->getPropDtlsv2($fiYear, $currentfyStartDate)
                     ->where('prop_properties.holding_no', $request->holdingNo)
                     ->first();
                 if (!$properties) {
@@ -408,6 +410,8 @@ class ReportController extends Controller
                 if ($properties->arrear_demand != 0) {
                     throw new Exception("Demand against this holding is not clear, Please pay your demand first");
                 }
+
+               // $mTrade = $mTrade->getLicenceByHoldingNo($properties->holding_no);
 
                 $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
                 $owners = $mPropOwners->getOwnerByPropIdV2($properties->id);
