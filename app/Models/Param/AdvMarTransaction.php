@@ -124,7 +124,7 @@ class AdvMarTransaction extends Model
     {
         return AdvMarTransaction::select(
             'adv_mar_transactions.id',
-            'adv_mar_transactions.transaction_no',
+            'adv_mar_transactions.transaction_no as tran_no',
             DB::raw("TO_CHAR(adv_mar_transactions.transaction_date, 'DD-MM-YYYY') as transaction_date"),
             'adv_mar_transactions.amount',
             'adv_mar_transactions.payment_mode',
