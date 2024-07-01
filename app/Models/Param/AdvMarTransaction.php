@@ -138,7 +138,6 @@ class AdvMarTransaction extends Model
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId)
             ->where('adv_mar_transactions.workflow_id',$data->workflow_id)
-            ->where('adv_mar_transactions.status',1)
             ->where('adv_mar_transactions.status',1);
         // ->where('adv_mar_transactions.module_type', '=', "Market");
         //->get();

@@ -14,6 +14,7 @@ use App\Models\Markets\MarHostel;
 use App\Models\Markets\MarLodge;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\PaymentReconciliation;
+use App\Models\Payment\TempTransaction;
 use App\Models\TransactionDeactivateDtl;
 use Carbon\Carbon;
 use Exception;
@@ -229,11 +230,15 @@ class BankReconcillationController extends Controller
                         ->update(
                             [
                                 'verify_status' => 2,
+                                'status' => 0,
                                 'verify_date' => Carbon::now(),
                                 'verified_by' => $userId
                             ]
                         );
                     MarDharamshala::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -300,6 +305,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     AdvSelfadvertisement::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -366,6 +374,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     AdvVehicle::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -431,6 +442,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     AdvPrivateland::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -497,6 +511,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     AdvAgency::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -563,6 +580,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     MarLodge::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -629,6 +649,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     MarBanquteHall::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
@@ -695,6 +718,9 @@ class BankReconcillationController extends Controller
                             ]
                         );
                     MarHostel::where('id', $applicationId)->update(['payment_status' => 0]);
+                    TempTransaction::where('transaction_id', $mChequeDtl->transaction_id)
+                        ->where('workflow_id', $mChequeDtl->workflow_id)
+                        ->update(['status' => 0]);
                     $msg = 'Cheque Bounce successfully';
                 }
 
