@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Config;
 
 class AdvAgency extends Model
@@ -265,13 +266,16 @@ class AdvAgency extends Model
             // Agency Table Update
             $mAdvAgency = AdvAgency::find($req->applicationId);
             $PaymentMode = $req->paymentMode;
+            if ($mAdvAgency->payment_status == 1) {
+                throw new Exception('Payment is Already Done!');
+            }
             // $pay_id = $mAdvAgency->payment_id = "Cash-$req->applicationId-" . time();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
             $idGeneration                  = new PrefixIdGenerator($receiptIdParam, $mAdvAgency->ulb_id);
             $pay_id = $idGeneration->generate();
 
             $mAdvAgency->payment_id = $pay_id;
-            // $mAdvCheckDtls->remarks = $req->remarks;
+            $mAdvAgency->payment_status = $req->status;
             $mAdvAgency->payment_date = Carbon::now();
 
             $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvAgency->payment_amount, 'demand_amount' => $mAdvAgency->demand_amount, 'workflowId' => $mAdvAgency->workflow_id, 'userId' => $mAdvAgency->citizen_id, 'ulbId' => $mAdvAgency->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);

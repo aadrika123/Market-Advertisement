@@ -120,7 +120,7 @@ class AdvMarTransaction extends Model
         $transactionId = $addData->id;
         return $transactionId;
     }
-    public function getTranByApplicationId($applicationId)
+    public function getTranByApplicationId($applicationId, $data)
     {
         return AdvMarTransaction::select(
             'adv_mar_transactions.id',
@@ -137,7 +137,8 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.verify_status'
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId)
-            ->where('adv_mar_transactions.module_type', '=', "Market");
+            ->where('adv_mar_transactions.workflow_id', '=', $data->workflow_id);
+        // ->where('adv_mar_transactions.module_type', '=', "Market");
         //->get();
     }
 
@@ -148,9 +149,9 @@ class AdvMarTransaction extends Model
             ->where('transaction_date', $date);
     }
 
-    
 
-    
+
+
 
     /**
      * | Cheque Dtl And Transaction Dtl
@@ -397,7 +398,7 @@ class AdvMarTransaction extends Model
         //->get();
     }
 
-    
+
     public function getTransByTranNoSelf($tranNo, $bmwWorkflow)
     {
         return DB::table('adv_mar_transactions as t')
