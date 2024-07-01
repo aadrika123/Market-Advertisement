@@ -125,7 +125,7 @@ class ReportController extends Controller
             'reportType' => 'required|in:Banquet/Marriage Hall,Hostel,Lodge,Dharmshala',
             'wardNo' => 'nullable',
             'applicationType' => 'nullable|in:New Apply,Renew',
-            'applicationStatus' => 'nullable|in:Approved,Reject',
+            'applicationStatus' => 'nullable|in:Approve,Reject',
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
         ]);
