@@ -401,7 +401,7 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
@@ -422,7 +422,7 @@ class MarHostel extends Model
             $data = $approved->union($rejected);
         } elseif ($request->applicationStatus == 'Reject') {
             $data = $rejected;
-        } elseif ($request->applicationStatus == 'Approved') {
+        } elseif ($request->applicationStatus == 'Approve') {
             $data = $approved;
         } else $data = $approved->union($rejected);
         if ($data) {
