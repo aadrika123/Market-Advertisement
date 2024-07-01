@@ -643,33 +643,33 @@ Route::group(['middleware' => ['checkToken']], function () {
     Route::controller(CashVerificationController::class)->group(function () {
 
         Route::post('advert/list-cash-verification', 'cashVerificationList');                                                    //01
-        Route::post('advert/tc-collections', 'tcCollectionDtl');                                                                 //03
-        Route::post('advert/verify-cash', 'cashVerify');                                                                         //05
+        Route::post('advert/tc-collections', 'tcCollectionDtl');                                                                 //02
+        Route::post('advert/verify-cash', 'cashVerify');                                                                         //03
         #Self Advert
-        Route::post('advert/self-advert-cash-varification', 'selfAdvertCashVerificationList');                                   //05
+        Route::post('advert/self-advert-cash-varification', 'selfAdvertCashVerificationList');                                   //04
         Route::post('advert/collection/self-advertisement', 'selfAdvertisementCollection');                                      //05
-        Route::post('advert/verify-cash/self-advertisement', 'selfAdvertisementCashVerify');                                      //05
+        Route::post('advert/verify-cash/self-advertisement', 'selfAdvertisementCashVerify');                                      //06
         #Movacle Vehcile
-        Route::post('advert/movable-vahicle-cash-varification', 'movableVehicleCashVerificationList');                           //05
-        Route::post('advert/collection/movable-vehicle', 'movableVehicleCollection');                                            //05
-        Route::post('advert/verify-cash/movable-vehicle', 'movableVehicleCashVerify');                                            //05
+        Route::post('advert/movable-vahicle-cash-varification', 'movableVehicleCashVerificationList');                           //07
+        Route::post('advert/collection/movable-vehicle', 'movableVehicleCollection');                                            //08
+        Route::post('advert/verify-cash/movable-vehicle', 'movableVehicleCashVerify');                                            //09
         #Private Land 
-        Route::post('advert/private-land-cash-varification', 'privateLandCashVerificationList');                                 //05
-        Route::post('advert/collection/private-land', 'privateLandCollection');                                                  //05
-        Route::post('advert/verify-cash/private-land', 'privateLandCashVerify');                                                  //05
+        Route::post('advert/private-land-cash-varification', 'privateLandCashVerificationList');                                 //10
+        Route::post('advert/collection/private-land', 'privateLandCollection');                                                  //11
+        Route::post('advert/verify-cash/private-land', 'privateLandCashVerify');                                                  //12
         #Agency
-        Route::post('advert/agency-cash-varification', 'agencyCashVerificationList');                                            //05
-        Route::post('advert/collection/agency', 'agencyCollection');                                                             //05
-        Route::post('advert/verify-cash/agency', 'agencyCashVerify');                                                             //05
+        Route::post('advert/agency-cash-varification', 'agencyCashVerificationList');                                            //13
+        Route::post('advert/collection/agency', 'agencyCollection');                                                             //14
+        Route::post('advert/verify-cash/agency', 'agencyCashVerify');                                                             //15
 
         #LODGE
-        Route::post('market/lodge-cash-varification-list', 'lodgeCashVerificationList');                                        //05
-        Route::post('market/collection-lodge', 'lodgeCollection');                                            //05
-        Route::post('market/verify-cash-lodge', 'lodgeCashVerify');                                            //05
+        Route::post('market/lodge-cash-varification-list', 'lodgeCashVerificationList');                                        //16
+        Route::post('market/collection-lodge', 'lodgeCollection');                                            //17
+        Route::post('market/verify-cash-lodge', 'lodgeCashVerify');                                            //18
 
         #Banquet
-        Route::post('market/banquet-cash-varification-list', 'banquetCashVerificationList');                                        //05
-        Route::post('market/collection-banquet', 'banquetCollection');                                            //05
+        Route::post('market/banquet-cash-varification-list', 'banquetCashVerificationList');                                        //19
+        Route::post('market/collection-banquet', 'banquetCollection');                                            //20
         Route::post('market/verify-cash-banquet', 'banquetCashVerify');                                            //05
 
         #DharamShala
@@ -720,15 +720,15 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land-deactivate-transaction', 'deactivateTransactionPvtLand');
         Route::post('advert/pvt-land-deactivate-transaction-list', 'deactivatedTransactionListPvtLand');
 
-         #agency Transaction Deactivation
-         Route::post('advert/agency-search-transaction-no', 'searchTransactionNoAgency');
-         Route::post('advert/agency-deactivate-transaction', 'deactivateTransactionAgency');
-         Route::post('advert/agency-deactivate-transaction-list', 'deactivatedTransactionListAgency');
+        #agency Transaction Deactivation
+        Route::post('advert/agency-search-transaction-no', 'searchTransactionNoAgency');
+        Route::post('advert/agency-deactivate-transaction', 'deactivateTransactionAgency');
+        Route::post('advert/agency-deactivate-transaction-list', 'deactivatedTransactionListAgency');
     });
 
     Route::controller(BankReconcillationController::class)->group(function () {
-        Route::post('advert/search-transaction', 'searchTransaction');
-        Route::post('advert/cheque-dtl-by-id', 'chequeDtlById');
-        Route::post('advert/cheque-clearance', 'chequeClearance');
+        Route::post('advert/search-transaction', 'searchTransaction');                                               // Search Transaction of Cheque
+        Route::post('advert/cheque-dtl-by-id', 'chequeDtlById');                                                     // Get Detail of Cheque Transaction
+        Route::post('advert/cheque-clearance', 'chequeClearance');                                                   // clear or bounce cheque
     });
 });
