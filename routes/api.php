@@ -512,7 +512,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/hostel/view-approve-document', 'getUploadDocuments');
         Route::post('market/hostel/search-application', 'searchApplication');
-
+        Route::post('market/hostel/search-application-view-by-id', 'searchApplicationViewById');
         Route::post('market/hostel/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/hostel/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/hostel/view-btc-document', 'getUploadDocumentsBtc');
@@ -569,7 +569,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('market/dharamshala/view-approve-document', 'getUploadDocuments');
         Route::post('market/dharamshala/search-application', 'searchApplication');
-
+        Route::post('market/dharamshala/search-application-view-by-id', 'searchApplicationViewById');
         Route::post('market/dharamshala/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('market/dharamshala/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('market/dharamshala/view-btc-document', 'getUploadDocumentsBtc');

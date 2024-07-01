@@ -1126,7 +1126,7 @@ class HostelController extends Controller
             // Variable initialization
             // $auth = auth()->user();
             $userId = $req->auth['id'];
-            $ulbId = $req->auth['ulb_id']??2;
+            $ulbId = $req->auth['ulb_id'] ?? 2;
             $wardId = $this->getWardByUserId($userId);
 
             $occupiedWards = collect($wardId)->map(function ($ward) {                               // Get Occupied Ward of the User
@@ -1931,7 +1931,7 @@ class HostelController extends Controller
             }
 
             // Fetch transaction details
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data )->first();
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
 
             $approveApplicationDetails['basicDetails'] = $data;
 
@@ -2002,40 +2002,39 @@ class HostelController extends Controller
             $user = Auth()->user();
             $ulbId = $user->ulb_id ?? null;
 
-            $approved = MarHostel::select('id', 'mobile', 'entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),'payment_status')
+            $approved = MarHostel::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), 'payment_status')
                 ->where('ulb_id', $ulbId);
-            $active = MarActiveHostel::select('id', 'mobile', 'entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+            $active = MarActiveHostel::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), DB::raw("0 as payment_status"))
                 ->where('ulb_id', $ulbId);
-            $rejected = MarRejectedHostel::select('id', 'mobile', 'entity_address','entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"),DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),DB::raw(" 0 as payment_status"))
+            $rejected = MarRejectedHostel::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), DB::raw("0 as payment_status"))
                 ->where('ulb_id', $ulbId);
 
             // Apply filters if present
             if ($key && $parameter) {
-                $msg = "Lodge application details according to $key";
-                if ($key && $parameter) {
-                    $msg = "Lodge application details according to $key";
-                    switch ($key) {
-                        case 'mobileNo':
-                            $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
-                            $active = $active->where('mobile', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
-                            break;
-                        case 'applicantName':
-                            $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
-                            $active = $active->where('applicant', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
-                            break;
-                        case 'applicationNo':
-                            $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
-                            $active = $active->where('application_no', 'LIKE', "%$parameter%");
-                            $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
-                            break;
-                        default:
-                            throw new Exception("Invalid Data");
-                    }
+                $msg = "Hostel application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
+                        $active = $active->where('mobile', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
+                        $active = $active->where('applicant', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
+                        $active = $active->where('application_no', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
                 }
-                 // Combine the queries using union
-                 $applications = $approved->union($active)->union($rejected);
+            }
+
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
 
             // Paginate the results
             $paginatedData = $applications->paginate($pages);
@@ -2058,6 +2057,7 @@ class HostelController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
+
 
     public function listBtcInboxJsk(Request $req)
     {
@@ -2192,6 +2192,63 @@ class HostelController extends Controller
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+
+    public function searchApplicationViewById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mWfActiveDocument      = new WfActiveDocument();
+            $refDocUpload           = new DocumentUpload;
+            $mAdvActiveSelfadvertisement = new MarHostel();
+            $activelodge = new MarActiveHostel();
+            $rejectedlodge = new MarRejectedHostel();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $activelodge->getDetailsByIdjsk($applicationId)->first();
+            if (!$data) {
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+            }
+            if (!$data) {
+                $data = $rejectedlodge->getDetailsById($applicationId)->first();
+            }
+
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+            $workflowId = $data->workflow_id;
+            $docdetail = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $docdetail = $refDocUpload->getDocUrl($docdetail);
+            $approveApplicationDetails['docdetail'] = $docdetail;
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 }
