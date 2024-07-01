@@ -1986,26 +1986,32 @@ class LodgeController extends Controller
             $rejected = MarRejectedLodge::select('id', 'mobile', 'entity_address', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"), DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"), DB::raw(" 0 as payment_status"))
                 ->where('ulb_id', $ulbId);
 
-            // Combine the queries using union
-            $applications = $approved->union($active)->union($rejected);
-
             // Apply filters if present
             if ($key && $parameter) {
                 $msg = "Lodge application details according to $key";
                 switch ($key) {
                     case 'mobileNo':
-                        $applications = $applications->where('mobile', 'LIKE', "%$parameter%");
+                        $approved = $approved->where('mobile', 'LIKE', "%$parameter%");
+                        $active = $active->where('mobile', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('mobile', 'LIKE', "%$parameter%");
                         break;
                     case 'applicantName':
-                        $applications = $applications->where('applicant', 'LIKE', "%$parameter%");
+                        $approved = $approved->where('applicant', 'LIKE', "%$parameter%");
+                        $active = $active->where('applicant', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('applicant', 'LIKE', "%$parameter%");
                         break;
                     case 'applicationNo':
-                        $applications = $applications->where('application_no', 'LIKE', "%$parameter%");
+                        $approved = $approved->where('application_no', 'LIKE', "%$parameter%");
+                        $active = $active->where('application_no', 'LIKE', "%$parameter%");
+                        $rejected = $rejected->where('application_no', 'LIKE', "%$parameter%");
                         break;
                     default:
                         throw new Exception("Invalid Data");
                 }
             }
+             // Combine the queries using union
+             $applications = $approved->union($active)->union($rejected);
+
 
             // Paginate the results
             $paginatedData = $applications->paginate($pages);
