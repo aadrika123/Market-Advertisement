@@ -137,7 +137,7 @@ class AdvSelfadvertisement extends Model
     {
         $details = AdvSelfadvertisement::select(
             'adv_selfadvertisements.payment_amount',
-            'adv_selfadvertisements.payment_id',
+            'adv_selfadvertisements.payment_id as transaction_no',
             'adv_selfadvertisements.payment_date',
             'adv_selfadvertisements.license_no',
             'adv_selfadvertisements.application_no',
