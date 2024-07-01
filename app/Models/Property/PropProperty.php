@@ -10,7 +10,6 @@ class PropProperty extends Model
 {
     use HasFactory;
     protected $connection = 'pgsql_property';
-
     /**
      * | Get property details by provided key
      * | @param 
@@ -36,15 +35,18 @@ class PropProperty extends Model
             'prop_properties.saf_id',
             'prop_properties.prop_address',
             'prop_properties.area_of_plot',
+            'prop_properties.holding_no',
             'w.ward_name as old_ward_no',
             'nw.ward_name as new_ward_no',
             'prop_saf_geotag_uploads.latitude',
             'prop_saf_geotag_uploads.longitude',
+            //'trade_licences.license_no',
             // DB::raw(" (CASE WHEN demands.arrear_demand IS NULL THEN '0.00' ELSE demands.arrear_demand END) AS arrear_demand")
             DB::raw("(CASE WHEN demands.prop_arrear_demand IS NULL THEN '0.00' ELSE demands.prop_arrear_demand END) AS arrear_demand")
         )
             ->join('ulb_ward_masters as w', 'w.id', '=', 'prop_properties.ward_mstr_id')
             ->leftjoin('prop_saf_geotag_uploads', 'prop_saf_geotag_uploads.saf_id', '=', 'prop_properties.saf_id')
+           // ->leftjoin('trade_licences','trade_licences.holding_no','=','prop_properties.holding_no')
             // ->LEFTJOIN(
             //     DB::RAW("(
             //     SELECT 

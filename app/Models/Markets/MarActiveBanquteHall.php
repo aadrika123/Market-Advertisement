@@ -54,7 +54,7 @@ class MarActiveBanquteHall extends Model
             'organization_type' => $req->organizationType,
             'floor_area' => $req->floorArea,
             'land_deed_type' => $req->landDeedType,
-
+            'entity_area' =>$req->entityArea,
 
 
             'water_supply_type' => $req->waterSupplyType,
