@@ -281,13 +281,13 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.bank_name',
             'adv_mar_transactions.branch_name',
             'adv_mar_transactions.verify_status',
-            'mar_lodge.application_no',
+            'mar_lodges.application_no',
             DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
             "transaction_deactivate_dtls.reason",
             "users.name as deactivated_by"
         )
             ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
-            ->join('mar_lodge', 'mar_lodge.id', '=', 'adv_mar_transactions.application_id')
+            ->join('mar_lodges', 'mar_lodges.id', '=', 'adv_mar_transactions.application_id')
             ->join('users', 'users.id', '=', 'transaction_deactivate_dtls.deactivated_by')
             ->where('adv_mar_transactions.workflow_id', $lodgewWorkflow)
             ->where("adv_mar_transactions.status", 0);
