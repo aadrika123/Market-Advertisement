@@ -189,7 +189,7 @@ class AdvSelfadvertisement extends Model
             // $mAdvCheckDtls->remarks = $req->remarks;
             $mAdvSelfadvertisement->payment_date = Carbon::now();
 
-            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'paymentId' => $pay_id);
+            $payDetails = array('paymentMode' => $PaymentMode, 'id' => $req->applicationId, 'amount' => $mAdvSelfadvertisement->payment_amount, 'demand_amount' => $mAdvSelfadvertisement->demand_amount, 'workflowId' => $mAdvSelfadvertisement->workflow_id, 'userId' => $mAdvSelfadvertisement->citizen_id, 'ulbId' => $mAdvSelfadvertisement->ulb_id, 'transDate' => Carbon::now(), 'transactionNo' => $pay_id);
 
             $mAdvSelfadvertisement->payment_details = json_encode($payDetails);
             if ($mAdvSelfadvertisement->renew_no == NULL) {                             // Fresh Application Time 
