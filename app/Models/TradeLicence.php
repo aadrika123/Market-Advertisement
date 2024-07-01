@@ -35,11 +35,11 @@ class TradeLicence extends Model
 
     public function getLicenceByHoldingNov2($holding_no)
     {
-        $licenceList = DB::table('trade_licences as t1')
+        $licenceList = DB::connection($this->connection)->table('trade_licences as t1')
             ->select('t1.id', 't1.license_no','t1.holding_no','t1.valid_from','t2.user_name as applicant_name')
             ->leftJoin('users as t2','t1.user_id','=',"t2.id")
             ->where('t1.holding_no', $holding_no)
-            ->get();
+            ->first();
         return $licenceList;
     }
 
