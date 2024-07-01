@@ -17,6 +17,7 @@ use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Exists;
 
 class ReportController extends Controller
 {
@@ -394,7 +395,7 @@ class ReportController extends Controller
             $mProperties = new PropProperty();
             $mPropFloors = new PropFloor();
             $mPropOwners = new PropOwner();
-            //$mTrade = new TradeLicence();
+            $mTrade = new TradeLicence();
             $fiYear = getFY();
             list($currentfyStartDate, $currentfyEndDate) = explode('-', $fiYear);
             $currentfyStartDate = $currentfyStartDate . "-04-01";
@@ -411,15 +412,17 @@ class ReportController extends Controller
                     throw new Exception("Demand against this holding is not clear, Please pay your demand first");
                 }
 
-               // $mTrade = $mTrade->getLicenceByHoldingNo($properties->holding_no);
-
+                $mTrade = $mTrade->getLicenceByHoldingNov2($properties->holding_no);
+                if ($mTrade->isEmpty()) {
+                    throw new Exception("Invalid Trade License");
+                } else {
+                    throw new Exception("License No Validated");
+                }
                 $floors = $mPropFloors->getPropFloorsV2($properties->id)->get();
                 $owners = $mPropOwners->getOwnerByPropIdV2($properties->id);
-
                 $propertyDtl = collect($properties);
                 $propertyDtl['floors'] = $floors;
                 $propertyDtl['owners'] = $owners;
-
                 return responseMsgs(true, "Holding No. Validated Successfully", remove_null($propertyDtl), "010116", "1.0", "", "POST", $request->deviceId);
             }
         } catch (Exception $e) {

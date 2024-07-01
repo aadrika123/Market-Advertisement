@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class TradeLicence extends Model
 {
     use HasFactory;
+    protected $connection = 'pgsql_trade';
 
     public function getLicenceByUserId($user_id)
     {
@@ -24,6 +25,16 @@ class TradeLicence extends Model
     public function getLicenceByHoldingNo($holding_no)
     {
         $licenceList = array();
+        $licenceList = DB::table('trade_licences as t1')
+            ->select('t1.id', 't1.license_no','t1.holding_no','t1.valid_from','t2.user_name as applicant_name')
+            ->leftJoin('users as t2','t1.user_id','=',"t2.id")
+            ->where('t1.holding_no', $holding_no)
+            ->get();
+        return $licenceList;
+    }
+
+    public function getLicenceByHoldingNov2($holding_no)
+    {
         $licenceList = DB::table('trade_licences as t1')
             ->select('t1.id', 't1.license_no','t1.holding_no','t1.valid_from','t2.user_name as applicant_name')
             ->leftJoin('users as t2','t1.user_id','=',"t2.id")
