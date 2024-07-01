@@ -27,6 +27,8 @@ class BankReconcillationController extends Controller
     /**
      * | search chque transactions for Advertisement,Market,  
      * |  Function = 1
+     * |
+     * |
      */
     public function searchTransaction(Request $request)
     {
