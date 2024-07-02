@@ -604,7 +604,7 @@ class MarLodge extends Model
             'holding_no',
             'father',
             'mar_lodges.email',
-            'aadhar_card as aadhar_no',
+            'aadhar_card as aadhar_card',
             'permanent_ward_id as permanent_ward_no',
             'permanent_address',
             'doc_upload_status'

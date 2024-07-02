@@ -567,7 +567,7 @@ class MarActiveLodge extends Model
             'holding_no',
             'father',
             'mar_active_lodges.email',
-            'mar_active_lodges.aadhar_card',
+            'mar_active_lodges.aadhar_card as aadhar_card',
             'permanent_ward_id as permanent_ward_no',
             'permanent_address',
             'doc_upload_status',

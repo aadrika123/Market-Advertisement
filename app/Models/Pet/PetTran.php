@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
@@ -129,5 +130,89 @@ class PetTran extends Model
             ->where('pet_trans.status', 1)
             ->where('verify_status', 0)
             ->where('tran_date', $date);
+    }
+
+    public function dailyCollection($request)
+    {
+        $fromDate = $request->fromDate ?: Carbon::now()->format('Y-m-d');
+        $toDate = $request->toDate ?: Carbon::now()->format('Y-m-d');
+        $perPage = $request->perPage ?: 10;
+        $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
+        ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
+        ->where('pet_trans.status', 1)
+        ->whereBetween('pet_trans.tran_date',[$fromDate,$toDate]);
+
+        if ($request->paymentMode) {
+            $query->where('pet_trans.payment_mode', $request->paymentMode);
+        }
+        if ($request->collectionBy) {
+            if ($request->collectionBy == 'JSK') {
+                $query->where('pet_trans.user_type', 'JSK');
+            } else {
+                $query->where('pet_trans.user_type', 'Citizen');
+            }
+        }
+        $summaryQuery = clone $query;
+        $transactions = $query->paginate($perPage);
+        $collectAmount = $summaryQuery->sum('pet_trans.amount');
+        $totalTransactions = $summaryQuery->count();
+        $cashSummaryQuery = clone $summaryQuery;
+        $cashSummaryQuery->where('pet_trans.payment_mode', 'CASH');
+        $cashAmount = $cashSummaryQuery->sum('pet_trans.amount');
+        $cashCount = $cashSummaryQuery->count();
+
+        $onlineSummaryQuery = clone $summaryQuery;
+        $onlineSummaryQuery->where('pet_trans.payment_mode', 'ONLINE');
+        $onlineAmount = $onlineSummaryQuery->sum('pet_trans.amount');
+        $onlineCount = $onlineSummaryQuery->count();
+
+        // JSK cash collection
+        $jskCashCollection = clone $summaryQuery;
+        $jskCashCollection->where('pet_trans.payment_mode', 'CASH')->where('pet_trans.user_type', 'JSK');
+        $jskCashAmount = $jskCashCollection->sum('pet_trans.amount');
+        $jskCashCount = $jskCashCollection->count();
+
+        // JSK online collection
+        $jskOnlineCollection = clone $summaryQuery;
+        $jskOnlineCollection->where('pet_trans.payment_mode', 'ONLINE')->where('pet_trans.user_type', 'JSK');
+        $jskOnlineAmount = $jskOnlineCollection->sum('pet_trans.amount');
+        $jskOnlineCount = $jskOnlineCollection->count();
+
+        // Citizen cash collection
+        $citizenCashCollection = clone $summaryQuery;
+        $citizenCashCollection->where('t.payment_mode', 'CASH')->where('pet_trans.user_type', 'Citizen');
+        $citizenCashAmount = $citizenCashCollection->sum('pet_trans.amount');
+        $citizenCashCount = $citizenCashCollection->count();
+
+        // Citizen online collection
+        $citizenOnlineCollection = clone $summaryQuery;
+        $citizenOnlineCollection->where('t.payment_mode', 'ONLINE')->where('pet_trans.user_type', 'Citizen');
+        $citizenOnlineAmount = $citizenOnlineCollection->sum('pet_trans.amount');
+        $citizenOnlineCount = $citizenOnlineCollection->count();
+        $totaljskCount =  $jskCashCount +$jskOnlineCount;
+        $totalCitizenCount =  $citizenCashCount +$citizenOnlineCount;
+    
+        return [
+            'current_page' => $transactions->currentPage(),
+            'last_page' => $transactions->lastPage(),
+            'data' => $transactions->items(),
+            'total' => $transactions->total(),
+            'collectAmount' => $collectAmount,
+            'totalTransactions' => $totalTransactions,
+            'cashCollection' => $cashAmount,
+            'cashTranCount' => $cashCount,
+            'onlineCollection' => $onlineAmount,
+            'onlineTranCount' => $onlineCount,
+            'jskCashCollectionAmount' => $jskCashAmount,
+            'jskCashCollectionCount' => $jskCashCount,
+            'jskOnlineCollectionAmount' => $jskOnlineAmount,
+            'jskOnlineCollectionCount' => $jskOnlineCount,
+            'citizenCashCollectionAmount' => $citizenCashAmount,
+            'citizenCashCollectionCount' => $citizenCashCount,
+            'citizenOnlineCollectionAmount' => $citizenOnlineAmount,
+            'citizenOnlineCollectionCount' => $citizenOnlineCount,
+            'totalJskCount' =>$totaljskCount,
+            'totalCitizenCount' =>$totalCitizenCount
+        ];
     }
 }

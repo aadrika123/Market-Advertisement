@@ -592,7 +592,7 @@ class MarActiveBanquteHall extends Model
             'holding_no',
             'father',
             'mar_active_banqute_halls.email',
-            'mar_active_banqute_halls.aadhar_card',
+            'mar_active_banqute_halls.aadhar_card as aadhar_card',
             'permanent_ward_id as permanent_ward_no',
             'permanent_address',
             'doc_upload_status',
