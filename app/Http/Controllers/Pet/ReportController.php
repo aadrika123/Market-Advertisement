@@ -83,6 +83,7 @@ class ReportController extends Controller
     public function payCollectionReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'reportType' => 'required|in:collectionReport',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
             'paymentMode'  => 'nullable',
@@ -99,8 +100,10 @@ class ReportController extends Controller
             $tran = new PetTran();
             $response = [];
             $user = Auth()->user();
+            if ($request->reportType == 'collectionReport') {
             $response = $tran->dailyCollection($request);
             //$response['user_name'] = $user->name;
+            }
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
                 return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
