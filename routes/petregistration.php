@@ -99,8 +99,9 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('list-rejected-application', 'listfinisherRejectApplications');                             // Workflow
     });
 
+    //written by prity pandey
     Route::controller(ReportController::class)->group(function () {
-        Route::post("all-type-reports", "allTypeReports");    
+        Route::post("application-type-reports", "allTypeReports");    
     });
 });
 
