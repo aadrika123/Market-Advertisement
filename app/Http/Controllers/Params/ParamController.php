@@ -197,22 +197,57 @@ class ParamController extends Controller
      * | Function - 03
      * | API - 03
      */
-    public function listDocument()
+    // public function listDocument()
+    // {
+    //     $mRefRequiredDocument = new RefRequiredDocument();
+    //     $listDocs = $mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
+    //     $documentList = array();
+    //     foreach ($listDocs as $key => $val) {
+    //         $alldocs = explode("#", $val['requirements']);
+    //         foreach ($alldocs as $kinn => $valinn) {
+    //             $arr = explode(',', $valinn);
+    //             $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+    //             $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
+    //             $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+    //             $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+    //             $documentList[$val['code']][$kinn]['code'] = $val['code'];
+    //         }
+    //     }
+    //     return $documentList;
+    // }
+
+    public function listDocument(Request $req)
     {
+        $userId = $req->auth['id'];
+        $userType = $req->auth['user_type'];
+
         $mRefRequiredDocument = new RefRequiredDocument();
         $listDocs = $mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
-        $documentList = array();
+
+        $documentList = [];
+
         foreach ($listDocs as $key => $val) {
             $alldocs = explode("#", $val['requirements']);
             foreach ($alldocs as $kinn => $valinn) {
                 $arr = explode(',', $valinn);
-                $documentList[$val['code']][$kinn]['docType'] = $arr[0];
-                $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
-                $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
-                $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
-                $documentList[$val['code']][$kinn]['code'] = $val['code'];
+
+                // Check if user_type is 'jsk' or 'JSK' to include 'Application_form'
+                if (strtolower($userType) == 'jsk') {
+                    $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+                    $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
+                    $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                    $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                    $documentList[$val['code']][$kinn]['code'] = $val['code'];
+                } elseif ($arr[1] !== 'APPLICATION_FORM') {
+                    $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+                    $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
+                    $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                    $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
+                    $documentList[$val['code']][$kinn]['code'] = $val['code'];
+                }
             }
         }
+
         return $documentList;
     }
 
