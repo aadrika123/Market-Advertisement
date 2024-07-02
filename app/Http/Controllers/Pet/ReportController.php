@@ -21,7 +21,8 @@ class ReportController extends Controller
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
             'dateFrom' => 'nullable|date_format:Y-m-d',
-            'dateUpto' => 'nullable|date_format:Y-m-d'
+            'dateUpto' => 'nullable|date_format:Y-m-d',
+            'level' => 'nullable|in:BO,DA,SI'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -55,6 +56,18 @@ class ReportController extends Controller
             }
             if ($request->reportType == 'Expired') {
                 $response = $approved->expiredApplication($request);
+                 //$response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Pending'&& $request->level == 'BO') {
+                $response = $active->boApplication($request);
+                 //$response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Pending'&& $request->level == 'DA') {
+                $response = $active->daApplication($request);
+                 //$response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Pending'&& $request->level == 'SI') {
+                $response = $active->siApplication($request);
                  //$response['user_name'] = $user->name;
             }
             if ($response) {
