@@ -80,11 +80,11 @@ class ReportController extends Controller
         }
     }
 
-    public function ReportDataSepticTanker(Request $request)
+    public function payCollectionReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'fromDate' => 'required|date_format:Y-m-d',
-            'toDate' => 'required|date_format:Y-m-d|after_or_equal:fromDate',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
             'paymentMode'  => 'nullable',
             'collectionBy' => 'nullable'
         ]);
@@ -100,10 +100,10 @@ class ReportController extends Controller
             $response = [];
             $user = Auth()->user();
             $response = $tran->dailyCollection($request);
-            $response['user_name'] = $user->name;
+            //$response['user_name'] = $user->name;
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
-                return responseMsgs(true, "SepticTanker Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
+                return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
             }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);

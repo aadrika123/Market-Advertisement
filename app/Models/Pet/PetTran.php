@@ -137,14 +137,16 @@ class PetTran extends Model
         $fromDate = $request->fromDate ?: Carbon::now()->format('Y-m-d');
         $toDate = $request->toDate ?: Carbon::now()->format('Y-m-d');
         $perPage = $request->perPage ?: 10;
+
         $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
-        ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
-        ->where('pet_trans.status', 1)
-        ->whereBetween('pet_trans.tran_date',[$fromDate,$toDate]);
+            ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
+            ->where('pet_trans.status', 1)
+            ->whereBetween('pet_trans.tran_date', [$fromDate, $toDate]);
 
         if ($request->paymentMode) {
             $query->where('pet_trans.payment_mode', $request->paymentMode);
         }
+
         if ($request->collectionBy) {
             if ($request->collectionBy == 'JSK') {
                 $query->where('pet_trans.user_type', 'JSK');
@@ -152,10 +154,12 @@ class PetTran extends Model
                 $query->where('pet_trans.user_type', 'Citizen');
             }
         }
+
         $summaryQuery = clone $query;
         $transactions = $query->paginate($perPage);
         $collectAmount = $summaryQuery->sum('pet_trans.amount');
         $totalTransactions = $summaryQuery->count();
+
         $cashSummaryQuery = clone $summaryQuery;
         $cashSummaryQuery->where('pet_trans.payment_mode', 'CASH');
         $cashAmount = $cashSummaryQuery->sum('pet_trans.amount');
@@ -180,18 +184,19 @@ class PetTran extends Model
 
         // Citizen cash collection
         $citizenCashCollection = clone $summaryQuery;
-        $citizenCashCollection->where('t.payment_mode', 'CASH')->where('pet_trans.user_type', 'Citizen');
+        $citizenCashCollection->where('pet_trans.payment_mode', 'CASH')->where('pet_trans.user_type', 'Citizen');
         $citizenCashAmount = $citizenCashCollection->sum('pet_trans.amount');
         $citizenCashCount = $citizenCashCollection->count();
 
         // Citizen online collection
         $citizenOnlineCollection = clone $summaryQuery;
-        $citizenOnlineCollection->where('t.payment_mode', 'ONLINE')->where('pet_trans.user_type', 'Citizen');
+        $citizenOnlineCollection->where('pet_trans.payment_mode', 'ONLINE')->where('pet_trans.user_type', 'Citizen');
         $citizenOnlineAmount = $citizenOnlineCollection->sum('pet_trans.amount');
         $citizenOnlineCount = $citizenOnlineCollection->count();
-        $totaljskCount =  $jskCashCount +$jskOnlineCount;
-        $totalCitizenCount =  $citizenCashCount +$citizenOnlineCount;
-    
+
+        $totalJskCount = $jskCashCount + $jskOnlineCount;
+        $totalCitizenCount = $citizenCashCount + $citizenOnlineCount;
+
         return [
             'current_page' => $transactions->currentPage(),
             'last_page' => $transactions->lastPage(),
@@ -211,8 +216,8 @@ class PetTran extends Model
             'citizenCashCollectionCount' => $citizenCashCount,
             'citizenOnlineCollectionAmount' => $citizenOnlineAmount,
             'citizenOnlineCollectionCount' => $citizenOnlineCount,
-            'totalJskCount' =>$totaljskCount,
-            'totalCitizenCount' =>$totalCitizenCount
+            'totalJskCount' => $totalJskCount,
+            'totalCitizenCount' => $totalCitizenCount
         ];
     }
 }
