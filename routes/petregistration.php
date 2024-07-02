@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Pet\ReportController;
 use App\Http\Controllers\Pet\PetPaymentController;
 use App\Http\Controllers\Pet\PetRegistrationController;
 use App\Http\Controllers\Pet\PetWorkflowController;
@@ -96,6 +97,11 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('final-verify-reject', 'finalApprovalRejection');                                           // Workflow
         Route::post('list-approved-application', 'listfinisherApproveApplications');                            // Workflow
         Route::post('list-rejected-application', 'listfinisherRejectApplications');                             // Workflow
+    });
+
+    //written by prity pandey
+    Route::controller(ReportController::class)->group(function () {
+        Route::post("application-type-reports", "allTypeReports");    
     });
 });
 

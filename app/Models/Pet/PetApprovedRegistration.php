@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -225,5 +226,145 @@ class PetApprovedRegistration extends Model
             ->leftJoin('wf_roles', 'wf_roles.id', 'pet_approved_registrations.current_role_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id');
+    }
+
+    public function approvedApplication($request)
+    {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+        $key        = $request->filterBy;
+        $perPage = $request->perPage ?: 10;
+        $parameter = $request->parameter;
+        $approvedApplication = DB::table('pet_approved_registrations')
+            ->select(
+                'pet_approved_registrations.id',
+                'pet_approved_registrations.holding_no',
+                'pet_approved_registrations.application_no',
+                DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
+                'pet_approved_registrations.payment_status',
+                'pet_approved_registrations.saf_no',
+                'pet_approved_registrations.application_apply_date',
+                'pet_approved_registrations.doc_upload_status',
+                'pet_approved_registrations.renewal',
+                'pet_approved_registrations.registration_id',
+                'pet_approve_applicants.mobile_no',
+                'pet_approve_applicants.applicant_name',
+                "pet_renewal_registrations.id as renewal_id",
+                DB::raw("CASE 
+                                    WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
+                                        else 'false'
+                                END as preview_button"),
+            )
+
+            ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.ulb_id', $ulbId)
+            ->orderByDesc('pet_approved_registrations.id');
+
+        if ($key && $parameter) {
+            switch ($key) {
+                case "mobileNo":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.mobile_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicationNo"):
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case "applicantName":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.applicant_name', 'LIKE', "%$parameter%");
+                    break;
+                case "holdingNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%");
+                    break;
+                case "safNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%");
+                    break;
+                default:
+                    throw new Exception("Invalid Data");
+            }
+        }
+        $data = $approvedApplication;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function expiredApplication($request)
+    {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+        $key        = $request->filterBy;
+        $perPage = $request->perPage ?: 10;
+        $parameter = $request->parameter;
+        $today = date('Y-m-d');
+        $approvedApplication = DB::table('pet_approved_registrations')
+            ->select(
+                'pet_approved_registrations.id',
+                'pet_approved_registrations.holding_no',
+                'pet_approved_registrations.application_no',
+                DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
+                'pet_approved_registrations.payment_status',
+                'pet_approved_registrations.saf_no',
+                'pet_approved_registrations.application_apply_date',
+                'pet_approved_registrations.doc_upload_status',
+                'pet_approved_registrations.renewal',
+                'pet_approved_registrations.registration_id',
+                'pet_approve_applicants.mobile_no',
+                'pet_approve_applicants.applicant_name',
+                "pet_renewal_registrations.id as renewal_id",
+                DB::raw("CASE 
+                                    WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
+                                        else 'false'
+                                END as preview_button"),
+            )
+
+            ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.ulb_id', $ulbId)
+            ->where('pet_approved_registrations.approve_end_date','<',$today)
+            ->orderByDesc('pet_approved_registrations.id');
+
+        if ($key && $parameter) {
+            switch ($key) {
+                case "mobileNo":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.mobile_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicationNo"):
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case "applicantName":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.applicant_name', 'LIKE', "%$parameter%");
+                    break;
+                case "holdingNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%");
+                    break;
+                case "safNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%");
+                    break;
+                default:
+                    throw new Exception("Invalid Data");
+            }
+        }
+        $data = $approvedApplication;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
     }
 }

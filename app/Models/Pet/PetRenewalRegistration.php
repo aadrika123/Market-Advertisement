@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -70,5 +71,62 @@ class PetRenewalRegistration extends Model
             ->join('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
             ->join('pet_renewal_details', 'pet_renewal_details.application_id', 'pet_renewal_registrations.application_id')
             ->where('pet_renewal_registrations.id', $registrationId);
+    }
+
+    public function renewApplication($request)
+    {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+        $key        = $request->filterBy;
+        $perPage = $request->perPage ?: 10;
+        $parameter = $request->parameter;
+        $renewApplication =  DB::table('pet_renewal_registrations')
+            ->select(
+                DB::raw("REPLACE(pet_renewal_registrations.application_type, '_', ' ') AS ref_application_type"),
+                'pet_renewal_registrations.id as renewal_id',
+                'pet_renewal_registrations.application_no',
+                'pet_renewal_registrations.holding_no',
+                'pet_renewal_registrations.saf_no',
+                'pet_renewal_registrations.application_apply_date',
+                'pet_renewal_registrations.doc_upload_status',
+                'pet_renewal_applicants.mobile_no',
+                'pet_renewal_applicants.applicant_name',
+                'pet_renewal_registrations.registration_id')
+                ->join('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
+                ->join('pet_renewal_details', 'pet_renewal_details.application_id', 'pet_renewal_registrations.application_id');
+
+        if ($key && $request->parameter) {
+            switch ($key) {
+                case ("mobileNo"):
+                    $renewApplication = $renewApplication->where('pet_renewal_applicants.mobile_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicationNo"):
+                    $renewApplication = $renewApplication->where('pet_renewal_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicantName"):
+                    $renewApplication = $renewApplication->where('pet_renewal_applicants.applicant_name', 'LIKE', "%$parameter%");
+                    break;
+                case ("holdingNo"):
+                    $renewApplication = $renewApplication->where('pet_renewal_registrations.holding_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("safNo"):
+                    $renewApplication = $renewApplication->where('pet_renewal_registrations.saf_no', 'LIKE', "%$parameter%");
+                    break;
+                default:
+                    throw new Exception("Invalid Data");
+            }
+        }
+        $data = $renewApplication;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
     }
 }
