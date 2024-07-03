@@ -82,12 +82,10 @@ class AdvMarTransaction extends Model
     public function addTransactions($req, $appDetails, $moduleId, $moduleType,)
     {
         $addData = new AdvMarTransaction();
-        $user    = authUser($req);
+        $user = Auth()->user();
+        $isCitizen = $user && $user->getTable() != "users" ? true : false;
+        $isJsk = (!$isCitizen) && $user->user_type == "JSK" ? true : false;
         $ulbId    = $user->ulb_id;
-        $isjsk  = false;
-        if ($user->user_type == 'JSK') {
-            $isjsk == true;
-        }
 
         $addData->module_id         = $moduleId;
         $addData->workflow_id       = $appDetails->workflow_id;
@@ -108,7 +106,7 @@ class AdvMarTransaction extends Model
         $addData->ulb_id            = $ulbId;
         $addData->user_id           = $user->id;
         $addData->citizen_id        = $req->citizenId;
-        $addData->is_jsk            = $isjsk;
+        $addData->is_jsk            = $isJsk;
 
         $addData->cheque_dd_no      = $req->chequeNo;
         $addData->cheque_date       = $req->chequeDate;
@@ -138,8 +136,8 @@ class AdvMarTransaction extends Model
             'adv_mar_transactions.status'
         )
             ->where('adv_mar_transactions.application_id', '=', $applicationId)
-            ->where('adv_mar_transactions.workflow_id',$data->workflow_id)
-            ->where('adv_mar_transactions.status',1);
+            ->where('adv_mar_transactions.workflow_id', $data->workflow_id)
+            ->where('adv_mar_transactions.status', 1);
         // ->where('adv_mar_transactions.module_type', '=', "Market");
         //->get();
     }

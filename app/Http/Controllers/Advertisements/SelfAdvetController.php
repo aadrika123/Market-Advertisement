@@ -1954,26 +1954,38 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-
         try {
             // Query initialization
+            $selfAdvertisementworkflow = Config::get('workflow-constants.SELF-ADVERTISEMENT');
             $approveListQuery = DB::table('adv_selfadvet_renewals')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
-                ->where('entity_ward_id', $req->entityWard)
-                ->where('application_type', $req->applicationType)
-                ->where('payment_status', '1')
-                ->where('ulb_id', $ulbId)
-                ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
-
+                ->select(
+                    'adv_selfadvet_renewals.id',
+                    'adv_selfadvet_renewals.application_no',
+                    'adv_selfadvet_renewals.applicant',
+                    'adv_selfadvet_renewals.application_date',
+                    'adv_selfadvet_renewals.application_type',
+                    'adv_selfadvet_renewals.entity_ward_id',
+                    DB::raw("'Approve' as application_status"),
+                    'adv_selfadvet_renewals.payment_amount',
+                    'adv_selfadvet_renewals.payment_date',
+                    'adv_selfadvet_renewals.payment_mode'
+                )
+                ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_selfadvet_renewals.id')
+                ->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard)
+                ->where('adv_selfadvet_renewals.application_type', $req->applicationType)
+                ->where('adv_selfadvet_renewals.payment_status', '1')
+                ->where('adv_selfadvet_renewals.ulb_id', $ulbId)
+                ->where('adv_mar_transactions.workflow_id', $selfAdvertisementworkflow)
+                ->where('adv_mar_transactions.status', 1)
+                ->whereBetween('adv_selfadvet_renewals.payment_date', [$req->dateFrom, $req->dateUpto]);
             // Apply payment mode filter
             if ($req->payMode != 'All') {
                 if ($req->payMode == 'Cheque/DD') {
-                    $approveListQuery->whereIn('payment_mode', ['CHEQUE', 'DD']);
+                    $approveListQuery->whereIn('adv_selfadvet_renewals.payment_mode', ['CHEQUE', 'DD']);
                 } else {
-                    $approveListQuery->where('payment_mode', $req->payMode);
+                    $approveListQuery->where('adv_selfadvet_renewals.payment_mode', $req->payMode);
                 }
             }
-
             // Paginate the main query
             $paginator = $approveListQuery->paginate($req->perPage);
 
@@ -1982,16 +1994,30 @@ class SelfAdvetController extends Controller
             $approveListForSums = clone $approveListQuery;
 
             // Count of transactions
-            $cashCount = (clone $approveListForCounts)->where('payment_mode', 'CASH')->count();
-            $ddCount = (clone $approveListForCounts)->where('payment_mode', 'DD')->count();
-            $chequeCount = (clone $approveListForCounts)->where('payment_mode', 'CHEQUE')->count();
-            $onlineCount = (clone $approveListForCounts)->where('payment_mode', 'ONLINE')->count();
+            $cashCount = (clone $approveListForCounts)->where('adv_selfadvet_renewals.payment_mode', 'CASH')->count();
+            $ddCount = (clone $approveListForCounts)->where('adv_selfadvet_renewals.payment_mode', 'DD')->count();
+            $chequeCount = (clone $approveListForCounts)->where('adv_selfadvet_renewals.payment_mode', 'CHEQUE')->count();
+            $onlineCount = (clone $approveListForCounts)->where('adv_selfadvet_renewals.payment_mode', 'ONLINE')->count();
 
             // Sum of transactions
-            $cashPayment = (clone $approveListForSums)->where('payment_mode', 'CASH')->sum('payment_amount');
-            $ddPayment = (clone $approveListForSums)->where('payment_mode', 'DD')->sum('payment_amount');
-            $chequePayment = (clone $approveListForSums)->where('payment_mode', 'CHEQUE')->sum('payment_amount');
-            $onlinePayment = (clone $approveListForSums)->where('payment_mode', 'ONLINE')->sum('payment_amount');
+            $cashPayment = (clone $approveListForSums)->where('adv_selfadvet_renewals.payment_mode', 'CASH')->sum('payment_amount');
+            $ddPayment = (clone $approveListForSums)->where('adv_selfadvet_renewals.payment_mode', 'DD')->sum('payment_amount');
+            $chequePayment = (clone $approveListForSums)->where('adv_selfadvet_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
+            $onlinePayment = (clone $approveListForSums)->where('adv_selfadvet_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+
+            # transaction by jsk 
+            $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+            #transaction by citizen
+            $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+
+
+            $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
 
             $response = [
                 "current_page" => $paginator->currentPage(),
@@ -2006,6 +2032,15 @@ class SelfAdvetController extends Controller
                 'ddPayment' => $ddPayment,
                 'chequePayment' => $chequePayment,
                 'onlinePayment' => $onlinePayment,
+                '$cashCountJsk' => $cashCountJsk,
+                '$chequeCountJsk' => $chequeCountJsk,
+                '$ddCountJsk' => $ddCountJsk,
+                '$onlineCountJsk' => $onlineCountJsk,
+                '$cashCountCitizen' => $cashCountCitizen,
+                '$chequeCountCitizen' => $chequeCountCitizen,
+                '$ddCountCitizen' => $ddCountCitizen,
+                '$onlineCountcitizen' => $onlineCountcitizen,
+                '$totalAmount ' => $totalAmount,
             ];
 
             // Return formatted response
