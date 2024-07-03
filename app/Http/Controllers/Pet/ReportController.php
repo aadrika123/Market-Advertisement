@@ -19,7 +19,7 @@ class ReportController extends Controller
     public function applicationReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:ApplicationReport,CollectionReport,VaccinationReport',
+            'reportType' => 'required|in:applicationReport,collectionReport,vaccinationReport',
             'applicationType'=>'required|in:Pending,Approved,Renewal,Expired,Rejected',
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
@@ -42,23 +42,23 @@ class ReportController extends Controller
             $renew = new PetRenewalRegistration();
             $user = Auth()->user();
             $response = [];
-            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Pending') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Pending') {
                 $response = $active->pendingApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Approved') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Approved') {
                 $response = $approved->approvedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Rejected') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Rejected') {
                 $response = $reject->rejectedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Renewal') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Renewal') {
                 $response = $renew->renewApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Expired') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Expired') {
                 $response = $approved->expiredApplication($request);
                 //$response['user_name'] = $user->name;
             }
@@ -88,8 +88,9 @@ class ReportController extends Controller
             'reportType' => 'required|in:collectionReport',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable',
-            'collectionBy' => 'nullable'
+            'paymentMode'  => 'nullable|in:CASH,ONLINE',
+            'collectionBy' => 'nullable|in:JSK,Citizen',
+            'wardNo' => 'nullable'
         ]);
         if ($validator->fails()) {
             return response()->json([
