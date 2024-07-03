@@ -102,7 +102,8 @@ Route::group(['middleware' => ['json.response']], function () {
     //written by prity pandey
     Route::controller(ReportController::class)->group(function () {
         Route::post("application-type-reports", "applicationReports");   
-        Route::post("payment-type-reports", "payCollectionReports");   
+        Route::post("payment-type-reports", "payCollectionReports"); 
+        Route::post("vaccination-reports", "vaccinationReports");     
     });
 });
 

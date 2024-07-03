@@ -134,14 +134,14 @@ class PetTran extends Model
 
     public function dailyCollection($request)
     {
-        $fromDate = $request->fromDate ?: Carbon::now()->format('Y-m-d');
-        $toDate = $request->toDate ?: Carbon::now()->format('Y-m-d');
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $perPage = $request->perPage ?: 10;
 
         $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
             ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
             ->where('pet_trans.status', 1)
-            ->whereBetween('pet_trans.tran_date', [$fromDate, $toDate]);
+            ->whereBetween('pet_trans.tran_date', [$dateFrom, $dateUpto]);
 
         if ($request->paymentMode) {
             $query->where('pet_trans.payment_mode', $request->paymentMode);

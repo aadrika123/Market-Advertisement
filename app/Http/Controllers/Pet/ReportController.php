@@ -86,10 +86,43 @@ class ReportController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:collectionReport',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateUpto' => 'nullable|date_format:Y-m-d',
+            'wardNo' => 'nullable',
+            'paymentMode'  => 'nullable|in:CASH,ONLINE',
+            'collectionBy' => 'nullable|in:JSK,Citizen'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'validation error',
+                'errors'  => $validator->errors()
+            ], 200);
+        }
+        try {
+            $tran = new PetTran();
+            $response = [];
+            $user = Auth()->user();
+            if ($request->reportType == 'collectionReport') {
+            $response = $tran->dailyCollection($request);
+            //$response['user_name'] = $user->name;
+            }
+            if ($response) {
+                //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
+                return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
+
+    public function vaccinationReports(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'reportType' => 'required|in:vaccinationReport',
+            'vaccinationType'=>'required|in:rabies,leptospirosis',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable|in:CASH,ONLINE',
-            'collectionBy' => 'nullable|in:JSK,Citizen',
             'wardNo' => 'nullable'
         ]);
         if ($validator->fails()) {
