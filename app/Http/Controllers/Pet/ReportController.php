@@ -19,10 +19,12 @@ class ReportController extends Controller
     public function allTypeReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:Pending,Approved,Rejected,Expired,Renewal',
+            'reportType' => 'required|in:ApplicationReport,CollectionReport,VaccinationReport',
+            'applicationType'=>'required|in:Pending,Approved,Renewal,Expired,Rejected',
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
             'dateFrom' => 'nullable|date_format:Y-m-d',
+            'wardNo' => 'nullable',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'level' => 'nullable|in:BO,DA,SI'
         ]);
@@ -40,35 +42,35 @@ class ReportController extends Controller
             $renew = new PetRenewalRegistration();
             $user = Auth()->user();
             $response = [];
-            if ($request->reportType == 'Pending') {
+            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Pending') {
                 $response = $active->pendingApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Approved') {
+            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Approved') {
                 $response = $approved->approvedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Rejected') {
+            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Rejected') {
                 $response = $reject->rejectedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Renewal') {
+            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Renewal') {
                 $response = $renew->renewApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Expired') {
+            if ($request->reportType == 'ApplicationReport' && $request->applicationType =='Expired') {
                 $response = $approved->expiredApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'BO') {
+            if ($request->applicationType == 'Pending' && $request->level == 'BO') {
                 $response = $active->boApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'DA') {
+            if ($request->applicationType == 'Pending' && $request->level == 'DA') {
                 $response = $active->daApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'SI') {
+            if ($request->applicationType == 'Pending' && $request->level == 'SI') {
                 $response = $active->siApplication($request);
                 //$response['user_name'] = $user->name;
             }

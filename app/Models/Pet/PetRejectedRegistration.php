@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -117,6 +118,8 @@ class PetRejectedRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $rejectedApplication =  DB::table('pet_rejected_registrations')
             ->select(
                 'pet_rejected_registrations.id',
@@ -125,16 +128,18 @@ class PetRejectedRegistration extends Model
                 'pet_rejected_registrations.application_no',
                 DB::raw("REPLACE(pet_rejected_registrations.application_type, '_', ' ') AS application_type"),
                 'pet_rejected_registrations.payment_status',
-                'pet_rejected_registrations.application_apply_date',
+                DB::raw("TO_CHAR(pet_rejected_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
                 'pet_rejected_registrations.doc_upload_status',
                 'pet_rejected_registrations.renewal',
                 'pet_rejected_registrations.registration_id',
+                'pet_rejected_registrations.ward_id',
                 'pet_rejected_applicants.mobile_no',
                 'pet_rejected_applicants.applicant_name'
             )
             ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
             ->where('pet_rejected_registrations.status', 1)
             ->where('pet_rejected_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_rejected_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_rejected_registrations.id');
 
 
@@ -159,6 +164,9 @@ class PetRejectedRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $rejectedApplication->where('pet_rejected_registrations.ward_id', $request->wardNo);
         }
         $data = $rejectedApplication;
         if ($perPage) {
