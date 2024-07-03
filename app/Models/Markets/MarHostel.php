@@ -113,7 +113,7 @@ class MarHostel extends Model
             //$mMarHostel->payment_mode = "Cash";
             //$pay_id = $mMarHostel->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
-            $mMarHostel->payment_mode= $req->paymentMode;
+            $mMarHostel->payment_mode = $req->paymentMode;
             //$pay_id = $mMarBanquteHall->payment_id = "Cash-$req->applicationId-" . time();
             $mMarHostel->payment_date = Carbon::now();
             $receiptIdParam                = Config::get('constants.PARAM_IDS.TRN');
@@ -304,13 +304,13 @@ class MarHostel extends Model
         list($currentfyStartDate, $currentfyEndDate) = explode('-', $fyear);
         $currentfyStartDate = $currentfyStartDate . "-04-01";
         $currentfyEndDate = $currentfyEndDate . "-03-31";
-        $approved = MarHostel::select('id','entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $active = MarActiveHostel::select('id', 'entity_name','application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId);
 
-        $rejected = MarRejectedHostel::select('id', 'entity_name','application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId);
         if ($request->wardNo) {
             $approved->where('mar_hostels.entity_ward_id', $request->wardNo);
@@ -337,7 +337,7 @@ class MarHostel extends Model
             'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-           'total' => $data->total()
+            'total' => $data->total()
         ];
     }
 
@@ -349,8 +349,8 @@ class MarHostel extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_hostel_renewals')
-            ->select('mar_hostel_renewals.id', 'mar_hostel_renewals.application_no', 'mar_hostel_renewals.applicant',  DB::raw("TO_CHAR(mar_hostel_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostel_renewals.application_type', 'mar_hostel_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_hostel_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_hostel_renewals.payment_mode','mar_hostel_renewals.entity_name','adv_mar_transactions.transaction_no')
-            ->join('adv_mar_transactions' ,'adv_mar_transactions.transaction_id','=','mar_hostel_renewals.payment_id')
+            ->select('mar_hostel_renewals.id', 'mar_hostel_renewals.application_no', 'mar_hostel_renewals.applicant',  DB::raw("TO_CHAR(mar_hostel_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostel_renewals.application_type', 'mar_hostel_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_hostel_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_hostel_renewals.payment_mode', 'mar_hostel_renewals.entity_name', 'adv_mar_transactions.transaction_no')
+            ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_hostel_renewals.payment_id')
             ->where('payment_status', '1')
             ->where('mar_hostel_renewals.ulb_id', $ulbId)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
@@ -401,11 +401,11 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"))
+        $approved = MarHostel::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approve' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -446,13 +446,13 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
+        $approved = MarHostel::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Approved' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedHostel::select('id', 'entity_name','application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
+        $rejected = MarRejectedHostel::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"))
             ->where('ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
@@ -499,15 +499,15 @@ class MarHostel extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarHostel::select('mar_hostels.id', 'mar_hostels.entity_name','mar_hostels.application_no', 'mar_hostels.applicant', DB::raw("TO_CHAR(mar_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostels.application_type', 'mar_hostels.entity_ward_id', 'mar_hostels.rule', 'mar_hostels.organization_type', 'mar_hostels.hostel_type as hostel_id', 'mar_hostels.ulb_id', 'mar_hostels.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $approved = MarHostel::select('mar_hostels.id', 'mar_hostels.entity_name', 'mar_hostels.application_no', 'mar_hostels.applicant', DB::raw("TO_CHAR(mar_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostels.application_type', 'mar_hostels.entity_ward_id', 'mar_hostels.rule', 'mar_hostels.organization_type', 'mar_hostels.hostel_type as hostel_id', 'mar_hostels.ulb_id', 'mar_hostels.license_year', DB::raw("'Approved' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_hostels.hostel_type')
             ->where('mar_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $active = MarActiveHostel::select('mar_active_hostels.id', 'mar_active_hostels.entity_name','mar_active_hostels.application_no', 'mar_active_hostels.applicant',  DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"),'mar_active_hostels.application_type', 'mar_active_hostels.entity_ward_id', 'mar_active_hostels.rule', 'mar_active_hostels.organization_type', 'mar_active_hostels.hostel_type as hostel_id', 'mar_active_hostels.ulb_id', 'mar_active_hostels.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $active = MarActiveHostel::select('mar_active_hostels.id', 'mar_active_hostels.entity_name', 'mar_active_hostels.application_no', 'mar_active_hostels.applicant',  DB::raw("TO_CHAR(mar_active_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_active_hostels.application_type', 'mar_active_hostels.entity_ward_id', 'mar_active_hostels.rule', 'mar_active_hostels.organization_type', 'mar_active_hostels.hostel_type as hostel_id', 'mar_active_hostels.ulb_id', 'mar_active_hostels.license_year', DB::raw("'Active' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_active_hostels.hostel_type')
             ->where('mar_active_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
-        $rejected = MarRejectedHostel::select('mar_rejected_hostels.id','mar_rejected_hostels.entity_name', 'mar_rejected_hostels.application_no', 'mar_rejected_hostels.applicant',  DB::raw("TO_CHAR(mar_rejected_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_hostels.application_type', 'mar_rejected_hostels.entity_ward_id', 'mar_rejected_hostels.rule', 'mar_rejected_hostels.organization_type', 'mar_rejected_hostels.hostel_type as hostel_id', 'mar_rejected_hostels.ulb_id', 'mar_rejected_hostels.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
+        $rejected = MarRejectedHostel::select('mar_rejected_hostels.id', 'mar_rejected_hostels.entity_name', 'mar_rejected_hostels.application_no', 'mar_rejected_hostels.applicant',  DB::raw("TO_CHAR(mar_rejected_hostels.application_date, 'DD-MM-YYYY') as application_date"), 'mar_rejected_hostels.application_type', 'mar_rejected_hostels.entity_ward_id', 'mar_rejected_hostels.rule', 'mar_rejected_hostels.organization_type', 'mar_rejected_hostels.hostel_type as hostel_id', 'mar_rejected_hostels.ulb_id', 'mar_rejected_hostels.license_year', DB::raw("'Reject' as application_status"), 'ref_adv_paramstrings.string_parameter as hostelType')
             ->leftJoin('ref_adv_paramstrings', 'ref_adv_paramstrings.id', '=', 'mar_rejected_hostels.hostel_type')
             ->where('mar_rejected_hostels.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
@@ -554,7 +554,7 @@ class MarHostel extends Model
         ];
     }
 
-     /**
+    /**
      * | Get Application Approve List by Role Ids
      */
     public function listjskApprovedApplication()
@@ -617,6 +617,148 @@ class MarHostel extends Model
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
             ->where('mar_hostels.id', $applicationId)
             ->orderByDesc('mar_hostels.id');
-            //->get();
+        //->get();
+    }
+
+    public function hostleDaAppliaction($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->where('mar_active_hostels.current_role_id', '=', 6);;
+
+        if ($request->wardNo) {
+
+            $active->where('mar_active_hostels.entity_ward_id', $request->wardNo);
+        }
+
+        $data = $active;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+    public function hostleAeAppliaction($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->where('mar_active_hostels.current_role_id', '=', 14);
+
+        if ($request->wardNo) {
+
+            $active->where('mar_active_hostels.entity_ward_id', $request->wardNo);
+        }
+
+        $data = $active;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+    public function hostleSiAppliaction($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->where('mar_active_hostels.current_role_id', '=', 9);;
+
+        if ($request->wardNo) {
+
+            $active->where('mar_active_hostels.entity_ward_id', $request->wardNo);
+        }
+
+        $data = $active;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+    public function hostleCmAppliaction($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->where('mar_active_hostels.current_role_id', '=', 32);;
+
+        if ($request->wardNo) {
+
+            $active->where('mar_active_hostels.entity_ward_id', $request->wardNo);
+        }
+
+        $data = $active;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+    public function hostleEoAppliaction($request)
+    {
+        $user = Auth()->user();
+        $ulbId = $user->ulb_id ?? null;
+        $perPage = $request->perPage ?: 10;
+
+        $active = MarActiveHostel::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Active' as application_status"))
+            ->where('ulb_id', $ulbId)
+            ->where('mar_active_hostels.current_role_id', '=', 10);;
+
+        if ($request->wardNo) {
+
+            $active->where('mar_active_hostels.entity_ward_id', $request->wardNo);
+        }
+
+        $data = $active;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
     }
 }

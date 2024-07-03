@@ -495,4 +495,115 @@ class ReportController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
         }
     }
+
+    public function levelWisePendingApplication(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'reportType' => 'required|in:Banquet/Marriage Hall,Hostel,Lodge,Dharmshala',
+            'wardNo' => 'nullable',
+            'level' => 'nullable|in:DA,AE,SI,CM,EO'
+
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'validation error',
+                'errors'  => $validator->errors()
+            ], 200);
+        }
+        try {
+            $banquet = new MarBanquteHall();
+            $hostel = new MarHostel();
+            $lodge = new MarLodge();
+            $dharamshala = new MarDharamshala();
+            $user = Auth()->user();
+            $response = [];
+            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'DA') {
+                $response = $banquet->MarHallDaAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'AE') {
+                $response = $banquet->MarHallAeAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+
+            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'SI') {
+                $response = $banquet->MarHallSiAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'CM') {
+                $response = $banquet->MarHallCmAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'EO') {
+                $response = $banquet->MarHallEoAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Hostel' && $request->level == 'DA') {
+                $response = $hostel->hostleDaAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Hostel' && $request->level == 'AE') {
+                $response = $hostel->hostleAeAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Hostel' && $request->level == 'SI') {
+                $response = $hostel->hostleSiAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Hostel' && $request->level == 'CM') {
+                $response = $hostel->hostleCmAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Hostel' && $request->level == 'EO') {
+                $response = $hostel->hostleEoAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Lodge' && $request->level == 'DA') {
+                $response = $lodge->lodgeDaAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Lodge' && $request->level == 'AE') {
+                $response = $lodge->lodgeAeAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Lodge' && $request->level == 'SI') {
+                $response = $lodge->lodgeSiAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Lodge' && $request->level == 'CM') {
+                $response = $lodge->lodgeCmAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Lodge' && $request->level == 'EO') {
+                $response = $lodge->lodgeEoAppliaction($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala' && $request->level == 'DA') {
+                $response = $dharamshala->dharamshalaDaApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala' && $request->level == 'AE') {
+                $response = $dharamshala->dharamshalaAeApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala' && $request->level == 'SI') {
+                $response = $dharamshala->dharamshalaSiApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala' && $request->level == 'CM') {
+                $response = $dharamshala->dharamshalaCmApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($request->reportType == 'Dharmshala' && $request->level == 'EO') {
+                $response = $dharamshala->dharamshalaEoApplication($request);
+                $response['user_name'] = $user->name;
+            }
+            if ($response) {
+                return responseMsgs(true, "Market Application List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
 }
