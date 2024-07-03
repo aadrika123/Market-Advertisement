@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -235,6 +236,8 @@ class PetApprovedRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approvedApplication = DB::table('pet_approved_registrations')
             ->select(
                 'pet_approved_registrations.id',
@@ -243,10 +246,11 @@ class PetApprovedRegistration extends Model
                 DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
                 'pet_approved_registrations.payment_status',
                 'pet_approved_registrations.saf_no',
-                'pet_approved_registrations.application_apply_date',
+                DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
                 'pet_approved_registrations.doc_upload_status',
                 'pet_approved_registrations.renewal',
                 'pet_approved_registrations.registration_id',
+                'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
                 'pet_approve_applicants.applicant_name',
                 "pet_renewal_registrations.id as renewal_id",
@@ -260,6 +264,7 @@ class PetApprovedRegistration extends Model
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_approved_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_approved_registrations.id');
 
         if ($key && $parameter) {
@@ -282,6 +287,9 @@ class PetApprovedRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $approvedApplication->where('pet_approved_registrations.ward_id', $request->wardNo);
         }
         $data = $approvedApplication;
         if ($perPage) {
@@ -305,6 +313,8 @@ class PetApprovedRegistration extends Model
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
         $today = date('Y-m-d');
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approvedApplication = DB::table('pet_approved_registrations')
             ->select(
                 'pet_approved_registrations.id',
@@ -313,10 +323,11 @@ class PetApprovedRegistration extends Model
                 DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
                 'pet_approved_registrations.payment_status',
                 'pet_approved_registrations.saf_no',
-                'pet_approved_registrations.application_apply_date',
+                DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
                 'pet_approved_registrations.doc_upload_status',
                 'pet_approved_registrations.renewal',
                 'pet_approved_registrations.registration_id',
+                'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
                 'pet_approve_applicants.applicant_name',
                 "pet_renewal_registrations.id as renewal_id",
@@ -330,6 +341,7 @@ class PetApprovedRegistration extends Model
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_approved_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->where('pet_approved_registrations.approve_end_date','<',$today)
             ->orderByDesc('pet_approved_registrations.id');
 
@@ -353,6 +365,9 @@ class PetApprovedRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $approvedApplication->where('pet_approved_registrations.ward_id', $request->wardNo);
         }
         $data = $approvedApplication;
         if ($perPage) {

@@ -16,13 +16,15 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function allTypeReports(Request $request)
+    public function applicationReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:Pending,Approved,Rejected,Expired,Renewal',
+            'reportType' => 'required|in:applicationReport,collectionReport,vaccinationReport',
+            'applicationType'=>'required|in:Pending,Approved,Renewal,Expired,Rejected',
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
             'dateFrom' => 'nullable|date_format:Y-m-d',
+            'wardNo' => 'nullable',
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'level' => 'nullable|in:BO,DA,SI'
         ]);
@@ -40,35 +42,35 @@ class ReportController extends Controller
             $renew = new PetRenewalRegistration();
             $user = Auth()->user();
             $response = [];
-            if ($request->reportType == 'Pending') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Pending') {
                 $response = $active->pendingApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Approved') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Approved') {
                 $response = $approved->approvedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Rejected') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Rejected') {
                 $response = $reject->rejectedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Renewal') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Renewal') {
                 $response = $renew->renewApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Expired') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType =='Expired') {
                 $response = $approved->expiredApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'BO') {
+            if ($request->applicationType == 'Pending' && $request->level == 'BO') {
                 $response = $active->boApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'DA') {
+            if ($request->applicationType == 'Pending' && $request->level == 'DA') {
                 $response = $active->daApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Pending' && $request->level == 'SI') {
+            if ($request->applicationType == 'Pending' && $request->level == 'SI') {
                 $response = $active->siApplication($request);
                 //$response['user_name'] = $user->name;
             }
@@ -84,10 +86,44 @@ class ReportController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:collectionReport',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateUpto' => 'nullable|date_format:Y-m-d',
+            'wardNo' => 'nullable',
+            'paymentMode'  => 'nullable|in:CASH,ONLINE',
+            'collectionBy' => 'nullable|in:JSK,Citizen'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'validation error',
+                'errors'  => $validator->errors()
+            ], 200);
+        }
+        try {
+            $tran = new PetTran();
+            $response = [];
+            $user = Auth()->user();
+            if ($request->reportType == 'collectionReport') {
+            $response = $tran->dailyCollection($request);
+            //$response['user_name'] = $user->name;
+            }
+            if ($response) {
+                //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
+                return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
+            }
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $request->deviceId);
+        }
+    }
+
+    public function vaccinationReports(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'reportType' => 'required|in:vaccinationReport',
+            'vaccinationType'=>'required|in:rabies,leptospirosis',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable',
-            'collectionBy' => 'nullable'
+            'wardNo' => 'nullable'
         ]);
         if ($validator->fails()) {
             return response()->json([

@@ -2,6 +2,7 @@
 
 namespace App\Models\Pet;
 
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -80,6 +81,8 @@ class PetRenewalRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $renewApplication =  DB::table('pet_renewal_registrations')
             ->select(
                 DB::raw("REPLACE(pet_renewal_registrations.application_type, '_', ' ') AS ref_application_type"),
@@ -87,13 +90,18 @@ class PetRenewalRegistration extends Model
                 'pet_renewal_registrations.application_no',
                 'pet_renewal_registrations.holding_no',
                 'pet_renewal_registrations.saf_no',
-                'pet_renewal_registrations.application_apply_date',
+                DB::raw("TO_CHAR(pet_renewal_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
                 'pet_renewal_registrations.doc_upload_status',
+                'pet_renewal_registrations.ward_id',
                 'pet_renewal_applicants.mobile_no',
                 'pet_renewal_applicants.applicant_name',
                 'pet_renewal_registrations.registration_id')
-                ->join('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
-                ->join('pet_renewal_details', 'pet_renewal_details.application_id', 'pet_renewal_registrations.application_id');
+                ->leftjoin('pet_renewal_applicants', 'pet_renewal_applicants.application_id', 'pet_renewal_registrations.application_id')
+                ->leftjoin('pet_renewal_details', 'pet_renewal_details.application_id', 'pet_renewal_registrations.application_id')
+                ->where('pet_renewal_registrations.status', 2)
+                ->where('pet_renewal_registrations.ulb_id', $ulbId)
+                ->whereBetween('pet_renewal_registrations.application_apply_date', [$dateFrom, $dateUpto])
+                ->orderByDesc('pet_renewal_registrations.id');
 
         if ($key && $request->parameter) {
             switch ($key) {
@@ -115,6 +123,9 @@ class PetRenewalRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $renewApplication->where('pet_renewal_registrations.ward_id', $request->wardNo);
         }
         $data = $renewApplication;
         if ($perPage) {

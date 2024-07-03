@@ -366,6 +366,8 @@ class PetActiveRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $activeApplication = PetActiveRegistration::select(
             'pet_active_registrations.id',
             'pet_active_registrations.application_no',
@@ -373,15 +375,17 @@ class PetActiveRegistration extends Model
             'pet_active_registrations.payment_status',
             'pet_active_registrations.saf_no',
             'pet_active_registrations.holding_no',
-            'pet_active_registrations.application_apply_date',
+            DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
             'pet_active_registrations.doc_upload_status',
             'pet_active_registrations.renewal',
             'pet_active_applicants.mobile_no',
+            'pet_active_registrations.ward_id',
             'pet_active_applicants.applicant_name'
         )
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_active_registrations.id');
 
         if ($key && $request->parameter) {
@@ -404,6 +408,9 @@ class PetActiveRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $activeApplication->where('pet_active_registrations.ward_id', $request->wardNo);
         }
         $data = $activeApplication;
         if ($perPage) {
@@ -426,23 +433,27 @@ class PetActiveRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
-        $activeApplication = PetActiveApplicant::select(
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $activeApplication = PetActiveRegistration::select(
             'pet_active_registrations.id',
             'pet_active_registrations.application_no',
             DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS application_type"),
             'pet_active_registrations.payment_status',
             'pet_active_registrations.saf_no',
             'pet_active_registrations.holding_no',
-            'pet_active_registrations.application_apply_date',
+            DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
             'pet_active_registrations.doc_upload_status',
             'pet_active_registrations.renewal',
             'pet_active_applicants.mobile_no',
+            'pet_active_registrations.ward_id',
             'pet_active_applicants.applicant_name'
         )
-            ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->where('pet_active_registrations.current_role_id','=',11)
+            ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_active_registrations.id');
 
         if ($key && $request->parameter) {
@@ -465,6 +476,9 @@ class PetActiveRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $activeApplication->where('pet_active_registrations.ward_id', $request->wardNo);
         }
         $data = $activeApplication;
         if ($perPage) {
@@ -487,23 +501,27 @@ class PetActiveRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
-        $activeApplication = PetActiveApplicant::select(
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $activeApplication = PetActiveRegistration::select(
             'pet_active_registrations.id',
             'pet_active_registrations.application_no',
             DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS application_type"),
             'pet_active_registrations.payment_status',
             'pet_active_registrations.saf_no',
             'pet_active_registrations.holding_no',
-            'pet_active_registrations.application_apply_date',
+            DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
             'pet_active_registrations.doc_upload_status',
             'pet_active_registrations.renewal',
             'pet_active_applicants.mobile_no',
+            'pet_active_registrations.ward_id',
             'pet_active_applicants.applicant_name'
         )
-            ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->where('pet_active_registrations.current_role_id','=',6)
+            ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_active_registrations.id');
 
         if ($key && $request->parameter) {
@@ -526,6 +544,9 @@ class PetActiveRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $activeApplication->where('pet_active_registrations.ward_id', $request->wardNo);
         }
         $data = $activeApplication;
         if ($perPage) {
@@ -548,23 +569,27 @@ class PetActiveRegistration extends Model
         $key        = $request->filterBy;
         $perPage = $request->perPage ?: 10;
         $parameter = $request->parameter;
-        $activeApplication = PetActiveApplicant::select(
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $activeApplication = PetActiveRegistration::select(
             'pet_active_registrations.id',
             'pet_active_registrations.application_no',
             DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS application_type"),
             'pet_active_registrations.payment_status',
             'pet_active_registrations.saf_no',
             'pet_active_registrations.holding_no',
-            'pet_active_registrations.application_apply_date',
+            DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
             'pet_active_registrations.doc_upload_status',
             'pet_active_registrations.renewal',
             'pet_active_applicants.mobile_no',
+            'pet_active_registrations.ward_id',
             'pet_active_applicants.applicant_name'
         )
-            ->join('pet_active_registrations', 'pet_active_registrations.id', 'pet_active_applicants.application_id')
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->where('pet_active_registrations.status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->where('pet_active_registrations.current_role_id','=',9)
+            ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_active_registrations.id');
 
         if ($key && $request->parameter) {
@@ -587,6 +612,9 @@ class PetActiveRegistration extends Model
                 default:
                     throw new Exception("Invalid Data");
             }
+        }
+        if ($request->wardNo) {
+            $activeApplication->where('pet_active_registrations.ward_id', $request->wardNo);
         }
         $data = $activeApplication;
         if ($perPage) {
