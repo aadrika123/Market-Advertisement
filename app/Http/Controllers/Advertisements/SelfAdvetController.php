@@ -1942,6 +1942,7 @@ class SelfAdvetController extends Controller
         } else {
             $ulbId = $req->auth['ulb_id'];
         }
+        $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -2048,6 +2049,7 @@ class SelfAdvetController extends Controller
                 'totalAmount' => $totalAmount ,
                 'totalCountJsk' => $totalCountJsk ,
                 'totalCountCitizen' => $totalCountCitizen ,
+                'userType' => $userType ,
             ];
 
             // Return formatted response
