@@ -2016,6 +2016,11 @@ class SelfAdvetController extends Controller
             $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
             $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
+            $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+            $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
+
+
+
 
             $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
 
@@ -2024,7 +2029,7 @@ class SelfAdvetController extends Controller
                 "last_page" => $paginator->lastPage(),
                 "data" => $paginator->items(),
                 "total" => $paginator->total(),
-                'CashCount' => $cashCount,
+                'CashCount' => $cashCount,  
                 'ddCount' => $ddCount,
                 'chequeCount' => $chequeCount,
                 'onlineCount' => $onlineCount,
@@ -2041,6 +2046,8 @@ class SelfAdvetController extends Controller
                 'ddCountCitizen' => $ddCountCitizen,
                 'onlineCountcitizen' => $onlineCountcitizen,
                 'totalAmount' => $totalAmount ,
+                'totalCountJsk' => $totalCountJsk ,
+                'totalCountCitizen' => $totalCountCitizen ,
             ];
 
             // Return formatted response
