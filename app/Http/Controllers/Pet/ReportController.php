@@ -45,27 +45,27 @@ class ReportController extends Controller
             $response = [];
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Pending') {
                 $response = $active->pendingApplication($request);
-                $response['user_name'] = $user->name;
+                //$response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Approved') {
                 $response = $approved->approvedApplication($request);
-                $response['user_name'] = $user->name;
+                //$response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Rejected') {
                 $response = $reject->rejectedApplication($request);
-                $response['user_name'] = $user->name;
+                //$response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Renewal') {
                 $response = $renew->renewApplication($request);
-                $response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Expired') {
                 $response = $approved->expiredApplication($request);
-                $response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
             if ($request->applicationType == 'Pending' && $request->level == 'BO') {
                 $response = $active->boApplication($request);
-                $response['user_name'] = $user->name;
+                //$response['user_name'] = $user->name;
             }
             if ($request->applicationType == 'Pending' && $request->level == 'DA') {
                 $response = $active->daApplication($request);
@@ -73,7 +73,7 @@ class ReportController extends Controller
             }
             if ($request->applicationType == 'Pending' && $request->level == 'SI') {
                 $response = $active->siApplication($request);
-                $response['user_name'] = $user->name;
+                //$response['user_name'] = $user->name;
             }
             if ($response) {
                 return responseMsgs(true, "Pet Application List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
@@ -106,7 +106,7 @@ class ReportController extends Controller
             $user = Auth()->user();
             if ($request->reportType == 'collectionReport') {
                 $response = $tran->dailyCollection($request);
-                $response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
@@ -144,7 +144,7 @@ class ReportController extends Controller
             if ($request->reportType == 'vaccinationReport' && $request->vaccinationType == 'leptospirosis') {
                 $response = $active->getPendingLeptospirosisVaccine($request);
             }
-            $response['user_name'] = $user->name;
+            //$response['user_name'] = $user->name;
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
                 return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
