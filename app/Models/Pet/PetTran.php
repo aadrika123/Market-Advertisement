@@ -146,7 +146,9 @@ class PetTran extends Model
         if ($request->paymentMode) {
             $query->where('pet_trans.payment_mode', $request->paymentMode);
         }
-
+        if ($request->wardNo) {
+            $query->where('pet_trans.ward_id', $request->wardNo);
+        }
         if ($request->collectionBy) {
             if ($request->collectionBy == 'JSK') {
                 $query->where('pet_trans.user_type', 'JSK');
