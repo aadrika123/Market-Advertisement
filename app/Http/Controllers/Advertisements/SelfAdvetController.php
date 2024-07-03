@@ -2040,7 +2040,7 @@ class SelfAdvetController extends Controller
                 'chequeCountCitizen' => $chequeCountCitizen,
                 'ddCountCitizen' => $ddCountCitizen,
                 'onlineCountcitizen' => $onlineCountcitizen,
-                'totalAmount ' => $totalAmount,
+                'totalAmount' => $totalAmount ,
             ];
 
             // Return formatted response
