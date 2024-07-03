@@ -16,7 +16,7 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function allTypeReports(Request $request)
+    public function applicationReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:ApplicationReport,CollectionReport,VaccinationReport',
