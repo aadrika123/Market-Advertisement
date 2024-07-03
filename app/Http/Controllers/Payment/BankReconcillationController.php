@@ -25,11 +25,10 @@ use Illuminate\Support\Facades\Validator;
 
 class BankReconcillationController extends Controller
 {
+    #---created by Arshad Hussain
     /**
      * | search chque transactions for Advertisement,Market,  
-     * |  Function = 111111111111111111111111111111111111111111111111
-     * |
-     * |
+     * |  Function = 1
      */
     public function searchTransaction(Request $request)
     {

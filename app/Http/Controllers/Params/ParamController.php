@@ -220,12 +220,9 @@ class ParamController extends Controller
     {
         $userId = $req->auth['id'];
         $userType = $req->auth['user_type'];
-
         $mRefRequiredDocument = new RefRequiredDocument();
         $listDocs = $mRefRequiredDocument->listDocument($this->_advtModuleId, $this->_marketModuleId);
-
         $documentList = [];
-
         foreach ($listDocs as $key => $val) {
             $alldocs = explode("#", $val['requirements']);
             foreach ($alldocs as $kinn => $valinn) {
