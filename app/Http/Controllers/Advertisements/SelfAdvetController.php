@@ -1883,12 +1883,65 @@ class SelfAdvetController extends Controller
      * | Function - 41
      * | API - 38
      */
+    // public function paymentCollection(Request $req)
+    // {
+    //     if ($req->auth['ulb_id'] < 1)
+    //         return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050138", 1.0, "271ms", "POST", "", "");
+    //     else
+    //         $ulbId = $req->auth['ulb_id'];
+
+    //     $validator = Validator::make($req->all(), [
+    //         'applicationType' => 'required|in:New Apply,Renew',
+    //         'entityWard' => 'required|integer',
+    //         'dateFrom' => 'required|date_format:Y-m-d',
+    //         'dateUpto' => 'required|date_format:Y-m-d',
+    //         'perPage' => 'required|integer',
+    //         'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         // Variable initialization
+
+    //         $approveList = DB::table('adv_selfadvet_renewals')
+    //             ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+    //             ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
+
+    //         $data = collect(array());
+    //         if ($req->payMode == 'All') {
+    //             $data = $approveList;
+    //         }
+    //         if ($req->payMode == 'Online') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         if ($req->payMode == 'Cash') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         if ($req->payMode == 'Cheque/DD') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         $data = $data->paginate($req->perPage);
+
+    //         $ap = $data->toArray();
+
+    //         $amounts = collect();
+    //         $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+    //             $amounts->push($item->payment_amount);
+    //         });
+
+    //         return responseMsgs(true, "Application Fetched Successfully", $data, "050138", 1.0, responseTime(), "POST", "", "");
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050138", 1.0, "271ms", "POST", "", "");
+    //     }
+    // }
     public function paymentCollection(Request $req)
     {
-        if ($req->auth['ulb_id'] < 1)
+        if ($req->auth['ulb_id'] < 1) {
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050138", 1.0, "271ms", "POST", "", "");
-        else
+        } else {
             $ulbId = $req->auth['ulb_id'];
+        }
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1901,40 +1954,69 @@ class SelfAdvetController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        try {
-            // Variable initialization
 
-            $approveList = DB::table('adv_selfadvet_renewals')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+        try {
+            // Query initialization
+            $approveListQuery = DB::table('adv_selfadvet_renewals')
+                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')
+                ->where('entity_ward_id', $req->entityWard)
+                ->where('application_type', $req->applicationType)
+                ->where('payment_status', '1')
+                ->where('ulb_id', $ulbId)
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
 
-            $data = collect(array());
-            if ($req->payMode == 'All') {
-                $data = $approveList;
+            // Apply payment mode filter
+            if ($req->payMode != 'All') {
+                if ($req->payMode == 'Cheque/DD') {
+                    $approveListQuery->whereIn('payment_mode', ['CHEQUE', 'DD']);
+                } else {
+                    $approveListQuery->where('payment_mode', $req->payMode);
+                }
             }
-            if ($req->payMode == 'Online') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            if ($req->payMode == 'Cash') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            if ($req->payMode == 'Cheque/DD') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            $data = $data->paginate($req->perPage);
 
-            $ap = $data->toArray();
+            // Paginate the main query
+            $paginator = $approveListQuery->paginate($req->perPage);
 
-            $amounts = collect();
-            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
-                $amounts->push($item->payment_amount);
-            });
+            // Clone the query for counts and sums
+            $approveListForCounts = clone $approveListQuery;
+            $approveListForSums = clone $approveListQuery;
 
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050138", 1.0, responseTime(), "POST", "", "");
+            // Count of transactions
+            $cashCount = (clone $approveListForCounts)->where('payment_mode', 'CASH')->count();
+            $ddCount = (clone $approveListForCounts)->where('payment_mode', 'DD')->count();
+            $chequeCount = (clone $approveListForCounts)->where('payment_mode', 'CHEQUE')->count();
+            $onlineCount = (clone $approveListForCounts)->where('payment_mode', 'ONLINE')->count();
+
+            // Sum of transactions
+            $cashPayment = (clone $approveListForSums)->where('payment_mode', 'CASH')->sum('payment_amount');
+            $ddPayment = (clone $approveListForSums)->where('payment_mode', 'DD')->sum('payment_amount');
+            $chequePayment = (clone $approveListForSums)->where('payment_mode', 'CHEQUE')->sum('payment_amount');
+            $onlinePayment = (clone $approveListForSums)->where('payment_mode', 'ONLINE')->sum('payment_amount');
+
+            $response = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'CashCount' => $cashCount,
+                'ddCount' => $ddCount,
+                'chequeCount' => $chequeCount,
+                'onlineCount' => $onlineCount,
+                'cashPayment' => $cashPayment,
+                'ddPayment' => $ddPayment,
+                'chequePayment' => $chequePayment,
+                'onlinePayment' => $onlinePayment,
+            ];
+
+            // Return formatted response
+            return responseMsgs(true, "Application Fetched Successfully", $response, "050138", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050138", 1.0, "271ms", "POST", "", "");
         }
     }
+
+
+
 
     //written by prity pandey
     public function getApproveDetailsById(Request $req)
