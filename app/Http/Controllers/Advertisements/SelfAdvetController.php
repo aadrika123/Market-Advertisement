@@ -1472,8 +1472,8 @@ class SelfAdvetController extends Controller
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $citizenId = $mAdvActiveSelfadvertisement->citizen_id;
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1957,9 +1957,9 @@ class SelfAdvetController extends Controller
         }
         try {
             // Query initialization
-         
+
             $selfAdvertisementworkflow = Config::get('workflow-constants.SELF-ADVERTISEMENT');
-           $approveListQuery = DB::table('adv_selfadvet_renewals')
+            $approveListQuery = DB::table('adv_selfadvet_renewals')
                 ->select(
                     'adv_selfadvet_renewals.id',
                     'adv_selfadvet_renewals.application_no',

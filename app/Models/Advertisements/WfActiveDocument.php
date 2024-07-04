@@ -164,18 +164,38 @@ class WfActiveDocument extends Model
             ->get();
     }
 
+    // /**
+    //  * | Get Total no of document for upload
+    //  */
+    // public function totalNoOfDocs($docCode)
+    // {
+    //     $noOfDocs = RefRequiredDocument::select('requirements')
+    //         ->where('code', $docCode)
+    //         ->first();
+    //     $totalNoOfDocs = explode("#", $noOfDocs);
+    //     return count($totalNoOfDocs);
+    // }
+
     /**
      * | Get Total no of document for upload
      */
-    public function totalNoOfDocs($docCode)
+    public function totalNoOfDocs($docCode, $citizenId = null)
     {
         $noOfDocs = RefRequiredDocument::select('requirements')
             ->where('code', $docCode)
             ->first();
-        $totalNoOfDocs = explode("#", $noOfDocs);
+
+        $totalNoOfDocs = explode("#", $noOfDocs->requirements);
+
+        // Exclude Application_form if citizen_id is not null
+        if ($citizenId != null) {
+            $totalNoOfDocs = array_filter($totalNoOfDocs, function ($doc) {
+                return $doc !== 'Application_form';
+            });
+        }
+
         return count($totalNoOfDocs);
     }
-
     /**
      * | Get total uploaded documents
      */
@@ -184,7 +204,7 @@ class WfActiveDocument extends Model
         return WfActiveDocument::where('active_id', $applicationId)
             ->where('workflow_id', $workflowId)
             ->where('module_id', $moduleId)
-            ->where('current_status',1)
+            ->where('current_status', 1)
             ->where('verify_status', '!=', 2)
             ->count();
     }
