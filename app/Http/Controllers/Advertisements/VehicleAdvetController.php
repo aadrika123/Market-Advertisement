@@ -308,7 +308,7 @@ class VehicleAdvetController extends Controller
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
-            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+            // $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $req->request->add($metaReqs);
             $forwardBackward = $this->getRoleDetails($req);
@@ -1175,7 +1175,7 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable Initialization
-           $user = Auth()->user();
+            $user = Auth()->user();
             $todayDate = Carbon::now();
             $mAdvVehicle = new AdvVehicle();
             $todayDate = Carbon::now();
@@ -1186,9 +1186,9 @@ class VehicleAdvetController extends Controller
             $appDetails = AdvVehicle::find($req->applicationId);
 
             $req->merge($appDetails->toArray());
-            
-           
-            $transactionId = $mAdvMarTransaction->addTransactions($req,$appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
+
+
+            $transactionId = $mAdvMarTransaction->addTransactions($req, $appDetails, $this->_moduleIds, "Advertisement", $req->paymentMode);
             $req->merge([
                 'empId' => $user->id,
                 'userType' => $user->user_type,
@@ -1738,12 +1738,65 @@ class VehicleAdvetController extends Controller
      * | Function - 35
      * | API - 32
      */
+    // public function paymentCollection(Request $req)
+    // {
+    //     if ($req->auth['ulb_id'] < 1)
+    //         return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050332", 1.0, "271ms", "POST", "", "");
+    //     else
+    //         $ulbId = $req->auth['ulb_id'];
+
+    //     $validator = Validator::make($req->all(), [
+    //         'applicationType' => 'required|in:New Apply,Renew',
+    //         'dateFrom' => 'required|date_format:Y-m-d',
+    //         'dateUpto' => 'required|date_format:Y-m-d',
+    //         'perPage' => 'required|integer',
+    //         'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return ['status' => false, 'message' => $validator->errors()];
+    //     }
+    //     try {
+    //         // Variable initialization
+
+    //         $approveList = DB::table('adv_vehicle_renewals')
+    //             ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+    //             ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
+
+    //         $data = collect(array());
+    //         if ($req->payMode == 'All') {
+    //             $data = $approveList;
+    //         }
+    //         if ($req->payMode == 'Online') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         if ($req->payMode == 'Cash') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         if ($req->payMode == 'Cheque/DD') {
+    //             $data = $approveList->where('payment_mode', $req->payMode);
+    //         }
+    //         $data = $data->paginate($req->perPage);
+
+    //         $ap = $data->toArray();
+
+    //         $amounts = collect();
+    //         $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+    //             $amounts->push($item->payment_amount);
+    //         });
+
+    //         return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, responseTime(), "POST", "", "");
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
+    //     }
+    // }
+
     public function paymentCollection(Request $req)
     {
         if ($req->auth['ulb_id'] < 1)
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050332", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = $req->auth['ulb_id'];
+        $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1757,38 +1810,102 @@ class VehicleAdvetController extends Controller
         }
         try {
             // Variable initialization
+            $movablevehicleWorkflow = Config::get('workflow-constants.MOVABLE-VEHICLE');
+            $approveListQuery = DB::table('adv_vehicle_renewals')
+                ->select(
+                    'adv_vehicle_renewals.id',
+                    'adv_vehicle_renewals.application_no',
+                    'adv_vehicle_renewals.applicant',
+                    'adv_vehicle_renewals.application_date',
+                    'adv_vehicle_renewals.application_type',
+                    DB::raw("'Approve' as application_status"),
+                    'adv_vehicle_renewals.payment_amount',
+                    'adv_vehicle_renewals.payment_date',
+                    'adv_vehicle_renewals.payment_mode'
+                )
+                ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_vehicle_renewals.id')
+                ->where('adv_vehicle_renewals.application_type', $req->applicationType)
+                ->where('adv_vehicle_renewals.payment_status', 1)
+                ->where('adv_vehicle_renewals.ulb_id', $ulbId)
+                ->where('adv_mar_transactions.workflow_id', $movablevehicleWorkflow)
+                ->where('adv_mar_transactions.status', 1)
+                ->whereBetween('adv_vehicle_renewals.payment_date', [$req->dateFrom, $req->dateUpto]);
 
-            $approveList = DB::table('adv_vehicle_renewals')
-                ->select('id', 'application_no', 'applicant', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
-                ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
-
-            $data = collect(array());
-            if ($req->payMode == 'All') {
-                $data = $approveList;
+            // Apply payment mode filter
+            if ($req->payMode != 'All') {
+                if ($req->payMode == 'Cheque/DD') {
+                    $approveListQuery->whereIn('adv_vehicle_renewals.payment_mode', ['CHEQUE', 'DD']);
+                } else {
+                    $approveListQuery->where('adv_vehicle_renewals.payment_mode', $req->payMode);
+                }
             }
-            if ($req->payMode == 'Online') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            if ($req->payMode == 'Cash') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            if ($req->payMode == 'Cheque/DD') {
-                $data = $approveList->where('payment_mode', $req->payMode);
-            }
-            $data = $data->paginate($req->perPage);
+            $paginator = $approveListQuery->paginate($req->perPage);
+            // Clone the query for counts and sums
+            $approveListForCounts = clone $approveListQuery;
+            $approveListForSums = clone $approveListQuery;
+            // Count of transactions
+            $cashCount = (clone $approveListForCounts)->where('adv_vehicle_renewals.payment_mode', 'CASH')->count();
+            $ddCount = (clone $approveListForCounts)->where('adv_vehicle_renewals.payment_mode', 'DD')->count();
+            $chequeCount = (clone $approveListForCounts)->where('adv_vehicle_renewals.payment_mode', 'CHEQUE')->count();
+            $onlineCount = (clone $approveListForCounts)->where('adv_vehicle_renewals.payment_mode', 'ONLINE')->count();
 
-            $ap = $data->toArray();
+            // Sum of transactions
+            $cashPayment = (clone $approveListForSums)->where('adv_vehicle_renewals.payment_mode', 'CASH')->sum('payment_amount');
+            $ddPayment = (clone $approveListForSums)->where('adv_vehicle_renewals.payment_mode', 'DD')->sum('payment_amount');
+            $chequePayment = (clone $approveListForSums)->where('adv_vehicle_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
+            $onlinePayment = (clone $approveListForSums)->where('adv_vehicle_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
 
-            $amounts = collect();
-            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
-                $amounts->push($item->payment_amount);
-            });
+            # transaction by jsk 
+            $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+            #transaction by citizen
+            $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050332", 1.0, responseTime(), "POST", "", "");
+            $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+            $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
+
+            $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
+
+            $response = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'CashCount' => $cashCount,
+                'ddCount' => $ddCount,
+                'chequeCount' => $chequeCount,
+                'onlineCount' => $onlineCount,
+                'cashPayment' => $cashPayment,
+                'ddPayment' => $ddPayment,
+                'chequePayment' => $chequePayment,
+                'onlinePayment' => $onlinePayment,
+                'cashCountJsk' => $cashCountJsk,
+                'chequeCountJsk' => $chequeCountJsk,
+                'ddCountJsk' => $ddCountJsk,
+                'onlineCountJsk' => $onlineCountJsk,
+                'cashCountCitizen' => $cashCountCitizen,
+                'chequeCountCitizen' => $chequeCountCitizen,
+                'ddCountCitizen' => $ddCountCitizen,
+                'onlineCountcitizen' => $onlineCountcitizen,
+                'totalAmount' => $totalAmount,
+                'totalCountJsk' => $totalCountJsk,
+                'totalCountCitizen' => $totalCountCitizen,
+                'userType' => $userType,
+            ];
+
+
+            return responseMsgs(true, "Application Fetched Successfully", $response, "050332", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050332", 1.0, "271ms", "POST", "", "");
         }
     }
+
+
 
 
     //written by prity pandey
@@ -1819,7 +1936,7 @@ class VehicleAdvetController extends Controller
             }
 
             // Fetch transaction details
-            $tranDetails = $mtransaction->getTranByApplicationId($applicationId,$data)->first();
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
 
             $approveApplicationDetails['basicDetails'] = $data;
 

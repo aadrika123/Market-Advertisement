@@ -328,7 +328,7 @@ class SelfAdvetController extends Controller
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
-            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+            // $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $metaReqs['customFor'] = 'SELF';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
@@ -1957,8 +1957,9 @@ class SelfAdvetController extends Controller
         }
         try {
             // Query initialization
+         
             $selfAdvertisementworkflow = Config::get('workflow-constants.SELF-ADVERTISEMENT');
-            $approveListQuery = DB::table('adv_selfadvet_renewals')
+           $approveListQuery = DB::table('adv_selfadvet_renewals')
                 ->select(
                     'adv_selfadvet_renewals.id',
                     'adv_selfadvet_renewals.application_no',
@@ -1969,12 +1970,13 @@ class SelfAdvetController extends Controller
                     DB::raw("'Approve' as application_status"),
                     'adv_selfadvet_renewals.payment_amount',
                     'adv_selfadvet_renewals.payment_date',
-                    'adv_selfadvet_renewals.payment_mode'
+                    'adv_selfadvet_renewals.payment_mode',
+                    'adv_mar_transactions.transaction_no'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_selfadvet_renewals.id')
                 ->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard)
                 ->where('adv_selfadvet_renewals.application_type', $req->applicationType)
-                ->where('adv_selfadvet_renewals.payment_status', '1')
+                ->where('adv_selfadvet_renewals.payment_status', 1)
                 ->where('adv_selfadvet_renewals.ulb_id', $ulbId)
                 ->where('adv_mar_transactions.workflow_id', $selfAdvertisementworkflow)
                 ->where('adv_mar_transactions.status', 1)
@@ -2020,9 +2022,6 @@ class SelfAdvetController extends Controller
             $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
             $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
 
-
-
-
             $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
 
             $response = [
@@ -2030,7 +2029,7 @@ class SelfAdvetController extends Controller
                 "last_page" => $paginator->lastPage(),
                 "data" => $paginator->items(),
                 "total" => $paginator->total(),
-                'CashCount' => $cashCount,  
+                'CashCount' => $cashCount,
                 'ddCount' => $ddCount,
                 'chequeCount' => $chequeCount,
                 'onlineCount' => $onlineCount,
@@ -2046,10 +2045,10 @@ class SelfAdvetController extends Controller
                 'chequeCountCitizen' => $chequeCountCitizen,
                 'ddCountCitizen' => $ddCountCitizen,
                 'onlineCountcitizen' => $onlineCountcitizen,
-                'totalAmount' => $totalAmount ,
-                'totalCountJsk' => $totalCountJsk ,
-                'totalCountCitizen' => $totalCountCitizen ,
-                'userType' => $userType ,
+                'totalAmount' => $totalAmount,
+                'totalCountJsk' => $totalCountJsk,
+                'totalCountCitizen' => $totalCountCitizen,
+                'userType' => $userType,
             ];
 
             // Return formatted response
