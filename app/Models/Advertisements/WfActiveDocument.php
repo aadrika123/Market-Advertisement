@@ -179,18 +179,24 @@ class WfActiveDocument extends Model
     /**
      * | Get Total no of document for upload
      */
+    /**
+     * | Get Total no of document for upload
+     */
     public function totalNoOfDocs($docCode, $citizenId = null)
     {
         $noOfDocs = RefRequiredDocument::select('requirements')
             ->where('code', $docCode)
             ->first();
 
-        $totalNoOfDocs = explode("#", $noOfDocs->requirements);
+        $requirements = $noOfDocs->requirements;
 
-        // Exclude Application_form if citizen_id is not null
-        if ($citizenId != null) {
+        // Split the requirements string into an array
+        $totalNoOfDocs = explode('#', $requirements);
+
+        // Exclude 'R,APPLICATION_FORM' if citizen_id is not null
+        if ($citizenId !== null) {
             $totalNoOfDocs = array_filter($totalNoOfDocs, function ($doc) {
-                return $doc !== 'Application_form';
+                return $doc !== 'R,APPLICATION_FORM';
             });
         }
 
