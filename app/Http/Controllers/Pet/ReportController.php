@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pet;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pet\PetActiveDetail;
 use App\Models\Pet\PetActiveRegistration;
 use App\Models\Pet\PetApprovedRegistration;
 use App\Models\Pet\PetRejectedRegistration;
@@ -20,7 +21,7 @@ class ReportController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:applicationReport,collectionReport,vaccinationReport',
-            'applicationType'=>'required|in:Pending,Approved,Renewal,Expired,Rejected',
+            'applicationType' => 'required|in:Pending,Approved,Renewal,Expired,Rejected',
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
             'dateFrom' => 'nullable|date_format:Y-m-d',
@@ -42,25 +43,25 @@ class ReportController extends Controller
             $renew = new PetRenewalRegistration();
             $user = Auth()->user();
             $response = [];
-            if ($request->reportType == 'applicationReport' && $request->applicationType =='Pending') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType == 'Pending') {
                 $response = $active->pendingApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'applicationReport' && $request->applicationType =='Approved') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType == 'Approved') {
                 $response = $approved->approvedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'applicationReport' && $request->applicationType =='Rejected') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType == 'Rejected') {
                 $response = $reject->rejectedApplication($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'applicationReport' && $request->applicationType =='Renewal') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType == 'Renewal') {
                 $response = $renew->renewApplication($request);
-                //$response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'applicationReport' && $request->applicationType =='Expired') {
+            if ($request->reportType == 'applicationReport' && $request->applicationType == 'Expired') {
                 $response = $approved->expiredApplication($request);
-                //$response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
             if ($request->applicationType == 'Pending' && $request->level == 'BO') {
                 $response = $active->boApplication($request);
@@ -68,7 +69,7 @@ class ReportController extends Controller
             }
             if ($request->applicationType == 'Pending' && $request->level == 'DA') {
                 $response = $active->daApplication($request);
-                //$response['user_name'] = $user->name;
+                $response['user_name'] = $user->name;
             }
             if ($request->applicationType == 'Pending' && $request->level == 'SI') {
                 $response = $active->siApplication($request);
@@ -104,8 +105,8 @@ class ReportController extends Controller
             $response = [];
             $user = Auth()->user();
             if ($request->reportType == 'collectionReport') {
-            $response = $tran->dailyCollection($request);
-            //$response['user_name'] = $user->name;
+                $response = $tran->dailyCollection($request);
+               // $response['user_name'] = $user->name;
             }
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
@@ -120,10 +121,11 @@ class ReportController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:vaccinationReport',
-            'vaccinationType'=>'required|in:rabies,leptospirosis',
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'wardNo' => 'nullable'
+            'vaccinationType' => 'required|in:rabies,leptospirosis',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateUpto' => 'nullable|date_format:Y-m-d',
+            'wardNo' => 'nullable',
+            'vaccinationPending' => 'nullable|in:less_than_1_year,1_to_3_years,3_to_6_years,more_than_6_years'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -133,13 +135,16 @@ class ReportController extends Controller
             ], 200);
         }
         try {
-            $tran = new PetTran();
+            $active = new PetActiveDetail();
             $response = [];
             $user = Auth()->user();
-            if ($request->reportType == 'collectionReport') {
-            $response = $tran->dailyCollection($request);
-            //$response['user_name'] = $user->name;
+            if ($request->reportType == 'vaccinationReport' && $request->vaccinationType == 'rabies') {
+                $response = $active->getPendingRabiesVaccine($request);
             }
+            if ($request->reportType == 'vaccinationReport' && $request->vaccinationType == 'leptospirosis') {
+                $response = $active->getPendingLeptospirosisVaccine($request);
+            }
+            //$response['user_name'] = $user->name;
             if ($response) {
                 //return response()->json(['status' => true, 'data' => $response, 'msg' => ''], 200);
                 return responseMsgs(true, "Pet Collection List Fetch Succefully !!!", $response, "055017", "1.0", responseTime(), "POST", $request->deviceId);
