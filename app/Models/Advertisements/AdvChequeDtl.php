@@ -667,4 +667,20 @@ class AdvChequeDtl extends Model
             ->where('status', 0)
             ->first();
     }
+
+    /**
+     * |update cheque number or bank name
+     * 
+     */
+    public function updateChequeDtls($request, $workflowId, $applicationId, $tranId)
+    {
+        return self::where('workflow_id', $workflowId)
+            ->where('transaction_id', $tranId)
+            ->update(
+                [
+                    'cheque_no' => $request->chequeNo,
+                    'bank_name' => $request->bankName,
+                ]
+            );
+    }
 }

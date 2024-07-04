@@ -23,7 +23,7 @@ class TempTransaction extends Model
 
     public function transactionDtl($date, $ulbId)
     {
-        return TempTransaction::select('temp_transactions.*', 'users.*', 'ulb_ward_masters.id as ward_id', )
+        return TempTransaction::select('temp_transactions.*', 'users.*', 'ulb_ward_masters.id as ward_id',)
             ->leftjoin('users', 'users.id', 'temp_transactions.user_id')
             // ->leftjoin("ulb_ward_masters", "ulb_ward_masters.ward_name", "temp_transactions.ward_no")
             ->leftJoin("ulb_ward_masters", DB::raw('CAST(ulb_ward_masters.ward_name AS TEXT)'), '=', DB::raw('CAST(temp_transactions.ward_no AS TEXT)'))
@@ -33,7 +33,7 @@ class TempTransaction extends Model
             ->orderByDesc('temp_transactions.id');
     }
 
-    public function transactionList($date, $userId, $ulbId,$workflowType)
+    public function transactionList($date, $userId, $ulbId, $workflowType)
     {
         return TempTransaction::select(
             'temp_transactions.id',
@@ -59,4 +59,5 @@ class TempTransaction extends Model
             ->where('temp_transactions.workflow_id', $workflowType)
             ->get();
     }
+
 }
