@@ -346,13 +346,16 @@ class MarHostel extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
+        $hostelWorkflow = Config::get('workflow-constants.HOSTEL_WORKFLOWS');
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_hostel_renewals')
             ->select('mar_hostel_renewals.id', 'mar_hostel_renewals.application_no', 'mar_hostel_renewals.applicant',  DB::raw("TO_CHAR(mar_hostel_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_hostel_renewals.application_type', 'mar_hostel_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_hostel_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_hostel_renewals.payment_mode', 'mar_hostel_renewals.entity_name', 'adv_mar_transactions.transaction_no')
             ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_hostel_renewals.payment_id')
-            ->where('payment_status', '1')
+            ->where('payment_status', 1)
+            ->where('mar_hostel_renewals.status', 1)
             ->where('mar_hostel_renewals.ulb_id', $ulbId)
+            ->where('adv_mar_transactions.workflow_id', $hostelWorkflow)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
 
         if ($request->wardNo) {
@@ -373,25 +376,75 @@ class MarHostel extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        $totalPayments = $approved->count();
-        $totalAmount = $approved->sum('payment_amount');
-        $summary = [
-            'total' => $totalPayments,
-            'totalAmount' => $totalAmount,
-        ];
-        $data = $approved;
-        if ($perPage) {
-            $data = $data->paginate($perPage);
-        } else {
-            $data = $data->get();
-        }
-        return [
-            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
-            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-            'total' => $data->total(),
-            'summary' => $summary
-        ];
+       // Clone the query for counts and sums
+       $approveListForCounts = clone $approved;
+       $approveListForSums = clone $approved;
+
+       // Count of transactions
+       $cashCount = (clone $approveListForCounts)->where('mar_hostel_renewals.payment_mode', 'CASH')->count();
+        $ddCount = (clone $approveListForCounts)->where('mar_hostel_renewals.payment_mode', 'DD')->count();
+        $chequeCount = (clone $approveListForCounts)->where('mar_hostel_renewals.payment_mode', 'CHEQUE')->count();
+       $onlineCount = (clone $approveListForCounts)->where('mar_hostel_renewals.payment_mode', 'ONLINE')->count();
+
+       // Sum of transactions
+       $cashPayment = (clone $approveListForSums)->where('mar_hostel_renewals.payment_mode', 'CASH')->sum('payment_amount');
+        $ddPayment = (clone $approveListForSums)->where('mar_hostel_renewals.payment_mode', 'DD')->sum('payment_amount');
+        $chequePayment = (clone $approveListForSums)->where('mar_hostel_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
+       $onlinePayment = (clone $approveListForSums)->where('mar_hostel_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+
+       # transaction by jsk 
+       $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+        $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+       $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+       #transaction by citizen
+       $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+       $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+        $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+       $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+
+       $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+       $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
+
+
+
+
+       $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
+
+       $data = $approved;
+       if ($perPage) {
+           $data = $data->paginate($perPage);
+       } else {
+           $data = $data->get();
+       }
+       return [
+           'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+           'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+           'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+           'total' => $data->total(),
+         
+               //"total" => $paginator->total(),
+               'CashCount' => $cashCount,
+               'ddCount' => $ddCount,
+               'chequeCount' => $chequeCount,
+               'onlineCount' => $onlineCount,
+               'cashPayment' => $cashPayment,
+               'ddPayment' => $ddPayment,
+               'chequePayment' => $chequePayment,
+               'onlinePayment' => $onlinePayment,
+               'cashCountJsk' => $cashCountJsk,
+              'chequeCountJsk' => $chequeCountJsk,
+               'ddCountJsk' => $ddCountJsk,
+               'onlineCountJsk' => $onlineCountJsk,
+               'cashCountCitizen' => $cashCountCitizen,
+               'chequeCountCitizen' => $chequeCountCitizen,
+               'ddCountCitizen' => $ddCountCitizen,
+               'onlineCountcitizen' => $onlineCountcitizen,
+               'totalAmount' => $totalAmount,
+               'totalCountJsk' => $totalCountJsk,
+               'totalCountCitizen' => $totalCountCitizen
+              // 'userType' => $userType
+       ];
     }
 
     public function getApplicationWithStatus($request)
