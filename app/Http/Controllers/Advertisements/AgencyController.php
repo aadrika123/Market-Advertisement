@@ -280,7 +280,7 @@ class AgencyController extends Controller
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
-            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+            // $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
 
             $req->request->add($metaReqs);
