@@ -271,7 +271,7 @@ class ParamController extends Controller
             if ($wfworkflowMasterId == $this->_selfAdvt) {                                          // Self Advertisement Payment
                 $mAdvSelfadvertisement = AdvSelfadvertisement::find($req->id);
                 $mAdvSelfadvertisement->payment_date = Carbon::now();
-                $mAdvSelfadvertisement->payment_mode = "Online";
+                $mAdvSelfadvertisement->payment_mode = "ONLINE";
                 $mAdvSelfadvertisement->payment_status = 1;
                 $mAdvSelfadvertisement->payment_id = $req->paymentId;
                 $mAdvSelfadvertisement->payment_details = $req->all();
@@ -293,7 +293,7 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mAdvSelfadvertisement->demand_amount;
                 $updateData['valid_from'] = $mAdvSelfadvertisement->valid_from;
                 $updateData['valid_upto'] = $mAdvSelfadvertisement->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('adv_selfadvet_renewals')
                     ->where('id', $mAdvSelfadvertisement->last_renewal_id)
@@ -301,12 +301,12 @@ class ParamController extends Controller
 
                 $appDetails = AdvSelfadvertisement::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_movableVehicle) {                                              // Movable Vechicles Payment
                 $mAdvVehicle = AdvVehicle::find($req->id);
 
                 $mAdvVehicle->payment_date = Carbon::now();
-                $mAdvVehicle->payment_mode = "Online";
+                $mAdvVehicle->payment_mode = "ONLINE";
                 $mAdvVehicle->payment_status = 1;
                 $mAdvVehicle->payment_id = $req->paymentId;
                 $mAdvVehicle->payment_details = $req->all();
@@ -327,7 +327,7 @@ class ParamController extends Controller
                 $updateData['payment_amount'] = $req->amount;
                 $updateData['valid_from'] = $mAdvVehicle->valid_from;
                 $updateData['valid_upto'] = $mAdvVehicle->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('adv_vehicle_renewals')
                     ->where('id', $mAdvVehicle->last_renewal_id)
@@ -335,14 +335,14 @@ class ParamController extends Controller
 
                 $appDetails = AdvVehicle::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "ONLINE");
             } elseif ($wfworkflowMasterId ==  $this->_agency) {                                                     // Agency Apply Payment
 
                 $mAdvAgency = AdvAgency::find($req->id);
 
                 $mAdvAgency->payment_date = Carbon::now();
                 $mAdvAgency->payment_status = 1;
-                $mAdvAgency->payment_mode = "Online";
+                $mAdvAgency->payment_mode = "ONLINE";
                 $mAdvAgency->payment_id = $req->paymentId;
                 $mAdvAgency->payment_details = $req->all();
 
@@ -363,7 +363,7 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mAdvAgency->demand_amount;
                 $updateData['valid_from'] = $mAdvAgency->valid_from;
                 $updateData['valid_upto'] = $mAdvAgency->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('adv_agency_renewals')
                     ->where('id', $mAdvAgency->last_renewal_id)
@@ -371,12 +371,12 @@ class ParamController extends Controller
 
                 $appDetails = AdvAgency::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_pvtLand) {                                                             // Private Land Payment
 
                 $mAdvPrivateland = AdvPrivateland::find($req->id);
                 $mAdvPrivateland->payment_date = Carbon::now();
-                $mAdvPrivateland->payment_mode = "Online";
+                $mAdvPrivateland->payment_mode = "ONLINE";
                 $mAdvPrivateland->payment_status = 1;
                 $mAdvPrivateland->payment_id = $req->paymentId;
                 $mAdvPrivateland->payment_details = $req->all();
@@ -398,20 +398,20 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mAdvPrivateland->demand_amount;
                 $updateData['valid_from'] = $mAdvPrivateland->valid_from;
                 $updateData['valid_upto'] = $mAdvPrivateland->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('adv_privateland_renewals')
                     ->where('id', $mAdvPrivateland->last_renewal_id)
                     ->update($updateData);
                 $appDetails = AdvPrivateland::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_hording) {                                                 // Hording Apply Payment
 
                 $mAdvHoarding = AdvHoarding::find($req->id);
                 $mAdvHoarding->payment_date = Carbon::now();
                 $mAdvHoarding->payment_status = 1;
-                $mAdvHoarding->payment_mode = "Online";
+                $mAdvHoarding->payment_mode = "ONLINE";
                 $mAdvHoarding->payment_id = $req->paymentId;
                 $mAdvHoarding->payment_details = $req->all();
 
@@ -432,20 +432,20 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mAdvHoarding->demand_amount;
                 $updateData['valid_from'] = $mAdvHoarding->valid_from;
                 $updateData['valid_upto'] = $mAdvHoarding->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('adv_hoarding_renewals')
                     ->where('id', $mAdvHoarding->last_renewal_id)
                     ->update($updateData);
                 $appDetails = AdvHoarding::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Advertisement", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_banquetHall) {                                         // Hording Apply Payment
 
                 $mMarBanquteHall = MarBanquteHall::find($req->id);
                 $mMarBanquteHall->payment_date = Carbon::now();
                 $mMarBanquteHall->payment_status = 1;
-                $mMarBanquteHall->payment_mode = "Online";
+                $mMarBanquteHall->payment_mode = "ONLINE";
                 $mMarBanquteHall->payment_id = $req->paymentId;
                 $mMarBanquteHall->payment_details = $req->all();
 
@@ -466,7 +466,7 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mMarBanquteHall->demand_amount;
                 $updateData['valid_from'] = $mMarBanquteHall->valid_from;
                 $updateData['valid_upto'] = $mMarBanquteHall->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('mar_banqute_hall_renewals')
                     ->where('id', $mMarBanquteHall->last_renewal_id)
@@ -474,13 +474,13 @@ class ParamController extends Controller
 
                 $appDetails = MarBanquteHall::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_hostel) {                                              // Hostel Apply Payment
 
                 $mMarHostel = MarHostel::find($req->id);
                 $mMarHostel->payment_date = Carbon::now();
                 $mMarHostel->payment_status = 1;
-                $mMarHostel->payment_mode = "Online";
+                $mMarHostel->payment_mode = "ONLINE";
                 $mMarHostel->payment_id = $req->paymentId;
                 $mMarHostel->payment_details = $req->all();
 
@@ -501,20 +501,20 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mMarHostel->demand_amount;
                 $updateData['valid_from'] = $mMarHostel->valid_from;
                 $updateData['valid_upto'] = $mMarHostel->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('mar_hostel_renewals')
                     ->where('id', $mMarHostel->last_renewal_id)
                     ->update($updateData);
                 $appDetails = MarHostel::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_lodge) {                                                       // Lodge Apply Payment
 
                 $mMarLodge = MarLodge::find($req->id);
                 $mMarLodge->payment_date = Carbon::now();
                 $mMarLodge->payment_status = 1;
-                $mMarLodge->payment_mode = "Online";
+                $mMarLodge->payment_mode = "ONLINE";
                 $mMarLodge->payment_id = $req->paymentId;
                 $mMarLodge->payment_details = $req->all();
 
@@ -536,19 +536,19 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mMarLodge->demand_amount;
                 $updateData['valid_from'] = $mMarLodge->valid_from;
                 $updateData['valid_upto'] = $mMarLodge->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('mar_lodge_renewals')
                     ->where('id', $mMarLodge->last_renewal_id)
                     ->update($updateData);
                 $appDetails = MarLodge::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "ONLINE");
             } elseif ($wfworkflowMasterId == $this->_dharamshala) {                                                 // Dharamshala Apply Payment
                 $mMarDharamshala = MarDharamshala::find($req->id);
                 $mMarDharamshala->payment_date = Carbon::now();
                 $mMarDharamshala->payment_status = 1;
-                $mMarDharamshala->payment_mode = "Online";
+                $mMarDharamshala->payment_mode = "ONLINE";
                 $mMarDharamshala->payment_id = $req->paymentId;
                 $mMarDharamshala->payment_details = $req->all();
 
@@ -569,14 +569,14 @@ class ParamController extends Controller
                 $updateData['demand_amount'] = $mMarDharamshala->demand_amount;
                 $updateData['valid_from'] = $mMarDharamshala->valid_from;
                 $updateData['valid_upto'] = $mMarDharamshala->valid_upto;
-                $updateData['payment_mode'] = "Online";
+                $updateData['payment_mode'] = "ONLINE";
                 // update in Renewals Table
                 DB::table('mar_dharamshala_renewals')
                     ->where('id', $mMarDharamshala->last_renewal_id)
                     ->update($updateData);
                 $appDetails = MarDharamshala::find($req->id);
                 $mAdvMarTransaction = new AdvMarTransaction();
-                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "Online");
+                $mAdvMarTransaction->addTransaction($appDetails, $this->_advtModuleId, "Market", "ONLINE");
             }
             DB::commit();
             $msg = "Payment Accepted Successfully !!!";

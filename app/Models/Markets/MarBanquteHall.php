@@ -340,13 +340,15 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
+        $bmwWorkflow = Config::get('workflow-constants.BANQUTE_MARRIGE_HALL_WORKFLOWS');
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_banqute_hall_renewals')
             ->select('mar_banqute_hall_renewals.id', 'mar_banqute_hall_renewals.application_no', 'mar_banqute_hall_renewals.applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'mar_banqute_hall_renewals.application_type', 'mar_banqute_hall_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_banqute_hall_renewals.payment_amount',  DB::raw("TO_CHAR(mar_banqute_hall_renewals.payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_banqute_hall_renewals.payment_mode', 'mar_banqute_hall_renewals.entity_name', 'adv_mar_transactions.transaction_no')
-            ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_banqute_hall_renewals.payment_id')
+            ->join('adv_mar_transactions', 'adv_mar_transactions.application_id', '=', 'mar_banqute_hall_renewals.id')
             ->where('payment_status', '1')
             ->where('mar_banqute_hall_renewals.ulb_id', $ulbId)
+            ->where('adv_mar_transactions.workflow_id', $bmwWorkflow)
             ->whereBetween('payment_date', [$dateFrom, $dateUpto]);;
 
         if ($request->wardNo) {
@@ -367,12 +369,42 @@ class MarBanquteHall extends Model
         if ($request->payMode == 'Cheque/DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        $totalPayments = $approved->count();
-        $totalAmount = $approved->sum('payment_amount');
-        $summary = [
-            'total' => $totalPayments,
-            'totalAmount' => $totalAmount,
-        ];
+
+        // Clone the query for counts and sums
+        $approveListForCounts = clone $approved;
+        $approveListForSums = clone $approved;
+
+        // Count of transactions
+        $cashCount = (clone $approveListForCounts)->where('mar_banqute_hall_renewals.payment_mode', 'CASH')->count();
+         $ddCount = (clone $approveListForCounts)->where('mar_banqute_hall_renewals.payment_mode', 'DD')->count();
+         $chequeCount = (clone $approveListForCounts)->where('mar_banqute_hall_renewals.payment_mode', 'CHEQUE')->count();
+        $onlineCount = (clone $approveListForCounts)->where('mar_banqute_hall_renewals.payment_mode', 'ONLINE')->count();
+
+        // Sum of transactions
+        $cashPayment = (clone $approveListForSums)->where('mar_banqute_hall_renewals.payment_mode', 'CASH')->sum('payment_amount');
+         $ddPayment = (clone $approveListForSums)->where('mar_banqute_hall_renewals.payment_mode', 'DD')->sum('payment_amount');
+         $chequePayment = (clone $approveListForSums)->where('mar_banqute_hall_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
+        $onlinePayment = (clone $approveListForSums)->where('mar_banqute_hall_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+
+        # transaction by jsk 
+        $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+         $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+         $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+        #transaction by citizen
+        $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+         $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+
+        $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+        $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
+
+
+
+
+        $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
+
         $data = $approved;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -384,7 +416,28 @@ class MarBanquteHall extends Model
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
             'total' => $data->total(),
-            'summary' => $summary
+          
+                //"total" => $paginator->total(),
+                'CashCount' => $cashCount,
+                'ddCount' => $ddCount,
+                'chequeCount' => $chequeCount,
+                'onlineCount' => $onlineCount,
+                'cashPayment' => $cashPayment,
+                'ddPayment' => $ddPayment,
+                'chequePayment' => $chequePayment,
+                'onlinePayment' => $onlinePayment,
+                'cashCountJsk' => $cashCountJsk,
+               'chequeCountJsk' => $chequeCountJsk,
+                'ddCountJsk' => $ddCountJsk,
+                'onlineCountJsk' => $onlineCountJsk,
+                'cashCountCitizen' => $cashCountCitizen,
+                'chequeCountCitizen' => $chequeCountCitizen,
+                'ddCountCitizen' => $ddCountCitizen,
+                'onlineCountcitizen' => $onlineCountcitizen,
+                'totalAmount' => $totalAmount,
+                'totalCountJsk' => $totalCountJsk,
+                'totalCountCitizen' => $totalCountCitizen
+               // 'userType' => $userType
         ];
     }
 
@@ -789,13 +842,13 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
-    
 
-        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),'current_role_id')
+
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"), 'current_role_id')
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_banqute_halls.current_role_id','=',6);
+            ->where('mar_active_banqute_halls.current_role_id', '=', 6);
 
-    
+
         if ($request->wardNo) {
             $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
         }
@@ -817,13 +870,13 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
-    
 
-        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),'current_role_id')
+
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"), 'current_role_id')
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_banqute_halls.current_role_id','=',14);
+            ->where('mar_active_banqute_halls.current_role_id', '=', 14);
 
-    
+
         if ($request->wardNo) {
             $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
         }
@@ -845,13 +898,13 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
-    
 
-        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),'current_role_id')
+
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"), 'current_role_id')
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_banqute_halls.current_role_id','=',9);
+            ->where('mar_active_banqute_halls.current_role_id', '=', 9);
 
-    
+
         if ($request->wardNo) {
             $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
         }
@@ -874,13 +927,13 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
-    
 
-        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),'current_role_id')
+
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"), 'current_role_id')
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_banqute_halls.current_role_id','=',32);
+            ->where('mar_active_banqute_halls.current_role_id', '=', 32);
 
-    
+
         if ($request->wardNo) {
             $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
         }
@@ -903,9 +956,9 @@ class MarBanquteHall extends Model
         $user = Auth()->user();
         $ulbId = $user->ulb_id ?? null;
         $perPage = $request->perPage ?: 10;
-        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"),'current_role_id')
+        $active = MarActiveBanquteHall::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Active' as application_status"), 'current_role_id')
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_banqute_halls.current_role_id','=',10);
+            ->where('mar_active_banqute_halls.current_role_id', '=', 10);
         if ($request->wardNo) {
             $active->where('mar_active_banqute_halls.entity_ward_id', $request->wardNo);
         }
