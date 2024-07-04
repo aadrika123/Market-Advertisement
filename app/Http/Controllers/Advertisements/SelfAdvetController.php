@@ -328,7 +328,7 @@ class SelfAdvetController extends Controller
 
             #citizen comment
             $refCitizenId = $data['citizen_id'];
-            $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
+            // $fullDetailsData['citizenComment'] = $mWorkflowTracks->getCitizenTracks($mRefTable, $mtableId, $refCitizenId);
 
             $metaReqs['customFor'] = 'SELF';
             $metaReqs['wfRoleId'] = $data['current_role_id'];
