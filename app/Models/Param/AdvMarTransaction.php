@@ -608,4 +608,21 @@ class AdvMarTransaction extends Model
             ->where("adv_mar_transactions.status", 0);
         //->get();
     }
+
+    
+    /**
+     * |update cheque number or bank name
+     * 
+     */
+    public function updateChequeDtls($request, $workflowId, $tranId)
+    {
+        return self::where('id', $tranId)
+            ->where('workflow_id', $workflowId)
+            ->update(
+                [
+                    'cheque_dd_no' => $request->chequeNo,
+                    'bank_name' => $request->bankName,
+                ]
+            );
+    }
 }
