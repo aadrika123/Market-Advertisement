@@ -92,9 +92,7 @@ class ReportController extends Controller
             $lodge = new MarLodge();
             $dharamshala = new MarDharamshala();
             $user = Auth()->user();
-            $ulbId = $user->ulb_id ?? null;
             $response = [];
-            $perPage = $request->perPage ?: 10;
             if ($request->reportType == 'Banquet/Marriage Hall') {
                 $response = $banquet->payCollection($request);
                 $response['user_name'] = $user->name;
