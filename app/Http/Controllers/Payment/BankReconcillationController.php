@@ -794,4 +794,52 @@ class BankReconcillationController extends Controller
             return responseMsg(false, "ERROR!", $error->getMessage());
         }
     }
+
+    /**
+     * | Edit Cheque No
+       | Currently not in use
+     */
+    public function editChequeNo(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|numeric',
+            'workflowId' => 'required|numeric',
+            'chequeNo' => 'required',
+            'bankName' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation error',
+                'errors' => $validator->errors()
+            ], 401);
+        }
+        try {
+            $workflowId      = $request->workflowId;
+            $mAdvchequeDtls  = new AdvChequeDtl();
+            $mAdvMarTransaction  = new AdvMarTransaction();
+            $tranDtl = TempTransaction::find($request->id);
+            $tranId = $tranDtl->transaction_id;
+            $applicationId  = $tranDtl->application_id;
+
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+            $tranDtl
+                ->update(
+                    [
+                        'cheque_dd_no' => $request->chequeNo,
+                        'bank_name' => $request->bankName,
+                    ]
+                );
+            $mAdvchequeDtls->updateChequeDtls($request, $workflowId, $applicationId, $tranId);
+            $mAdvMarTransaction->updateChequeDtls($request, $workflowId, $tranId);
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+            return responseMsgs(true, "Edit Successful", "", "010201", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010201", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        }
+    }
 }
