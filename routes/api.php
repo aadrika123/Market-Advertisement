@@ -732,5 +732,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/search-transaction', 'searchTransaction');                                               // Search Transaction of Cheque
         Route::post('advert/cheque-dtl-by-id', 'chequeDtlById');                                                     // Get Detail of Cheque Transaction
         Route::post('advert/cheque-clearance', 'chequeClearance');                                                   // clear or bounce cheque
+        Route::post('advert/edit-cheque-dtls', 'editChequeNo');                                                   // clear or bounce cheque
     });
 });
