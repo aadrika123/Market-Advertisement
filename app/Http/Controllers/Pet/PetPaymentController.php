@@ -203,7 +203,27 @@ class PetPaymentController extends Controller
             $returnData = [
                 "transactionNo" => $petTranNo
             ];
-            return responseMsgs(true, "Payment done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
+
+            #_Whatsaap Message
+        //     if (strlen($req->mobileNo) == 10) {
+
+        //         $whatsapp2 = (Whatsapp_Send(
+        //             $req->mobileNo,
+        //             "all_module_payment_receipt",
+        //             [
+        //                 "content_type" => "text",
+        //                 [
+        //                     $req->applicantName ?? "Pet Owner",
+        //                     "Pet Registration",
+        //                     "Application No.",
+        //                     $petApplicationNo,
+        //                     "1800123231"
+        //                 ]
+        //             ]
+        //         ));
+        // }
+
+            return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
