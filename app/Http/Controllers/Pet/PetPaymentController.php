@@ -556,6 +556,24 @@ class PetPaymentController extends Controller
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             $this->commit();
+            #_Whatsaap Message
+            if (strlen($applicationDetails->mobile_no) == 10) {
+                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" .$req['tranNo'];
+                $whatsapp2 = (Whatsapp_Send(
+                    $applicationDetails->mobile_no,
+                    "all_module_payment_receipt ",
+                    [
+                        "content_type" => "text",
+                        [
+                            $applicationDetails->applicant_name ?? "",
+                            $req->amount,
+                            "Application No.",
+                            $applicationDetails->application_no,
+                            $Url
+                        ]
+                    ]
+                ));
+            }
             return responseMsgs(true, "Online Payment Success", $req, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             $this->rollback();

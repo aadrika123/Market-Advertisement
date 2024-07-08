@@ -93,7 +93,7 @@ class PetWorkflowController extends Controller
         if ($db1 != $db2)
             $this->_DB->beginTransaction();
         // if ($db1 != $db3 && $db2 != $db3)
-            // $this->_DB2->beginTransaction();
+        // $this->_DB2->beginTransaction();
     }
     /**
      * | Database transaction connection
@@ -107,7 +107,7 @@ class PetWorkflowController extends Controller
         if ($db1 != $db2)
             $this->_DB->rollBack();
         // if ($db1 != $db3 && $db2 != $db3)
-            // $this->_DB2->rollBack();
+        // $this->_DB2->rollBack();
     }
     /**
      * | Database transaction connection
@@ -121,7 +121,7 @@ class PetWorkflowController extends Controller
         if ($db1 != $db2)
             $this->_DB->commit();
         // if ($db1 != $db3 && $db2 != $db3)
-            // $this->_DB2->commit();
+        // $this->_DB2->commit();
     }
 
     #-----------------------------------------------------------------------------------------------------------------------------------------------#
@@ -227,8 +227,8 @@ class PetWorkflowController extends Controller
             $waterList = $this->getPetApplicatioList($workflowIds, $ulbId)
                 ->whereNotIn('pet_active_registrations.current_role_id', $roleId)
                 ->orderByDesc('pet_active_registrations.id');
-                // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
-                // ->paginate($pages);
+            // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+            // ->paginate($pages);
 
             if (collect($waterList)->last() == 0 || !$waterList) {
                 $msg = "Data not found!";
@@ -649,7 +649,7 @@ class PetWorkflowController extends Controller
                     $approveDetails =  $this->finalApprovalRenewal($request, $application);
                     $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
                 }
-                $msg = "Application Successfully Approved of Application No ".$applicationNo." with Registration No:" . $approveDetails['registrationId'];
+                $msg = "Application Successfully Approved of Application No " . $applicationNo . " with Registration No:" . $approveDetails['registrationId'];
             }
             # Rejection of grievance application
             if ($request->status == 0) {                                                                // Static
@@ -675,12 +675,12 @@ class PetWorkflowController extends Controller
                         ]
                     ]
                 ));
-        }
+            }
 
             return responseMsgs(true, $msg, $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
-            return responseMsgs(false, $e->getMessage(), [$e->getFile(),$e->getLine(),$e->getCode()], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            return responseMsgs(false, $e->getMessage(), [$e->getFile(), $e->getLine(), $e->getCode()], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
 
@@ -727,20 +727,20 @@ class PetWorkflowController extends Controller
         $mPetActiveApplicant        = new PetActiveApplicant();
         $mPetActiveDetail           = new PetActiveDetail();
         $lastLicenceDate            = $now->copy()->addYear()->subDay();
-        
+
         # Check if the approve application exist
         $someDataExist = $mPetApprovedRegistration->getApproveAppByAppId($applicationId)
-        ->whereNot('status', 0)
-        ->first();
+            ->whereNot('status', 0)
+            ->first();
         if ($someDataExist) {
             throw new Exception("Approve application details exist in active table ERROR!");
         }
-        
+
         # Data formating for save the consumer details 
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
         $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationId)->first();
         $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
-        
+
         $idGeneration           = new PrefixIdGenerator(45, $refApplicationDetial->ulb_id);
         $registrationId         = $idGeneration->generate();
 
