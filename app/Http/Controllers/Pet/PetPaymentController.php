@@ -557,14 +557,9 @@ class PetPaymentController extends Controller
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             $this->commit();
-
-            $detail = $mPetTran::find($applicationId);
-            $tranNo = $detail->tran_no;
-            $amount = $detail->amount;
-
             #_Whatsaap Message
             if (strlen($applicationDetails->mobile_no) == 10) {
-                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" . $tranNo;
+                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" . $tranReq['tranNo'];
                 $whatsapp2 = (Whatsapp_Send(
                     $applicationDetails->mobile_no,
                     "all_module_payment_receipt ",
@@ -572,7 +567,7 @@ class PetPaymentController extends Controller
                         "content_type" => "text",
                         [
                             $applicationDetails->applicant_name ?? "",
-                            $amount,
+                            $tranReq['amount'],
                             "Application No.",
                             $applicationDetails->application_no,
                             $Url
