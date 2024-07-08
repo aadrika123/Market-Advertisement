@@ -205,23 +205,23 @@ class PetPaymentController extends Controller
             ];
 
             #_Whatsaap Message
-            //     if (strlen($req->mobileNo) == 10) {
-
-            //         $whatsapp2 = (Whatsapp_Send(
-            //             $req->mobileNo,
-            //             "all_module_payment_receipt",
-            //             [
-            //                 "content_type" => "text",
-            //                 [
-            //                     $req->applicantName ?? "Pet Owner",
-            //                     "Pet Registration",
-            //                     "Application No.",
-            //                     $petApplicationNo,
-            //                     "1800123231"
-            //                 ]
-            //             ]
-            //         ));
-            // }
+            if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
+                $Url = "https://aadrikainfomedia.com/pet-payment-receipt/" . $petTranNo;
+                $whatsapp2 = (Whatsapp_Send(
+                    $payRelatedDetails['applicationDetails']->mobile_no,
+                    "all_module_payment_receipt",
+                    [
+                        "content_type" => "text",
+                        [
+                            $payRelatedDetails['applicationDetails']->applicant_name ?? "",
+                            $req['amount'],
+                            "Application No.",
+                            $payRelatedDetails['applicationDetails']->application_no,
+                            $Url
+                        ]
+                    ]
+                ));
+            }
 
             return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
