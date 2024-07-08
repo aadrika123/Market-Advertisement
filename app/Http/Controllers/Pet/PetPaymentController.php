@@ -205,23 +205,23 @@ class PetPaymentController extends Controller
             ];
 
             #_Whatsaap Message
-        //     if (strlen($req->mobileNo) == 10) {
+            //     if (strlen($req->mobileNo) == 10) {
 
-        //         $whatsapp2 = (Whatsapp_Send(
-        //             $req->mobileNo,
-        //             "all_module_payment_receipt",
-        //             [
-        //                 "content_type" => "text",
-        //                 [
-        //                     $req->applicantName ?? "Pet Owner",
-        //                     "Pet Registration",
-        //                     "Application No.",
-        //                     $petApplicationNo,
-        //                     "1800123231"
-        //                 ]
-        //             ]
-        //         ));
-        // }
+            //         $whatsapp2 = (Whatsapp_Send(
+            //             $req->mobileNo,
+            //             "all_module_payment_receipt",
+            //             [
+            //                 "content_type" => "text",
+            //                 [
+            //                     $req->applicantName ?? "Pet Owner",
+            //                     "Pet Registration",
+            //                     "Application No.",
+            //                     $petApplicationNo,
+            //                     "1800123231"
+            //                 ]
+            //             ]
+            //         ));
+            // }
 
             return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -542,6 +542,7 @@ class PetPaymentController extends Controller
                 'tokenNo'           => $applicationId . $epoch
             ];
             $transDetails = $mPetTran->saveTranDetails($tranReq);
+
             $mPetTranDetail->saveTransDetails($transDetails['transactionId'], $tranReq);
 
             # Save charges payment status
@@ -556,9 +557,14 @@ class PetPaymentController extends Controller
             ];
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             $this->commit();
+
+            $detail = $mPetTran::find($applicationId);
+            $tranNo = $detail->tran_no;
+            $amount = $detail->amount;
+
             #_Whatsaap Message
             if (strlen($applicationDetails->mobile_no) == 10) {
-                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" .$req['tranNo'];
+                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" . $tranNo;
                 $whatsapp2 = (Whatsapp_Send(
                     $applicationDetails->mobile_no,
                     "all_module_payment_receipt ",
@@ -566,7 +572,7 @@ class PetPaymentController extends Controller
                         "content_type" => "text",
                         [
                             $applicationDetails->applicant_name ?? "",
-                            $req->amount,
+                            $amount,
                             "Application No.",
                             $applicationDetails->application_no,
                             $Url
@@ -895,7 +901,7 @@ class PetPaymentController extends Controller
             $details = $PetTransaction->cashDtl($date, $userId)
                 ->where('emp_dtl_id', $userId)
                 ->get();
-           
+
 
             if (collect($details)->isEmpty())
                 throw new Exception("No Application Found for this id");
@@ -907,7 +913,7 @@ class PetPaymentController extends Controller
             $data['date'] = Carbon::parse($date)->format('d-m-Y');
             $data['tcId'] = $userId;
 
-            
+
             return responseMsgs(true, "Cash Verification Details", $data, $apiId, $version, responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
