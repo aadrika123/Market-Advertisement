@@ -206,7 +206,7 @@ class PetPaymentController extends Controller
 
             #_Whatsaap Message
             if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
-                $Url = "https://aadrikainfomedia.com/pet-payment-receipt/" . $petTranNo;
+                $Url = "https://aadrikainfomedia.com/pet/pet-payment-receipt/" . $petTranNo;
                 $whatsapp2 = (Whatsapp_Send(
                     $payRelatedDetails['applicationDetails']->mobile_no,
                     "all_module_payment_receipt",
