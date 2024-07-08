@@ -658,6 +658,25 @@ class PetWorkflowController extends Controller
             }
             $this->commit();
             $returnData["applicationNo"] = $applicationNo;
+            #_Whatsaap Message
+            if (strlen($application->mobile_no) == 10) {
+
+                $whatsapp2 = (Whatsapp_Send(
+                    $application->mobile_no,
+                    "all_module_succesfull_generation ",
+                    [
+                        "content_type" => "text",
+                        [
+                            $application->applicant_name ?? "",
+                            "Pet Registration",
+                            "License No.",
+                            $returnData['uniqueTokenId'],
+                            "1800123231"
+                        ]
+                    ]
+                ));
+        }
+
             return responseMsgs(true, $msg, $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             $this->rollback();
