@@ -122,8 +122,6 @@ class ReportController extends Controller
         $validator = Validator::make($request->all(), [
             'reportType' => 'required|in:vaccinationReport',
             'vaccinationType' => 'required|in:rabies,leptospirosis',
-            'dateFrom' => 'nullable|date_format:Y-m-d',
-            'dateUpto' => 'nullable|date_format:Y-m-d',
             'wardNo' => 'nullable',
             'vaccinationPending' => 'nullable|in:less_than_1_year,1_to_3_years,3_to_6_years,more_than_6_years'
         ]);
