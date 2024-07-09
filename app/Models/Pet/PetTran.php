@@ -222,4 +222,14 @@ class PetTran extends Model
             'totalCitizenCount' => $totalCitizenCount
         ];
     }
+
+    public function getTransByTranNo($transactionNo)
+    {
+        return PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
+            ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
+            ->where('pet_trans.status', 1)
+            ->where('verify_status', 0)
+            ->where('tran_no', $transactionNo)
+            ->get();
+    }
 }

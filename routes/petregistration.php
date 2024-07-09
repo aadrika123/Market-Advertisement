@@ -115,4 +115,8 @@ Route::controller(PetPaymentController::class)->group(function () {
     Route::post('cash-verification-list', 'listCashVerification');                                      #_List of Cash Verification --------------- 0703
     Route::post('cash-verification-dtl', 'cashVerificationDtl');                                        #_Cash Verification Detail ---------------- 0704
     Route::post('verify-cash', 'verifyCash');                                                           #_Verify Cash ----------------------------- 0705
+
+    //written by prity pandey
+    Route::post('search-transaction-no', 'searchTransactionNo'); 
+
 });

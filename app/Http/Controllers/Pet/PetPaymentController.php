@@ -976,4 +976,21 @@ class PetPaymentController extends Controller
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
     }
+
+    public function searchTransactionNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required"
+        ]);
+
+        if ($validator->fails())
+            return validationError($validator);
+        try {
+            $mTransaction = new PetTran();
+            $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo);
+            return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 }
