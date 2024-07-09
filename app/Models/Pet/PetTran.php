@@ -139,7 +139,7 @@ class PetTran extends Model
         $perPage = $request->perPage ?: 10;
 
         $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
-            ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
+            ->leftjoin('users', 'users.id', 'pet_trans.emp_dtl_id')
             ->where('pet_trans.status', 1)
             ->whereBetween('pet_trans.tran_date', [$dateFrom, $dateUpto]);
 
