@@ -160,6 +160,7 @@ class PetPaymentController extends Controller
             $wardId             = $payRelatedDetails['applicationDetails']['ward_id'];
             $tranType           = $payRelatedDetails['applicationDetails']['application_type'];
             $tranTypeId         = $payRelatedDetails['chargeCategory'];
+            $applicationNo      = $payRelatedDetails['applicationDetails']['application_no'];
 
             $this->begin();
             # Generate transaction no 
@@ -187,14 +188,14 @@ class PetPaymentController extends Controller
 
             # Save the Details for the Cheque,DD,nfet
             // if (in_array($req['paymentMode'], $offlineVerificationModes)) {
-                $req->merge([
-                   // 'chequeDate'    => $req['chequeDate'],
-                    'tranId'        => $petTrans['transactionId'],
-                    'applicationNo' => $payRelatedDetails['applicationDetails']['chargeCategory'],
-                    'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
-                    'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
-                ]);
-                $this->postOtherPaymentModes($req);
+            $req->merge([
+                // 'chequeDate'    => $req['chequeDate'],
+                'tranId'        => $petTrans['transactionId'],
+                'applicationNo' => $payRelatedDetails['applicationDetails']['chargeCategory'],
+                'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
+                'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
+            ]);
+            $this->postOtherPaymentModes($req);
             //}
             $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             // $payRelatedDetails['applicationDetails']->payment_status = 1;
