@@ -187,13 +187,13 @@ class PetPaymentController extends Controller
 
             # Save the Details for the Cheque,DD,nfet
             // if (in_array($req['paymentMode'], $offlineVerificationModes)) {
-            //     $req->merge([
-            //         'chequeDate'    => $req['chequeDate'],
-            //         'tranId'        => $petTrans['transactionId'],
-            //         'applicationNo' => $payRelatedDetails['applicationDetails']['chargeCategory'],
-            //         'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
-            //         'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
-            //     ]);
+                $req->merge([
+                   // 'chequeDate'    => $req['chequeDate'],
+                    'tranId'        => $petTrans['transactionId'],
+                    'applicationNo' => $payRelatedDetails['applicationDetails']['chargeCategory'],
+                    'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
+                    'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
+                ]);
                 $this->postOtherPaymentModes($req);
             //}
             $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
