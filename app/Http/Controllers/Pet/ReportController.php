@@ -69,7 +69,7 @@ class ReportController extends Controller
             }
             if ($request->applicationType == 'Pending' && $request->level == 'DA') {
                 $response = $active->daApplication($request);
-                $response['user_name'] = $user->name;
+               // $response['user_name'] = $user->name;
             }
             if ($request->applicationType == 'Pending' && $request->level == 'SI') {
                 $response = $active->siApplication($request);
