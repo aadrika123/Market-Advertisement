@@ -225,11 +225,66 @@ class PetTran extends Model
 
     public function getTransByTranNo($transactionNo)
     {
-        return PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
+        return PetTran::select(
+            'pet_trans.id',
+            'pet_trans.tran_no',
+            DB::raw("TO_CHAR(pet_trans.tran_date, 'DD-MM-YYYY') as tran_date"),
+            'pet_trans.amount',
+            'pet_trans.payment_mode',
+            'pet_trans.status',
+            'pet_trans.ulb_id',
+            't1.application_no',
+            'pet_cheque_dtls.cheque_no',
+            'pet_cheque_dtls.bank_name',
+            DB::raw("'9' as module_id"),
+            'users.user_name',
+            'users.id as user_id',
+            'mobile'
+        )
+            ->leftjoin('pet_cheque_dtls', 'pet_cheque_dtls.transaction_id', '=', 'pet_trans.id')
+            ->join('pet_active_registrations as t1', 'pet_trans.related_id', '=', 't1.id')
             ->join('users', 'users.id', 'pet_trans.emp_dtl_id')
             ->where('pet_trans.status', 1)
             ->where('verify_status', 0)
             ->where('tran_no', $transactionNo)
             ->get();
+    }
+
+    public function deactivateTransaction($transactionId)
+    {
+
+        PetTran::where('id', $transactionId)
+            ->update(
+                [
+                    'status' => 0,
+                ]
+            );
+    }
+
+    public function getDeactivatedTran()
+    {
+        return PetTran::select(
+            'pet_trans.id',
+            'pet_trans.tran_no',
+            DB::raw("TO_CHAR(pet_trans.tran_date, 'DD-MM-YYYY') as tran_date"),
+            'pet_trans.amount',
+            'pet_trans.payment_mode',
+            'pet_trans.status',
+            'pet_trans.ulb_id',
+            't1.application_no',
+            'pet_cheque_dtls.cheque_no',
+            'pet_cheque_dtls.bank_name',
+            DB::raw("'9' as module_id"),
+            DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
+            "transaction_deactivate_dtls.reason",
+            "users.name as deactivated_by"
+        )
+            ->leftjoin('pet_cheque_dtls', 'pet_cheque_dtls.transaction_id', '=', 'pet_trans.id')
+            ->join('pet_active_registrations as t1', 'pet_trans.related_id', '=', 't1.id')
+            ->join('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'pet_trans.id')
+            ->join('users', 'users.id', 'transaction_deactivate_dtls.deactivated_by')
+            ->where('pet_trans.status', 0);
+
+        //->get();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pet\PetPaymentReq;
 use App\Http\Requests\Pet\PetRegistrationReq;
+use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGeneration;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\IdGenerationParam;
@@ -21,6 +22,7 @@ use App\Models\Pet\PetRejectedRegistration;
 use App\Models\Pet\PetRenewalRegistration;
 use App\Models\Pet\PetTran;
 use App\Models\Pet\PetTranDetail;
+use App\Models\TransactionDeactivateDtl;
 use App\Models\UlbMaster;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -990,6 +992,122 @@ class PetPaymentController extends Controller
             $mTransaction = new PetTran();
             $transactionDtl = $mTransaction->getTransByTranNo($req->transactionNo);
             return responseMsgs(true, "Transaction No is", $transactionDtl, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivateTransaction(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "TranId" => "required",
+            "moduleId" => "required",
+            "remarks" => "required|string",
+            "document" => 'required|mimes:png,jpg,jpeg,gif,pdf'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $transactionId = $req->TranId;
+            $moduleId = $req->moduleId;
+            $document = new DocumentUpload();
+            $document = $document->severalDoc($req);
+            $document = $document->original["data"];
+            $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+            //$user = Auth()->user();
+            $user = authUser($req);
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+
+            $imageName = "";
+            $deactivationArr = [
+                "tran_id" => $transactionId,
+                "deactivated_by" => $user->id,
+                "reason" => $req->remarks,
+                "file_path" => $imageName,
+                "module_id" => $moduleId,
+                "workflow_id" =>  $this->_workflowMasterId,
+                "unique_id" => $document["document"]["data"]["uniqueId"],
+                "reference_no" => $document["document"]["data"]["ReferenceNo"],
+                "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+            ];
+
+            $mTransaction = new PetTran();
+            $transaction = $mTransaction->find($transactionId);
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found");
+            }
+
+            $mTransaction->deactivateTransaction($transactionId);
+            $applicationId = $transaction->related_id;
+            $TranDeativetion = new TransactionDeactivateDtl();
+            $TranDeativetion->create($deactivationArr);
+
+            TempTransaction::where('transaction_id', $transactionId)
+                ->where('module_id', $moduleId)
+                ->update(['status' => 0]);
+
+            PetActiveRegistration::where('id', $applicationId)
+                ->update(['payment_status' => 0]);
+
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+
+            return responseMsgs(true, "Transaction Deactivated", "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+
+    public function deactivatedTransactionList(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "fromDate" => "nullable|date|date_format:Y-m-d",
+            "uptoDate" => "nullable|date|date_format:Y-m-d",
+            'paymentMode' => 'nullable|in:CASH,CHEQUE,DD,NEFT,ALL',
+            'transactionNo' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return validationError($validator);
+        }
+
+        try {
+            $fromDate = $req->fromDate ?? Carbon::now()->format("Y-m-d");
+            $uptoDate = $req->uptoDate ?? Carbon::now()->format("Y-m-d");
+            $paymentMode = $req->paymentMode ?? null;
+            $transactionNo = $req->transactionNo ?? null;
+            $mTransaction = new PetTran();
+            $transactionDeactivationDtl = $mTransaction->getDeactivatedTran()
+                ->whereBetween('transaction_deactivate_dtls.deactive_date', [$fromDate, $uptoDate]);
+
+            if ($paymentMode && $paymentMode != 'ALL') {
+                $transactionDeactivationDtl->where('pet_trans.payment_mode', $paymentMode);
+            }
+            if ($transactionNo) {
+                $transactionDeactivationDtl->where('pet_trans.tran_no', $transactionNo);
+            }
+
+            $perPage = $req->perPage ?? 10;
+            $page = $req->input('page', 1);
+
+            // Paginate the results
+            $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+
+            $list = [
+                "current_page" => $paginatedData->currentPage(),
+                "last_page" => $paginatedData->lastPage(),
+                "data" => $paginatedData->items(),
+                "total" => $paginatedData->total(),
+            ];
+
+            return responseMsgs(true, "Deactivated Transaction List", $list, "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }

@@ -118,5 +118,7 @@ Route::controller(PetPaymentController::class)->group(function () {
 
     //written by prity pandey
     Route::post('search-transaction-no', 'searchTransactionNo'); 
+    Route::post('deactivate-transaction', 'deactivateTransaction'); 
+    Route::post('deactivate-transaction-list', 'deactivatedTransactionList'); 
 
 });
