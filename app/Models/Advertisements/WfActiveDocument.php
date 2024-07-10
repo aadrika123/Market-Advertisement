@@ -175,10 +175,6 @@ class WfActiveDocument extends Model
     //     $totalNoOfDocs = explode("#", $noOfDocs);
     //     return count($totalNoOfDocs);
     // }
-
-    /**
-     * | Get Total no of document for upload
-     */
     /**
      * | Get Total no of document for upload
      */
