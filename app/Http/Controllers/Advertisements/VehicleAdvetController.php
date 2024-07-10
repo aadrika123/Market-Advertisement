@@ -1463,8 +1463,8 @@ class VehicleAdvetController extends Controller
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $citizenId = $mAdvActiveVehicle->citizen_id;
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
