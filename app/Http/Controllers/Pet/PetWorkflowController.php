@@ -653,7 +653,8 @@ class PetWorkflowController extends Controller
             }
             # Rejection of grievance application
             if ($request->status == 0) {                                                                // Static
-                $this->finalRejectionOfAppication($request, $application);
+                $rejectdetail = $this->finalRejectionOfAppication($request, $application);
+                $returnData['uniqueTokenId'] = $rejectdetail['registrationId'] ?? null;
                 $msg = "Application Rejected of Application No $applicationNo";
             }
             $this->commit();
