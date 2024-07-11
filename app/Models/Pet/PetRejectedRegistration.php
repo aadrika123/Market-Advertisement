@@ -107,7 +107,7 @@ class PetRejectedRegistration extends Model
         return PetRejectedRegistration::join('ulb_masters', 'ulb_masters.id', '=', 'pet_rejected_registrations.ulb_id')
             ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.id')
             ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.id')
-            ->where('pet_rejected_registrations.application_id', $id)
+            ->where('pet_rejected_registrations.id', $id)
             ->where('pet_rejected_registrations.status', '<>', 0);
     }
 
