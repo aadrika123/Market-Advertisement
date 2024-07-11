@@ -2035,7 +2035,7 @@ class PetRegistrationController extends Controller
             $mPetTran                   = new PetTran();
 
             $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)
-                ->where('pet_approved_registrations.status', '<>', 0)                                                       // Static
+                ->where('pet_approved_registrations.status',1)                                                       
                 ->first();
             if (is_null($approveApplicationDetails)) {
                 throw new Exception("Application not found");
