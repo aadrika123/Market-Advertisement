@@ -113,7 +113,7 @@ Route::group(['middleware' => ['checkToken']], function () {
      */
     Route::controller(ParamController::class)->group(function () {
         Route::post('advert/crud/param-strings', 'paramStrings');                                               // 01 ( Get Master Data For Advertisements)
-        Route::post('advert/get-approval-letter', 'getApprovalLetter');                                         // 02 ( Get All Approval Letter )
+
         Route::post('advert/crud/v1/list-document', 'listDocument');                                            // 03 ( Applied Document List )
         Route::post('advert/payment-success-failure', 'paymentSuccessFailure');                                 // 04 ( Update Payment Success or Failure )
         Route::post('advert/dashboard', 'advertDashboard');                                                     // 05 ( Advertisement Dashboard )
@@ -734,4 +734,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/cheque-clearance', 'chequeClearance');                                                   // clear or bounce cheque
         Route::post('advert/edit-cheque-dtls', 'editChequeNo');                                                   // clear or bounce cheque
     });
+});
+Route::controller(ParamController::class)->group(function () {
+    Route::post('advert/get-approval-letter', 'getApprovalLetter');                                         // 02 ( Get All Approval Letter )
 });
