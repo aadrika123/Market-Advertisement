@@ -766,7 +766,7 @@ class PetWorkflowController extends Controller
         $approvedPetDetails->setTable('pet_approve_details');                                       // Static
         $approvedPetDetails->created_at = Carbon::now()->format('Y-m-d');
         $approvedPetDetails->save();
-        $refOwnerDetails->delete();
+        $refPetDetails->delete();
         # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
