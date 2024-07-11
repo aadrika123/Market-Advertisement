@@ -225,8 +225,8 @@ class PetApprovedRegistration extends Model
     {
         return DB::table('pet_approved_registrations')
             ->leftJoin('wf_roles', 'wf_roles.id', 'pet_approved_registrations.current_role_id')
-            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
-            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id');
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id');
     }
 
     public function approvedApplication($request)
