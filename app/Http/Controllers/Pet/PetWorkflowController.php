@@ -642,13 +642,13 @@ class PetWorkflowController extends Controller
             # Approval of grievance application 
             if ($request->status == 1) {                                                                // Static
                 # If application is approved for the first time or renewal
-                if ($application->renewal == 0) {                                                       // Static
+                //if ($application->renewal == 0) {                                                       // Static
                     $approveDetails = $this->finalApproval($request, $application);
                     $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
-                } else {
-                    $approveDetails =  $this->finalApprovalRenewal($request, $application);
-                    $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
-                }
+                // } else {
+                //     $approveDetails =  $this->finalApprovalRenewal($request, $application);
+                //     $returnData['uniqueTokenId'] = $approveDetails['registrationId'] ?? null;
+                // }
                 $msg = "Application Successfully Approved of Application No " . $applicationNo . " with Registration No:" . $approveDetails['registrationId'];
             }
             # Rejection of grievance application
@@ -748,8 +748,8 @@ class PetWorkflowController extends Controller
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
-        $approvedPetRegistration->application_id    = $applicationId;
-        $approvedPetRegistration->approve_date      = $now;
+        $approvedPetRegistration->id    = $refApplicationDetial->id;
+        $approvedPetRegistration->approve_date      = Carbon::now()->format('Y-m-d');
         $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
         $approvedPetRegistration->approve_user_id   = authUser($request)->id;
@@ -758,13 +758,13 @@ class PetWorkflowController extends Controller
         # Save the pet owner details 
         $approvedPetApplicant = $refOwnerDetails->replicate();
         $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
-        $approvedPetApplicant->created_at = $now;
+        $approvedPetApplicant->created_at = Carbon::now()->format('Y-m-d');
         $approvedPetApplicant->save();
         $refOwnerDetails->delete();
         # Save the pet detials 
         $approvedPetDetails = $refPetDetails->replicate();
         $approvedPetDetails->setTable('pet_approve_details');                                       // Static
-        $approvedPetDetails->created_at = $now;
+        $approvedPetDetails->created_at = Carbon::now()->format('Y-m-d');
         $approvedPetDetails->save();
         $refOwnerDetails->delete();
         # Send record in the track table 
@@ -796,109 +796,109 @@ class PetWorkflowController extends Controller
         | Serial No :
         | Working
      */
-    public function finalApprovalRenewal($request, $applicationDetails)
-    {
-        $now                        = Carbon::now();
-        $status                     = 0;                                        // Static
-        $applicationId              = $request->applicationId;
-        $workflowTrack              = new WorkflowTrack();
-        $mPetActiveRegistration     = new PetActiveRegistration();
-        $mPetActiveApplicant        = new PetActiveApplicant();
-        $mPetActiveDetail           = new PetActiveDetail();
-        $mPetApprovedRegistration   = new PetApprovedRegistration();
-        $mPetApproveApplicant       = new PetApproveApplicant();
-        $mPetApproveDetail          = new PetApproveDetail();
-        $lastLicenceDate            = $now->addYear()->subDay();
-        $registrationId             = $applicationDetails->registration_id;
+    // public function finalApprovalRenewal($request, $applicationDetails)
+    // {
+    //     $now                        = Carbon::now();
+    //     $status                     = 0;                                        // Static
+    //     $applicationId              = $request->applicationId;
+    //     $workflowTrack              = new WorkflowTrack();
+    //     $mPetActiveRegistration     = new PetActiveRegistration();
+    //     $mPetActiveApplicant        = new PetActiveApplicant();
+    //     $mPetActiveDetail           = new PetActiveDetail();
+    //     $mPetApprovedRegistration   = new PetApprovedRegistration();
+    //     $mPetApproveApplicant       = new PetApproveApplicant();
+    //     $mPetApproveDetail          = new PetApproveDetail();
+    //     $lastLicenceDate            = $now->addYear()->subDay();
+    //     $registrationId             = $applicationDetails->registration_id;
 
-        # Data formating for save the consumer details 
-        $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
-        $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_application_id)->first();
-        $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_application_id)->first();
+    //     # Data formating for save the consumer details 
+    //     $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
+    //     $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationDetails->ref_application_id)->first();
+    //     $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationDetails->ref_application_id)->first();
 
-        # Check data existence
-        $approveDataExist = $mPetApprovedRegistration->getApproveAppByRegId($applicationDetails->registration_id)
-            ->where('status', 2)                                                // Static
-            ->first();
-        if (!$approveDataExist) {
-            throw new Exception("renewal application details dont exist, table ERROR!");
-        }
+    //     # Check data existence
+    //     $approveDataExist = $mPetApprovedRegistration->getApproveAppByRegId($applicationDetails->registration_id)
+    //         ->where('status', 2)                                                // Static
+    //         ->first();
+    //     if (!$approveDataExist) {
+    //         throw new Exception("renewal application details dont exist, table ERROR!");
+    //     }
 
-        # get approve application detials 
-        $approveApplicantDetail = $mPetApproveApplicant->getApproveApplicant($approveDataExist->application_id)->first();
-        $approvePetDetail = $mPetApproveDetail->getPetDetailsById($approveDataExist->application_id)->first();
+    //     # get approve application detials 
+    //     $approveApplicantDetail = $mPetApproveApplicant->getApproveApplicant($approveDataExist->application_id)->first();
+    //     $approvePetDetail = $mPetApproveDetail->getPetDetailsById($approveDataExist->application_id)->first();
 
-        # Saving the data in the approved application table
-        $approvedPetRegistration = $refApplicationDetial->replicate();
-        $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
-        $approvedPetRegistration->application_id    = $applicationDetails->ref_application_id;
-        $approvedPetRegistration->approve_date      = $now;
-        $approvedPetRegistration->registration_id   = $registrationId;
-        $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
-        $approvedPetRegistration->approve_user_id   = authUser($request)->id;
-        $approvedPetRegistration->save();
+    //     # Saving the data in the approved application table
+    //     $approvedPetRegistration = $refApplicationDetial->replicate();
+    //     $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
+    //     $approvedPetRegistration->id    = $refApplicationDetial->id;
+    //     $approvedPetRegistration->approve_date      = Carbon::now()->format('Y-m-d');
+    //     $approvedPetRegistration->registration_id   = $registrationId;
+    //     $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
+    //     $approvedPetRegistration->approve_user_id   = authUser($request)->id;
+    //     $approvedPetRegistration->save();
+    //     $refApplicationDetial->delete();
+    //     # Save the pet owner details 
+    //     $approvedPetApplicant = $refOwnerDetails->replicate();
+    //     $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
+    //     $approvedPetApplicant->created_at = Carbon::now()->format('Y-m-d');
+    //     $approvedPetApplicant->save();
+    //     $refOwnerDetails->delete();
+    //     # Save the pet detials 
+    //     $approvedPetDetails = $refPetDetails->replicate();
+    //     $approvedPetDetails->setTable('pet_approve_details');                                       // Static
+    //     $approvedPetDetails->created_at = Carbon::now()->format('Y-m-d');
+    //     $approvedPetDetails->save();
+    //     $refPetDetails->delete();
+    //     # Delete the details form the active table # updating the status
+    //     // $activeData = [
+    //     //     "status" => $status
+    //     // ];
+    //     // $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $activeData);
+    //     // $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $activeData);
+    //     // $mPetActiveDetail->updatePetStatus($refPetDetails->id, $activeData);
 
-        # Save the pet owner details 
-        $approvedPetApplicant = $refOwnerDetails->replicate();
-        $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
-        $approvedPetApplicant->created_at = $now;
-        $approvedPetApplicant->save();
+    //     // # Save approved renewal data in renewal table
+    //     // $renewalPetRegistration = $approveDataExist->replicate();
+    //     // $renewalPetRegistration->setTable('pet_renewal_registrations');                             // Static  
+    //     // $renewalPetRegistration->created_at = Carbon::now()->format('Y-m-d');
+    //     // $renewalPetRegistration->save();
 
-        # Save the pet detials 
-        $approvedPetDetails = $refPetDetails->replicate();
-        $approvedPetDetails->setTable('pet_approve_details');                                       // Static
-        $approvedPetDetails->created_at = $now;
-        $approvedPetDetails->save();
+    //     // # Save the approved applicant data in renewal table
+    //     // $renewalApplicantReg = $approveApplicantDetail->replicate();
+    //     // $renewalApplicantReg->setTable('pet_renewal_applicants');                                   // Static
+    //     // $renewalApplicantReg->created_at =Carbon::now()->format('Y-m-d');
+    //     // $renewalApplicantReg->save();
 
-        # Delete the details form the active table # updating the status
-        $activeData = [
-            "status" => $status
-        ];
-        $mPetActiveRegistration->saveApplicationStatus($applicationDetails->ref_application_id, $activeData);
-        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $activeData);
-        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $activeData);
+    //     // # Save the approved pet data in renewal details 
+    //     // $renewalPetDetails = $approvePetDetail->replicate();
+    //     // $renewalPetDetails->setTable('pet_renewal_details');                                        // Static
+    //     // $renewalPetDetails->created_at = Carbon::now()->format('Y-m-d');
+    //     // $renewalPetDetails->save();
 
-        # Save approved renewal data in renewal table
-        $renewalPetRegistration = $approveDataExist->replicate();
-        $renewalPetRegistration->setTable('pet_renewal_registrations');                             // Static  
-        $renewalPetRegistration->created_at = $now;
-        $renewalPetRegistration->save();
+    //     // # Delete the details form the active table # Updating the status
+    //     // $approveData = [
+    //     //     "status" => $status
+    //     // ];
+    //     // $mPetApprovedRegistration->updateApproveAppStatus($approveDataExist->id, $approveData);
+    //     // $mPetApproveApplicant->updateAproveApplicantDetials($approveApplicantDetail->id, $approveData);  /// Not done
+    //     // $mPetApproveDetail->updateApprovePetStatus($approvePetDetail->id, $approveData);             /// Not done   
 
-        # Save the approved applicant data in renewal table
-        $renewalApplicantReg = $approveApplicantDetail->replicate();
-        $renewalApplicantReg->setTable('pet_renewal_applicants');                                   // Static
-        $renewalApplicantReg->created_at = $now;
-        $renewalApplicantReg->save();
-
-        # Save the approved pet data in renewal details 
-        $renewalPetDetails = $approvePetDetail->replicate();
-        $renewalPetDetails->setTable('pet_renewal_details');                                        // Static
-        $renewalPetDetails->created_at = $now;
-        $renewalPetDetails->save();
-
-        # Delete the details form the active table # Updating the status
-        $approveData = [
-            "status" => $status
-        ];
-        $mPetApprovedRegistration->updateApproveAppStatus($approveDataExist->id, $approveData);
-        $mPetApproveApplicant->updateAproveApplicantDetials($approveApplicantDetail->id, $approveData);  /// Not done
-        $mPetApproveDetail->updateApprovePetStatus($approvePetDetail->id, $approveData);             /// Not done   
-
-        # Send record in the track table 
-        $metaReqs = [
-            'moduleId'          => $this->_petModuleId,
-            'workflowId'        => $applicationDetails->workflow_id,
-            'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
-            'refTableIdValue'   => $applicationDetails->ref_application_id,
-            'user_id'           => authUser($request)->id,
-        ];
-        $request->request->add($metaReqs);
-        $workflowTrack->saveTrack($request);
-        return [
-            "approveDetails" => $approvedPetRegistration,
-            "registrationId" => $registrationId
-        ];
-    }
+    //      # Send record in the track table 
+    //     $metaReqs = [
+    //         'moduleId'          => $this->_petModuleId,
+    //         'workflowId'        => $applicationDetails->workflow_id,
+    //         'refTableDotId'     => 'pet_active_registrations.id',                                   // Static
+    //         'refTableIdValue'   => $applicationDetails->ref_application_id,
+    //         'user_id'           => authUser($request)->id,
+    //     ];
+    //     $request->request->add($metaReqs);
+    //     $workflowTrack->saveTrack($request);
+    //     return [
+    //         "approveDetails" => $approvedPetRegistration,
+    //         "registrationId" => $registrationId
+    //     ];
+    // }
 
 
     /**
