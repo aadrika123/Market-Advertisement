@@ -79,6 +79,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/cash-verification-list', 'listCashVerificationDtl');                                             #_List of Cash Verification --------------- 0703
         Route::post('cash-verification-dtl', 'cashVerificationDtl');                                                         #_Cash Verification Detail ---------------- 0704
         Route::post('verify-cash', 'verifyCash');                                                                            #_Verify Cash ----------------------------- 0705  
+        # Bank Reconcillation
+        Route::post('rental/search-transaction', 'searchTransaction');                                               // Search Transaction of Cheque
+        Route::post('rental/cheque-dtl-by-id', 'chequeDtlById');                                                     // Get Detail of Cheque Transaction
+        Route::post('rental/cheque-clearance', 'chequeClearance');                                                   // clear or bounce cheque
+
     });
 
     /**

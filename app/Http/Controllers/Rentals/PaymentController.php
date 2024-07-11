@@ -18,10 +18,11 @@ use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
-    //
+    // created by Arshad Hussain 
 
     /**
      * | Unverified Cash Verification List
+     * | Its for shop or toll 
      */
     public function listCashVerificationDtl(Request $req)
     {
@@ -45,13 +46,13 @@ class PaymentController extends Controller
             if ($req->moduleId == 1) {
                 $mShopTrans = new ShopPayment();
 
-                if (isset($userId)) {
+                if (isset($userId)) {                                                     // if userId exist 
                     $data = $mShopTrans->cashDtl($date)
                         ->where('mar_shop_payments.ulb_id', $user->ulb_id)
                         ->where('user_id', $userId)
                         ->get();
                 } else {
-                    $data = $mShopTrans->cashDtl($date)
+                    $data = $mShopTrans->cashDtl($date)                                   // search by Date  
                         ->where('mar_shop_payments.ulb_id', $user->ulb_id)
                         ->get();
                 }
@@ -108,6 +109,7 @@ class PaymentController extends Controller
     }
 
     /**
+     * | Details of Transactions
      * | Tc Collection Dtl
      */
     public function cashVerificationDtl(Request $req)
@@ -157,7 +159,9 @@ class PaymentController extends Controller
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
     }
-
+    /**
+     * | Verify Cash of Shop Or Toll
+     */
     public function verifyCash(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -228,5 +232,113 @@ class PaymentController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", $apiId, $version, responseTime(), "POST", $req->deviceId);
         }
+    }
+    #========================================================= Bank Reconcillation ===========================================================#
+    public function searchTransaction(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'fromDate' => 'required',
+                'toDate' => 'required',
+                'moduleId' => 'required|int|in:1,2'
+            ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validator->errors()
+                ]);
+            }
+            $ulbId = authUser($request)->ulb_id;
+            $moduleId = $request->moduleId;
+            $paymentMode = $request->paymentMode;
+            $verifyStatus = $request->verificationType;
+            $fromDate = Carbon::create($request->fromDate)->format('Y-m-d');
+            $toDate = Carbon::create($request->toDate)->format('Y-m-d');
+
+            $data = $this->CommonHandleTransaction($ulbId, $request, $fromDate, $toDate, $moduleId);                 // common funtion all workflows of ADVERTISEMENT & MARKET
+
+            $data = $this->filterDataByPaymentMode($data, $paymentMode);
+            $data = $this->filterDataByVerificationStatus($data, $verifyStatus);
+
+            if (collect($data)->isNotEmpty()) {
+                return responseMsgs(true, "Data Acording to request!", $data, '010801', '01', '382ms-547ms', 'Post', '');
+            }
+            return responseMsg(false, "data not found!", "");
+        } catch (Exception $error) {
+            return responseMsg(false, "ERROR!", $error->getMessage());
+        }
+    }
+
+    /**\
+     * | This is common function for searching chewque details 
+     * | Function = 2
+     */
+
+    private function CommonHandleTransaction($ulbId, $request, $fromDate, $toDate, $moduleId)
+    {
+        $mShopPayments = new ShopPayment();
+        $mTollPayment =  new MarTollPayment();
+        if ($moduleId == 1) {
+            $chequeTranDtl = $mShopPayments->chequeTranDtl($ulbId);
+            $chequeTranDtl = $chequeTranDtl->where('mar_shop_payments.workflow_id', $moduleId);
+            if ($request->verificationType != "bounce") {
+                $chequeTranDtl = $chequeTranDtl->where("mar_shop_payments.status", 1);
+            }
+            if ($request->chequeNo) {
+                return $chequeTranDtl->where('cheque_no', $request->chequeNo)->get();
+            }
+        } else {
+            $chequeTranDtl = $mTollPayment->chequeTranDtl($ulbId);
+            $chequeTranDtl = $chequeTranDtl->where('mar_shop_payments.workflow_id', $moduleId);
+            if ($request->verificationType != "bounce") {
+                $chequeTranDtl = $chequeTranDtl->where("mar_shop_payments.status", 1);
+            }
+            if ($request->chequeNo) {
+                return $chequeTranDtl->where('cheque_no', $request->chequeNo)->get();
+            }
+        }
+
+        return $chequeTranDtl->whereBetween('transaction_date', [$fromDate, $toDate])->get();
+    }
+
+    /**
+     * | Function = 3
+     */
+    private function filterDataByPaymentMode($data, $paymentMode)
+    {
+        if ($paymentMode == 'DD') {
+            $filteredData = collect($data)->where('payment_mode', 'DD');
+            return array_values(objtoarray($filteredData));
+        }
+        if ($paymentMode == 'CHEQUE') {
+            $filteredData = collect($data)->where('payment_mode', 'CHEQUE');
+            return array_values(objtoarray($filteredData));
+        }
+        if ($paymentMode == 'NEFT') {
+            $filteredData = collect($data)->where('payment_mode', 'NEFT');
+            return array_values(objtoarray($filteredData));
+        }
+        return $data;
+    }
+
+    /**
+     * |Function = 4
+     */
+    private function filterDataByVerificationStatus($data, $verifyStatus)
+    {
+        if ($verifyStatus == 'pending') {
+            $filteredData = collect($data)->where('status', '2');
+            return array_values(objtoarray($filteredData));
+        }
+        if ($verifyStatus == 'clear') {
+            $filteredData = collect($data)->where('status', '1');
+            return array_values(objtoarray($filteredData));
+        }
+        if ($verifyStatus == 'bounce') {
+            $filteredData = collect($data)->where('status', '3');
+            return array_values(objtoarray($filteredData));
+        }
+        return $data;
     }
 }
