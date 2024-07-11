@@ -426,6 +426,74 @@ class PetActiveRegistration extends Model
         ];
     }
 
+    public function renewApplication($request)
+    {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+        $key        = $request->filterBy;
+        $perPage = $request->perPage ?: 10;
+        $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $activeApplication = PetActiveRegistration::select(
+            'pet_active_registrations.id',
+            'pet_active_registrations.application_no',
+            DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS application_type"),
+            'pet_active_registrations.payment_status',
+            'pet_active_registrations.saf_no',
+            'pet_active_registrations.holding_no',
+            DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
+            'pet_active_registrations.doc_upload_status',
+            'pet_active_registrations.renewal',
+            'pet_active_applicants.mobile_no',
+            'pet_active_registrations.ward_id',
+            'pet_active_applicants.applicant_name'
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->where('pet_active_registrations.status', 1)
+            ->where('pet_active_registrations.renewal', 1)
+            ->where('pet_active_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
+            ->orderByDesc('pet_active_registrations.id');
+
+        if ($key && $request->parameter) {
+            switch ($key) {
+                case ("mobileNo"):
+                    $activeApplication = $activeApplication->where('pet_active_applicants.mobile_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicationNo"):
+                    $activeApplication = $activeApplication->where('pet_active_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicantName"):
+                    $activeApplication = $activeApplication->where('pet_active_applicants.applicant_name', 'LIKE', "%$parameter%");
+                    break;
+                case ("holdingNo"):
+                    $activeApplication = $activeApplication->where('pet_active_registrations.holding_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("safNo"):
+                    $activeApplication = $activeApplication->where('pet_active_registrations.saf_no', 'LIKE', "%$parameter%");
+                    break;
+                default:
+                    throw new Exception("Invalid Data");
+            }
+        }
+        if ($request->wardNo) {
+            $activeApplication->where('pet_active_registrations.ward_id', $request->wardNo);
+        }
+        $data = $activeApplication;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
     public function boApplication($request)
     {
         $user = authUser($request);

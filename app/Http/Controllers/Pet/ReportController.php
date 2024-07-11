@@ -56,7 +56,7 @@ class ReportController extends Controller
                 //$response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Renewal') {
-                $response = $renew->renewApplication($request);
+                $response = $active->renewApplication($request);
                // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'applicationReport' && $request->applicationType == 'Expired') {
