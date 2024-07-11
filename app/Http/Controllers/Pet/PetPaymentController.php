@@ -634,7 +634,6 @@ class PetPaymentController extends Controller
 
             # Get transaction details according to trans no
             $transactionDetails = $mPetTran->getTranDetailsByTranNo($request->transactionNo)->first();
-            return $transactionDetails;
             if (!$transactionDetails) {
                 throw new Exception("Transaction details not found for $request->transactionNo");
             }
