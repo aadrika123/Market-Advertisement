@@ -362,8 +362,33 @@ class ShopPayment extends Model
     return self::select('mar_shop_payments.*', 'users.name', 'users.id as user_id', 'mobile')
       ->join('users', 'users.id', 'mar_shop_payments.user_id')
       ->where('mar_shop_payments.is_active', 1)
-      ->where('mar_shop_payments.pmt_mode','CASH')
+      ->where('mar_shop_payments.pmt_mode', 'CASH')
       ->where('is_verified', 0)
       ->where('payment_date', $date);
+  }
+
+  /**
+   * | Cheque Dtl And Transaction Dtl
+   */
+  public function chequeTranDtl($ulbId)
+  {
+    return self::select(
+      'mar_shop_payments.id',
+      DB::raw("TO_CHAR(transaction_date, 'DD-MM-YYYY') as transaction_date"),
+      'mar_shop_payments.transaction_no',
+      'payment_mode',
+      'amount',
+      DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as cheque_date"),
+      "mar_shop_payments.bank_name",
+      "mar_shop_payments.branch_name",
+      "mar_shop_payments.cheque_no",
+      DB::raw("TO_CHAR(clear_bounce_date, 'DD-MM-YYYY') as clear_bounce_date"),
+      "users.name as user_name",
+      'mar_shop_payments.status'
+    )
+      ->leftJoin('users', 'users.id', 'adv_cheque_dtls.user_id')
+      ->whereIn('payment_mode', ['CHEQUE', 'DD'])
+      ->where('mar_shop_payments.ulb_id', $ulbId)
+      ->orderby('mar_shop_payments.id', 'Desc');
   }
 }
