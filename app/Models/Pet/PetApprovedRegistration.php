@@ -210,9 +210,9 @@ class PetApprovedRegistration extends Model
         )
             ->join('ulb_masters', 'ulb_masters.id', 'pet_approved_registrations.ulb_id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
-            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
-            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
-            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.application_id')
+            ->leftjoin('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_approved_registrations.occurrence_type_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
             ->where('pet_approved_registrations.registration_id', $registrationId);
     }
 
