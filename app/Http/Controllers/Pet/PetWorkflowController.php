@@ -653,7 +653,8 @@ class PetWorkflowController extends Controller
             }
             # Rejection of grievance application
             if ($request->status == 0) {                                                                // Static
-                $this->finalRejectionOfAppication($request, $application);
+                $rejectdetail = $this->finalRejectionOfAppication($request, $application);
+                $returnData['uniqueTokenId'] = $rejectdetail['registrationId'] ?? null;
                 $msg = "Application Rejected of Application No $applicationNo";
             }
             $this->commit();
@@ -753,19 +754,19 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
         $approvedPetRegistration->approve_user_id   = authUser($request)->id;
         $approvedPetRegistration->save();
-
+        $refApplicationDetial->delete();
         # Save the pet owner details 
         $approvedPetApplicant = $refOwnerDetails->replicate();
         $approvedPetApplicant->setTable('pet_approve_applicants');                                  // Static
         $approvedPetApplicant->created_at = $now;
         $approvedPetApplicant->save();
-
+        $refOwnerDetails->delete();
         # Save the pet detials 
         $approvedPetDetails = $refPetDetails->replicate();
         $approvedPetDetails->setTable('pet_approve_details');                                       // Static
         $approvedPetDetails->created_at = $now;
         $approvedPetDetails->save();
-
+        $refOwnerDetails->delete();
         # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
@@ -778,12 +779,12 @@ class PetWorkflowController extends Controller
         $workflowTrack->saveTrack($request);
 
         # Delete the details form the active table
-        $refAppReq = [
-            "status" => $status
-        ];
-        $mPetActiveRegistration->saveApplicationStatus($applicationId, $refAppReq);
-        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
-        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
+        // $refAppReq = [
+        //     "status" => $status
+        // ];
+        // $mPetActiveRegistration->saveApplicationStatus($applicationId, $refAppReq);
+        // $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
+        // $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
         return [
             "approveDetails" => $approvedPetRegistration,
             "registrationId" => $registrationId
@@ -937,19 +938,19 @@ class PetWorkflowController extends Controller
         $rejectedPetRegistration->rejected_date     = $now;
         $rejectedPetRegistration->rejected_user_id  = authUser($request)->id;
         $rejectedPetRegistration->save();
-
+        $refApplicationDetial->delete();
         # Save the pet owner details 
         $approvedPetApplicant = $refOwnerDetails->replicate();
         $approvedPetApplicant->setTable('pet_rejected_applicants');                                  // Static
         $approvedPetApplicant->created_at = $now;
         $approvedPetApplicant->save();
-
+        $refApplicationDetial->delete();
         # Save the pet detials 
         $approvedPetDetails = $refPetDetails->replicate();
         $approvedPetDetails->setTable('pet_rejected_details');                                       // Static
         $approvedPetDetails->created_at = $now;
         $approvedPetDetails->save();
-
+        $refApplicationDetial->delete();
         # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
@@ -962,12 +963,12 @@ class PetWorkflowController extends Controller
         $workflowTrack->saveTrack($request);
 
         # Delete the details form the active table
-        $refAppReq = [
-            "status" => $status
-        ];
-        $mPetActiveRegistration->saveApplicationStatus($applicationId, $refAppReq);
-        $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
-        $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
+        // $refAppReq = [
+        //     "status" => $status
+        // ];
+        // $mPetActiveRegistration->saveApplicationStatus($applicationId, $refAppReq);
+        // $mPetActiveApplicant->updateApplicantDetials($refOwnerDetails->id, $refAppReq);
+        // $mPetActiveDetail->updatePetStatus($refPetDetails->id, $refAppReq);
         return $rejectedPetRegistration;
     }
 
