@@ -19,8 +19,8 @@ class PetRejectedRegistration extends Model
     {
         return DB::table('pet_rejected_registrations')
             ->leftJoin('wf_roles', 'wf_roles.id', 'pet_rejected_registrations.current_role_id')
-            ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.application_id')
-            ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.application_id');
+            ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.id')
+            ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.id');
     }
 
     /**
