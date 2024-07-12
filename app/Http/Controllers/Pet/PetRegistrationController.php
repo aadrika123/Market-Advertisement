@@ -1487,7 +1487,7 @@ class PetRegistrationController extends Controller
                                 END as preview_button"),
                     )
                     ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
-                    ->where('pet_approved_registrations.status', '<>', 0)
+                    ->where('pet_approved_registrations.status', 1)
                     ->where('pet_approved_registrations.citizen_id', $user->id)
                     ->orderByDesc('pet_approved_registrations.id')
                     ->get();
