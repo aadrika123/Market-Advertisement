@@ -92,9 +92,9 @@ class PetRejectedRegistration extends Model
         )
             ->join('ulb_masters', 'ulb_masters.id', 'pet_rejected_registrations.ulb_id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_rejected_registrations.ward_id')
-            ->join('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_rejected_registrations.occurrence_type_id')
-            ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.application_id')
-            ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.application_id')
+            ->leftjoin('m_pet_occurrence_types', 'm_pet_occurrence_types.id', 'pet_rejected_registrations.occurrence_type_id')
+            ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.id')
+            ->join('pet_rejected_details', 'pet_rejected_details.id', 'pet_rejected_registrations.application_id')
             ->where('pet_rejected_registrations.id', $registrationId);
     }
 
