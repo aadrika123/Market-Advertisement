@@ -1961,16 +1961,11 @@ class PetRegistrationController extends Controller
                     'pet_approved_registrations.renewal',
                     'pet_approved_registrations.registration_id',
                     'pet_approve_applicants.mobile_no',
-                    'pet_approve_applicants.applicant_name',
-                    "pet_renewal_registrations.id as renewal_id",
-                    DB::raw("CASE 
-                                    WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
-                                        else 'false'
-                                END as preview_button"),
-                )
+                    'pet_approve_applicants.applicant_name',)
+                   // "pet_renewal_registrations.id as renewal_id",
 
-                ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
-                ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+                // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
+                ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
                 ->where('pet_approved_registrations.status', 1)
                 ->where('pet_approved_registrations.ulb_id', $ulbId)
                 ->orderByDesc('pet_approved_registrations.id');
