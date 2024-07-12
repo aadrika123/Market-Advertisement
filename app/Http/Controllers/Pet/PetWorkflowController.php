@@ -741,10 +741,10 @@ class PetWorkflowController extends Controller
         $refApplicationDetial   = $mPetActiveRegistration->getApplicationDetailsById($applicationId)->first();
         $refOwnerDetails        = $mPetActiveApplicant->getApplicationDetails($applicationId)->first();
         $refPetDetails          = $mPetActiveDetail->getPetDetailsByApplicationId($applicationId)->first();
-
+        if($refApplicationDetial->renewal = 0){
         $idGeneration           = new PrefixIdGenerator(45, $refApplicationDetial->ulb_id);
         $registrationId         = $idGeneration->generate();
-
+        }
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
