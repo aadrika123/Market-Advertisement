@@ -934,7 +934,7 @@ class PetWorkflowController extends Controller
         # Saving the data in the rejected application table
         $rejectedPetRegistration = $refApplicationDetial->replicate();
         $rejectedPetRegistration->setTable('pet_rejected_registrations');                           // Static
-        $rejectedPetRegistration->application_id    = $applicationId;
+        $rejectedPetRegistration->id    = $refApplicationDetial->id;
         $rejectedPetRegistration->rejected_date     = $now;
         $rejectedPetRegistration->rejected_user_id  = authUser($request)->id;
         $rejectedPetRegistration->save();
