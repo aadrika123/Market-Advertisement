@@ -750,7 +750,6 @@ class PetWorkflowController extends Controller
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
         $approvedPetRegistration->id    = $refApplicationDetial->id;
         $approvedPetRegistration->approve_date      = Carbon::now()->format('Y-m-d');
-        $approvedPetRegistration->registration_id   = $registrationId;
         $approvedPetRegistration->approve_end_date  = $lastLicenceDate;
         $approvedPetRegistration->approve_user_id   = authUser($request)->id;
         $approvedPetRegistration->save();
