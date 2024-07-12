@@ -108,7 +108,7 @@ class PetRejectedRegistration extends Model
             ->join('pet_rejected_details', 'pet_rejected_details.application_id', 'pet_rejected_registrations.id')
             ->join('pet_rejected_applicants', 'pet_rejected_applicants.application_id', 'pet_rejected_registrations.id')
             ->where('pet_rejected_registrations.id', $id)
-            ->where('pet_rejected_registrations.status', '<>', 0);
+            ->where('pet_rejected_registrations.status',1);
     }
 
     public function rejectedApplication($request)
