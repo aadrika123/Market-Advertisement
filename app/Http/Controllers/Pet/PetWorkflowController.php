@@ -745,6 +745,9 @@ class PetWorkflowController extends Controller
         $idGeneration           = new PrefixIdGenerator(45, $refApplicationDetial->ulb_id);
         $registrationId         = $idGeneration->generate();
         }
+        else{
+            $registrationId = $refApplicationDetial->registration_id;
+        }
         # Saving the data in the approved application table
         $approvedPetRegistration = $refApplicationDetial->replicate();
         $approvedPetRegistration->setTable('pet_approved_registrations');                           // Static
