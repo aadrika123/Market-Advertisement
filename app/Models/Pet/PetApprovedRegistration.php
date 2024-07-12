@@ -252,8 +252,9 @@ class PetApprovedRegistration extends Model
                 'pet_approved_registrations.registration_id',
                 'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
-                'pet_approve_applicants.applicant_name')
-               // "pet_renewal_registrations.id as renewal_id",
+                'pet_approve_applicants.applicant_name'
+            )
+            // "pet_renewal_registrations.id as renewal_id",
             //     DB::raw("CASE 
             //                         WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
             //                             else 'false'
@@ -263,6 +264,85 @@ class PetApprovedRegistration extends Model
             // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.ulb_id', $ulbId)
+            ->whereBetween('pet_approved_registrations.approve_date', [$dateFrom, $dateUpto])
+            ->orderByDesc('pet_approved_registrations.id');
+
+        if ($key && $parameter) {
+            switch ($key) {
+                case "mobileNo":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.mobile_no', 'LIKE', "%$parameter%");
+                    break;
+                case ("applicationNo"):
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.application_no', 'LIKE', "%$parameter%");
+                    break;
+                case "applicantName":
+                    $approvedApplication = $approvedApplication->where('pet_approve_applicants.applicant_name', 'LIKE', "%$parameter%");
+                    break;
+                case "holdingNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.holding_no', 'LIKE', "%$parameter%");
+                    break;
+                case "safNo":
+                    $approvedApplication = $approvedApplication->where('pet_approved_registrations.saf_no', 'LIKE', "%$parameter%");
+                    break;
+                default:
+                    throw new Exception("Invalid Data");
+            }
+        }
+        if ($request->wardNo) {
+            $approvedApplication->where('pet_approved_registrations.ward_id', $request->wardNo);
+        }
+        $data = $approvedApplication;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total()
+        ];
+    }
+
+
+    public function renewApplication($request)
+    {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+        $key        = $request->filterBy;
+        $perPage = $request->perPage ?: 10;
+        $parameter = $request->parameter;
+        $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
+        $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
+        $approvedApplication = DB::table('pet_approved_registrations')
+            ->select(
+                'pet_approved_registrations.id',
+                'pet_approved_registrations.holding_no',
+                'pet_approved_registrations.application_no',
+                DB::raw("REPLACE(pet_approved_registrations.application_type, '_', ' ') AS application_type"),
+                'pet_approved_registrations.payment_status',
+                'pet_approved_registrations.saf_no',
+                DB::raw("TO_CHAR(pet_approved_registrations.application_apply_date, 'DD-MM-YYYY') as application_apply_date"),
+                'pet_approved_registrations.doc_upload_status',
+                'pet_approved_registrations.renewal',
+                'pet_approved_registrations.registration_id',
+                'pet_approved_registrations.ward_id',
+                'pet_approve_applicants.mobile_no',
+                'pet_approve_applicants.applicant_name'
+            )
+            // "pet_renewal_registrations.id as renewal_id",
+            //     DB::raw("CASE 
+            //                         WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
+            //                             else 'false'
+            //                     END as preview_button"),
+            // )
+
+            // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->where('pet_approved_registrations.status', 1)
+            ->where('pet_approved_registrations.renewal',1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_approved_registrations.approve_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_approved_registrations.id');
@@ -330,19 +410,19 @@ class PetApprovedRegistration extends Model
                 'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
                 'pet_approve_applicants.applicant_name',
-                "pet_renewal_registrations.id as renewal_id",
-                DB::raw("CASE 
-                                    WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
-                                        else 'false'
-                                END as preview_button"),
+                // "pet_renewal_registrations.id as renewal_id",
+                // DB::raw("CASE 
+                //                     WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
+                //                         else 'false'
+                //                 END as preview_button"),
             )
 
-            ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
+            // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_approved_registrations.application_apply_date', [$dateFrom, $dateUpto])
-            ->where('pet_approved_registrations.approve_end_date','<',$today)
+            ->where('pet_approved_registrations.approve_end_date', '<', $today)
             ->orderByDesc('pet_approved_registrations.id');
 
         if ($key && $parameter) {
