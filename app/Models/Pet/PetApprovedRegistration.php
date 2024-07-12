@@ -56,7 +56,7 @@ class PetApprovedRegistration extends Model
         )
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->join('pet_approve_details', 'pet_approve_details.application_id', 'pet_approved_registrations.id')
-            ->where('pet_approved_registrations.id', $id)
+            ->where('pet_approved_registrations.registration_id', $id)
             ->where('pet_approved_registrations.status', 1);
     }
 
