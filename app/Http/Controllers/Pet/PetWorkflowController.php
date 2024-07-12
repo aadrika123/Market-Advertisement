@@ -944,13 +944,13 @@ class PetWorkflowController extends Controller
         $approvedPetApplicant->setTable('pet_rejected_applicants');                                  // Static
         $approvedPetApplicant->created_at = $now;
         $approvedPetApplicant->save();
-        $refApplicationDetial->delete();
+        $refOwnerDetails->delete();
         # Save the pet detials 
         $approvedPetDetails = $refPetDetails->replicate();
         $approvedPetDetails->setTable('pet_rejected_details');                                       // Static
         $approvedPetDetails->created_at = $now;
         $approvedPetDetails->save();
-        $refApplicationDetial->delete();
+        $refPetDetails->delete();
         # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
