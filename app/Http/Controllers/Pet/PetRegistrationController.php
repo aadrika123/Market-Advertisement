@@ -1638,8 +1638,13 @@ class PetRegistrationController extends Controller
 
             # Check the Registered Application existence
             $refApprovedDetails = $mPetApprovedRegistration->getApplictionByRegId($request->registrationId)->first();
+            $today = date('Y-m-d');
             if (!$refApprovedDetails) {
                 throw new Exception("Application detail not found");
+            }
+
+            if ($refApprovedDetails->approve_end_date != $today) {
+                throw new Exception("Application not expired! Can't apply for renewal");
             }
 
             # Check Params for renewal of Application
