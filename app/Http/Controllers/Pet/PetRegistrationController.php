@@ -1643,7 +1643,7 @@ class PetRegistrationController extends Controller
                 throw new Exception("Application detail not found");
             }
 
-            if ($refApprovedDetails->approve_end_date != $today) {
+            if ($refApprovedDetails->approve_end_date > $today) {
                 throw new Exception("Application not expired! Can't apply for renewal");
             }
 
