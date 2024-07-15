@@ -1589,8 +1589,9 @@ class VehicleAdvetController extends Controller
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
+            $appDetails->doc_verify_status = '0';
             // $appDetails->doc_verify_status = '1';
-            $appDetails->parked = NULL;
+            //$appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
