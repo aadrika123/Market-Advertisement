@@ -2377,7 +2377,7 @@ class SelfAdvetController extends Controller
             // Variable initialization
             // Marriage Banqute Hall Application Update Current Role Updation
             $mMarActiveLodge = AdvActiveSelfadvertisement::find($request->applicationId);
-            $mMarActiveLodge->parked = false;
+            $mMarActiveLodge->parked = null;
             $mMarActiveLodge->save();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
