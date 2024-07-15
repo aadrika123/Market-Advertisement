@@ -1090,7 +1090,7 @@ class LodgeController extends Controller
     public function checkFullUpload($applicationId)
     {
         $appDetails = MarActiveLodge::find($applicationId);
-        $docCode = $this->_docCode;
+        //$docCode = $this->_docCode;
         // $docCode = $this->_docCodeRenew;
         // if($appDetails->renew_no==NULL){
         //     $docCode = $this->_docCode;
