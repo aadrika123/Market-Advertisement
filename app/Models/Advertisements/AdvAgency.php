@@ -367,6 +367,10 @@ class AdvAgency extends Model
             // 'pw.ward_name as permanent_ward_name',
             // 'ew.ward_name as entity_ward_name',
             'ulb.ulb_name',
+            'adv_active_agencydirectors.director_name',
+            'adv_active_agencydirectors.director_mobile',
+            'adv_active_agencydirectors.director_email',
+            'adv_active_agencydirectors.agency_id as application_id'
         )
             // ->leftJoin('ref_adv_paramstrings as il', 'il.id', '=', DB::raw('adv_agencies.installation_location::int'))
             // ->leftJoin('adv_typology_mstrs as typo', 'typo.id', '=', 'adv_agencies.typology')
@@ -374,7 +378,20 @@ class AdvAgency extends Model
             // ->leftJoin('ulb_ward_masters as w', 'w.id', '=', DB::raw('adv_agencies.ward_id::int'))
             // ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', DB::raw('adv_agencies.permanent_ward_id::int'))
             // ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', DB::raw('adv_agencies.entity_ward_id::int'))
+            ->join('adv_active_agencydirectors', 'adv_active_agencydirectors.agency_id', '=', 'adv_agencies.id')
             ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', DB::raw('adv_agencies.ulb_id::int'))
             ->where('adv_agencies.id', $appId);
     }
+
+    public function directorDetails($appId)
+    {
+        return AdvAgency::select(
+            'adv_active_agencydirectors.*'
+            
+        )
+            ->join('adv_active_agencydirectors', 'adv_active_agencydirectors.agency_id', '=', 'adv_agencies.id')
+            ->where('adv_active_agencydirectors.agency_id', $appId);
+    }
+
+
 }

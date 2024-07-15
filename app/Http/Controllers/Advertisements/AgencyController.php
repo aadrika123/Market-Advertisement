@@ -958,9 +958,13 @@ class AgencyController extends Controller
             if (!$data) {
                 throw new Exception("Application Not Found");
             }
+
+            $directorDetail = $mAdvActiveSelfadvertisement->directorDetails($applicationId)->get();
             $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
 
             $approveApplicationDetails['basicDetails'] = $data;
+            $approveApplicationDetails['directorDetails'] = $directorDetail;
+
 
             if ($tranDetails) {
                 $approveApplicationDetails['paymentDetails'] = $tranDetails;
