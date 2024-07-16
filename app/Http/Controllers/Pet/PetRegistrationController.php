@@ -2175,7 +2175,7 @@ class PetRegistrationController extends Controller
                     'pet_rejected_applicants.mobile_no',
                     'pet_rejected_applicants.applicant_name'
                 )
-                ->join('pet_rejected_applicants', 'pet_rejected_registrations.application_id', 'pet_rejected_applicants.application_id')
+                ->join('pet_rejected_applicants', 'pet_rejected_registrations.id', 'pet_rejected_applicants.application_id')
                 ->where('pet_rejected_registrations.status', 1)
                 ->where('pet_rejected_registrations.ulb_id', $ulbId)
                 ->orderByDesc('pet_rejected_registrations.id');
