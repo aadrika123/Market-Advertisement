@@ -138,7 +138,9 @@ class PetTran extends Model
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $perPage = $request->perPage ?: 10;
 
-        $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile')
+        $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile', 'ulb_ward_masters.ward_name','pet_active_registrations.application_no')
+        ->join('pet_active_registrations'.'pet_active_registrations.id','=','pet_trans.related_id')
+        ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_trans.ward_id')
             ->leftjoin('users', 'users.id', 'pet_trans.emp_dtl_id')
             ->where('pet_trans.status', 1)
             ->whereBetween('pet_trans.tran_date', [$dateFrom, $dateUpto]);
