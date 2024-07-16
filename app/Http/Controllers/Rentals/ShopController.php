@@ -1458,7 +1458,8 @@ class ShopController extends Controller
             }
 
             // Get the filtered data
-            $data = $dataQuery->get();
+            $data = $dataQuery;
+            //->get();
 
             // Clone the data for different counts and sums
             $cashData = clone $data;
