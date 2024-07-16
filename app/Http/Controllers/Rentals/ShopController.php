@@ -1428,46 +1428,50 @@ class ShopController extends Controller
             'shopCategory' => 'nullable|integer',
             'market' => 'nullable|integer',
             'dateFrom' => 'nullable|date_format:Y-m-d',
-            'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:dateFrom',
             'paymentMode'  => 'nullable'
         ]);
+
         if ($validator->fails()) {
             return  $validator->errors();
         }
-        // return $req->all();
-        try {
-            $paymentMode = null;
-            if (!isset($req->dateFrom))
-                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
-            else
-                $fromDate = $req->dateFrom;
-            if (!isset($req->dateTo))
-                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
-            else
-                $toDate = $req->dateTo;
 
-            if ($req->paymentMode) {
-                $paymentMode = $req->paymentMode;
-            }
+        try {
+            $fromDate = $req->dateFrom ?? Carbon::now()->format('Y-m-d');
+            $toDate = $req->dateTo ?? Carbon::now()->format('Y-m-d');
+            $paymentMode = $req->paymentMode ?? null;
+
             $mMarShopPayment = new ShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,)->get();                              // Get Shop Payment collection between givrn two dates
-            if ($req->shopCategory != 0)
-                $data = $data->where('t2.shop_category_id', $req->shopCategory);
-            if ($req->paymentMode != 0)
-                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
-            if ($req->market != 0)
-                $data = $data->where('t2.market_id', $req->market);
-            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
-                $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
-            //$data->get();
-            // Calculate counts
-            $cashCount = clone $data->where('mar_shop_payments.pmt_mode', 'CASH')->count();
-            // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
-            $onlineCount = clone $data->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
-            $chequeCount = clone $data->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
-            $cashAmount = clone $data->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
-            $onlineAmount = clone $data->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
-            $chequeAmount = clone $data->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
+            $dataQuery = $mMarShopPayment->listShopCollection($fromDate, $toDate); // Query instead of get()
+
+            if ($req->shopCategory != 0) {
+                $dataQuery->where('t2.shop_category_id', $req->shopCategory);
+            }
+            if ($req->paymentMode != 0) {
+                $dataQuery->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+            }
+            if ($req->market != 0) {
+                $dataQuery->where('t2.market_id', $req->market);
+            }
+            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC') {
+                $dataQuery->where('mar_shop_payments.user_id', $req->auth['id']);
+            }
+
+            // Get the filtered data
+            $data = $dataQuery->get();
+
+            // Clone the data for different counts and sums
+            $cashData = clone $data;
+            $onlineData = clone $data;
+            $chequeData = clone $data;
+
+            // Calculate counts and amounts
+            $cashCount = $cashData->where('mar_shop_payments.pmt_mode', 'CASH')->count();
+            $onlineCount = $onlineData->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
+            $chequeCount = $chequeData->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
+            $cashAmount = $cashData->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
+            $onlineAmount = $onlineData->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
+            $chequeAmount = $chequeData->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
 
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
@@ -1477,11 +1481,13 @@ class ShopController extends Controller
             $list['cashAmount'] = $cashAmount;
             $list['onlineAmount'] = $onlineAmount;
             $list['chequeAmount'] = $chequeAmount;
-            return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+
+            return responseMsgs(true, "Shop Collection List Fetch Successfully!!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
     /**
      * | Entry Cheque or DD For Payment
      * | API - 36
@@ -1580,8 +1586,4 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
-
-    
-
-   
 }
