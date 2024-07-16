@@ -242,6 +242,7 @@ class DharamshalaController extends Controller
             $fullDetailsData['application_no'] = $data['application_no'];
             $fullDetailsData['apply_date'] = Carbon::createFromFormat('Y-m-d', $data['application_date'])->format('d-m-Y');
             $fullDetailsData['doc_verify_status'] = $data['doc_verify_status'];
+            $fullDetailsData['doc_upload_status'] = $data['doc_upload_status'];
             $fullDetailsData['timelineData'] = collect($req);
             $fullDetailsData['workflowId'] = $data['workflow_id'];
 
