@@ -1461,13 +1461,13 @@ class ShopController extends Controller
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             //$data->get();
             // Calculate counts
-            $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->count();
+            $cashCount = clone $data->where('mar_shop_payments.pmt_mode', 'CASH')->count();
             // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
-            $onlineCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
-            $chequeCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
-            $cashAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
-            $onlineAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
-            $chequeAmount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
+            $onlineCount = clone $data->where('mar_shop_payments.pmt_mode', 'ONLINE')->count();
+            $chequeCount = clone $data->where('mar_shop_payments.pmt_mode', 'CHEQUE')->count();
+            $cashAmount = clone $data->where('mar_shop_payments.pmt_mode', 'CASH')->sum('amount');
+            $onlineAmount = clone $data->where('mar_shop_payments.pmt_mode', 'ONLINE')->sum('amount');
+            $chequeAmount = clone $data->where('mar_shop_payments.pmt_mode', 'CHEQUE')->sum('amount');
 
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
