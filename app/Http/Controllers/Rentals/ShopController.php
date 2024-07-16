@@ -1445,7 +1445,7 @@ class ShopController extends Controller
             $dataQuery = $mMarShopPayment->listShopCollection($fromDate, $toDate); // Query instead of get()
 
             if ($req->shopCategory != 0) {
-                $dataQuery->where('t2.shop_category_id', $req->shopCategory);
+                $dataQuery->where('mar_shop_payments.shop_category_id', $req->shopCategory);
             }
             if ($req->paymentMode != 0) {
                 $dataQuery->where('mar_shop_payments.pmt_mode', $req->paymentMode);
