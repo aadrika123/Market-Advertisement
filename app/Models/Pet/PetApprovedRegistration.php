@@ -252,7 +252,8 @@ class PetApprovedRegistration extends Model
                 'pet_approved_registrations.registration_id',
                 'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
-                'pet_approve_applicants.applicant_name'
+                'pet_approve_applicants.applicant_name',
+                'ulb_ward_masters.ward_name'
             )
             // "pet_renewal_registrations.id as renewal_id",
             //     DB::raw("CASE 
@@ -263,6 +264,7 @@ class PetApprovedRegistration extends Model
 
             // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_approved_registrations.approve_date', [$dateFrom, $dateUpto])
@@ -330,7 +332,8 @@ class PetApprovedRegistration extends Model
                 'pet_approved_registrations.registration_id',
                 'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
-                'pet_approve_applicants.applicant_name'
+                'pet_approve_applicants.applicant_name',
+                'ulb_ward_masters.ward_name'
             )
             // "pet_renewal_registrations.id as renewal_id",
             //     DB::raw("CASE 
@@ -341,6 +344,7 @@ class PetApprovedRegistration extends Model
 
             // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.renewal',1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
@@ -410,6 +414,7 @@ class PetApprovedRegistration extends Model
                 'pet_approved_registrations.ward_id',
                 'pet_approve_applicants.mobile_no',
                 'pet_approve_applicants.applicant_name',
+                'ulb_ward_masters.ward_name'
                 // "pet_renewal_registrations.id as renewal_id",
                 // DB::raw("CASE 
                 //                     WHEN 'pet_renewal_registrations.id as renewal_id' IS NULL THEN 'true'
@@ -419,6 +424,7 @@ class PetApprovedRegistration extends Model
 
             // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
             ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_approved_registrations.application_apply_date', [$dateFrom, $dateUpto])

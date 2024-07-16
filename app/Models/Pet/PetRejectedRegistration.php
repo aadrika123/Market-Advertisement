@@ -134,9 +134,11 @@ class PetRejectedRegistration extends Model
                 'pet_rejected_registrations.registration_id',
                 'pet_rejected_registrations.ward_id',
                 'pet_rejected_applicants.mobile_no',
-                'pet_rejected_applicants.applicant_name'
+                'pet_rejected_applicants.applicant_name',
+                'ulb_ward_masters.ward_name'
             )
             ->join('pet_rejected_applicants', 'pet_rejected_registrations.id', 'pet_rejected_applicants.application_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_rejected_registrations.status', 1)
             ->where('pet_rejected_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_rejected_registrations.rejected_date', [$dateFrom, $dateUpto])

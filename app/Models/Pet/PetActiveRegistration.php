@@ -380,9 +380,11 @@ class PetActiveRegistration extends Model
             'pet_active_registrations.renewal',
             'pet_active_applicants.mobile_no',
             'pet_active_registrations.ward_id',
-            'pet_active_applicants.applicant_name'
+            'pet_active_applicants.applicant_name',
+            'ulb_ward_masters.ward_name'
         )
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
             ->where('pet_active_registrations.status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
