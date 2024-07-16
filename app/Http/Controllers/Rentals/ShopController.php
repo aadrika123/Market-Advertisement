@@ -1459,7 +1459,7 @@ class ShopController extends Controller
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
-            $data->get();
+            //$data->get();
             // Calculate counts
             $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->count();
             // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
