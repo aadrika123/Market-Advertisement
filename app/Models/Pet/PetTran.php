@@ -139,7 +139,7 @@ class PetTran extends Model
         $perPage = $request->perPage ?: 10;
 
         $query = PetTran::select('pet_trans.*', 'users.user_name', 'users.id as user_id', 'mobile', 'ulb_ward_masters.ward_name','pet_active_registrations.application_no')
-        ->join('pet_active_registrations'.'pet_active_registrations.id','=','pet_trans.related_id')
+        ->join('pet_active_registrations','pet_active_registrations.id','=','pet_trans.related_id')
         ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_trans.ward_id')
             ->leftjoin('users', 'users.id', 'pet_trans.emp_dtl_id')
             ->where('pet_trans.status', 1)
