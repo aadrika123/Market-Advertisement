@@ -2,13 +2,15 @@
 
 namespace App\Models\Pet;
 
+use App\MicroServices\DocumentUpload;
+use App\Models\Advertisements\WfActiveDocument;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Http\Request;
 class PetActiveRegistration extends Model
 {
     use HasFactory;
@@ -705,4 +707,35 @@ class PetActiveRegistration extends Model
             'total' => $data->total()
         ];
     }
+
+    public function reuploadDocument($req,$Image, $docId)
+    {
+        try{
+        $docUpload = new DocumentUpload;
+        $docDetails = WfActiveDocument::find($req->id);
+        $relativePath = Config::get('pet.PET_RELATIVE_PATH');
+
+        $data = [];
+        $mWfActiveDocument = new WfActiveDocument();
+        $user = collect(authUser($req));
+        $file = $Image;
+        $req->merge([
+            'document' => $file
+        ]);
+        $imageName = $docUpload->upload($req);
+        $metaReqs = [
+            'moduleId' => Config::get('pet.PET_MODULE_ID') ?? 9,
+            'unique_id' => $imageName['data']['uniqueId'] ?? null,
+            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+        ];
+         // Save document metadata in wfActiveDocuments
+         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+         return $activeId;
+ 
+         // return $data;
+     } catch (Exception $e) {
+         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+     }
+    }
+
 }

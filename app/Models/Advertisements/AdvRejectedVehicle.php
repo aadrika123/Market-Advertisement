@@ -37,7 +37,7 @@ class AdvRejectedVehicle extends Model
     public function listJskRejectedApplication()
     {
         return AdvRejectedVehicle::select(
-                'id',
+                'adv_rejected_vehicles.id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
@@ -45,9 +45,12 @@ class AdvRejectedVehicle extends Model
                 'email',
                 'rejected_date',
                 'mobile_no',
+                'wr.role_name as rejected_by',
+                'remarks as reason',
                 DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
-            ->orderByDesc('id');
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_vehicles.current_roles')
+            ->orderByDesc('adv_rejected_vehicles.id');
             //->get();
     }
 

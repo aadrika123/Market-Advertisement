@@ -38,15 +38,18 @@ class AdvRejectedAgency extends Model
     {
         return AdvRejectedAgency::where('user_id', $userId)
             ->select(
-                'id',
+                'adv_rejected_agencies.id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 // 'entity_address',
                 // 'old_application_no',
                 // 'payment_status',
                 'rejected_date',
+                'wr.role_name as rejected_by',
+                'remarks as reason',
             )
-            ->orderByDesc('id')
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_agencies.current_role_id')
+            ->orderByDesc('adv_rejected_agencies.id')
             ->get();
     }
 

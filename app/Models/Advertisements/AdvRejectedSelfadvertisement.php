@@ -39,7 +39,7 @@ class AdvRejectedSelfadvertisement extends Model
     public function listJskRejectedApplication()
     {
         return AdvRejectedSelfadvertisement::select(
-                'id',
+                'adv_rejected_selfadvertisements.id',
                 'application_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'applicant',
@@ -48,9 +48,12 @@ class AdvRejectedSelfadvertisement extends Model
                 'payment_status',
                 'rejected_date',
                 'mobile_no',
+                'wr.role_name as rejected_by',
+                'remarks as reason',
                 DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
-            ->orderByDesc('id');
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
+            ->orderByDesc('adv_rejected_selfadvertisements.id');
             //->get();
     }
 

@@ -35,7 +35,8 @@ class AdvRejectedPrivateland extends Model
     public function listJskRejectedApplication()
     {
         return AdvRejectedPrivateland::select(
-            'id',
+            'adv_rejected_privatelands.id',
+            'applicant',
             'application_no',
             DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
             'mobile_no',
@@ -43,10 +44,13 @@ class AdvRejectedPrivateland extends Model
             'rejected_date',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by"),
             'entity_name',
-            'entity_address'
+            'entity_address',
+            'wr.role_name as rejected_by',
+            'remarks as reason',
 
         )
-            ->orderByDesc('id');
+            ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_privatelands.current_role_id')
+            ->orderByDesc('adv_rejected_privatelands.id');
         //->get();
     }
 

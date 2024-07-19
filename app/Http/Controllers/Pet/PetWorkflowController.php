@@ -291,18 +291,23 @@ class PetWorkflowController extends Controller
             $this->begin();
             if ($req->action == 'forward') {
                 $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
+                if($senderRoleId->can_upload_document == true){
+                    if($petApplication ->doc_upload_status == true){
+                        $petApplication ->parked = false;
+                    }
+                }
                 $metaReqs['verificationStatus']     = 1;
                 $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
                 $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
                 $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
                 $msg = "Application Forwaded Succesfully.";
             }
-            if ($req->action == 'backward') {
-                $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
-                $metaReqs['verificationStatus']     = 0;
-                $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
-                $msg = "Application has been sent back succesfully.";
-            }
+            // if ($req->action == 'backward') {
+            //     $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
+            //     $metaReqs['verificationStatus']     = 0;
+            //     $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
+            //     $msg = "Application has been sent back succesfully.";
+            // }
             $petApplication->save();
 
             $metaReqs['moduleId']           = $this->_petModuleId;
@@ -352,6 +357,7 @@ class PetWorkflowController extends Controller
                 if ($application->payment_status != 1)
                     throw new Exception("Payment Not Done");
                 break;
+                
             case $wfLevels['DA']:
                 if ($application->doc_upload_status == false)
                     throw new Exception("The full document has not been uploaded");                                                                      // DA Condition
@@ -883,7 +889,7 @@ class PetWorkflowController extends Controller
         // $mPetApproveApplicant->updateAproveApplicantDetials($approveApplicantDetail->id, $approveData);  /// Not done
         // $mPetApproveDetail->updateApprovePetStatus($approvePetDetail->id, $approveData);             /// Not done   
 
-         # Send record in the track table 
+        # Send record in the track table 
         $metaReqs = [
             'moduleId'          => $this->_petModuleId,
             'workflowId'        => $applicationDetails->workflow_id,
@@ -1209,6 +1215,165 @@ class PetWorkflowController extends Controller
             return responseMsgs(true, $msg, remove_null($returnData), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    public function backToCitizen(Request $req)
+    {
+        $req->validate([
+            'applicationId' => "required",
+            'comment'        => "required"
+        ]);
+        try {
+            $mMarActivePet = PetActiveRegistration::find($req->applicationId);
+            if ($mMarActivePet->doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mMarActivePet->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
+
+            $workflowId = $mMarActivePet->workflow_id;
+            if (is_null($mMarActivePet->citizen_id)) { // If the Application has been applied from Jsk 
+                $initiatorRoleId = $mMarActivePet->initiator_role_id;
+                $mMarActivePet->current_role_id = $initiatorRoleId;
+                $mMarActivePet->parked = true;                    
+            } else
+                $mMarActivePet->parked = true;                        // If the Application has been applied from Citizen
+
+            $mMarActivePet->btc_date =  Carbon::now()->format('Y-m-d');
+            $mMarActivePet->remarks = $req->comment;
+            $mMarActivePet->save();
+
+            $metaReqs['moduleId']           = $this->_petModuleId;
+            $metaReqs['workflowId']         = $workflowId;
+            $metaReqs['refTableDotId']      = 'pet_active_registrations.id';                                                // Static
+            $metaReqs['refTableIdValue']    = $req->applicationId;
+            $metaReqs['verificationStatus']     = 0;
+            $metaReqs['user_id']            = authUser($req)->id;
+            $req->request->add($metaReqs);
+
+            $workflowTrack = new WorkflowTrack();
+            $workflowTrack->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '050719', '01', responseTime(), 'POST', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050719", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function reuploadDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $mMarActivePet= new PetActiveRegistration();
+            $Image                   = $req->image;
+            $docId                   = $req->id;
+            DB::beginTransaction();
+            DB::connection('pgsql_masters')->beginTransaction();
+            $appId = $mMarActivePet->reuploadDocument($req, $Image, $docId);
+            $this->checkFullUpload($appId);
+            DB::commit();
+            DB::connection('pgsql_masters')->commit();
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            DB::connection('pgsql_masters')->rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", "050721", 1.0, "271ms", "POST", "", "");
+        }
+    }
+
+    public function checkFullUpload($applicationId)
+    {
+        $checkdoc = new PetRegistrationController();
+        $appDetails = PetActiveRegistration::find($applicationId);
+        $documentList = $checkdoc->getPetDocLists($appDetails);
+        //$docCode = $this->_docCode;
+        // $docCode = $this->_docCodeRenew;
+        // if($appDetails->renew_no==NULL){
+        //     $docCode = $this->_docCode;
+        // }
+        $mWfActiveDocument = new WfActiveDocument();
+        $moduleId = Config::get('pet.PET_MODULE_ID') ?? 9;
+        //$totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $totalRequireDocs = count($documentList);
+        $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
+        if ($totalRequireDocs == $totalUploadedDocs) {
+            $appDetails->doc_upload_status = '1';
+            $appDetails->doc_verify_status = '0';
+            //$appDetails->parked = NULL;
+            $appDetails->save();
+        } else {
+            $appDetails->doc_upload_status = '0';
+            $appDetails->doc_verify_status = '0';
+            $appDetails->save();
+        }
+    }
+
+    public function forwardNextLevelBtc(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mMarActivePet = PetActiveRegistration::find($request->applicationId);
+            $mMarActivePet->parked = false;
+            $mMarActivePet->save();
+            return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+
+
+    public function btcList(Request $request)
+    {
+        try {
+            $user   = authUser($request);
+            $userId = $user->id;
+            $ulbId  = $user->ulb_id;
+            $pages  = $request->perPage ?? 10;
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $msg = "Btc List Details!";
+
+            $roleId = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $petList = $this->getPetApplicatioList($workflowIds, $ulbId)
+                ->whereIn('pet_active_registrations.current_role_id', $roleId)
+                // ->whereIn('pet_active_registrations.ward_id', $occupiedWards)
+                // ->where('pet_active_registrations.is_escalate', false)
+                ->where('pet_active_registrations.parked', true)
+                ->orderByDesc('pet_active_registrations.id');
+            //->paginate($pages);
+
+            if (collect($petList)->last() == 0 || !$petList) {
+                $msg = "Data not found!";
+            }
+            $inbox = app(Pipeline::class)
+                ->send(
+                    $petList
+                )
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByApplicantName::class
+                ])
+                ->thenReturn()
+                ->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($inbox), '', '02', '', 'Post', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
         }
     }
 }

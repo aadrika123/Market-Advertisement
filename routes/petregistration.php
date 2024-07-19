@@ -97,6 +97,12 @@ Route::group(['middleware' => ['json.response']], function () {
         Route::post('final-verify-reject', 'finalApprovalRejection');                                           // Workflow
         Route::post('list-approved-application', 'listfinisherApproveApplications');                            // Workflow
         Route::post('list-rejected-application', 'listfinisherRejectApplications');                             // Workflow
+
+        // written by prity pandey
+        Route::post('back-to-citizen', 'backToCitizen');  
+        Route::post('reupload-document', 'reuploadDocument');
+        Route::post('send-to-next-level', 'forwardNextLevelBtc');  
+        Route::post('btc-list', 'btcList');
     });
 
     //written by prity pandey
