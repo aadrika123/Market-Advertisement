@@ -40,6 +40,7 @@ class AdvRejectedAgency extends Model
             ->select(
                 'adv_rejected_agencies.id',
                 'application_no',
+                'mobile_no',
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 // 'entity_address',
                 // 'old_application_no',
