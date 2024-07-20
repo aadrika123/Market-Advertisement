@@ -349,7 +349,7 @@ class MarDharamshala extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_dharamshala_renewals')
-            ->select('mar_dharamshala_renewals.id', 'mar_dharamshala_renewals.application_no', 'mar_dharamshala_renewals.applicant',  DB::raw("TO_CHAR(mar_dharamshala_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_dharamshala_renewals.application_type', 'mar_dharamshala_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_dharamshala_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_dharamshala_renewals.payment_mode', 'mar_dharamshala_renewals.entity_name', 'adv_mar_transactions.transaction_no')
+            ->select('mar_dharamshala_renewals.id', 'mar_dharamshala_renewals.application_no', 'mar_dharamshala_renewals.applicant',  DB::raw("TO_CHAR(mar_dharamshala_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_dharamshala_renewals.application_type', 'mar_dharamshala_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_dharamshala_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'adv_mar_transactions.payment_mode', 'mar_dharamshala_renewals.entity_name', 'adv_mar_transactions.transaction_no')
             ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_dharamshala_renewals.payment_id')
             ->where('payment_status', 1)
             ->where('mar_dharamshala_renewals.status', 1)
@@ -366,13 +366,17 @@ class MarDharamshala extends Model
         if ($request->payMode == 'All') {
             $data = $approved;
         }
-        if ($request->payMode == 'Online') {
+        if ($request->payMode == 'ONLINE') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        if ($request->payMode == 'Cash') {
+        if ($request->payMode == 'CASH') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        if ($request->payMode == 'Cheque/DD') {
+        if ($request->payMode == 'CHEQUE') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+
+        if ($request->payMode == 'DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
          // Clone the query for counts and sums
@@ -380,16 +384,16 @@ class MarDharamshala extends Model
        $approveListForSums = clone $approved;
 
        // Count of transactions
-       $cashCount = (clone $approveListForCounts)->where('mar_dharamshala_renewals.payment_mode', 'CASH')->count();
-        $ddCount = (clone $approveListForCounts)->where('mar_dharamshala_renewals.payment_mode', 'DD')->count();
-        $chequeCount = (clone $approveListForCounts)->where('mar_dharamshala_renewals.payment_mode', 'CHEQUE')->count();
-       $onlineCount = (clone $approveListForCounts)->where('mar_dharamshala_renewals.payment_mode', 'ONLINE')->count();
+       $cashCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        $ddCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $chequeCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+       $onlineCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
        // Sum of transactions
-       $cashPayment = (clone $approveListForSums)->where('mar_dharamshala_renewals.payment_mode', 'CASH')->sum('payment_amount');
-        $ddPayment = (clone $approveListForSums)->where('mar_dharamshala_renewals.payment_mode', 'DD')->sum('payment_amount');
-        $chequePayment = (clone $approveListForSums)->where('mar_dharamshala_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
-       $onlinePayment = (clone $approveListForSums)->where('mar_dharamshala_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+       $cashPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CASH')->sum('payment_amount');
+        $ddPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'DD')->sum('payment_amount');
+        $chequePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->sum('payment_amount');
+       $onlinePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'ONLINE')->sum('payment_amount');
 
        # transaction by jsk 
        $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();

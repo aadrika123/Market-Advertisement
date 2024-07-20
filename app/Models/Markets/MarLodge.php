@@ -364,13 +364,16 @@ class MarLodge extends Model
         if ($request->payMode == 'All') {
             $data = $approved;
         }
-        if ($request->payMode == 'Online') {
+        if ($request->payMode == 'ONLINE') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        if ($request->payMode == 'Cash') {
+        if ($request->payMode == 'CASH') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
-        if ($request->payMode == 'Cheque/DD') {
+        if ($request->payMode == 'CHEQUE') {
+            $data = $approved->where('payment_mode', $request->payMode);
+        }
+        if ($request->payMode == 'DD') {
             $data = $approved->where('payment_mode', $request->payMode);
         }
          // Clone the query for counts and sums

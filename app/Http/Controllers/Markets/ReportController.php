@@ -77,7 +77,7 @@ class ReportController extends Controller
             'applicationType' => 'nullable|in:New Apply,Renew',
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateUpto' => 'nullable|date_format:Y-m-d',
-            'payMode' => 'nullable|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'nullable|in:All,ONLINE,CASH,CHEQUE,DD',
         ]);
         if ($validator->fails()) {
             return response()->json([
