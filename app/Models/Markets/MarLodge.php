@@ -347,7 +347,7 @@ class MarLodge extends Model
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
         $approved = DB::table('mar_lodge_renewals')
-            ->select('mar_lodge_renewals.id', 'mar_lodge_renewals.entity_name', 'mar_lodge_renewals.application_no', 'mar_lodge_renewals.applicant',  DB::raw("TO_CHAR(mar_lodge_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodge_renewals.application_type', 'mar_lodge_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_lodge_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_lodge_renewals.payment_mode', 'adv_mar_transactions.transaction_no')
+            ->select('mar_lodge_renewals.id', 'mar_lodge_renewals.entity_name', 'mar_lodge_renewals.application_no', 'mar_lodge_renewals.applicant',  DB::raw("TO_CHAR(mar_lodge_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodge_renewals.application_type', 'mar_lodge_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_lodge_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'adv_mar_transactions.payment_mode', 'adv_mar_transactions.transaction_no')
             ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_lodge_renewals.payment_id')
             ->where('mar_lodge_renewals.payment_status', 1)
             ->where('mar_lodge_renewals.status', 1)
@@ -378,16 +378,16 @@ class MarLodge extends Model
        $approveListForSums = clone $approved;
 
        // Count of transactions
-       $cashCount = (clone $approveListForCounts)->where('mar_lodge_renewals.payment_mode', 'CASH')->count();
-        $ddCount = (clone $approveListForCounts)->where('mar_lodge_renewals.payment_mode', 'DD')->count();
-        $chequeCount = (clone $approveListForCounts)->where('mar_lodge_renewals.payment_mode', 'CHEQUE')->count();
-       $onlineCount = (clone $approveListForCounts)->where('mar_lodge_renewals.payment_mode', 'ONLINE')->count();
+       $cashCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        $ddCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $chequeCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+       $onlineCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
        // Sum of transactions
-       $cashPayment = (clone $approveListForSums)->where('mar_lodge_renewals.payment_mode', 'CASH')->sum('payment_amount');
-        $ddPayment = (clone $approveListForSums)->where('mar_lodge_renewals.payment_mode', 'DD')->sum('payment_amount');
-        $chequePayment = (clone $approveListForSums)->where('mar_lodge_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
-       $onlinePayment = (clone $approveListForSums)->where('mar_lodge_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+       $cashPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CASH')->sum('payment_amount');
+        $ddPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'DD')->sum('payment_amount');
+        $chequePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->sum('payment_amount');
+       $onlinePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'ONLINE')->sum('payment_amount');
 
        # transaction by jsk 
        $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
