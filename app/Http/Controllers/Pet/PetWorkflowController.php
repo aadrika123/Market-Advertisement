@@ -291,11 +291,6 @@ class PetWorkflowController extends Controller
             $this->begin();
             if ($req->action == 'forward') {
                 $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
-                if($senderRoleId->can_upload_document == 1){
-                    if($petApplication ->doc_upload_status == true){
-                        $petApplication ->parked = false;
-                    }
-                }
                 $metaReqs['verificationStatus']     = 1;
                 $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
                 $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
@@ -357,7 +352,15 @@ class PetWorkflowController extends Controller
                 if ($application->payment_status != 1)
                     throw new Exception("Payment Not Done");
                 break;
-                
+
+
+                if ($application->doc_upload_status == true) {
+                    $application->parked = false;
+                }
+                $application->save();
+                break;
+
+
             case $wfLevels['DA']:
                 if ($application->doc_upload_status == false)
                     throw new Exception("The full document has not been uploaded");                                                                      // DA Condition
@@ -1235,7 +1238,7 @@ class PetWorkflowController extends Controller
             if (is_null($mMarActivePet->citizen_id)) { // If the Application has been applied from Jsk 
                 $initiatorRoleId = $mMarActivePet->initiator_role_id;
                 $mMarActivePet->current_role_id = $initiatorRoleId;
-                $mMarActivePet->parked = true;                    
+                $mMarActivePet->parked = true;
             } else
                 $mMarActivePet->parked = true;                        // If the Application has been applied from Citizen
 
@@ -1271,7 +1274,7 @@ class PetWorkflowController extends Controller
         }
         try {
             // Variable initialization
-            $mMarActivePet= new PetActiveRegistration();
+            $mMarActivePet = new PetActiveRegistration();
             $Image                   = $req->image;
             $docId                   = $req->id;
             DB::beginTransaction();
