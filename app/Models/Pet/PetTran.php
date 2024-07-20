@@ -66,7 +66,7 @@ class PetTran extends Model
     public function getTranByApplicationId($applicationId)
     {
         return PetTran::where('related_id', $applicationId)
-            ->where('status', 1)
+            //->where('status', 1)
             ->orderByDesc('id');
     }
 
