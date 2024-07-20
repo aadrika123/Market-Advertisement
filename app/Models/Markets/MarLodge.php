@@ -349,7 +349,7 @@ class MarLodge extends Model
         $approved = DB::table('mar_lodge_renewals')
             ->select('mar_lodge_renewals.id', 'mar_lodge_renewals.entity_name', 'mar_lodge_renewals.application_no', 'mar_lodge_renewals.applicant',  DB::raw("TO_CHAR(mar_lodge_renewals.application_date, 'DD-MM-YYYY') as application_date"), 'mar_lodge_renewals.application_type', 'mar_lodge_renewals.entity_ward_id', DB::raw("'Approve' as application_status"), 'mar_lodge_renewals.payment_amount',  DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'mar_lodge_renewals.payment_mode', 'adv_mar_transactions.transaction_no')
             ->join('adv_mar_transactions', 'adv_mar_transactions.transaction_id', '=', 'mar_lodge_renewals.payment_id')
-            ->where('payment_status', 1)
+            ->where('adv_mar_transactions.payment_status', 1)
             ->where('mar_lodge_renewals.status', 1)
             ->where('mar_lodge_renewals.ulb_id', $ulbId)
             ->where('adv_mar_transactions.workflow_id', $lodgewWorkflow)
