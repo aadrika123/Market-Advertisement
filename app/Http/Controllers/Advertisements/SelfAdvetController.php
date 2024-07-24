@@ -1591,8 +1591,11 @@ class SelfAdvetController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+        $mAdvActiveSelfadvertisement = $mAdvActiveSelfadvertisement->getSelfAdvertNo($applicationId);
         $moduleId = $this->_moduleIds;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $citizenId = $mAdvActiveSelfadvertisement->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
         $appDetails = AdvActiveSelfadvertisement::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
@@ -1623,13 +1626,13 @@ class SelfAdvetController extends Controller
         }
         try {
             // Variable initialization
-            $mMarActiveLodge = new AdvActiveSelfadvertisement();
+            $mMarActiveSelfAdvt = new AdvActiveSelfadvertisement();
             $Image                   = $req->image;
             $docId                   = $req->id;
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
-            $appId = $mMarActiveLodge->reuploadDocument($req, $Image, $docId);
-            $this->checkFullUpload($appId);
+            $appId = $mMarActiveSelfAdvt->reuploadDocument($req, $Image, $docId);
+            $this->checkFullUpload($appId,$mMarActiveSelfAdvt);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");
