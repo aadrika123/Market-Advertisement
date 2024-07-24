@@ -427,7 +427,7 @@ class PetApprovedRegistration extends Model
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
-            ->whereBetween('pet_approved_registrations.application_apply_date', [$dateFrom, $dateUpto])
+            ->whereBetween('pet_approved_registrations.approve_end_date', [$dateFrom, $dateUpto])
             ->where('pet_approved_registrations.approve_end_date', '<', $today)
             ->orderByDesc('pet_approved_registrations.id');
 
