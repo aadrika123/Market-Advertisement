@@ -91,7 +91,7 @@ class ReportController extends Controller
             'dateUpto' => 'nullable|date_format:Y-m-d',
             'wardNo' => 'nullable',
             'paymentMode'  => 'nullable|in:CASH,ONLINE',
-            'collectionBy' => 'nullable|in:JSK,Citizen'
+            'collectedBy' => 'nullable|in:JSK,Citizen'
         ]);
         if ($validator->fails()) {
             return response()->json([

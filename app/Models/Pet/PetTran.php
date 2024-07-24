@@ -151,8 +151,8 @@ class PetTran extends Model
         if ($request->wardNo) {
             $query->where('pet_trans.ward_id', $request->wardNo);
         }
-        if ($request->collectionBy) {
-            if ($request->collectionBy == 'JSK') {
+        if ($request->collectedBy) {
+            if ($request->collectedBy == 'JSK') {
                 $query->where('pet_trans.user_type', 'JSK');
             } else {
                 $query->where('pet_trans.user_type', 'Citizen');
