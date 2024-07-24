@@ -20,7 +20,7 @@ class ReportController extends Controller
     public function applicationReports(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:applicationReport,collectionReport,vaccinationReport',
+            'reportType' => 'required|in:applicationReport',
             'applicationType' => 'required|in:Pending,Approved,Renewal,Expired,Rejected',
             'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',
             'parameter' => 'nullable',
