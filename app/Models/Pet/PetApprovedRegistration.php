@@ -423,7 +423,7 @@ class PetApprovedRegistration extends Model
             )
 
             // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
-            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.application_id')
+            ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_approved_registrations.ward_id')
             ->where('pet_approved_registrations.status', 1)
             ->where('pet_approved_registrations.ulb_id', $ulbId)
