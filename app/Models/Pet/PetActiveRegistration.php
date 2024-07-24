@@ -388,6 +388,7 @@ class PetActiveRegistration extends Model
             ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'pet_active_registrations.ward_id')
             ->where('pet_active_registrations.status', 1)
+            ->where('pet_active_registrations.payment_status', 1)
             ->where('pet_active_registrations.ulb_id', $ulbId)
             ->whereBetween('pet_active_registrations.application_apply_date', [$dateFrom, $dateUpto])
             ->orderByDesc('pet_active_registrations.id');
