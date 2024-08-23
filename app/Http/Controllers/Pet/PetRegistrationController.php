@@ -1414,6 +1414,7 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
+            
             $citizenId                  = authUser($req)->id;
             $ulbId                      = $req->ulbId;
             $type                       = $req->type;
