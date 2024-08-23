@@ -208,23 +208,23 @@ class PetPaymentController extends Controller
             ];
 
             #_Whatsaap Message
-            if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
-                $Url = "https://aadrikainfomedia.com/pet/pet-payment-receipt/" . $petTranNo;
-                $whatsapp2 = (Whatsapp_Send(
-                    $payRelatedDetails['applicationDetails']->mobile_no,
-                    "all_module_payment_receipt",
-                    [
-                        "content_type" => "text",
-                        [
-                            $payRelatedDetails['applicationDetails']->applicant_name ?? "",
-                            $req['amount'],
-                            "Application No.",
-                            $payRelatedDetails['applicationDetails']->application_no,
-                            $Url
-                        ]
-                    ]
-                ));
-            }
+            // if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
+            //     $Url = "https://aadrikainfomedia.com/pet/pet-payment-receipt/" . $petTranNo;
+            //     $whatsapp2 = (Whatsapp_Send(
+            //         $payRelatedDetails['applicationDetails']->mobile_no,
+            //         "all_module_payment_receipt",
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $payRelatedDetails['applicationDetails']->applicant_name ?? "",
+            //                 $req['amount'],
+            //                 "Application No.",
+            //                 $payRelatedDetails['applicationDetails']->application_no,
+            //                 $Url
+            //             ]
+            //         ]
+            //     ));
+            // }
 
             return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -561,23 +561,23 @@ class PetPaymentController extends Controller
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $AppliationStatus);
             $this->commit();
             #_Whatsaap Message
-            if (strlen($applicationDetails->mobile_no) == 10) {
-                $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" . $tranReq['tranNo'];
-                $whatsapp2 = (Whatsapp_Send(
-                    $applicationDetails->mobile_no,
-                    "all_module_payment_receipt ",
-                    [
-                        "content_type" => "text",
-                        [
-                            $applicationDetails->applicant_name ?? "",
-                            $tranReq['amount'],
-                            "Application No.",
-                            $applicationDetails->application_no,
-                            $Url
-                        ]
-                    ]
-                ));
-            }
+            // if (strlen($applicationDetails->mobile_no) == 10) {
+            //     $Url = "https://aadrikainfomedia.com/citizen/pet-payment-receipt/" . $tranReq['tranNo'];
+            //     $whatsapp2 = (Whatsapp_Send(
+            //         $applicationDetails->mobile_no,
+            //         "all_module_payment_receipt ",
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $applicationDetails->applicant_name ?? "",
+            //                 $tranReq['amount'],
+            //                 "Application No.",
+            //                 $applicationDetails->application_no,
+            //                 $Url
+            //             ]
+            //         ]
+            //     ));
+            // }
             return responseMsgs(true, "Online Payment Success", $req, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
             $this->rollback();

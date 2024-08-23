@@ -345,23 +345,23 @@ class PetRegistrationController extends Controller
             ];
 
             #_Whatsaap Message
-            if (strlen($req->mobileNo) == 10) {
+            // if (strlen($req->mobileNo) == 10) {
 
-                    $whatsapp2 = (Whatsapp_Send(
-                        $req->mobileNo,
-                        "all_module_succesfull_generation ",
-                        [
-                            "content_type" => "text",
-                            [
-                                $req->applicantName ?? "Pet Owner",
-                                "Pet Registration",
-                                "Application No.",
-                                $petApplicationNo,
-                                "1800123231"
-                            ]
-                        ]
-                    ));
-            }
+            //         $whatsapp2 = (Whatsapp_Send(
+            //             $req->mobileNo,
+            //             "all_module_succesfull_generation ",
+            //             [
+            //                 "content_type" => "text",
+            //                 [
+            //                     $req->applicantName ?? "Pet Owner",
+            //                     "Pet Registration",
+            //                     "Application No.",
+            //                     $petApplicationNo,
+            //                     "1800123231"
+            //                 ]
+            //             ]
+            //         ));
+            // }
 
             return responseMsgs(true, "Pet Registration application submitted!", $returnData, "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1414,7 +1414,7 @@ class PetRegistrationController extends Controller
             return validationError($validated);
 
         try {
-            
+
             $citizenId                  = authUser($req)->id;
             $ulbId                      = $req->ulbId;
             $type                       = $req->type;
