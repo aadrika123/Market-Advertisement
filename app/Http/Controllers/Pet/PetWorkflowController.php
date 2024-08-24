@@ -297,12 +297,12 @@ class PetWorkflowController extends Controller
                 $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
                 $msg = "Application Forwaded Succesfully.";
             }
-            // if ($req->action == 'backward') {
-            //     $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
-            //     $metaReqs['verificationStatus']     = 0;
-            //     $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
-            //     $msg = "Application has been sent back succesfully.";
-            // }
+            if ($req->action == 'backward') {
+                $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
+                $metaReqs['verificationStatus']     = 0;
+                $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
+                $msg = "Application has been sent back succesfully.";
+            }
             $petApplication->save();
 
             $metaReqs['moduleId']           = $this->_petModuleId;
