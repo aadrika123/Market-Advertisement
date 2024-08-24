@@ -376,10 +376,12 @@ class PetActiveDetail extends Model
             pet_active_details.leptospirosis_vac_date,
             pet_active_details.pet_name,
             pet_active_details.breed,
-            pet_active_details.color
+            pet_active_details.color,
+             ulb_ward_masters.ward_name
         FROM pet_active_details
         JOIN pet_active_registrations ON pet_active_registrations.id = pet_active_details.application_id
         JOIN pet_active_applicants ON pet_active_applicants.application_id = pet_active_registrations.id
+        JOIN ulb_ward_masters ON ulb_ward_masters.id = pet_active_registrations.ward_id
         WHERE pet_active_details.status = 1
         AND pet_active_details.leptospirosis_vac_date < current_date
     ";
@@ -506,10 +508,12 @@ class PetActiveDetail extends Model
             pet_active_details.leptospirosis_vac_date,
             pet_active_details.pet_name,
             pet_active_details.breed,
-            pet_active_details.color
+            pet_active_details.color,
+            ulb_ward_masters.ward_name
         FROM pet_active_details
         JOIN pet_active_registrations ON pet_active_registrations.id = pet_active_details.application_id
         JOIN pet_active_applicants ON pet_active_applicants.application_id = pet_active_registrations.id
+        LEFT JOIN ulb_ward_masters ON ulb_ward_masters.id = pet_active_registrations.ward_id
         WHERE pet_active_details.status = 1
         AND pet_active_details.rabies_vac_date < current_date
     ";
