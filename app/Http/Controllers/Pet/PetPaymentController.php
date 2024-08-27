@@ -1053,6 +1053,8 @@ class PetPaymentController extends Controller
 
             PetActiveRegistration::where('id', $applicationId)
                 ->update(['payment_status' => 0]);
+            PetRegistrationCharge::where('application_id', $applicationId)
+                ->update(['paid_status' => 0]);
 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
