@@ -1474,7 +1474,7 @@ class SelfAdvetController extends Controller
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActiveSelfadvertisement->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1595,13 +1595,13 @@ class SelfAdvetController extends Controller
         $mAdvActiveSelfadvertisement = $mAdvActiveSelfadvertisement->getSelfAdvertNo($applicationId);
         $moduleId = $this->_moduleIds;
         $citizenId = $mAdvActiveSelfadvertisement->citizen_id;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveSelfadvertisement::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-           // $appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -1619,7 +1619,7 @@ class SelfAdvetController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|digits_between:1,9223372036854775807',
-            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+            'image' => 'required|mimes:png,jpeg,pdf,jpg,2048 kB'
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1632,7 +1632,7 @@ class SelfAdvetController extends Controller
             DB::beginTransaction();
             DB::connection('pgsql_masters')->beginTransaction();
             $appId = $mMarActiveSelfAdvt->reuploadDocument($req, $Image, $docId);
-            $this->checkFullUpload($appId,$mMarActiveSelfAdvt);
+            $this->checkFullUpload($appId, $mMarActiveSelfAdvt);
             DB::commit();
             DB::connection('pgsql_masters')->commit();
             return responseMsgs(true, "Document Uploaded Successfully", "", "050721", 1.0, responseTime(), "POST", "", "");

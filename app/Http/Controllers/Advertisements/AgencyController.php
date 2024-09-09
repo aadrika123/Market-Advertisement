@@ -636,7 +636,8 @@ class AgencyController extends Controller
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
         if ($roleId == $wfLevel['DA']) {
-            $data = $data->get();                                                                                           // If DA Then show all docs
+            $data = $data->where('current_status', '1');
+            $data = $data->get();                                                                                                // If DA Then show all docs
         } else {
             $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
@@ -1407,7 +1408,7 @@ class AgencyController extends Controller
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActiveVehicle->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
 
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
@@ -1519,14 +1520,17 @@ class AgencyController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveVehicle = new AdvActiveAgency();
         $moduleId = $this->_moduleId;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $mAdvActiveVehicle = $mAdvActiveVehicle->getAgencyNo($applicationId);
+        $citizenId = $mAdvActiveVehicle->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveAgency::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-           // $appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
