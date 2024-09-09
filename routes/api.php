@@ -102,7 +102,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('advert/self/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('advert/self/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('advert/self/reupload-document', 'reuploadDocument');
+        Route::post('advert/self/reupload-document', 'reuploadDocument');                                        // changes by Arshad      
         Route::post('advert/self/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
@@ -184,7 +184,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('advert/vehicle/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('advert/vehicle/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('advert/vehicle/reupload-document', 'reuploadDocument');
+        Route::post('advert/vehicle/reupload-document', 'reuploadDocument');                                      // changes by Arshad      
         Route::post('advert/vehicle/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
@@ -237,7 +237,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('advert/pvt-land/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('advert/pvt-land/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');
+        Route::post('advert/pvt-land/reupload-document', 'reuploadDocument');                                          // changes by Arshad      
         Route::post('advert/pvt-land/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 
@@ -295,7 +295,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/list-btc-inbox-jsk', 'listBtcInboxJsk');
         Route::post('advert/agency/btc/get-details-by-id', 'getRejectedDetailsById');
         Route::post('advert/agency/view-btc-document', 'getUploadDocumentsBtc');
-        Route::post('advert/agency/reupload-document', 'reuploadDocument');
+        Route::post('advert/agency/reupload-document', 'reuploadDocument');                                         // changes by Arshad                
         Route::post('advert/agency/forward-next-level-btc', 'forwardNextLevelBtc');
     });
 

@@ -1449,7 +1449,7 @@ class PrivateLandController extends Controller
      * | Check if the Document is Fully Verified or Not (4.1)
      * | Function - 29
      */
-    public function ifFullDocVerified($applicationId)
+    public function ifFullDocVerified($applicationId)                                          //checkFullUpload
     {
         $mAdvActivePrivateland = new AdvActivePrivateland();
         $mWfActiveDocument = new WfActiveDocument();
@@ -1464,7 +1464,7 @@ class PrivateLandController extends Controller
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActivePrivateland->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1583,14 +1583,17 @@ class PrivateLandController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActivePrivateland = new AdvActivePrivateland();
         $moduleId = $this->_moduleId;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $mAdvActivePrivateland = $mAdvActivePrivateland->getPrivateLandNo($applicationId);
+        $citizenId = $mAdvActivePrivateland->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);   // checkFullUpload
         $appDetails = AdvActivePrivateland::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-           // $appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';

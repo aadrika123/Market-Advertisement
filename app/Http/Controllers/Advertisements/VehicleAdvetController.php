@@ -1584,15 +1584,18 @@ class VehicleAdvetController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
+        $mAdvActiveVehicle = new AdvActiveVehicle();
         $moduleId = $this->_moduleIds;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $citizenId = $mAdvActiveVehicle->citizen_id;
+        $mAdvActiveVehicle = $mAdvActiveVehicle->getVehicleNo($applicationId); 
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
         $appDetails = AdvActiveVehicle::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
             // $appDetails->doc_verify_status = '1';
-            //$appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
