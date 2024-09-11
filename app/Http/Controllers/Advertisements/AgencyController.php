@@ -1520,9 +1520,9 @@ class AgencyController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
-        $mAdvActiveVehicle = new AdvActiveAgency();
+        $mAdvActiveAgency= new AdvActiveAgency();
         $moduleId = $this->_moduleId;
-        $mAdvActiveVehicle = $mAdvActiveVehicle->getAgencyNo($applicationId);
+        $mAdvActiveVehicle = $mAdvActiveAgency->getAgencyNo($applicationId);
         $citizenId = $mAdvActiveVehicle->citizen_id;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveAgency::find($applicationId);

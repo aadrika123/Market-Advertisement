@@ -666,8 +666,10 @@ class PrivateLandController extends Controller
         $roleId = WfRoleusermap::select('wf_role_id')->where('user_id', $req->auth['id'])->first()->wf_role_id;             // Get Current Role Id 
         $wfLevel = Config::get('constants.SELF-LABEL');
         if ($roleId == $wfLevel['DA']) {
-            $data = $data->get();                                                                                           // If DA Then show all docs
+            $data = $data->where('status', '1');
+            $data = $data->get();                                                                                    // If DA Then show all docs
         } else {
+            $data = $data->where('status', '1');
             $data = $data->where('current_status', '1')->get();                                                              // Other Than DA show only Active docs
         }
         // $data1 = collect($data)->map(function ($value) use ($appUrl) {

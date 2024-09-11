@@ -1586,8 +1586,8 @@ class VehicleAdvetController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $mAdvActiveVehicle = new AdvActiveVehicle();
         $moduleId = $this->_moduleIds;
-        $citizenId = $mAdvActiveVehicle->citizen_id;
         $mAdvActiveVehicle = $mAdvActiveVehicle->getVehicleNo($applicationId);
+        $citizenId = $mAdvActiveVehicle->citizen_id;
         $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveVehicle::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
