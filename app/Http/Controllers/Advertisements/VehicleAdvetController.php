@@ -622,6 +622,7 @@ class VehicleAdvetController extends Controller
         //     return $value;
         // });
         return $data;
+        return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
     }
 
     /**
@@ -1465,7 +1466,7 @@ class VehicleAdvetController extends Controller
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActiveVehicle->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1587,8 +1588,8 @@ class VehicleAdvetController extends Controller
         $mAdvActiveVehicle = new AdvActiveVehicle();
         $moduleId = $this->_moduleIds;
         $citizenId = $mAdvActiveVehicle->citizen_id;
-        $mAdvActiveVehicle = $mAdvActiveVehicle->getVehicleNo($applicationId); 
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
+        $mAdvActiveVehicle = $mAdvActiveVehicle->getVehicleNo($applicationId);
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveVehicle::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
