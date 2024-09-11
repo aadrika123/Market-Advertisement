@@ -621,7 +621,6 @@ class VehicleAdvetController extends Controller
         //     $value->doc_path = $appUrl . $value->doc_path;
         //     return $value;
         // });
-        return $data;
         return responseMsgs(true, "Uploaded Documents", $data, "010102", "1.0", "", "POST", $req->deviceId ?? "");
     }
 
