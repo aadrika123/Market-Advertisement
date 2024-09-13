@@ -543,7 +543,7 @@ class LodgeController extends Controller
         //     return $value;
         // });
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
 
@@ -2010,8 +2010,8 @@ class LodgeController extends Controller
                         throw new Exception("Invalid Data");
                 }
             }
-             // Combine the queries using union
-             $applications = $approved->union($active)->union($rejected);
+            // Combine the queries using union
+            $applications = $approved->union($active)->union($rejected);
 
 
             // Paginate the results
@@ -2152,14 +2152,13 @@ class LodgeController extends Controller
 
             // Fetch details from the model
             $data = $activelodge->getDetailsByIdjsk($applicationId)->first();
-            if(!$data){
+            if (!$data) {
                 $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
             }
-            if(!$data){
+            if (!$data) {
                 $data = $rejectedlodge->getDetailsById($applicationId)->first();
-
             }
-            
+
 
             if (!$data) {
                 throw new Exception("Application Not Found");
