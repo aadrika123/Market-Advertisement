@@ -975,7 +975,8 @@ class DharamshalaController extends Controller
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $citizenId = $mMarActiveDharamshala->citizen_id;
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveDharamshala->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1105,12 +1106,13 @@ class DharamshalaController extends Controller
         // }
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $citizenId = $appDetails->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-            //$appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
