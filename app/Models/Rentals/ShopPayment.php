@@ -240,7 +240,7 @@ class ShopPayment extends Model
         'mar_shop_payments.cheque_no',
         'mar_shop_payments.dd_no',
         'mar_shop_payments.bank_name',
-        'mar_shop_payments.transaction_id as transaction_no',
+        'mar_shop_payments.transaction_no as transaction_no',
         DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
         't1.shop_no',
         't1.allottee',

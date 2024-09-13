@@ -964,6 +964,8 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors()->first(), [], "055026", "1.0", responseTime(), "POST", $req->deviceId);
         }
         try {
+            $perPage = $req->perPage ? $req->perPage : 5;
+            $page = $req->page && $req->page > 0 ? $req->page : 1;
             $mMarShopPayment = new ShopPayment();
             $data = $mMarShopPayment->getListOfPayment();
             if ($req->date != NULL)
@@ -979,7 +981,24 @@ class ShopController extends Controller
             if ($req->userId != NULL)
                 $data = $data->where("user.id", $req->userId);
             $data = $data->groupBy('mar_shop_payments.user_id', 'user.name', 'user.mobile', 'circle_id', 'market_id',);
-            $list = paginator($data, $req);
+
+            $paginator = $data->paginate($perPage);
+            // Convert items to array and add date to each item
+            $items = $paginator->items();
+            $modifiedItems = array_map(function ($item) use ($req) {
+                // Convert stdClass object to array and add date
+                $itemArray = (array) $item;
+                $itemArray['date'] = $req->date;
+                return $itemArray;
+            }, $items);
+
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $modifiedItems,
+                "total" => $paginator->total(),
+                "date" => $req->date,
+            ];
             return responseMsgs(true, "List of Cash Verification", $list, "055026", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055026", "1.0", responseTime(), "POST", $req->deviceId);
@@ -994,7 +1013,7 @@ class ShopController extends Controller
     public function listDetailCashVerification(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'date' => 'required|date_format:Y-m-d',
+            'date' => 'nullable|date_format:Y-m-d',
             'reportType' => 'nullable|integer|in:0,1',          // 0 - Not Verified, 1 - Verified
             'shopType' => 'nullable|integer|in:1,2,3',          // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
             'market' => 'nullable|integer',
@@ -1580,8 +1599,4 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
-
-    
-
-   
 }
