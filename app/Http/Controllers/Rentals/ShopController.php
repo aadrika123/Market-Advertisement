@@ -953,7 +953,7 @@ class ShopController extends Controller
     public function listCashVerification(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'date' => 'nullable|date_format:Y-m-d',
+            'date' => 'required|date_format:Y-m-d',
             'reportType' => 'nullable|integer|in:0,1',        // 0 - Not Verified, 1 - Verified
             'shopType' => 'nullable|integer|in:1,2,3',
             'market' => 'nullable|integer',
