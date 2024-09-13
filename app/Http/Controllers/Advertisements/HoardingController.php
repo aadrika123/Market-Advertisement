@@ -1609,9 +1609,10 @@ class HoardingController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
+        
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $citizenId = $mAdvActiveHoarding->citizen_id;
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
