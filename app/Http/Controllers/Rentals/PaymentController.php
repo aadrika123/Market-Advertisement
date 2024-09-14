@@ -341,4 +341,28 @@ class PaymentController extends Controller
         }
         return $data;
     }
+
+    /**
+     * |search transaction Number for deactivation 
+     */
+    public function searchTransactionNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'transactionNo' => 'required|'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mShopPayment = new ShopPayment();
+            // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            DB::enableQueryLog();
+            $list = $mShopPayment->searchTranasction($req->transactionNo);                                       // Get List Shop FOr Payment
+            $list = paginator($list, $req);
+            // return [dd(DB::getQueryLog())];
+            return responseMsgs(true, "Transaction Fecth Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }

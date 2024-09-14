@@ -205,8 +205,7 @@ class ShopPayment extends Model
         'users.name'
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
-      ->join('users','users.id','mar_shop_payments.user_id')
-      ->where('payment_status', '2')
+      ->join('users', 'users.id', 'mar_shop_payments.user_id')
       ->where('cheque_date', '!=', NULL);
   }
   /** 
@@ -394,5 +393,10 @@ class ShopPayment extends Model
       ->whereIn('payment_mode', ['CHEQUE', 'DD'])
       ->where('mar_shop_payments.ulb_id', $ulbId)
       ->orderby('mar_shop_payments.id', 'Desc');
+  }
+  #search Transaction Number for Deactivation
+  public function searchTranasction($transactionNo)
+  {
+    return self::where('transaction_no', $transactionNo);
   }
 }
