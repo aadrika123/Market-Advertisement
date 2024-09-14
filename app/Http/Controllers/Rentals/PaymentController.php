@@ -359,6 +359,10 @@ class PaymentController extends Controller
             DB::enableQueryLog();
             $list = $mShopPayment->searchTranasction($req->transactionNo);                                       // Get List Shop FOr Payment
             $list = paginator($list, $req);
+            // Add the 'module' key with value 'Shop' to each item in the data list
+            foreach ($list['data'] as &$item) {
+                $item['module'] = 'Shop';
+            }
             // return [dd(DB::getQueryLog())];
             return responseMsgs(true, "Transaction Fecth Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {

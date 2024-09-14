@@ -397,6 +397,16 @@ class ShopPayment extends Model
   #search Transaction Number for Deactivation
   public function searchTranasction($transactionNo)
   {
-    return self::where('transaction_no', $transactionNo);
+    return self::select(
+      'mar_shop_payments.transaction_no',
+      'mar_shop_payments.payment_date',
+      'mar_shop_payments.cheque_no',
+      'mar_shop_payments.amount',
+      'mar_shop_payments.payment_status',
+      'mar_shops.shop_no',
+      'mar_shop_payments.bank_name'
+    )
+      ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
+      ->where('transaction_no', $transactionNo);
   }
 }
