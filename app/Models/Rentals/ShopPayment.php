@@ -261,10 +261,13 @@ class ShopPayment extends Model
    */
   public function deActiveTransaction($req)
   {
+    $user        = authUser($req);
+    $userId      = $user->id;
     $tranDetails = $tran = Self::find($req->tranId);
     $tran->payment_status = 0;
     $tran->deactive_date = Carbon::now();
     $tran->deactive_reason = $req->deactiveReason;
+    $tran->deactivated_by_id = $userId;
     $tran->save();
     $demandids = MarShopDemand::select('id')->where('shop_id', $tranDetails->shop_id)->whereBetween('monthly', [$tranDetails->paid_from, $tranDetails->paid_to])->get();
     $updateData = [
@@ -410,5 +413,36 @@ class ShopPayment extends Model
     )
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('transaction_no', $transactionNo);
+  }
+
+  /**
+   * | List Uncleared cheque or DD
+   */
+  public function transactionDeactList($req)
+  {
+    return  DB::table('mar_shop_payments')
+      ->select(
+        'mar_shop_payments.id',
+        'mar_shop_payments.payment_date as transaction_date',
+        'mar_shop_payments.amount',
+        'mar_shop_payments.paid_from',
+        'mar_shop_payments.paid_to',
+        'mar_shop_payments.cheque_no',
+        'mar_shop_payments.transaction_no',
+        'mar_shop_payments.is_verified as status',
+        'mar_shop_payments.cheque_date as recieve_date',
+        'mar_shop_payments.deactive_date',
+        'mar_shop_payments.deactive_reason',
+        DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
+        'mar_shop_payments.bank_name',
+        'mar_shop_payments.branch_name',
+        't1.allottee',
+        't1.contact_no',
+        'users.name as deactivated_by',
+        'mar_shop_payments.pmt_mode as payment_mode'
+      )
+      ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+      ->leftjoin('users', 'users.id', 'mar_shop_payments.deactivated_by_id')
+      ->where('mar_shop_payments.payment_status', 0);
   }
 }

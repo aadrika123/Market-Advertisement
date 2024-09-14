@@ -369,4 +369,36 @@ class PaymentController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+    /**
+     * |search transaction Number for deactivation 
+     */
+    public function transactionDeactList(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'required|date_format:Y-m-d',
+            'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
+            'verificationType ' => 'nullable|in:1,2,3',
+            'paymentMode'   => 'nullable|in:CHEQUE,DD,NEFT'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $mMarShopPayment = new ShopPayment();
+            $data = $mMarShopPayment->transactionDeactList($req);                                                   // Get List of Cheque or DD
+            if ($req->fromDate != NULL) {
+                $data = $data->whereBetween('mar_shop_payments.deactive_date', [$req->fromDate, $req->toDate]);
+            }
+            if ($req->verificationType != NULL) {
+                $data = $data->where('mar_shop_payments.payment_status', $req->verificationType);
+            }
+            if ($req->paymentMode != NULL) {
+                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+            }
+            $list = paginator($data, $req);
+            return responseMsgs(true, "List Of Deactivation Transaction", $list, "055015", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055015", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }
