@@ -439,10 +439,12 @@ class ShopPayment extends Model
         't1.allottee',
         't1.contact_no',
         'users.name as deactivated_by',
-        'mar_shop_payments.pmt_mode as payment_mode'
+        'mar_shop_payments.pmt_mode as payment_mode',
+        'mar_shops.shop_no as application_no'
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
       ->leftjoin('users', 'users.id', 'mar_shop_payments.deactivated_by_id')
+      ->join('mar_shops','mar_shops.id','mar_shop_payments.shop_id')
       ->where('mar_shop_payments.payment_status', 0);
   }
 }
