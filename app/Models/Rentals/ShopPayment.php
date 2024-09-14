@@ -195,15 +195,17 @@ class ShopPayment extends Model
         'mar_shop_payments.paid_to',
         'mar_shop_payments.cheque_no',
         'mar_shop_payments.transaction_no',
-        'mar_shop_payments.is_verified',
-          'mar_shop_payments.cheque_date as recieve_date',
+        'mar_shop_payments.is_verified as status',
+        'mar_shop_payments.cheque_date as recieve_date',
         DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
         'mar_shop_payments.bank_name',
         'mar_shop_payments.branch_name',
         't1.allottee',
-        't1.contact_no'
+        't1.contact_no',
+        'users.name'
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+      ->join('users','users.id','mar_shop_payments.user_id')
       ->where('payment_status', '2')
       ->where('cheque_date', '!=', NULL);
   }
