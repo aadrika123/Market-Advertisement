@@ -404,7 +404,8 @@ class ShopPayment extends Model
       'mar_shop_payments.amount',
       'mar_shop_payments.payment_status',
       'mar_shops.shop_no',
-      'mar_shop_payments.bank_name'
+      'mar_shop_payments.bank_name',
+      'mar_shop_payments.pmt_mode'
     )
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('transaction_no', $transactionNo);
