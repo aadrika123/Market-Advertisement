@@ -398,6 +398,7 @@ class ShopPayment extends Model
   public function searchTranasction($transactionNo)
   {
     return self::select(
+      'mar_shop_payments.id',
       'mar_shop_payments.transaction_no',
       'mar_shop_payments.payment_date',
       'mar_shop_payments.cheque_no',
