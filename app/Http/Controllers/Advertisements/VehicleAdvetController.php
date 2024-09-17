@@ -2012,9 +2012,7 @@ class VehicleAdvetController extends Controller
 
             $mMarActiveLodge = new AdvActiveVehicle();
             $btcList = $mMarActiveLodge->getLodgeListJsk($ulbId)
-                //->whereIn('mar_active_lodges.current_role_id', $roleId)
-                // ->whereIn('a.ward_mstr_id', $occupiedWards)
-                ->where('parked', true)
+                ->where('parked', 1)
                 ->orderByDesc('adv_active_vehicles.id');
             // ->get();
             if (trim($req->key))

@@ -546,7 +546,7 @@ class AdvActiveVehicle extends Model
             'wr.role_name as btc_by',
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
-            ->join('users', 'users.id', '=', 'adv_active_vehicles.user_id')
+            ->leftjoin('users', 'users.id', '=', 'adv_active_vehicles.user_id')
             ->where('adv_active_vehicles.ulb_id', $ulbId);
     }
 
