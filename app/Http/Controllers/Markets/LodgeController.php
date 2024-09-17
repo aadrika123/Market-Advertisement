@@ -2040,6 +2040,8 @@ class LodgeController extends Controller
     {
         try {
             // Variable initialization
+            $key = $req->filterBy;
+            $parameter = $req->parameter;
             $startTime = microtime(true);
 
             // $auth = auth()->user();
@@ -2064,8 +2066,22 @@ class LodgeController extends Controller
                 ->where('parked', true)
                 ->orderByDesc('mar_active_lodges.id');
             // ->get();
-            if (trim($req->key))
-                $btcList =  searchFilter($btcList, $req);
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $btcList->where('mar_active_lodges.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $btcList->where('mar_active_lodges.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $btcList->where('mar_active_lodges.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
             $list = paginator($btcList, $req);
 
             return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");

@@ -1520,7 +1520,7 @@ class AgencyController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
-        $mAdvActiveAgency= new AdvActiveAgency();
+        $mAdvActiveAgency = new AdvActiveAgency();
         $moduleId = $this->_moduleId;
         $mAdvActiveVehicle = $mAdvActiveAgency->getAgencyNo($applicationId);
         $citizenId = $mAdvActiveVehicle->citizen_id;
@@ -2171,6 +2171,8 @@ class AgencyController extends Controller
     {
         try {
             // Variable initialization
+            $key = $req->filterBy;
+            $parameter = $req->parameter;
             $startTime = microtime(true);
 
             // $auth = auth()->user();
@@ -2195,8 +2197,22 @@ class AgencyController extends Controller
                 ->where('parked', true)
                 ->orderByDesc('adv_active_agencies.id');
             // ->get();
-            if (trim($req->key))
-                $btcList =  searchFilter($btcList, $req);
+            if ($key && $parameter) {
+                $msg = "Self Advertisement application details according to $key";
+                switch ($key) {
+                    case 'mobileNo':
+                        $applications = $btcList->where('adv_active_agencies.mobile_no', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicantName':
+                        $applications = $btcList->where('adv_active_agencies.applicant', 'LIKE', "%$parameter%");
+                        break;
+                    case 'applicationNo':
+                        $applications = $btcList->where('adv_active_agencies.application_no', 'LIKE', "%$parameter%");
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
+            }
             $list = paginator($btcList, $req);
 
             return responseMsgs(true, "BTC Inbox List", $list, "050720", 1.0, responseTime(), "POST", "", "");
