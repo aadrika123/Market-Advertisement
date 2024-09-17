@@ -24,14 +24,13 @@ class AdvRejectedHoarding extends Model
             "workflow_tracks.message as reason",
             "workflow_tracks.workflow_id"
         )
-            ->leftJoin('workflow_tracks', function ($join) use ($workflowId ,$moduleId) {
+            ->leftJoin('workflow_tracks', function ($join) use ($workflowId, $moduleId) {
                 $join->on('workflow_tracks.ref_table_id_value', 'adv_rejected_hoardings.id')
                     ->where('workflow_tracks.status', true)
                     ->where('workflow_tracks.message', '<>', null)
-                    ->where('workflow_tracks.verification_status', 3)
+                    ->where('workflow_tracks.verification_status', 0)
                     ->where('workflow_tracks.workflow_id', $workflowId)
                     ->where('workflow_tracks.module_id', $moduleId);
-                    
             })
             ->where('adv_rejected_hoardings.citizen_id', $citizenId)
             ->orderByDesc('id');
