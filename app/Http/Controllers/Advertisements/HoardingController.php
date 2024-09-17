@@ -1609,10 +1609,10 @@ class HoardingController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
-        
+
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActiveHoarding->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1632,7 +1632,10 @@ class HoardingController extends Controller
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleId;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $mAdvActiveHoarding = new AdvActiveHoarding();
+        $mAdvActiveHoarding = $mAdvActiveHoarding->getHoardingDetails($applicationId);
+        $citizenId = $mAdvActiveHoarding->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
         $appDetails = AdvActiveHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {

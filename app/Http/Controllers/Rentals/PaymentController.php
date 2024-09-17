@@ -375,10 +375,10 @@ class PaymentController extends Controller
     public function transactionDeactList(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'fromDate' => 'required|date_format:Y-m-d',
-            'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
+            'fromDate'          => 'required|date_format:Y-m-d',
+            'toDate'            => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
             'verificationType ' => 'nullable|in:1,2,3',
-            'paymentMode'   => 'nullable|in:CHEQUE,DD,NEFT'
+            'paymentMode'      => 'nullable|in:CHEQUE,DD,NEFT'
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
