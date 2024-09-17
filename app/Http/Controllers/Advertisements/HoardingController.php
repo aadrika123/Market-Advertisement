@@ -685,14 +685,14 @@ class HoardingController extends Controller
                     $approvedHoarding->save();
 
                     // Save in Hording Renewal
-                    // $approvedHoarding = $mAdvActiveHoarding->replicate();
-                    // $approvedHoarding->approve_date = Carbon::now();
-                    // $approvedHoarding->license_no = $generatedId;
-                    // $approvedHoarding->setTable('adv_hoarding_renewals');
-                    // $approvedHoarding->id = $temp_id;
-                    // $approvedHoarding->save();
+                    $approvedHoarding = $mAdvActiveHoarding->replicate();
+                    $approvedHoarding->approve_date = Carbon::now();
+                    $approvedHoarding->license_no = $generatedId;
+                    $approvedHoarding->setTable('adv_hoarding_renewals');
+                    $approvedHoarding->id = $temp_id;
+                    $approvedHoarding->save();
 
-                    // $mAdvActiveHoarding->delete();
+                    $mAdvActiveHoarding->delete();
 
                     // Update in adv_hoardings (last_renewal_id)
 
@@ -1635,7 +1635,7 @@ class HoardingController extends Controller
         $mAdvActiveHoarding = new AdvActiveHoarding();
         $mAdvActiveHoarding = $mAdvActiveHoarding->getHoardingDetails($applicationId);
         $citizenId = $mAdvActiveHoarding->citizen_id;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode,$citizenId);
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $appDetails = AdvActiveHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
