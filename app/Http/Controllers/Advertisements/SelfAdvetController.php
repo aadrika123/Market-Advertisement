@@ -1122,6 +1122,8 @@ class SelfAdvetController extends Controller
             [
                 'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
                 'parameter' => 'nullable',
+                'dateFrom'  => 'nullable|date',
+                'dateUpto'  => 'nullable|date'
             ]
         );
 
@@ -1152,6 +1154,8 @@ class SelfAdvetController extends Controller
                     default:
                         throw new Exception("Invalid Data");
                 }
+            } elseif ($request->dateFrom && $request->dateUpto != null) {
+                $applications = $applications->whereBetween('adv_active_selfadvertisements.application_date', [$request->dateFrom, $request->dateUpto]);
             }
 
             $paginatedData = $applications->paginate($pages);
