@@ -754,6 +754,7 @@ class HoardingController extends Controller
             $metaReqs['workflowId'] = $mAdvActiveHoarding->workflow_id;
             $metaReqs['refTableDotId'] = "adv_active_hoardings.id";
             $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->status;
 
             $track = new WorkflowTrack();
             $req->request->add($metaReqs);
