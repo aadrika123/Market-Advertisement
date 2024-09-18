@@ -314,4 +314,5 @@ class AdvVehicle extends Model
             ->where('adv_vehicles.id', $appId);
         //->first();
     }
+    
 }

@@ -1029,6 +1029,8 @@ class VehicleAdvetController extends Controller
             [
                 'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo',
                 'parameter' => 'nullable',
+                'dateFrom'  => 'nullable|date',
+                'dateUpto'  => 'nullable|date'
             ]
         );
 
@@ -1058,6 +1060,8 @@ class VehicleAdvetController extends Controller
                     default:
                         throw new Exception("Invalid Data");
                 }
+            } elseif ($request->dateFrom && $request->dateUpto != null) {
+                $applications = $applications->whereBetween('adv_active_vehicles.application_date', [$request->dateFrom, $request->dateUpto]);
             }
 
             $paginatedData = $applications->paginate($pages);
@@ -2136,6 +2140,54 @@ class VehicleAdvetController extends Controller
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "050708", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+
+    public function searchApplicationViewById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mWfActiveDocument      = new WfActiveDocument();
+            $refDocUpload           = new DocumentUpload;
+            $mAdvVehicle = new AdvVehicle();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $this->Repository->getAllById($applicationId);   // Repository function to get Advertiesment Details
+
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+            $workflowId = $data->workflow_id;
+            $docdetail = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $docdetail = $refDocUpload->getDocUrl($docdetail);
+            $approveApplicationDetails['docdetail'] = $docdetail;
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
 }

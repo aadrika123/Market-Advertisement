@@ -2,7 +2,19 @@
 
 namespace App\Repositories\SelfAdvets;
 
+use App\Models\Advertisements\AdvActiveAgency;
+use App\Models\Advertisements\AdvActivePrivateland;
 use App\Models\Advertisements\AdvActiveSelfadvertisement;
+use App\Models\Advertisements\AdvActiveVehicle;
+use App\Models\Advertisements\AdvAgency;
+use App\Models\Advertisements\AdvAgencyRenewal;
+use App\Models\Advertisements\AdvPrivateland;
+use App\Models\Advertisements\AdvPrivatelandRenewal;
+use App\Models\Advertisements\AdvRejectedAgency;
+use App\Models\Advertisements\AdvRejectedPrivateland;
+use App\Models\Advertisements\AdvRejectedVehicle;
+use App\Models\Advertisements\AdvVehicle;
+use App\Models\Advertisements\AdvVehicleRenewal;
 use App\Repositories\SelfAdvets\iSelfAdvetRepo;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -112,5 +124,180 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             ->orderByDesc('id');
         // ->whereIn('workflow_id', $workflowIds);
         return $specialInbox;
+    }
+    /**
+     * |Get Details By Id For Admin Panel (JSK)
+     */
+
+    public function getAllById($id)
+    {
+        try {
+            $test = AdvVehicle::select("id")->find($id);
+            $table = "adv_vehicles";
+            $application = AdvVehicle::select(
+                "adv_vehicles.*",
+                "ulb_masters.ulb_name",
+                // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
+            );
+            if (!$test) {
+                $test = AdvRejectedVehicle::select("id")->find($id);
+                $table = "adv_rejected_vehicles";
+                $application = AdvRejectedVehicle::select(
+                    "adv_rejected_vehicles.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $test = AdvActiveVehicle::select("id")->find($id);
+                $table = "adv_active_vehicles";
+                $application = AdvActiveVehicle::select(
+                    "adv_active_vehicles.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $table = "adv_vehicle_renewals";
+                $application = AdvVehicleRenewal::select(
+                    "adv_vehicle_renewals.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+
+            $application = $application
+                ->leftjoin("ulb_masters", function ($join) use ($table) {
+                    $join->on("ulb_masters.id", "=", $table . ".ulb_id");
+                })
+                // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
+                //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
+                // })
+                // ->join("ulb_masters", "ulb_masters.id", $table . ".ulb_id")
+                ->where($table . '.id', $id)
+                ->first();
+            return $application;
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    /**
+     * |Get Details By Id For Admin Panel (JSK)
+     */
+
+    public function getAllPvtLandById($id)
+    {
+        try {
+            $test = AdvPrivateland::select("id")->find($id);
+            $table = "adv_privatelands";
+            $application = AdvPrivateland::select(
+                "adv_privatelands.*",
+                "ulb_masters.ulb_name",
+                // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
+            );
+            if (!$test) {
+                $test = AdvRejectedPrivateland::select("id")->find($id);
+                $table = "adv_rejected_privatelands";
+                $application = AdvRejectedPrivateland::select(
+                    "adv_rejected_privatelands.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $test = AdvActivePrivateland::select("id")->find($id);
+                $table = "adv_active_privatelands";
+                $application = AdvActivePrivateland::select(
+                    "adv_active_privatelands.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $table = "adv_privateland_renewals";
+                $application = AdvPrivatelandRenewal::select(
+                    "adv_privateland_renewals.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+
+            $application = $application
+                ->leftjoin("ulb_masters", function ($join) use ($table) {
+                    $join->on("ulb_masters.id", "=", $table . ".ulb_id");
+                })
+                // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
+                //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
+                // })
+                // ->join("ulb_masters", "ulb_masters.id", $table . ".ulb_id")
+                ->where($table . '.id', $id)
+                ->first();
+            return $application;
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+    /**
+     * |Get Details By Id For Admin Panel (JSK)
+     */
+
+    public function getAllAgencyLandById($id)
+    {
+        try {
+            $test = AdvAgency::select("id")->find($id);
+            $table = "adv_agencies";
+            $application = AdvAgency::select(
+                "adv_agencies.*",
+                "ulb_masters.ulb_name",
+                // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
+            );
+            if (!$test) {
+                $test = AdvRejectedAgency::select("id")->find($id);
+                $table = "adv_rejected_agencies";
+                $application = AdvRejectedAgency::select(
+                    "adv_rejected_agencies.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $test = AdvActiveAgency::select("id")->find($id);
+                $table = "adv_active_agencies";
+                $application = AdvActivePrivateland::select(
+                    "adv_active_agencies.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+            if (!$test) {
+                $table = "adv_agency_renewals";
+                $application = AdvAgencyRenewal::select(
+                    "adv_agency_renewals.*",
+                    "ulb_masters.ulb_name",
+                    // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
+                    // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
+                );
+            }
+
+            $application = $application
+                ->leftjoin("ulb_masters", function ($join) use ($table) {
+                    $join->on("ulb_masters.id", "=", $table . ".ulb_id");
+                })
+                // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
+                //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
+                // })
+                // ->join("ulb_masters", "ulb_masters.id", $table . ".ulb_id")
+                ->where($table . '.id', $id)
+                ->first();
+            return $application;
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
     }
 }

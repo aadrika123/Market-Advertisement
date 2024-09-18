@@ -2033,6 +2033,10 @@ class HostelController extends Controller
                     default:
                         throw new Exception("Invalid Data");
                 }
+            } elseif ($request->dateFrom && $request->dateUpto != null) {
+                $approved = $approved->whereBetween('application_date', [$request->dateFrom, $request->dateUpto]);
+                $active = $active->whereBetween('application_date', [$request->dateFrom, $request->dateUpto]);
+                $rejected = $rejected->whereBetween('application_date', [$request->dateFrom, $request->dateUpto]);
             }
 
             // Combine the queries using union

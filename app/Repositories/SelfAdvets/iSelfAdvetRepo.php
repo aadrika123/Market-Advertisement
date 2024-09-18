@@ -15,4 +15,7 @@ interface iSelfAdvetRepo
 
     public function specialPrivateLandInbox($workflowIds);
     public function specialAgencyLicenseInbox($workflowIds);
+    public function getAllById($applicationId);
+    public function getAllPvtLandById($applicationId);
+    public function getAllAgencyLandById($applicationId);
 }

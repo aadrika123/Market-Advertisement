@@ -2408,4 +2408,54 @@ class SelfAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050708", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
+    /**
+     * |Function For get Details By Id  for Admin Panel
+     */
+    public function searchApplicationViewById(Request $req)
+    {
+        // Validate the request
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|integer'
+            ]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $applicationId = $req->applicationId;
+            $mWfActiveDocument      = new WfActiveDocument();
+            $refDocUpload           = new DocumentUpload;
+            $mAdvSelfadvertisement = new AdvSelfadvertisement();
+            $mtransaction = new AdvMarTransaction();
+
+            // Fetch details from the model
+            $data = $mAdvSelfadvertisement->getAllById($applicationId);
+            if (!$data) {
+                throw new Exception("Application Not Found");
+            }
+            // Fetch transaction details
+            $tranDetails = $mtransaction->getTranByApplicationId($applicationId, $data)->first();
+
+            $approveApplicationDetails['basicDetails'] = $data;
+
+            if ($tranDetails) {
+                $approveApplicationDetails['paymentDetails'] = $tranDetails;
+            } else {
+                $approveApplicationDetails['paymentDetails'] = null;
+            }
+            $workflowId = $data->workflow_id;
+            $docdetail = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            $docdetail = $refDocUpload->getDocUrl($docdetail);
+            $approveApplicationDetails['docdetail'] = $docdetail;
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            // Handle exception and return error message
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
 }

@@ -97,6 +97,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/get-application-financial-year-wise', 'getApplicationFinancialYearWise');      // 36 ( Get Application Financial Year Wise )
         Route::post('advert/self/get-application-display-wise', 'getApplicationDisplayWise');                   // 37 ( Get Application Financial Year Wise )
         Route::post('advert/self/payment-collection', 'paymentCollection');                                     // 38 ( Get Application Financial Year Wise )
+        Route::post('advert/self/search-application-view-by-id', 'searchApplicationViewById');                                     // 38 ( Get Application Financial Year Wise )
 
         //written by prity pandey
         Route::post('advert/self/list-btc-inbox-jsk', 'listBtcInboxJsk');
@@ -179,6 +180,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         // Route::post('advert/vehicle/reupload-document', 'reuploadDocument');                                    // 30 ( Reupload Rejected Document )
         Route::post('advert/vehicle/get-application-between-date', 'getApplicationBetweenDate');                // 31 ( Get Application Between two date )
         Route::post('advert/vehicle/payment-collection', 'paymentCollection');                                  // 32 ( Get Application Financial Year Wise )
+        Route::post('advert/vehicle/search-application-view-by-id', 'searchApplicationViewById');                                  // 32 ( Get Application Financial Year Wise )
 
         //written by prity pandey
         Route::post('advert/vehicle/list-btc-inbox-jsk', 'listBtcInboxJsk');
@@ -232,6 +234,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/pvt-land/get-application-between-date', 'getApplicationBetweenDate');                   // 35 ( Get Application Between two date )
         Route::post('advert/pvt-land/get-application-display-wise', 'getApplicationDisplayWise');                   // 36 ( Get Application Financial Year Wise )
         Route::post('advert/pvt-land/payment-collection', 'paymentCollection');                                     // 37 ( Get Application Financial Year Wise )
+        Route::post('advert/pvt-land/search-application-view-by-id', 'searchApplicationViewById');                                     // 37 ( Get Application Financial Year Wise )
 
         //written by prity pandey
         Route::post('advert/pvt-land/list-btc-inbox-jsk', 'listBtcInboxJsk');
@@ -290,6 +293,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/list-jsk-applied-application', 'listJskAppliedApplication');
         Route::post('advert/agency/approved/get-details-by-id', 'getApproveDetailsById');
         Route::post('advert/agency/view-approve-document', 'getUploadDocuments');
+        Route::post('advert/agency/view-approve-document', 'getUploadDocuments');
+        Route::post('advert/agency/search-application-view-by-id', 'searchApplicationViewById');
 
         //written by prity pandey
         Route::post('advert/agency/list-btc-inbox-jsk', 'listBtcInboxJsk');
