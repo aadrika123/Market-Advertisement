@@ -882,6 +882,15 @@ class SelfAdvetController extends Controller
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";
             }
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
+            $metaReqs['workflowId'] = $mAdvActiveSelfadvertisement->workflow_id;
+            $metaReqs['refTableDotId'] = "adv_active_hoardings.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->status;
+
+            $track = new WorkflowTrack();
+            $req->request->add($metaReqs);
+            $track->saveTrack($req);
             DB::commit();
             return responseMsgs(true, $msg, "", '050119', 01, responseTime(), 'POST', $req->deviceId);
         } catch (Exception $e) {
