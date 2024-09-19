@@ -1477,7 +1477,7 @@ class ShopController extends Controller
                 $paymentMode = $req->paymentMode;
             }
             $mMarShopPayment = new ShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,)->get();                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->paymentMode != 0)
@@ -1486,7 +1486,6 @@ class ShopController extends Controller
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
-            $data->get();
             // Calculate counts
             $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->count();
             // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
