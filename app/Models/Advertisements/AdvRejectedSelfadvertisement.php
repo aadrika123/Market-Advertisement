@@ -15,8 +15,7 @@ class AdvRejectedSelfadvertisement extends Model
      */
     public function listRejected($citizenId)
     {
-        return AdvRejectedSelfadvertisement::where('citizen_id', $citizenId)
-            ->select(
+        return AdvRejectedSelfadvertisement::select(
                 'adv_rejected_selfadvertisements.id',
                 'adv_rejected_selfadvertisements.application_no',
                 DB::raw("TO_CHAR(adv_rejected_selfadvertisements.application_date, 'DD-MM-YYYY') as application_date"),
@@ -26,9 +25,16 @@ class AdvRejectedSelfadvertisement extends Model
                 'adv_rejected_selfadvertisements.entity_address',
                 'adv_rejected_selfadvertisements.payment_status',
                 'adv_rejected_selfadvertisements.rejected_date',
-                'um.ulb_name as ulb_name'
+                'um.ulb_name as ulb_name',
+                'workflow_tracks.message as reason'
             )
-            ->join('ulb_masters as um','um.id','=','adv_rejected_selfadvertisements.ulb_id')
+            ->join('ulb_masters as um', 'um.id', '=', 'adv_rejected_selfadvertisements.ulb_id')
+            ->leftJoin('workflow_tracks', function ($join) {
+                $join->on('workflow_tracks.ref_table_id_value', '=', 'adv_rejected_selfadvertisements.id')
+                    ->where('workflow_tracks.verification_status', 0)
+                    ->where('workflow_tracks.message', "<>", null);
+            })
+            ->where('adv_rejected_selfadvertisements.citizen_id', $citizenId)
             ->orderByDesc('adv_rejected_selfadvertisements.id')
             ->get();
     }
@@ -39,22 +45,22 @@ class AdvRejectedSelfadvertisement extends Model
     public function listJskRejectedApplication()
     {
         return AdvRejectedSelfadvertisement::select(
-                'adv_rejected_selfadvertisements.id',
-                'application_no',
-                DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
-                'applicant',
-                'entity_name',
-                'entity_address',
-                'payment_status',
-                'rejected_date',
-                'mobile_no',
-                'wr.role_name as rejected_by',
-                'remarks as reason',
-                DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
-            )
+            'adv_rejected_selfadvertisements.id',
+            'application_no',
+            DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
+            'applicant',
+            'entity_name',
+            'entity_address',
+            'payment_status',
+            'rejected_date',
+            'mobile_no',
+            'wr.role_name as rejected_by',
+            'remarks as reason',
+            DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
+        )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
             ->orderByDesc('adv_rejected_selfadvertisements.id');
-            //->get();
+        //->get();
     }
 
     /**
@@ -100,7 +106,7 @@ class AdvRejectedSelfadvertisement extends Model
         )
             ->orderByDesc('id')->get();
     }
-    
+
     /**
      * | Reject List For Report
      */
