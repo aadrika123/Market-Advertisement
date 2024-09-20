@@ -92,7 +92,8 @@ class BanquetMarriageHallController extends Controller
     public function addNew(StoreRequest $req)
     {
         try {
-            // Variable initialization
+            // Variable initialization 
+            
             $mMarActiveBanquteHall = $this->_modelObj;
             $user         = authUser($req);
             $dataToAdd = [];
