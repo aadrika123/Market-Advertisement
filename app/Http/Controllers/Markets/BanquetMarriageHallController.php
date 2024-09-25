@@ -93,7 +93,7 @@ class BanquetMarriageHallController extends Controller
     {
         try {
             // Variable initialization 
-            
+
             $mMarActiveBanquteHall = $this->_modelObj;
             $user         = authUser($req);
             $dataToAdd = [];
@@ -1106,12 +1106,13 @@ class BanquetMarriageHallController extends Controller
         // }
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $citizenId = $appDetails->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
             $appDetails->doc_verify_status = '0';
-            //$appDetails->parked = NULL;
+            $appDetails->parked = NULL;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
