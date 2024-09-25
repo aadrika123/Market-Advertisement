@@ -973,9 +973,10 @@ class LodgeController extends Controller
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
         $totalApproveDoc = $refDocList->count();
+        $citizenId = $mMarActiveLodge->citizen_id;
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
