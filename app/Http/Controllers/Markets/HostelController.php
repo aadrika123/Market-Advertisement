@@ -1000,7 +1000,22 @@ class HostelController extends Controller
         ];
         // $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
-        return $this->isAllDocs($applicationId, $refDocList, $mMarActiveHostel);
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $totalApproveDoc = $refDocList->count();
+        $citizenId = $mMarActiveHostel->citizen_id;
+        // self Advertiesement List Documents
+        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
+        if ($totalApproveDoc == $totalNoOfDoc) {
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
+        } else {
+            return 0;
+        }
+        // return $this->isAllDocs($applicationId, $refDocList, $mMarActiveHostel);
     }
 
     /**
