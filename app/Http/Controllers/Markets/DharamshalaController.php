@@ -703,7 +703,7 @@ class DharamshalaController extends Controller
                 $rejecteddharamshala->setTable('mar_rejected_dharamshalas');
                 $rejecteddharamshala->id = $mMarActiveDharamshala->id;
                 $rejecteddharamshala->rejected_date = Carbon::now();
-                $rejecteddharamshala->remarks = $req->remarks;
+                $rejecteddharamshala->remarks = $req->comment;
 
                 $metaReqs = [
                     'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),

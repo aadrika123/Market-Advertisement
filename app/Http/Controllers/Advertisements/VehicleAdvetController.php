@@ -799,7 +799,7 @@ class VehicleAdvetController extends Controller
                 $rejectedVehicle->setTable('adv_rejected_vehicles');
                 $rejectedVehicle->id = $mAdvActiveVehicle->id;
                 $rejectedVehicle->rejected_date = Carbon::now();
-                $rejectedVehicle->remarks = $req->remarks;
+                $rejectedVehicle->remarks = $req->comment;
                 $rejectedVehicle->save();
                 $mAdvActiveVehicle->delete();
                 $msg = "Application Successfully Rejected !!";

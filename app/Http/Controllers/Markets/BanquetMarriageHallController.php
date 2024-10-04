@@ -714,6 +714,7 @@ class BanquetMarriageHallController extends Controller
                 $rejectedbanqutehall->setTable('mar_rejected_banqute_halls');
                 $rejectedbanqutehall->id = $mMarActiveBanquteHall->id;
                 $rejectedbanqutehall->rejected_date = Carbon::now();
+                $rejectedbanqutehall->remarks = $req->comment;
 
                 $metaReqs = [
                     'moduleId'          => Config::get('workflow-constants.MARKET_MODULE_ID'),

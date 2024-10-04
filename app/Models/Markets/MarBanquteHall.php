@@ -362,13 +362,13 @@ class MarBanquteHall extends Model
             $data = $approved;
         }
         if ($request->payMode == 'ONLINE') {
-            $data = $approved->where('payment_mode', $request->payMode);
+            $data = $approved->where('adv_mar_transactions.payment_mode', $request->payMode);
         }
         if ($request->payMode == 'CASH') {
-            $data = $approved->where('payment_mode', $request->payMode);
+            $data = $approved->where('adv_mar_transactions.payment_mode', $request->payMode);
         }
         if ($request->payMode == 'CHEQUE') {
-            $data = $approved->where('payment_mode', $request->payMode);
+            $data = $approved->where('adv_mar_transactions.payment_mode', $request->payMode);
         }
         if ($request->payMode == 'DD') {
             $data = $approved->where('payment_mode', $request->payMode);

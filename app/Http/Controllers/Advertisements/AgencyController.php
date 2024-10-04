@@ -766,7 +766,7 @@ class AgencyController extends Controller
                 $rejectedAgency->setTable('adv_rejected_agencies');
                 $rejectedAgency->id = $mAdvActiveAgency->id;
                 $rejectedAgency->rejected_date = Carbon::now();
-                $rejectedAgency->remarks =  $req->remarks;
+                $rejectedAgency->remarks =  $req->comment;
                 $rejectedAgency->save();
                 $mAdvActiveAgency->delete();
                 $msg = "Application Successfully Rejected !!";

@@ -745,7 +745,7 @@ class HoardingController extends Controller
                 $rejectedHoarding->setTable('adv_rejected_hoardings');
                 $rejectedHoarding->id = $mAdvActiveHoarding->id;
                 $rejectedHoarding->rejected_date = Carbon::now();
-                $rejectedHoarding->remarks = $req->remarks;
+                $rejectedHoarding->remarks = $req->comment;
                 $rejectedHoarding->save();
                 $mAdvActiveHoarding->delete();
                 $msg = "Application Successfully Rejected !!";

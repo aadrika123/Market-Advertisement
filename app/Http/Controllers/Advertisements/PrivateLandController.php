@@ -791,7 +791,7 @@ class PrivateLandController extends Controller
                 $rejectedPrivateland->setTable('adv_rejected_privatelands');
                 $rejectedPrivateland->id = $mAdvActivePrivateland->id;
                 $rejectedPrivateland->rejected_date = Carbon::now();
-                $rejectedPrivateland->remarks = $req->remarks;
+                $rejectedPrivateland->remarks = $req->comment;
                 $rejectedPrivateland->save();
                 $mAdvActivePrivateland->delete();
                 $msg = "Application Successfully Rejected !!";

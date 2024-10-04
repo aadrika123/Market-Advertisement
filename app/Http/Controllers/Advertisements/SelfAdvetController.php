@@ -877,7 +877,7 @@ class SelfAdvetController extends Controller
                 $rejectedSelfadvertisement->setTable('adv_rejected_selfadvertisements');
                 $rejectedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
                 $rejectedSelfadvertisement->rejected_date = Carbon::now();
-                $rejectedSelfadvertisement->remarks = $req->remarks;
+                $rejectedSelfadvertisement->remarks = $req->comment;
                 $rejectedSelfadvertisement->save();
                 $mAdvActiveSelfadvertisement->delete();
                 $msg = "Application Successfully Rejected !!";
