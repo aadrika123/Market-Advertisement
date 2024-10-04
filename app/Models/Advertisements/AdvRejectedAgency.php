@@ -34,10 +34,9 @@ class AdvRejectedAgency extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication($userId)
+    public function listJskRejectedApplication()
     {
-        return AdvRejectedAgency::where('user_id', $userId)
-            ->select(
+        return AdvRejectedAgency::select(
                 'adv_rejected_agencies.id',
                 'application_no',
                 'mobile_no',

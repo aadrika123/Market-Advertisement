@@ -994,7 +994,7 @@ class AgencyController extends Controller
             // Variable initialization
             $userId = $req->auth['id'];
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $applications = $mAdvRejectedAgency->listJskRejectedApplication($userId);
+            $applications = $mAdvRejectedAgency->listJskRejectedApplication();
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
