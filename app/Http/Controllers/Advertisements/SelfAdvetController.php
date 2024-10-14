@@ -655,7 +655,7 @@ class SelfAdvetController extends Controller
         //     return $value;
         // });
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
     /**
@@ -2100,7 +2100,7 @@ class SelfAdvetController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-        $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+            $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
 
             if (!$data) {
                 throw new Exception("Application Not Found");

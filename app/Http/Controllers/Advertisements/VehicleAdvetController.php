@@ -592,7 +592,7 @@ class VehicleAdvetController extends Controller
         //     $value->doc_path = $appUrl . $value->doc_path;
         //     return $value;
         // });
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
     /**
