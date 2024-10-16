@@ -1479,7 +1479,7 @@ class ShopController extends Controller
             $mMarShopPayment = new ShopPayment();
             $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
-                $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
+                $data = $data->where('t2.construction', $req->shopCategoryId);
             if ($req->paymentMode != 0)
                 $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
             if ($req->marketId != 0)
