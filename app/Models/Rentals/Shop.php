@@ -159,6 +159,7 @@ class Shop extends Model
       'ulb.ulb_name',
       'ulb.toll_free_no',
       'ulb.current_website as website',
+      'ulb.address as ulb_address',
       'msp.cheque_date',
       'msp.cheque_no',
       'msp.bank_name',
