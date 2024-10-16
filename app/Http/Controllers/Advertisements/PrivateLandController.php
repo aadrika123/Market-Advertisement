@@ -507,7 +507,7 @@ class PrivateLandController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
-            return responseMsgs(false, [$e->getMessage(), $e->getLine()], "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), $e->getLine(), "", "050410", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 
