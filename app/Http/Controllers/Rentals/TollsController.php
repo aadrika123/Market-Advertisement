@@ -352,20 +352,20 @@ class TollsController extends Controller
     public function getTollCollectionSummary(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
 
         if ($validator->fails()) {
             return  $validator->errors();
         }
         try {
-            if ($req->fromDate == NULL) {
+            if ($req->dateFrom == NULL) {
                 $fromDate = date('Y-m-d');
                 $toDate = date('Y-m-d');
             } else {
-                $fromDate = $req->fromDate;
-                $toDate = $req->toDate;
+                $fromDate = $req->dateFrom;
+                $toDate = $req->dateTo;
             }
             $mMarTollPayment = new MarTollPayment();
             $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
