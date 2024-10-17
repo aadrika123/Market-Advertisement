@@ -632,7 +632,7 @@ class AdvHoarding extends Model
             'adv_hoardings.id',
             'adv_hoardings.workflow_id',
             'adv_hoardings.approve_date',
-            'adv_hoardings.applicant as applicant_name',
+            'adv_hoardings.property_owner_name as applicant_name',
             'adv_hoardings.application_no',
             'adv_hoardings.license_no',
             'ulb_id',
