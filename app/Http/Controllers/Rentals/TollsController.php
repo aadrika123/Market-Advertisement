@@ -360,6 +360,7 @@ class TollsController extends Controller
             return  $validator->errors();
         }
         try {
+            
             if ($req->dateFrom == NULL) {
                 $fromDate = date('Y-m-d');
                 $toDate = date('Y-m-d');
