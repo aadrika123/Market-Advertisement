@@ -83,7 +83,7 @@ class AdvHoarding extends Model
      */
     public function listApproved($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList1();
+        $allApproveList = $this->allApproveList1($citizenId);
         // foreach ($allApproveList as $key => $list) { 
         //     $current_date = Carbon::now()->format('Y-m-d');
         //     $notify_date = carbon::parse($list['valid_upto'])->subDay(30)->format('Y-m-d');
