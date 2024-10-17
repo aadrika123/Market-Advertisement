@@ -48,7 +48,7 @@ class AdvHoarding extends Model
     /**
      * | All Approve liST
      */
-    public function allApproveList1()
+    public function allApproveList1($citizenId)
     {
         return AdvHoarding::select(
             'id',
@@ -73,6 +73,7 @@ class AdvHoarding extends Model
             DB::raw("'hoarding' as type"),
             DB::raw("'' as entity_name")
         )
+            ->where('citizen_id', $citizenId)
             ->orderByDesc('id');
         // ->get();
     }
@@ -150,7 +151,7 @@ class AdvHoarding extends Model
      */
     public function listUnpaid($citizenId, $usertype)
     {
-        $allApproveList = $this->allApproveList1();
+        $allApproveList = $this->allApproveList1($citizenId);
         if ($usertype == 'Citizen') {
             return $allApproveList->where('citizen_id', $citizenId)->where('payment_status', '0');
         } else {
