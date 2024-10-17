@@ -449,6 +449,7 @@ class AdvHoarding extends Model
             'adv_hoardings.workflow_id',
             'adv_hoardings.display_area',
             'adv_hoardings.application_date as applyDate',
+            'adv_hoardings.property_owner_whatsapp_no as whatsappNo',
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             'ly.string_parameter as licenseYear',
