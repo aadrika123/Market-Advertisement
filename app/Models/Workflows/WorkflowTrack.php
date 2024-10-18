@@ -82,6 +82,7 @@ class WorkflowTrack extends Model
             ->leftJoin('wf_roles as wr', 'wr.id', '=', 'workflow_tracks.receiver_role_id')
             ->join('users', 'users.id', '=', 'workflow_tracks.user_id')
             ->where('citizen_id', null)
+            ->where('workflow_tracks.status', true)
             ->orderByDesc('workflow_tracks.id')
             ->get();
     }
