@@ -46,10 +46,12 @@ class ShopController extends Controller
      */
     private $_mShops;
     private $_tranId;
+    private $_mShopDemand;
 
     public function __construct()
     {
         $this->_mShops = new Shop();
+        $this->_mShopDemand   = new MarShopDemand();
     }
 
     /**
@@ -98,7 +100,9 @@ class ShopController extends Controller
         try {
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
+            $mMarShopDemand    = new MarShopDemand();
             $relativePath = Config::get('constants.SHOP_PATH');
+            $currentMonth = Carbon::now()->startOfMonth();
 
             // if (isset($req->photo1Path)) {
             //     $image = $req->file('photo1Path');
@@ -162,6 +166,18 @@ class ShopController extends Controller
             ];
             // return $metaReqs;
             $tempId = $this->_mShops->create($metaReqs)->id;
+            $month= $currentMonth->format('Y-m-d');
+            if ($req->arrear != null) {
+                $demandReqs = [
+                    'shop_id' => $tempId,
+                    'amount' => $req->arrear,
+                    'monthly' => $month,
+                    'payment_date' => Carbon::now(),
+                    'user_id' => $req->auth['id'] ?? 0,
+                    'ulb_id' => $req->auth['ulb_id'] ?? 0,
+                ];
+                $this->_mShopDemand::create($demandReqs);
+            }
             $mDocuments = $req->documents;
             $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
