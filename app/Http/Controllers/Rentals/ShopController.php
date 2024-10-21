@@ -8,6 +8,7 @@ use App\Http\Requests\Shop\ShopRequest;
 use App\MicroServices\DocumentUpload;
 use App\MicroServices\IdGeneration;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
 use App\Models\Rentals\MarDailycollection;
@@ -96,25 +97,33 @@ class ShopController extends Controller
     {
         try {
             $docUpload = new DocumentUpload;
+            $mWfActiveDocument = new WfActiveDocument();
             $relativePath = Config::get('constants.SHOP_PATH');
 
-            if (isset($req->photo1Path)) {
-                $image = $req->file('photo1Path');
-                $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
-                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
-                $imageName1Absolute = $relativePath;
-            }
+            // if (isset($req->photo1Path)) {
+            //     $image = $req->file('photo1Path');
+            //     $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
+            //     $newRequest = new Request([
+            //         'document' => $image
+            //     ]);
+            //     $imageName1 = $docUpload->upload($newRequest);
+            //     // $absolutePath = $relativePath;
+            //     $imageName1Absolute = $relativePath;
+            // }
 
-            if (isset($req->photo2Path)) {
-                $image = $req->file('photo2Path');
-                $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
-                $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
-                $imageName2Absolute = $relativePath;
-            }
+            // if (isset($req->photo2Path)) {
+            //     $image = $req->file('photo2Path');
+            //     $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
+            //     $newRequest = new Request([
+            //         'document' => $image
+            //     ]);
+            //     $imageName2 = $docUpload->upload($newRequest);
+            //     // $absolutePath = $relativePath;
+            //     $imageName2Absolute = $relativePath;
+            // }
 
             $shopNo = $this->shopIdGeneration($req->marketId);
+
             $metaReqs = [
                 'circle_id' => $req->circleId,
                 'market_id' => $req->marketId,
@@ -148,17 +157,82 @@ class ShopController extends Controller
                 'last_tran_id' => $req->lastTranId,
                 'electricity_no' => $req->electricityNo,
                 'water_consumer_no' => $req->waterConsumerNo,
-                'user_id' => $req->auth['id'],
-                'ulb_id' => $req->auth['ulb_id']
+                'user_id' => $req->auth['id'] ?? 0,
+                'ulb_id' => $req->auth['ulb_id'] ?? 0
             ];
             // return $metaReqs;
-            $this->_mShops->create($metaReqs);
+            $tempId = $this->_mShops->create($metaReqs)->id;
+            $mDocuments = $req->documents;
+            $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
             return responseMsgs(true, "Successfully Saved", ['shopNo' => $shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
+    }
+    public function uploadDocument($tempId, $documents, $auth)
+    {
+        $docUpload = new DocumentUpload;
+        $mWfActiveDocument = new WfActiveDocument();
+        $mMarShop = new Shop();
+        // $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
+        $relativePath = Config::get('constants.SHOP_PATH');
+
+        collect($documents)->map(function ($doc) use ($tempId, $docUpload, $mWfActiveDocument, $mMarShop, $relativePath, $auth) {
+            $metaReqs = array();
+            $getApplicationDtls = $mMarShop->getApplicationDtls($tempId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            //$imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            $newRequest = new Request([
+                'document' => $documentImg
+            ]);
+            $imageName = $docUpload->upload($newRequest);
+
+            $metaReqs['moduleId'] = Config::get('workflow-constants.MARKET_MODULE_ID');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = 0;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
+            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
+            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
+            $a = new Request($metaReqs);
+            // $mWfActiveDocument->postDocuments($a,$auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            // foreach($metaReqs as $key=>$val)
+            // {
+            //     $mWfActiveDocument->$key = $val;
+            // }
+            // $mWfActiveDocument->save();
+        });
+    }
+    /**
+     * |view uploaded documents
+     */
+    public function viewShopDocuments(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|integer'
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), "", "050710", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+        $workflowId = shop::find($req->applicationId);
+        $mWfActiveDocument = new WfActiveDocument();
+        $data = array();
+        if ($req->applicationId) {
+            $data = $mWfActiveDocument->uploadDocumentsShopViewById($req->applicationId);
+        } else {
+            throw new Exception("Required Application Id And Application Type");
+        }
+        $data = (new DocumentUpload())->getDocUrl($data);
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
     /**

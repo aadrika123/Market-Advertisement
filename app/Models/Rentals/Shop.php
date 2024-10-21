@@ -228,4 +228,14 @@ class Shop extends Model
       ->orderByDesc('mar_shops.id');
     // ->get();
   }
+  /**
+   * | Get Application details by Id
+   */
+  public function getApplicationDtls($appId)
+  {
+
+    return Shop::select('*')
+      ->where('id', $appId)
+      ->first();
+  }
 }

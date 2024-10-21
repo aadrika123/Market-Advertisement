@@ -108,6 +108,17 @@ class WfActiveDocument extends Model
             ->get();
         return $data;
     }
+    /**
+     * | view Uploaded documents for Shops
+     */
+    public function uploadDocumentsShopViewById($appId)
+    {
+        $data = WfActiveDocument::select('*', DB::raw("replace(doc_code,'_',' ') as doc_val"), DB::raw("CONCAT(wf_active_documents.relative_path,'/',wf_active_documents.document) as doc_path"))
+            ->where(['active_id' => $appId, 'workflow_id' => 0])
+            ->where('current_status', '1')
+            ->get();
+        return $data;
+    }
 
     /**
      * | view Uploaded documents for Work flow
@@ -321,8 +332,8 @@ class WfActiveDocument extends Model
             "module_id" => $req['moduleId'],
             "relative_path" => $req['relativePath'],
             //"document" => $req['document1111']??null,
-            "uploaded_by" =>  Auth()->user()->id,
-            "uploaded_by_type" => Auth()->user()->user_type,
+            // "uploaded_by" =>  Auth()->user()->id,
+            // "uploaded_by_type" => Auth()->user()->user_type,
             "remarks" => $req->remarks ?? null,
             "doc_code" => $req['docCode'],
             "owner_dtl_id" => $req['ownerDtlId'],
