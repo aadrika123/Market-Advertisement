@@ -270,7 +270,7 @@ class AdvActiveHoarding extends Model
                     DB::raw("CASE 
                      WHEN adv_rejected_hoardings.current_role_id = 6 THEN ''
                      WHEN adv_rejected_hoardings.current_role_id = 9 THEN ''
-                     WHEN adv_rejected_hoardings.current_role_id = 10 THEN ''
+                     WHEN adv_rejected_hoardings.current_role_id = 10 THEN 'Application Is Rejected By The Executive Engineers'
                     ELSE 'Unknown Role'
                     END AS application_at")
                 )
