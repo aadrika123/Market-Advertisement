@@ -248,9 +248,9 @@ class AdvActiveHoarding extends Model
                     'tm.type_inner as hoardingCategory',
                     'p.string_parameter as licenseYear',
                     DB::raw("CASE 
-                    WHEN adv_active_hoardings.current_role_id = 6 THEN 'AT DEALING ASSISTANT'
-                    WHEN adv_active_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
-                    WHEN adv_active_hoardings.current_role_id = 10 THEN 'AT EXECUTIVE OFFICER'
+                    WHEN adv_active_hoardings.current_role_id = 6 THEN 'Pending AT DEALING ASSISTANT'
+                    WHEN adv_active_hoardings.current_role_id = 9 THEN 'Pending AT SECTION INCHARGE'
+                    WHEN adv_active_hoardings.current_role_id = 10 THEN 'Pending AT EXECUTIVE OFFICER'
                     ELSE 'Unknown Role'
                     END AS application_at")
                 )
@@ -308,7 +308,7 @@ class AdvActiveHoarding extends Model
                     DB::raw("CASE 
                     WHEN adv_hoardings.current_role_id = 6 THEN 'AT DEALING ASSISTANT'
                     WHEN adv_hoardings.current_role_id = 9 THEN 'SECTION INCHARGE'
-                    WHEN adv_hoardings.current_role_id = 10 THEN 'AT EXECUTIVE OFFICER'
+                    WHEN adv_hoardings.current_role_id = 10 THEN 'Application Is Approve Payment Pending'
                     ELSE 'Unknown Role'
                     END AS application_at")
                 )
