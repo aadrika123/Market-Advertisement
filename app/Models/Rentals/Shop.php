@@ -238,4 +238,28 @@ class Shop extends Model
       ->where('id', $appId)
       ->first();
   }
+
+  /**
+   * | List of shop collection between two given date
+   */
+  public function listShop($user)
+  {
+    return DB::table('mar_shops')
+      ->select(
+        'mar_shops.shop_no as shop_no',
+        'mar_shops.allottee',
+        'mar_shops.market_id',
+        'mar_shops.allottee as ownerName',
+        // 'mst.shop_type',
+        'mkt.market_name',
+        'mc.circle_name'
+
+      )
+      // ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
+      ->leftjoin('m_circle as mc', 'mc.id', '=', 'mar_shops.circle_id')
+      ->leftjoin('m_market as mkt', 'mkt.id', '=', 'mar_shops.market_id')
+      ->where('mar_shops.status',1)
+      ->where('mar_shops.ulb_id',$user->ulb_id)
+      ->orderBy('mar_shops','Desc');
+  }
 }
