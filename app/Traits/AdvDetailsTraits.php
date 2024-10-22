@@ -187,6 +187,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
             ['displayString' => 'Whatsapp No', 'key' => 'whatsappNo', 'value' => $data['fax']],
+            ['displayString' => 'Alternate Mobile No', 'key' => 'whatsappNo', 'value' => $data['telephone']],
             ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst_no']],
             ['displayString' => 'Agency Pan No', 'key' => 'agencyPanNo', 'value' => $data['pan_no']],
             ['displayString' => 'Blacklisted', 'key' => 'blacklisted', 'value' => $data['blacklisted'] == 0 ? "No" : "Yes"],
