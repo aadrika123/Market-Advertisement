@@ -166,7 +166,7 @@ class ShopController extends Controller
             ];
             // return $metaReqs;
             $tempId = $this->_mShops->create($metaReqs)->id;
-            $month= $currentMonth->format('Y-m-d');
+            $month = $currentMonth->format('Y-m-d');
             if ($req->arrear != null) {
                 $demandReqs = [
                     'shop_id' => $tempId,
@@ -1634,7 +1634,7 @@ class ShopController extends Controller
             DB::beginTransaction();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
             DB::commit();
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['tranId' => $res['lastTranId']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['tranId' => $res['lastTranId'], 'tranNo' => $res['tranNo']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);

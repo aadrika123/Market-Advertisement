@@ -178,6 +178,7 @@ class ShopPayment extends Model
     $shop['amount'] = $amount;
     $shop['lastTranId'] = $createdPayment->id;
     $ret['tranId'] = $tranId;
+    $ret['tranNo'] = $createdPayment->transaction_no;
     return $shop;
   }
 
