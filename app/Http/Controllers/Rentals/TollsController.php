@@ -677,4 +677,60 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
+     /**
+     * | List shop Collection between two dates
+     * | API - 35
+     * | Function - 35
+     */
+    public function listTools(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'marketId' => 'nullable|integer',
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            "userId"  => 'nullable',
+            "zoneId" => 'nullable'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        // return $req->all();
+        try {
+            $user = authUser($req);
+            $perPage = $req->perPage ? $req->perPage : 5;
+            $paymentMode = null;
+            if (!isset($req->dateFrom))
+                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
+            else
+                $fromDate = $req->dateFrom;
+            if (!isset($req->dateTo))
+                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
+            else
+                $toDate = $req->dateTo;
+
+            if ($req->paymentMode) {
+                $paymentMode = $req->paymentMode;
+            }
+            $mMarTolls = new MarToll();
+            $data = $mMarTolls->listToll($user);                              // Get Shop Payment collection between givrn two dates
+            if ($req->marketId != 0)
+                $data = $data->where('mar_tolls.market_id', $req->marketId);
+            if ($req->zoneId != 0)
+                $data = $data->where('mar_tolls.circle_id', $req->zoneId);
+            if ($req->dateFrom != null && $req->dateTo != null)
+                $data = $data->whereBetween('mar_tolls.created_at', [$fromDate, $toDate]);
+            $paginator = $data->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+
+            ];
+            return responseMsgs(true, "Shop List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }
+

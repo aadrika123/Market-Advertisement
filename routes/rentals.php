@@ -113,6 +113,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         // Route::post('rental/generate-payment-order-id', 'generatePaymentOrderId');                                     // 25 ( Generate Payment Order ID)
         Route::post('rental/toll/generate-payment-order-id', 'generatePaymentOrderId');                                        // 34  ( Generate Payment Order ID)
         Route::post('rental/toll-reciept-list', 'tollRecieptList');
+        Route::post('rental/toll-toll-list', 'listTools');
     });
 
 

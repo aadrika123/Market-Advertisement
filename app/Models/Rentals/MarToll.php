@@ -153,4 +153,29 @@ class MarToll extends Model
             ->where('mtp.id', $id)
             ->first();
     }
+
+    /**
+     * | List of shop collection between two given date
+     */
+    public function listToll($user)
+    {
+        return DB::table('mar_tolls')
+            ->select(
+                'mar_tolls.toll_no',
+                'mar_tolls.market_id',
+                'mar_tolls.vendor_name as ownerName',
+                // 'mst.shop_type',
+                'mkt.market_name',
+                'mc.circle_name',
+                'mar_tolls.rate',
+                'mar_tolls.address',
+                'mar_tolls.mobile as contact_no',
+            )
+            // ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
+            ->leftjoin('m_circle as mc', 'mc.id', '=', 'mar_tolls.circle_id')
+            ->leftjoin('m_market as mkt', 'mkt.id', '=', 'mar_tolls.market_id')
+            ->where('mar_tolls.status', 1)
+            ->where('mar_tolls.ulb_id', $user->ulb_id)
+            ->orderBy('mar_tolls', 'Desc');
+    }
 }
