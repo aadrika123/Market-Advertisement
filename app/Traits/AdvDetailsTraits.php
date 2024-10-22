@@ -231,7 +231,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
             ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
             ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' =>Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
-            ['displayString' => 'Applicant', 'key' => 'applicant', 'value' => $data['applicant']],
+            ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
@@ -250,12 +250,13 @@ trait AdvDetailsTraits
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
             ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
             ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
+            ['displayString' => 'Brand Display Address', 'key' => 'brandDisplayAddress', 'value' => $data['brand_display_address']],
             ['displayString' => 'Resident Ward No', 'key' => 'residentWardNo', 'value' => $data['resident_ward_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentWardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entityWardNo', 'value' => $data['entity_ward_no']],
             ['displayString' => 'Display Type', 'key' => 'dispayType', 'value' => $data['dispayType']],
             ['displayString' => 'Installation Location', 'key' => 'installationLocation', 'value' => $data['installationLocation']],
-            ['displayString' => 'Typology', 'key' => 'typology', 'value' => $data['typology']],
+            ['displayString' => 'Typology Type', 'key' => 'typologyType', 'value' => $data['typology']],
             ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':"N/A"))],
         ]);
     }

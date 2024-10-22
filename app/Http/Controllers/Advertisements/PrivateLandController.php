@@ -589,7 +589,7 @@ class PrivateLandController extends Controller
         }
         // 
         $data = (new DocumentUpload())->getDocUrl($data);
-        return $data;
+        return responseMsgs(true, "Data Fetched", remove_null($data), "050118", "1.0", responseTime(), "POST", "");
     }
 
     /**
