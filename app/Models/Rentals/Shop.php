@@ -252,7 +252,11 @@ class Shop extends Model
         'mar_shops.allottee as ownerName',
         // 'mst.shop_type',
         'mkt.market_name',
-        'mc.circle_name'
+        'mc.circle_name',
+        'mar_shops.rate',
+        'mar_shops.area',
+        'mar_shops.address',
+        'mar_shops.contact_no',
 
       )
       // ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
