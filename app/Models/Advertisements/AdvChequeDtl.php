@@ -675,7 +675,7 @@ class AdvChequeDtl extends Model
     public function updateChequeDtls($request, $workflowId, $applicationId, $tranId)
     {
         return self::where('workflow_id', $workflowId)
-            ->where('transaction_id', $tranId)
+            ->where('application_id', $applicationId)
             ->update(
                 [
                     'cheque_no' => $request->chequeNo,
