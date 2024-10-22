@@ -178,7 +178,7 @@ class ShopPayment extends Model
     $shop['amount'] = $amount;
     $shop['lastTranId'] = $createdPayment->id;
     $ret['tranId'] = $tranId;
-    $ret['tranNo'] = $createdPayment->transaction_no;
+    $shop['tranNo'] = $createdPayment->transaction_no;
     return $shop;
   }
 
@@ -445,7 +445,7 @@ class ShopPayment extends Model
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
       ->leftjoin('users', 'users.id', 'mar_shop_payments.deactivated_by_id')
-      ->join('mar_shops','mar_shops.id','mar_shop_payments.shop_id')
+      ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
       ->where('mar_shop_payments.payment_status', 0);
   }
 }
