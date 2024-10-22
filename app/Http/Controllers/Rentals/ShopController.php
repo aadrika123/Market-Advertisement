@@ -1546,7 +1546,8 @@ class ShopController extends Controller
             'marketId' => 'nullable|integer',
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable'
+            'paymentMode'  => 'nullable',
+            "userId"  => 'nullable'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -1572,6 +1573,8 @@ class ShopController extends Controller
                 $data = $data->where('t2.construction', $req->shopCategoryId);
             if ($req->paymentMode != 0)
                 $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+            if ($req->userId != 0)
+                $data = $data->where('mar_shop_payments.user_id', $req->userId);
             if ($req->marketId != 0)
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
