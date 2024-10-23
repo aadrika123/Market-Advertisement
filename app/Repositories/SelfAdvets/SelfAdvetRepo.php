@@ -226,6 +226,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 "ulb_ward_masters.ward_name  as ward_id",
                 "permanantWard.ward_name as permanent_ward_id",
                 "entityWard.ward_name as entity_ward_id",
+                "adv_typology_mstrs.descriptions as typology",
                 "ulb_masters.ulb_name",
                 // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
             );
@@ -237,6 +238,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                     "ulb_ward_masters.ward_name  as ward_id",
                     "permanantWard.ward_name as permanent_ward_id",
                     "entityWard.ward_name as entity_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
                 );
@@ -249,6 +251,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                     "ulb_ward_masters.ward_name  as ward_id",
                     "permanantWard.ward_name as permanent_ward_id",
                     "entityWard.ward_name as entity_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -261,6 +264,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                     "ulb_ward_masters.ward_name  as ward_id",
                     "permanantWard.ward_name as permanent_ward_id",
                     "entityWard.ward_name as entity_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -274,6 +278,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
                 ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
                 ->join('ulb_ward_masters as entityWard', 'entityWard.id', $table . ".entity_ward_id")
+                ->join('adv_typology_mstrs', 'adv_typology_mstrs.id', $table . ".typology")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
                 //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
                 // })
@@ -311,7 +316,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             if (!$test) {
                 $test = AdvActiveAgency::select("id")->find($id);
                 $table = "adv_active_agencies";
-                $application = AdvActivePrivateland::select(
+                $application = AdvActiveAgency::select(
                     "adv_active_agencies.*",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
