@@ -2151,7 +2151,7 @@ class PrivateLandController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
+            $data = $this->Repository->getAllPvtLandById($applicationId);
 
             if (!$data) {
                 throw new Exception("Application Not Found");

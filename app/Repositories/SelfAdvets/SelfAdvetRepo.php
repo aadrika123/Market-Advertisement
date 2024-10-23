@@ -301,6 +301,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             $table = "adv_agencies";
             $application = AdvAgency::select(
                 "adv_agencies.*",
+                "ref_adv_paramstrings.string_parameter as entity_type",
                 "ulb_masters.ulb_name",
                 // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
             );
@@ -309,6 +310,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_rejected_agencies";
                 $application = AdvRejectedAgency::select(
                     "adv_rejected_agencies.*",
+                    "ref_adv_paramstrings.string_parameter as entity_type",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
                 );
@@ -318,6 +320,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_active_agencies";
                 $application = AdvActiveAgency::select(
                     "adv_active_agencies.*",
+                    "ref_adv_paramstrings.string_parameter as entity_type",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -337,6 +340,7 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 ->leftjoin("ulb_masters", function ($join) use ($table) {
                     $join->on("ulb_masters.id", "=", $table . ".ulb_id");
                 })
+                ->join('ref_adv_paramstrings', 'ref_adv_paramstrings.id', $table . ".entity_type")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
                 //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
                 // })

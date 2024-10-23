@@ -2336,11 +2336,11 @@ class SelfAdvetController extends Controller
 
         try {
             $applicationId = $req->applicationId;
-            $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
+            $mAdvSelfadvertisement = new AdvSelfadvertisement();
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
+            $data = $mAdvSelfadvertisement->getAllById($applicationId);
 
             if (!$data) {
                 throw new Exception("Application Not Found");
