@@ -2246,7 +2246,7 @@ class AgencyController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $mAdvActiveSelfadvertisement->getDetailsByIdjsk($applicationId)->first();
+            $data = $this->Repository->getAllAgencyLandById($applicationId);
 
             if (!$data) {
                 throw new Exception("Application Not Found");
