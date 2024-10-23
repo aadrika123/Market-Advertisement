@@ -136,6 +136,12 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             $table = "adv_vehicles";
             $application = AdvVehicle::select(
                 "adv_vehicles.*",
+                "ref_adv_paramstrings.string_parameter as vehicle_type",
+                "displayType.string_parameter as display_type",
+                "ulb_ward_masters.ward_name  as ward_id",
+                "permanantWard.ward_name as permanent_ward_id",
+                "entityWard.ward_name as entity_ward_id",
+                "adv_typology_mstrs.descriptions as typology",
                 "ulb_masters.ulb_name",
                 // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
             );
@@ -144,6 +150,11 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_rejected_vehicles";
                 $application = AdvRejectedVehicle::select(
                     "adv_rejected_vehicles.*",
+                    "ref_adv_paramstrings.string_parameter as vehicle_type",
+                    "displayType.string_parameter as display_type",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
                 );
@@ -153,6 +164,11 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_active_vehicles";
                 $application = AdvActiveVehicle::select(
                     "adv_active_vehicles.*",
+                    "ref_adv_paramstrings.string_parameter as vehicle_type",
+                    "displayType.string_parameter as display_type",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -162,6 +178,11 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_vehicle_renewals";
                 $application = AdvVehicleRenewal::select(
                     "adv_vehicle_renewals.*",
+                    "ref_adv_paramstrings.string_parameter as vehicle_type",
+                    "displayType.string_parameter as display_type",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "adv_typology_mstrs.descriptions as typology",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -172,6 +193,13 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 ->leftjoin("ulb_masters", function ($join) use ($table) {
                     $join->on("ulb_masters.id", "=", $table . ".ulb_id");
                 })
+                ->leftjoin("ref_adv_paramstrings", function ($join) use ($table) {
+                    $join->on("ref_adv_paramstrings.id", "=", $table . ".vehicle_type");
+                })
+                ->join('ref_adv_paramstrings as displayType', 'displayType.id', $table . ".display_type")
+                ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
+                ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
+                ->join('adv_typology_mstrs', 'adv_typology_mstrs.id', $table . ".typology")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
                 //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
                 // })
@@ -195,6 +223,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
             $table = "adv_privatelands";
             $application = AdvPrivateland::select(
                 "adv_privatelands.*",
+                "ulb_ward_masters.ward_name  as ward_id",
+                "permanantWard.ward_name as permanent_ward_id",
+                "entityWard.ward_name as entity_ward_id",
                 "ulb_masters.ulb_name",
                 // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
             );
@@ -203,6 +234,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_rejected_privatelands";
                 $application = AdvRejectedPrivateland::select(
                     "adv_rejected_privatelands.*",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "entityWard.ward_name as entity_ward_id",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
                 );
@@ -212,6 +246,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_active_privatelands";
                 $application = AdvActivePrivateland::select(
                     "adv_active_privatelands.*",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "entityWard.ward_name as entity_ward_id",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -221,6 +258,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 $table = "adv_privateland_renewals";
                 $application = AdvPrivatelandRenewal::select(
                     "adv_privateland_renewals.*",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "entityWard.ward_name as entity_ward_id",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -231,6 +271,9 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 ->leftjoin("ulb_masters", function ($join) use ($table) {
                     $join->on("ulb_masters.id", "=", $table . ".ulb_id");
                 })
+                ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
+                ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
+                ->join('ulb_ward_masters as entityWard', 'entityWard.id', $table . ".entity_ward_id")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
                 //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
                 // })

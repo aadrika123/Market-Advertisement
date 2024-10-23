@@ -372,7 +372,7 @@ class AdvSelfadvertisement extends Model
 
         //return $details;
     }
-    
+
     /**
      * |
      */
@@ -383,6 +383,11 @@ class AdvSelfadvertisement extends Model
             $table = "adv_selfadvertisements";
             $application = AdvSelfadvertisement::select(
                 "adv_selfadvertisements.*",
+                "ref_adv_paramstrings.string_parameter as display_type",
+                "adv_masters.string_parameter as installation_location",
+                "adv_string.string_parameter as license_year",
+                "ulb_ward_masters.ward_name  as ward_id",
+                "adv_selfadv_categories.type as advt_category",
                 "ulb_masters.ulb_name",
                 // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name, '$table' AS tbl")
             );
@@ -391,6 +396,11 @@ class AdvSelfadvertisement extends Model
                 $table = "adv_rejected_selfadvertisements";
                 $application = AdvRejectedSelfadvertisement::select(
                     "adv_rejected_selfadvertisements.*",
+                    "ref_adv_paramstrings.string_parameter as display_type",
+                    "adv_masters.string_parameter as installation_location",
+                    "adv_string.string_parameter as license_year",
+                    "ulb_ward_masters.ward_name as  ward_id",
+                    "adv_selfadv_categories.type as advt_category",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
                 );
@@ -400,6 +410,13 @@ class AdvSelfadvertisement extends Model
                 $table = "adv_active_selfadvertisements";
                 $application = AdvActiveSelfadvertisement::select(
                     "adv_active_selfadvertisements.*",
+                    "ref_adv_paramstrings.string_parameter as display_type",
+                    "adv_masters.string_parameter as installation_location",
+                    "adv_string.string_parameter as license_year",
+                    "ulb_ward_masters.ward_name  as ward_id",
+                    "permanantWard.ward_name as permanent_ward_id",
+                    "entityWard.ward_name as entity_ward_id",
+                    "adv_selfadv_categories.type as advt_category",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -409,6 +426,12 @@ class AdvSelfadvertisement extends Model
                 $table = "trade_renewals";
                 $application = AdvSelfadvetRenewal::select(
                     "adv_selfadvet_renewals.*",
+                    "ref_adv_paramstrings.string_parameter as display_type",
+                    "adv_masters.string_parameter as installation_location",
+                    "adv_string.string_parameter as license_year",
+                    "ulb_ward_masters.ward_name as ward_id",
+                    "entityWard.ward_name as entity_ward_id",
+                    "adv_selfadv_categories.type as advt_category",
                     "ulb_masters.ulb_name",
                     // DB::raw("ulb_ward_masters.ward_name AS ward_no, 
                     // new_ward.ward_name as new_ward_no,ulb_masters.ulb_name,'$table' AS tbl")
@@ -419,9 +442,17 @@ class AdvSelfadvertisement extends Model
                 ->leftjoin("ulb_masters", function ($join) use ($table) {
                     $join->on("ulb_masters.id", "=", $table . ".ulb_id");
                 })
-                // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
-                //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
-                // })
+                ->leftjoin("ref_adv_paramstrings", function ($join) use ($table) {
+                    $join->on("ref_adv_paramstrings.id", "=", $table . ".display_type");
+                })
+                ->leftjoin("ref_adv_paramstrings as adv_masters", function ($join) use ($table) {
+                    $join->on("adv_masters.id", "=", $table . ".installation_location");
+                })
+                ->join('ref_adv_paramstrings as adv_string', 'adv_string.id', $table . ".license_year")
+                ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
+                ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
+                ->join('ulb_ward_masters as entityWard', 'entityWard.id', $table . ".entity_ward_id")
+                ->join('adv_selfadv_categories', 'adv_selfadv_categories.id', $table . ".advt_category")
                 // ->join("ulb_masters", "ulb_masters.id", $table . ".ulb_id")
                 ->where($table . '.id', $id)
                 ->first();
