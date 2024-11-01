@@ -1522,6 +1522,14 @@ class CashVerificationController extends Controller
 
             // Paginate the results
             $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+            $documentUpload = new DocumentUpload();
+            $documentsWithUrls = $documentUpload->getDocUrl(collect($paginatedData->items()));
+            // Map the `doc_path` to each transaction item based on `reference_no`
+            $dataWithDocPaths = $paginatedData->items();
+            foreach ($dataWithDocPaths as $item) {
+                $matchingDoc = $documentsWithUrls->firstWhere('id', $item->id);
+                $item->doc_path = $matchingDoc['doc_path'] ?? null;
+            }
 
             $list = [
                 "current_page" => $paginatedData->currentPage(),
@@ -1660,6 +1668,14 @@ class CashVerificationController extends Controller
 
             // Paginate the results
             $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+            $documentUpload = new DocumentUpload();
+            $documentsWithUrls = $documentUpload->getDocUrl(collect($paginatedData->items()));
+            // Map the `doc_path` to each transaction item based on `reference_no`
+            $dataWithDocPaths = $paginatedData->items();
+            foreach ($dataWithDocPaths as $item) {
+                $matchingDoc = $documentsWithUrls->firstWhere('id', $item->id);
+                $item->doc_path = $matchingDoc['doc_path'] ?? null;
+            }
 
             $list = [
                 "current_page" => $paginatedData->currentPage(),
@@ -1798,6 +1814,14 @@ class CashVerificationController extends Controller
 
             // Paginate the results
             $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
+            $documentUpload = new DocumentUpload();
+            $documentsWithUrls = $documentUpload->getDocUrl(collect($paginatedData->items()));
+            // Map the `doc_path` to each transaction item based on `reference_no`
+            $dataWithDocPaths = $paginatedData->items();
+            foreach ($dataWithDocPaths as $item) {
+                $matchingDoc = $documentsWithUrls->firstWhere('id', $item->id);
+                $item->doc_path = $matchingDoc['doc_path'] ?? null;
+            }
 
             $list = [
                 "current_page" => $paginatedData->currentPage(),
