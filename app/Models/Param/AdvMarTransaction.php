@@ -172,7 +172,7 @@ class AdvMarTransaction extends Model
             "users.name as user_name",
             'adv_cheque_dtls.status'
         )
-            ->join('adv_cheque_dtls', 'adv_cheque_dtls.transaction_id', '=', 'adv_mar_transactions.id')
+            ->join('adv_cheque_dtls', 'adv_cheque_dtls.application_id', '=', 'adv_mar_transactions.application_id')
             ->leftJoin('users', 'users.id', 'adv_cheque_dtls.user_id')
             ->whereIn('payment_mode', ['CHEQUE', 'DD'])
             ->where('adv_mar_transactions.ulb_id', $ulbId)
