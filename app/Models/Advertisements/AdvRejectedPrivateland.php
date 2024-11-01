@@ -78,6 +78,6 @@ class AdvRejectedPrivateland extends Model
      */
     public function rejectListForReport()
     {
-        return AdvRejectedPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Reject' as application_status"));
+        return AdvRejectedPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type','entity_name', DB::raw("'Reject' as application_status"));
     }
 }

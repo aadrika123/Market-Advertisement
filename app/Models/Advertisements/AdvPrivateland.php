@@ -300,7 +300,7 @@ class AdvPrivateland extends Model
      */
     public function approveListForReport()
     {
-        return AdvPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type', DB::raw("'Approve' as application_status"));
+        return AdvPrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type','entity_name', DB::raw("CAST('Approve' AS VARCHAR) as application_status"));
     }
 
     public function getDetailsById($appId)

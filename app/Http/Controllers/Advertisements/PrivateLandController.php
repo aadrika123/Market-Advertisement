@@ -1719,18 +1719,26 @@ class PrivateLandController extends Controller
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $pendingList = $mAdvActivePrivateland->pendingListForReport();
 
-            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $pendingList = $pendingList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $pendingList = $pendingList->where('entity_ward_id', $req->entityWard);
+            }
 
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $rejectList = $mAdvRejectedPrivateland->rejectListForReport();
 
-            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
+            $rejectList = $rejectList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $rejectList = $rejectList->where('entity_ward_id', $req->entityWard);
+            }
+
 
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
                 $data = $approveList->union($pendingList)->union($rejectList);
             }
+
             if ($req->applicationStatus == 'Reject') {
                 $data = $rejectList;
             }
