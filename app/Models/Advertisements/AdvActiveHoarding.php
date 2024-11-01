@@ -506,7 +506,7 @@ class AdvActiveHoarding extends Model
      */
     public function pendingListForReport()
     {
-        return AdvActiveVehicle::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
+        return AdvActiveHoarding::select('id', 'application_no', 'application_date', 'application_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"));
     }
 
     /**

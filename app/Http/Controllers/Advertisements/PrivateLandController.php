@@ -1697,7 +1697,7 @@ class PrivateLandController extends Controller
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
             'applicationStatus' => 'required|in:All,Approve,Reject',
-            'entityWard' => 'required|integer',
+            'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
@@ -1711,7 +1711,10 @@ class PrivateLandController extends Controller
             $mAdvPrivateland = new AdvPrivateland();
             $approveList = $mAdvPrivateland->approveListForReport();
 
-            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $approveList = $approveList->where('entity_ward_id', $req->entityWard);
+            }
 
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $pendingList = $mAdvActivePrivateland->pendingListForReport();
