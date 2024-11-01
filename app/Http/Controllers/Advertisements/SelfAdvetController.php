@@ -1981,7 +1981,7 @@ class SelfAdvetController extends Controller
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'required|in:All,ONLINE,CASH,CHEQUE/DD',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
