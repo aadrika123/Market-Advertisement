@@ -1799,7 +1799,7 @@ class SelfAdvetController extends Controller
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
-            'entityWard' => 'required|integer',
+            'entityWard' => 'nullable|integer',
             'perPage' => 'required|integer',
             'financialYear' => 'required|integer',
         ]);
@@ -1812,7 +1812,10 @@ class SelfAdvetController extends Controller
             $mAdvSelfAdvertisement = new AdvSelfAdvertisement();
             $approveList = $mAdvSelfAdvertisement->approveListForReport();
 
-            $approveList = $approveList->where('application_type', $req->applicationType)->where('entity_ward_id', $req->entityWard)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            $approveList = $approveList->where('application_type', $req->applicationType)->where('ulb_id', $ulbId)->where('license_year', $req->financialYear);
+            if ($req->entityWard != null) {
+                $approveList  = $approveList->where('entity_ward_id', $req->entityWard);
+            }
 
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $pendingList = $mAdvActiveSelfadvertisement->pendingListForReport();
