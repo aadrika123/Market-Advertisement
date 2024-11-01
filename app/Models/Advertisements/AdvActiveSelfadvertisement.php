@@ -468,7 +468,7 @@ class AdvActiveSelfadvertisement extends Model
      */
     public function pendingListForReport()
     {
-        return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Active' as application_status"));
+        return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type','entity_name', DB::raw("'Active' as application_status"));
     }
 
     public function listAppliedApplicationsJsk()

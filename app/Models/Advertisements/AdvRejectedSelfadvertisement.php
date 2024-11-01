@@ -112,6 +112,6 @@ class AdvRejectedSelfadvertisement extends Model
      */
     public function rejectListForReport()
     {
-        return AdvRejectedSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Reject' as application_status"));
+        return AdvRejectedSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type','entity_name', DB::raw("'Reject' as application_status"));
     }
 }

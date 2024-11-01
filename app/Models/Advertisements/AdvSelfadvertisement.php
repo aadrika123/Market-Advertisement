@@ -341,7 +341,7 @@ class AdvSelfadvertisement extends Model
      */
     public function approveListForReport()
     {
-        return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type', DB::raw("'Approve' as application_status"));
+        return AdvSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type','entity_name', DB::raw("'Approve' as application_status"));
     }
 
     public function getDetailsById($applicationId)
