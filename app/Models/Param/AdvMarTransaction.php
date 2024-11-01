@@ -441,6 +441,8 @@ class AdvMarTransaction extends Model
             'adv_selfadvertisements.application_no',
             DB::raw("TO_CHAR(transaction_deactivate_dtls.deactive_date, 'DD-MM-YYYY') as deactive_date"),
             "transaction_deactivate_dtls.reason",
+            "transaction_deactivate_dtls.reference_no",
+            "transaction_deactivate_dtls.unique_id",
             "users.name as deactivated_by"
         )
             ->leftjoin('transaction_deactivate_dtls', 'transaction_deactivate_dtls.tran_id', '=', 'adv_mar_transactions.id')
@@ -609,7 +611,7 @@ class AdvMarTransaction extends Model
         //->get();
     }
 
-    
+
     /**
      * |update cheque number or bank name
      * 

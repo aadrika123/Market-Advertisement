@@ -164,13 +164,13 @@ class CashVerificationController extends Controller
             $date = date('Y-m-d', strtotime($request->date));
             // $workflowId = Config::get('workflow-constants.' . $workflowType);
             $mTempTransaction = new TempTransaction();
-            $details = $mTempTransaction->transactionList($date, $userId, $ulbId,$workflowType);
+            $details = $mTempTransaction->transactionList($date, $userId, $ulbId, $workflowType);
 
             if ($details->isEmpty()) {
                 throw new Exception("No Application Found for this id");
             }
 
-           $data = [
+            $data = [
                 'workflowType' => $workflowType,
                 'transactions' => collect($details)->where('workflow_id', $workflowType)->values(),
                 'cash' => collect($details)->where('payment_mode', 'CASH')->sum('amount'),
@@ -181,7 +181,7 @@ class CashVerificationController extends Controller
                 'collectorName' => collect($details)[0]->user_name,
                 'date' => Carbon::parse($date)->format('d-m-Y'),
                 'verifyStatus' => false,
-                
+
             ];
 
             return responseMsgs(true, "$workflowType Collection", remove_null($data), "010201", "1.0", "", "POST", $request->deviceId ?? "");
@@ -200,7 +200,7 @@ class CashVerificationController extends Controller
      */
     public function selfAdvertisementCashVerify(Request $request)
     {
-    
+
         return $this->verifyCash($request, 'selfAdvert');
     }
 
@@ -223,7 +223,7 @@ class CashVerificationController extends Controller
      */
     public function agencyCashVerify(Request $request)
     {
-       
+
         return $this->verifyCash($request, 'agency');
     }
 
@@ -1376,11 +1376,19 @@ class CashVerificationController extends Controller
 
             // Paginate the results
             $paginatedData = $transactionDeactivationDtl->paginate($perPage, ['*'], 'page', $page);
-
+            $documentUpload = new DocumentUpload();
+            $documentsWithUrls = $documentUpload->getDocUrl(collect($paginatedData->items()));
+            // Map the `doc_path` to each transaction item based on `reference_no`
+            $dataWithDocPaths = $paginatedData->items();
+            foreach ($dataWithDocPaths as $item) {
+                $matchingDoc = $documentsWithUrls->firstWhere('id', $item->id);
+                $item->doc_path = $matchingDoc['doc_path'] ?? null;
+            }
             $list = [
                 "current_page" => $paginatedData->currentPage(),
                 "last_page" => $paginatedData->lastPage(),
                 "data" => $paginatedData->items(),
+                // "data" => $documentsWithUrls,
                 "total" => $paginatedData->total(),
             ];
 
@@ -1803,5 +1811,4 @@ class CashVerificationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "", 01, responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
-
 }
