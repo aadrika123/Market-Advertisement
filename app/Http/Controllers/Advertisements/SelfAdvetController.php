@@ -1977,7 +1977,7 @@ class SelfAdvetController extends Controller
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
-            'entityWard' => 'required|integer',
+            'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
@@ -2005,7 +2005,7 @@ class SelfAdvetController extends Controller
                     'adv_mar_transactions.transaction_no'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_selfadvet_renewals.id')
-                ->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard)
+
                 ->where('adv_selfadvet_renewals.application_type', $req->applicationType)
                 ->where('adv_selfadvet_renewals.payment_status', 1)
                 ->where('adv_selfadvet_renewals.ulb_id', $ulbId)
@@ -2019,6 +2019,9 @@ class SelfAdvetController extends Controller
                 } else {
                     $approveListQuery->where('adv_selfadvet_renewals.payment_mode', $req->payMode);
                 }
+            }
+            if ($req->entityWard != null) {
+                $approveListQuery->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard);
             }
             // Paginate the main query
             $paginator = $approveListQuery->paginate($req->perPage);
