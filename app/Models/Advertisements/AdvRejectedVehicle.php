@@ -77,6 +77,6 @@ class AdvRejectedVehicle extends Model
      */
     public function rejectListForReport()
     {
-        return AdvRejectedVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Reject' as application_status"));
+        return AdvRejectedVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id','entity_name', DB::raw("'Reject' as application_status"));
     }
 }

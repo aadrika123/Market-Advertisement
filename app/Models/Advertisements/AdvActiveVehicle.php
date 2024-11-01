@@ -495,7 +495,7 @@ class AdvActiveVehicle extends Model
      */
     public function pendingListForReport()
     {
-        return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Active' as application_status"));
+        return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id','entity_name', DB::raw("'Active' as application_status"));
     }
 
     public function listAppliedApplicationsJsk()

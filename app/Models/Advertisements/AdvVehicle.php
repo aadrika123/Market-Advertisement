@@ -287,7 +287,7 @@ class AdvVehicle extends Model
      */
     public function approveListForReport()
     {
-        return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id', DB::raw("'Approve' as application_status"));
+        return AdvVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id','entity_name', DB::raw("'Approve' as application_status"));
     }
 
 
