@@ -1795,7 +1795,7 @@ class HoardingController extends Controller
                     'adv_hoarding_renewals.payment_amount',
                     'adv_hoarding_renewals.payment_date',
                     'adv_hoarding_renewals.payment_mode',
-                    'users.name as agency_name  '
+                    'users.name as agency_name'
                 )
                 ->join('adv_mar_transactions','adv_mar_transactions.application_id','adv_hoarding_renewals.id')
                 ->join('users','users.id','adv_hoarding_renewals.citizen_id')
