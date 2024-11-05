@@ -1884,7 +1884,7 @@ class PrivateLandController extends Controller
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
-            'entityWard' => 'nullble|integer',
+            'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
