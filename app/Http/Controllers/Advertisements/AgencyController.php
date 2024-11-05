@@ -1843,11 +1843,10 @@ class AgencyController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-        return $req->all();
         try {
             // Variable initialization
             $agencyWorkflow = Config::get('workflow-constants.AGENCY');
-            return  $approveListQuery = DB::table('adv_agency_renewals')
+             $approveListQuery = DB::table('adv_agency_renewals')
                 ->select(
                     'adv_agency_renewals.id',
                     'adv_agency_renewals.application_no',
@@ -1865,8 +1864,8 @@ class AgencyController extends Controller
                 ->where('adv_mar_transactions.ulb_id', $ulbId)
                 ->where('adv_mar_transactions.status', 1)
                 ->where('adv_mar_transactions.workflow_id', $agencyWorkflow)
-                ->whereBetween('adv_mar_transactions.transaction_date', [$req->dateFrom, $req->dateUpto])
-                ->get();
+                ->whereBetween('adv_mar_transactions.transaction_date', [$req->dateFrom, $req->dateUpto]);
+                // ->get();
 
             // Apply payment mode filter
             if ($req->payMode != 'All') {

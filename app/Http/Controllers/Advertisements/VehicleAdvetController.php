@@ -1812,7 +1812,7 @@ class VehicleAdvetController extends Controller
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'required|in:All,ONLINE,Cash,Cheque/DD',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1830,7 +1830,8 @@ class VehicleAdvetController extends Controller
                     DB::raw("'Approve' as application_status"),
                     'adv_vehicle_renewals.payment_amount',
                     'adv_vehicle_renewals.payment_date',
-                    'adv_vehicle_renewals.payment_mode'
+                    'adv_vehicle_renewals.payment_mode',
+                    'adv_vehicle_renewals.entity_name'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_vehicle_renewals.id')
                 ->where('adv_vehicle_renewals.application_type', $req->applicationType)

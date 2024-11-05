@@ -1771,6 +1771,7 @@ class HoardingController extends Controller
             return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050642", 1.0, "271ms", "POST", "", "");
         else
             $ulbId = $req->auth['ulb_id'];
+        $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
@@ -1785,7 +1786,22 @@ class HoardingController extends Controller
         try {
             // Variable initialization
             $approveList = DB::table('adv_hoarding_renewals')
-                ->select('id', 'application_no', 'application_date', 'application_type', DB::raw("'Approve' as application_status"), 'payment_amount', 'payment_date', 'payment_mode')->where('application_type', $req->applicationType)->where('payment_status', '1')->where('ulb_id', $ulbId)
+                ->select(
+                    'adv_hoarding_renewals.id',
+                    'adv_hoarding_renewals.application_no',
+                    'adv_hoarding_renewals.application_date',
+                    'adv_hoarding_renewals.application_type',
+                    DB::raw("'Approve' as application_status"),
+                    'adv_hoarding_renewals.payment_amount',
+                    'adv_hoarding_renewals.payment_date',
+                    'adv_hoarding_renewals.payment_mode',
+                    'users.name as agency_name  '
+                )
+                ->join('adv_mar_transactions','adv_mar_transactions.application_id','adv_hoarding_renewals.id')
+                ->join('users','users.id','adv_hoarding_renewals.citizen_id')
+                ->where('application_type', $req->applicationType)
+                ->where('payment_status', '1')
+                ->where('adv_mar_transactions.ulb_id', $ulbId)
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
@@ -1801,13 +1817,71 @@ class HoardingController extends Controller
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
             }
-            $data = $data->paginate($req->perPage);
-            $ap = $data->toArray();
-            $amounts = collect();
-            $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
-                $amounts->push($item->payment_amount);
-            });
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050642", 1.0, responseTime(), "POST", "", "");
+            $paginator = $approveList->paginate($req->perPage);
+            $approveListForCounts = clone $approveList;
+            $approveListForSums = clone $approveList;
+
+            // Count of transactions
+            $cashCount = (clone $approveListForCounts)->where('adv_hoarding_renewals.payment_mode', 'CASH')->count();
+            $ddCount = (clone $approveListForCounts)->where('adv_hoarding_renewals.payment_mode', 'DD')->count();
+            $chequeCount = (clone $approveListForCounts)->where('adv_hoarding_renewals.payment_mode', 'CHEQUE')->count();
+            $onlineCount = (clone $approveListForCounts)->where('adv_hoarding_renewals.payment_mode', 'ONLINE')->count();
+
+            // Sum of transactions
+            $cashPayment = (clone $approveListForSums)->where('adv_hoarding_renewals.payment_mode', 'CASH')->sum('payment_amount');
+            $ddPayment = (clone $approveListForSums)->where('adv_hoarding_renewals.payment_mode', 'DD')->sum('payment_amount');
+            $chequePayment = (clone $approveListForSums)->where('adv_hoarding_renewals.payment_mode', 'CHEQUE')->sum('payment_amount');
+            $onlinePayment = (clone $approveListForSums)->where('adv_hoarding_renewals.payment_mode', 'ONLINE')->sum('payment_amount');
+
+            # transaction by jsk 
+            $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+            #transaction by citizen
+            $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+            $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+            $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+            $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+
+            $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+            $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
+
+            $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
+
+            $response = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'CashCount' => $cashCount,
+                'ddCount' => $ddCount,
+                'chequeCount' => $chequeCount,
+                'onlineCount' => $onlineCount,
+                'cashPayment' => $cashPayment,
+                'ddPayment' => $ddPayment,
+                'chequePayment' => $chequePayment,
+                'onlinePayment' => $onlinePayment,
+                'cashCountJsk' => $cashCountJsk,
+                'chequeCountJsk' => $chequeCountJsk,
+                'ddCountJsk' => $ddCountJsk,
+                'onlineCountJsk' => $onlineCountJsk,
+                'cashCountCitizen' => $cashCountCitizen,
+                'chequeCountCitizen' => $chequeCountCitizen,
+                'ddCountCitizen' => $ddCountCitizen,
+                'onlineCountcitizen' => $onlineCountcitizen,
+                'totalAmount' => $totalAmount,
+                'totalCountJsk' => $totalCountJsk,
+                'totalCountCitizen' => $totalCountCitizen,
+                'userType' => $userType,
+            ];
+
+            // $ap = $data->toArray();
+            // $amounts = collect();
+            // $data1 = collect($ap['data'])->map(function ($item, $key) use ($amounts) {
+            //     $amounts->push($item->payment_amount);
+            // });
+            return responseMsgs(true, "Application Fetched Successfully", $response, "050642", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050642", 1.0, "271ms", "POST", "", "");
         }

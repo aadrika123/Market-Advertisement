@@ -1884,11 +1884,11 @@ class PrivateLandController extends Controller
 
         $validator = Validator::make($req->all(), [
             'applicationType' => 'required|in:New Apply,Renew',
-            'entityWard' => 'required|integer',
+            'entityWard' => 'nullbale|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'required|in:All,ONLINE,Cash,Cheque/DD',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1907,10 +1907,10 @@ class PrivateLandController extends Controller
                     DB::raw("'Approve' as application_status"),
                     'adv_privateland_renewals.payment_amount',
                     'adv_privateland_renewals.payment_date',
-                    'adv_privateland_renewals.payment_mode'
+                    'adv_privateland_renewals.payment_mode',
+                    'adv_privateland_renewals.entity_name'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_privateland_renewals.id')
-                ->where('adv_privateland_renewals.entity_ward_id', $req->entityWard)
                 ->where('adv_privateland_renewals.application_type', $req->applicationType)
                 ->where('adv_privateland_renewals.payment_status', 1)
                 ->where('adv_privateland_renewals.ulb_id', $ulbId)
@@ -1925,6 +1925,14 @@ class PrivateLandController extends Controller
                 } else {
                     $approveListQuery->where('adv_privateland_renewals.payment_mode', $req->payMode);
                 }
+            }
+            if ($req->entityWard != null) {
+                $approveListQuery->where('adv_privateland_renewals.entity_ward_id', $req->entityWard);
+            }
+            if ($req->paidBy == 'Citizen') {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', false);
+            } else {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', true);
             }
             $paginator = $approveListQuery->paginate($req->perPage);
             // Clone the query for counts and sums
