@@ -381,25 +381,25 @@ class MarBanquteHall extends Model
 
         // Count of transactions
         $cashCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
-         $ddCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'DD')->count();
-         $chequeCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+        $ddCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $chequeCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
         $onlineCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
         // Sum of transactions
         $cashPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CASH')->sum('payment_amount');
-         $ddPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'DD')->sum('payment_amount');
-         $chequePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->sum('payment_amount');
+        $ddPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'DD')->sum('payment_amount');
+        $chequePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->sum('payment_amount');
         $onlinePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'ONLINE')->sum('payment_amount');
 
         # transaction by jsk 
         $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
-         $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
-         $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+        $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
         $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
         #transaction by citizen
         $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
         $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
-         $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
+        $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
         $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
         $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
@@ -421,28 +421,28 @@ class MarBanquteHall extends Model
             'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
             'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
             'total' => $data->total(),
-          
-                //"total" => $paginator->total(),
-                'CashCount' => $cashCount,
-                'ddCount' => $ddCount,
-                'chequeCount' => $chequeCount,
-                'onlineCount' => $onlineCount,
-                'cashPayment' => $cashPayment,
-                'ddPayment' => $ddPayment,
-                'chequePayment' => $chequePayment,
-                'onlinePayment' => $onlinePayment,
-                'cashCountJsk' => $cashCountJsk,
-               'chequeCountJsk' => $chequeCountJsk,
-                'ddCountJsk' => $ddCountJsk,
-                'onlineCountJsk' => $onlineCountJsk,
-                'cashCountCitizen' => $cashCountCitizen,
-                'chequeCountCitizen' => $chequeCountCitizen,
-                'ddCountCitizen' => $ddCountCitizen,
-                'onlineCountcitizen' => $onlineCountcitizen,
-                'totalAmount' => $totalAmount,
-                'totalCountJsk' => $totalCountJsk,
-                'totalCountCitizen' => $totalCountCitizen
-               // 'userType' => $userType
+
+            //"total" => $paginator->total(),
+            'CashCount' => $cashCount,
+            'ddCount' => $ddCount,
+            'chequeCount' => $chequeCount,
+            'onlineCount' => $onlineCount,
+            'cashPayment' => $cashPayment,
+            'ddPayment' => $ddPayment,
+            'chequePayment' => $chequePayment,
+            'onlinePayment' => $onlinePayment,
+            'cashCountJsk' => $cashCountJsk,
+            'chequeCountJsk' => $chequeCountJsk,
+            'ddCountJsk' => $ddCountJsk,
+            'onlineCountJsk' => $onlineCountJsk,
+            'cashCountCitizen' => $cashCountCitizen,
+            'chequeCountCitizen' => $chequeCountCitizen,
+            'ddCountCitizen' => $ddCountCitizen,
+            'onlineCountcitizen' => $onlineCountcitizen,
+            'totalAmount' => $totalAmount,
+            'totalCountJsk' => $totalCountJsk,
+            'totalCountCitizen' => $totalCountCitizen
+            // 'userType' => $userType
         ];
     }
 
@@ -453,12 +453,42 @@ class MarBanquteHall extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarBanquteHall::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Approve' as application_status"))
-            ->where('ulb_id', $ulbId)
+        $approved = MarBanquteHall::select(
+            'mar_banqute_halls.id',
+            'mar_banqute_halls.entity_name',
+            'mar_banqute_halls.application_no',
+            'mar_banqute_halls.applicant',
+            DB::raw("TO_CHAR(mar_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_banqute_halls.application_type',
+            'ulb_ward_masters.ward_name as entity_ward_no',
+            'mar_banqute_halls.rule',
+            'mar_banqute_halls.hall_type',
+            'mar_banqute_halls.ulb_id',
+            'mar_banqute_halls.license_year',
+            'mar_banqute_halls.organization_type',
+            DB::raw("'Approve' as application_status")
+        )
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'mar_banqute_halls.entity_ward_id')
+            ->where('mar_banqute_halls.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedBanquteHall::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"))
-            ->where('ulb_id', $ulbId)
+        $rejected = MarRejectedBanquteHall::select(
+            'mar_rejected_banqute_halls.id',
+            'mar_rejected_banqute_halls.entity_name',
+            'mar_rejected_banqute_halls.application_no',
+            'mar_rejected_banqute_halls.applicant',
+            DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_rejected_banqute_halls.application_type',
+            'ulb_ward_masters.ward_name as entity_ward_no',
+            'mar_rejected_banqute_halls.rule',
+            'mar_rejected_banqute_halls.hall_type',
+            'mar_rejected_banqute_halls.ulb_id',
+            'mar_rejected_banqute_halls.license_year',
+            'mar_rejected_banqute_halls.organization_type',
+            DB::raw("'Reject' as application_status")
+        )
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'mar_rejected_banqute_halls.entity_ward_id')
+            ->where('mar_rejected_banqute_halls.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);;
         if ($request->wardNo) {
             $approved->where('mar_banqute_halls.entity_ward_id', $request->wardNo);

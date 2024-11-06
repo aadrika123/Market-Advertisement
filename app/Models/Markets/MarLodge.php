@@ -376,75 +376,75 @@ class MarLodge extends Model
         if ($request->payMode == 'DD') {
             $data = $approved->where('adv_mar_transactions.payment_mode', $request->payMode);
         }
-         // Clone the query for counts and sums
-       $approveListForCounts = clone $approved;
-       $approveListForSums = clone $approved;
+        // Clone the query for counts and sums
+        $approveListForCounts = clone $approved;
+        $approveListForSums = clone $approved;
 
-       // Count of transactions
-       $cashCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        // Count of transactions
+        $cashCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
         $ddCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'DD')->count();
         $chequeCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
-       $onlineCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+        $onlineCount = (clone $approveListForCounts)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
-       // Sum of transactions
-       $cashPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CASH')->sum('payment_amount');
+        // Sum of transactions
+        $cashPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CASH')->sum('payment_amount');
         $ddPayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'DD')->sum('payment_amount');
         $chequePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->sum('payment_amount');
-       $onlinePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'ONLINE')->sum('payment_amount');
+        $onlinePayment = (clone $approveListForSums)->where('adv_mar_transactions.payment_mode', 'ONLINE')->sum('payment_amount');
 
-       # transaction by jsk 
-       $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        # transaction by jsk 
+        $cashCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
         $chequeCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
         $ddCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'DD')->count();
-       $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
-       #transaction by citizen
-       $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
-       $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
+        $onlineCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+        #transaction by citizen
+        $cashCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CASH')->count();
+        $chequeCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'CHEQUE')->count();
         $ddCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'DD')->count();
-       $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
+        $onlineCountcitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->where('adv_mar_transactions.payment_mode', 'ONLINE')->count();
 
-       $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
-       $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
-
-
+        $totalCountJsk = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', true)->count();
+        $totalCountCitizen = (clone $approveListForCounts)->where('adv_mar_transactions.is_jsk', false)->count();
 
 
-       $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
 
-       $data = $approved;
-       if ($perPage) {
-           $data = $data->paginate($perPage);
-       } else {
-           $data = $data->get();
-       }
-       return [
-           'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
-           'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
-           'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
-           'total' => $data->total(),
-         
-               //"total" => $paginator->total(),
-               'CashCount' => $cashCount,
-               'ddCount' => $ddCount,
-               'chequeCount' => $chequeCount,
-               'onlineCount' => $onlineCount,
-               'cashPayment' => $cashPayment,
-               'ddPayment' => $ddPayment,
-               'chequePayment' => $chequePayment,
-               'onlinePayment' => $onlinePayment,
-               'cashCountJsk' => $cashCountJsk,
-              'chequeCountJsk' => $chequeCountJsk,
-               'ddCountJsk' => $ddCountJsk,
-               'onlineCountJsk' => $onlineCountJsk,
-               'cashCountCitizen' => $cashCountCitizen,
-               'chequeCountCitizen' => $chequeCountCitizen,
-               'ddCountCitizen' => $ddCountCitizen,
-               'onlineCountcitizen' => $onlineCountcitizen,
-               'totalAmount' => $totalAmount,
-               'totalCountJsk' => $totalCountJsk,
-               'totalCountCitizen' => $totalCountCitizen
-              // 'userType' => $userType
-       ];
+
+        $totalAmount  = (clone $approveListForSums)->sum('payment_amount');
+
+        $data = $approved;
+        if ($perPage) {
+            $data = $data->paginate($perPage);
+        } else {
+            $data = $data->get();
+        }
+        return [
+            'current_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->currentPage() : 1,
+            'last_page' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->lastPage() : 1,
+            'data' => $data instanceof \Illuminate\Pagination\LengthAwarePaginator ? $data->items() : $data,
+            'total' => $data->total(),
+
+            //"total" => $paginator->total(),
+            'CashCount' => $cashCount,
+            'ddCount' => $ddCount,
+            'chequeCount' => $chequeCount,
+            'onlineCount' => $onlineCount,
+            'cashPayment' => $cashPayment,
+            'ddPayment' => $ddPayment,
+            'chequePayment' => $chequePayment,
+            'onlinePayment' => $onlinePayment,
+            'cashCountJsk' => $cashCountJsk,
+            'chequeCountJsk' => $chequeCountJsk,
+            'ddCountJsk' => $ddCountJsk,
+            'onlineCountJsk' => $onlineCountJsk,
+            'cashCountCitizen' => $cashCountCitizen,
+            'chequeCountCitizen' => $chequeCountCitizen,
+            'ddCountCitizen' => $ddCountCitizen,
+            'onlineCountcitizen' => $onlineCountcitizen,
+            'totalAmount' => $totalAmount,
+            'totalCountJsk' => $totalCountJsk,
+            'totalCountCitizen' => $totalCountCitizen
+            // 'userType' => $userType
+        ];
     }
 
     public function getApplicationWithStatus($request)
@@ -454,12 +454,42 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $dateFrom = $request->dateFrom ?: Carbon::now()->format('Y-m-d');
         $dateUpto = $request->dateUpto ?: Carbon::now()->format('Y-m-d');
-        $approved = MarLodge::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Approve' as application_status"))
-            ->where('ulb_id', $ulbId)
+        $approved = MarLodge::select(
+            'mar_lodges.id',
+            'mar_lodges.entity_name',
+            'mar_lodges.application_no',
+            'mar_lodges.applicant',
+            DB::raw("TO_CHAR(mar_lodges.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_lodges.application_type',
+            'ulb_ward_masters.ward_name as entity_ward_no',
+            'mar_lodges.rule',
+            'mar_lodges.organization_type',
+            'mar_lodges.lodge_type',
+            'mar_lodges.license_year',
+            'mar_lodges.ulb_id',
+            DB::raw("'Approve' as application_status")
+        )
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'mar_lodges.entity_ward_id')
+            ->where('mar_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
 
-        $rejected = MarRejectedLodge::select('id', 'entity_name', 'application_no', 'applicant', DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Reject' as application_status"))
-            ->where('ulb_id', $ulbId)
+        $rejected = MarRejectedLodge::select(
+            'mar_rejected_lodges.id',
+            'mar_rejected_lodges.entity_name',
+            'mar_rejected_lodges.application_no',
+            'mar_rejected_lodges.applicant',
+            DB::raw("TO_CHAR(mar_rejected_lodges.application_date, 'DD-MM-YYYY') as application_date"),
+            'mar_rejected_lodges.application_type',
+            'ulb_ward_masters.ward_name as entity_ward_no',
+            'mar_rejected_lodges.rule',
+            'mar_rejected_lodges.organization_type',
+            'mar_rejected_lodges.lodge_type',
+            'mar_rejected_lodges.license_year',
+            'mar_rejected_lodges.ulb_id',
+            DB::raw("'Reject' as application_status")
+        )
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'mar_rejected_lodges.entity_ward_id')
+            ->where('mar_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
             $approved->where('mar_lodges.entity_ward_id', $request->wardNo);
@@ -678,12 +708,11 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_lodges.current_role_id', '=', 6);
-            ;
+            ->where('mar_active_lodges.current_role_id', '=', 6);;
         if ($request->wardNo) {
             $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
         }
-        
+
         $data = $active;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -704,12 +733,11 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_lodges.current_role_id', '=', 14);
-            ;
+            ->where('mar_active_lodges.current_role_id', '=', 14);;
         if ($request->wardNo) {
             $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
         }
-        
+
         $data = $active;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -730,12 +758,11 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_lodges.current_role_id', '=', 9);
-            ;
+            ->where('mar_active_lodges.current_role_id', '=', 9);;
         if ($request->wardNo) {
             $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
         }
-        
+
         $data = $active;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -760,7 +787,7 @@ class MarLodge extends Model
         if ($request->wardNo) {
             $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
         }
-        
+
         $data = $active;
         if ($perPage) {
             $data = $data->paginate($perPage);
@@ -781,12 +808,11 @@ class MarLodge extends Model
         $perPage = $request->perPage ?: 10;
         $active = MarActiveLodge::select('id', 'entity_name', 'application_no', 'applicant',  DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"), 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'lodge_type', 'license_year', 'ulb_id', DB::raw("'Active' as application_status"))
             ->where('ulb_id', $ulbId)
-            ->where('mar_active_lodges.current_role_id', '=', 10);
-            ;
+            ->where('mar_active_lodges.current_role_id', '=', 10);;
         if ($request->wardNo) {
             $active->where('mar_active_lodges.entity_ward_id', $request->wardNo);
         }
-        
+
         $data = $active;
         if ($perPage) {
             $data = $data->paginate($perPage);
