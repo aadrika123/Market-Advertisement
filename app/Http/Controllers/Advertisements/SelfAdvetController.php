@@ -2002,6 +2002,7 @@ class SelfAdvetController extends Controller
                     'adv_selfadvet_renewals.payment_amount',
                     'adv_selfadvet_renewals.payment_date',
                     'adv_selfadvet_renewals.payment_mode',
+                    'adv_selfadvet_renewals.entity_name',
                     'adv_mar_transactions.transaction_no'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_selfadvet_renewals.id')
