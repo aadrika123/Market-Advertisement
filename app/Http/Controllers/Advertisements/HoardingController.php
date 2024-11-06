@@ -1816,6 +1816,12 @@ class HoardingController extends Controller
             }
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
+                
+            }
+            if ($req->paidBy == 'Citizen') {
+                $approveList->where('adv_mar_transactions.is_jsk', false);
+            } else {
+                $approveList->where('adv_mar_transactions.is_jsk', true);
             }
             $paginator = $approveList->paginate($req->perPage);
             $approveListForCounts = clone $approveList;

@@ -1875,6 +1875,11 @@ class AgencyController extends Controller
                     $approveListQuery->where('adv_agency_renewals.payment_mode', $req->payMode);
                 }
             }
+            if ($req->paidBy == 'Citizen') {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', false);
+            } else {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+            }
             // Apply payment mode filter
             if ($req->payMode != 'All') {
                 if ($req->payMode == 'Cheque/DD') {

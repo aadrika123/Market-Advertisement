@@ -2023,6 +2023,11 @@ class SelfAdvetController extends Controller
             if ($req->entityWard != null) {
                 $approveListQuery->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard);
             }
+            if ($req->paidBy == 'Citizen') {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', false);
+            } else {
+                $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+            }
             // Paginate the main query
             $paginator = $approveListQuery->paginate($req->perPage);
 

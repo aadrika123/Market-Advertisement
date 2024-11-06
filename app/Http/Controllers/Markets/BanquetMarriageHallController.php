@@ -1580,6 +1580,7 @@ class BanquetMarriageHallController extends Controller
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
             }
+            
             $data = $data->paginate($req->perPage);
 
             $ap = $data->toArray();
