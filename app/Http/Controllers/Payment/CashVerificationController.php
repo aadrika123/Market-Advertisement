@@ -285,7 +285,7 @@ class CashVerificationController extends Controller
 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, ucfirst($type) . " Cash Verified", '', "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(true, ucfirst($type) . "", '', "010201", "1.0", "", "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
