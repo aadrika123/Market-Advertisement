@@ -489,7 +489,7 @@ class MarLodge extends Model
             DB::raw("'Reject' as application_status")
         )
             ->join('ulb_ward_masters', 'ulb_ward_masters.id', 'mar_rejected_lodges.entity_ward_id')
-            ->where('mar_lodges.ulb_id', $ulbId)
+            ->where('mar_rejected_lodges.ulb_id', $ulbId)
             ->whereBetween('application_date', [$dateFrom, $dateUpto]);
         if ($request->wardNo) {
             $approved->where('mar_lodges.entity_ward_id', $request->wardNo);

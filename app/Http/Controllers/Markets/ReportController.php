@@ -120,7 +120,7 @@ class ReportController extends Controller
     public function applicationStatusWiseApplication(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'reportType' => 'required|in:Banquet/Marriage Hall,Hostel,Lodge,Dharmshala',
+            'reportType' => 'required|in:Banquet/Marriage Hall,Hostel,Lodge,Dharamshala',
             'wardNo' => 'nullable',
             'applicationType' => 'nullable|in:New Apply,Renew',
             'applicationStatus' => 'nullable|in:Approve,Reject,All',
@@ -155,7 +155,7 @@ class ReportController extends Controller
                 $response = $lodge->getApplicationWithStatus($request);
                 $response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Dharmshala') {
+            if ($request->reportType == 'Dharamshala') {
                 $response = $dharamshala->getApplicationWithStatus($request);
                 $response['user_name'] = $user->name;
             }
@@ -516,24 +516,24 @@ class ReportController extends Controller
             $dharamshala = new MarDharamshala();
             $user = Auth()->user();
             $response = [];
-            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'DA') {
+            if ($request->reportType == 'Banquet/Marriage Hall' && $request->level == 'DA') {
                 $response = $banquet->MarHallDaAppliaction($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'AE') {
+            if ($request->reportType == 'Banquet/Marriage Hall' && $request->level == 'AE') {
                 $response = $banquet->MarHallAeAppliaction($request);
                 //$response['user_name'] = $user->name;
             }
 
-            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'SI') {
+            if ($request->reportType == 'Banquet/Marriage Hall' && $request->level == 'SI') {
                 $response = $banquet->MarHallSiAppliaction($request);
-               // $response['user_name'] = $user->name;
+                // $response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'CM') {
+            if ($request->reportType == 'Banquet/Marriage Hall' && $request->level == 'CM') {
                 $response = $banquet->MarHallCmAppliaction($request);
                 //$response['user_name'] = $user->name;
             }
-            if ($request->reportType == 'Banquet/Marriage Hall'&& $request->level == 'EO') {
+            if ($request->reportType == 'Banquet/Marriage Hall' && $request->level == 'EO') {
                 $response = $banquet->MarHallEoAppliaction($request);
                 //$response['user_name'] = $user->name;
             }
@@ -563,7 +563,7 @@ class ReportController extends Controller
             }
             if ($request->reportType == 'Lodge' && $request->level == 'AE') {
                 $response = $lodge->lodgeAeAppliaction($request);
-               // $response['user_name'] = $user->name;
+                // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'Lodge' && $request->level == 'SI') {
                 $response = $lodge->lodgeSiAppliaction($request);
@@ -579,15 +579,15 @@ class ReportController extends Controller
             }
             if ($request->reportType == 'Dharmshala' && $request->level == 'DA') {
                 $response = $dharamshala->dharamshalaDaApplication($request);
-               // $response['user_name'] = $user->name;
+                // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'Dharmshala' && $request->level == 'AE') {
                 $response = $dharamshala->dharamshalaAeApplication($request);
-               // $response['user_name'] = $user->name;
+                // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'Dharmshala' && $request->level == 'SI') {
                 $response = $dharamshala->dharamshalaSiApplication($request);
-               // $response['user_name'] = $user->name;
+                // $response['user_name'] = $user->name;
             }
             if ($request->reportType == 'Dharmshala' && $request->level == 'CM') {
                 $response = $dharamshala->dharamshalaCmApplication($request);
