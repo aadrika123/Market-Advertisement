@@ -201,7 +201,7 @@ class CashVerificationController extends Controller
     public function selfAdvertisementCashVerify(Request $request)
     {
 
-        return $this->verifyCash($request, 'selfAdvert');
+        return $this->verifyCash($request, 'Self Advertisement');
     }
 
     /**
@@ -209,14 +209,14 @@ class CashVerificationController extends Controller
      */
     public function movableVehicleCashVerify(Request $request)
     {
-        return $this->verifyCash($request, 'movableVehicle');
+        return $this->verifyCash($request, 'Movable Vehicle');
     }
     /**
      * |PRIVATE LAND
      */
     public function privateLandCashVerify(Request $request)
     {
-        return $this->verifyCash($request, 'privatLand');
+        return $this->verifyCash($request, 'Privat Land');
     }
     /**
      * |AGENCY
@@ -224,7 +224,7 @@ class CashVerificationController extends Controller
     public function agencyCashVerify(Request $request)
     {
 
-        return $this->verifyCash($request, 'agency');
+        return $this->verifyCash($request, 'Agency');
     }
 
 
@@ -285,7 +285,7 @@ class CashVerificationController extends Controller
 
             DB::commit();
             DB::connection('pgsql_masters')->commit();
-            return responseMsgs(true, ucfirst($type) . "", '', "010201", "1.0", "", "POST", $request->deviceId ?? "");
+            return responseMsgs(true, ucfirst($type) . "Cash Verified", '', "010201", "1.0", "", "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             DB::connection('pgsql_masters')->rollBack();
