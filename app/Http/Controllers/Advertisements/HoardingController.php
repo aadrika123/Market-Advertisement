@@ -1797,8 +1797,8 @@ class HoardingController extends Controller
                     'adv_hoarding_renewals.payment_mode',
                     'users.name as agency_name'
                 )
-                ->join('adv_mar_transactions','adv_mar_transactions.application_id','adv_hoarding_renewals.id')
-                ->join('users','users.id','adv_hoarding_renewals.citizen_id')
+                ->join('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_hoarding_renewals.id')
+                ->join('users', 'users.id', 'adv_hoarding_renewals.citizen_id')
                 ->where('application_type', $req->applicationType)
                 ->where('payment_status', '1')
                 ->where('adv_mar_transactions.ulb_id', $ulbId)
@@ -1816,12 +1816,18 @@ class HoardingController extends Controller
             }
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
-                
             }
-            if ($req->paidBy == 'Citizen') {
-                $approveList->where('adv_mar_transactions.is_jsk', false);
-            } else {
-                $approveList->where('adv_mar_transactions.is_jsk', true);
+            if ($req->paidBy != null) {
+                switch ($req->paidBy) {
+                    case 'Citizen':
+                        $approveList = $approveList->where('adv_mar_transactions.is_jsk', false);
+                        break;
+                    case 'JSK':
+                        $approveList = $approveList->where('adv_mar_transactions.is_jsk', true);
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
             $paginator = $approveList->paginate($req->perPage);
             $approveListForCounts = clone $approveList;

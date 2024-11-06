@@ -1846,7 +1846,7 @@ class AgencyController extends Controller
         try {
             // Variable initialization
             $agencyWorkflow = Config::get('workflow-constants.AGENCY');
-             $approveListQuery = DB::table('adv_agency_renewals')
+            $approveListQuery = DB::table('adv_agency_renewals')
                 ->select(
                     'adv_agency_renewals.id',
                     'adv_agency_renewals.application_no',
@@ -1865,7 +1865,7 @@ class AgencyController extends Controller
                 ->where('adv_mar_transactions.status', 1)
                 ->where('adv_mar_transactions.workflow_id', $agencyWorkflow)
                 ->whereBetween('adv_mar_transactions.transaction_date', [$req->dateFrom, $req->dateUpto]);
-                // ->get();
+            // ->get();
 
             // Apply payment mode filter
             if ($req->payMode != 'All') {
@@ -1875,10 +1875,17 @@ class AgencyController extends Controller
                     $approveListQuery->where('adv_agency_renewals.payment_mode', $req->payMode);
                 }
             }
-            if ($req->paidBy == 'Citizen') {
-                $approveListQuery->where('adv_mar_transactions.is_jsk', false);
-            } else {
-                $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+            if ($req->paidBy != null) {
+                switch ($req->paidBy) {
+                    case 'Citizen':
+                        $approveListQuery = $approveListQuery->where('adv_mar_transactions.is_jsk', false);
+                        break;
+                    case 'JSK':
+                        $approveListQuery = $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
             // Apply payment mode filter
             if ($req->payMode != 'All') {

@@ -1929,10 +1929,17 @@ class PrivateLandController extends Controller
             if ($req->entityWard != null) {
                 $approveListQuery->where('adv_privateland_renewals.entity_ward_id', $req->entityWard);
             }
-            if ($req->paidBy == 'Citizen') {
-                $approveListQuery->where('adv_mar_transactions.is_jsk', false);
-            } else {
-                $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+            if ($req->paidBy != null) {
+                switch ($req->paidBy) {
+                    case 'Citizen':
+                        $approveListQuery = $approveListQuery->where('adv_mar_transactions.is_jsk', false);
+                        break;
+                    case 'JSK':
+                        $approveListQuery = $approveListQuery->where('adv_mar_transactions.is_jsk', true);
+                        break;
+                    default:
+                        throw new Exception("Invalid Data");
+                }
             }
             $paginator = $approveListQuery->paginate($req->perPage);
             // Clone the query for counts and sums
