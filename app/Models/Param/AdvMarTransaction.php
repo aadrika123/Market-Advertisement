@@ -65,7 +65,7 @@ class AdvMarTransaction extends Model
         $addData->ulb_id            = $req->ulb_id;
         $addData->user_id           = $req->userId;
         $addData->citizen_id        = $req->citizenId;
-        $addData->is_jsk            = $req->isJsk;
+        // $addData->is_jsk            = $req->isJsk;
 
         $addData->cheque_dd_no      = $req->chequeNo;
         $addData->cheque_date       = $req->chequeDate;
