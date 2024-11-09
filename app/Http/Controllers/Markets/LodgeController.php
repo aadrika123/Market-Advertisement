@@ -976,7 +976,7 @@ class LodgeController extends Controller
         $citizenId = $mMarActiveLodge->citizen_id;
         // self Advertiesement List Documents
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         if ($totalApproveDoc == $totalNoOfDoc) {
             if ($ifAdvDocUnverified == 1)
                 return 0;
@@ -1100,7 +1100,8 @@ class LodgeController extends Controller
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
         $moduleId = $this->_moduleIds;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $citizenId = $appDetails->citizen_id;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode, $citizenId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = '1';
@@ -1577,7 +1578,7 @@ class LodgeController extends Controller
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
             }
-            
+
             $data = $data->paginate($req->perPage);
 
             $ap = $data->toArray();
