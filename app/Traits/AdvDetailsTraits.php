@@ -27,7 +27,7 @@ trait AdvDetailsTraits
             ['displayString' => 'permanant Address', 'key' => 'entityAddress', 'value' => $data['permanent_address']],
             ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
             ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['m_license_year']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Father Name', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Resident Ward No', 'key' => 'residentWardNo', 'value' => $data['ward_no']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
@@ -116,7 +116,7 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Father Name', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
             ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
@@ -135,15 +135,15 @@ trait AdvDetailsTraits
             ['displayString' => 'Vehicle No', 'key' => 'vehicleNo', 'value' => $data['vehicle_no']],
             ['displayString' => 'Vehicle Name', 'key' => 'vehicleName', 'value' => $data['vehicle_name']],
             ['displayString' => 'Vehicle Type', 'key' => 'vehicleType', 'value' => $data['vehicleType']],
-            ['displayString' => 'Front Area', 'key' => 'frontArea', 'value' => $data['front_area']],
-            ['displayString' => 'Rear Area', 'key' => 'rearArea', 'value' => $data['rear_area']],
-            ['displayString' => 'Side Area', 'key' => 'sideArea', 'value' => $data['side_area']],
-            ['displayString' => 'Top Area', 'key' => 'topArea', 'value' => $data['top_area']],
+            ['displayString' => 'Front Area (sqft)', 'key' => 'frontArea', 'value' => $data['front_area']],
+            ['displayString' => 'Rear Area (sqft)', 'key' => 'rearArea', 'value' => $data['rear_area']],
+            ['displayString' => 'Side Area (sqft)', 'key' => 'sideArea', 'value' => $data['side_area']],
+            ['displayString' => 'Top Area (sqft)', 'key' => 'topArea', 'value' => $data['top_area']],
             ['displayString' => 'Topology Type', 'key' => 'typology', 'value' => $data['typology']],
             ['displayString' => 'Brand In vehicle', 'key' => 'brandInVehicle', 'value' => $data['brand_display']],
             ['displayString' => 'License From', 'key' => 'licenseFrom', 'value' =>  Carbon::createFromFormat('Y-m-d',  $data['license_from'])->format('d-m-Y')],
             ['displayString' => 'License Upto', 'key' => 'licenseUpto', 'value' => Carbon::createFromFormat('Y-m-d',  $data['license_to'])->format('d-m-Y')],
-            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone'] == '1' ? 'A' : ($data['zone'] == '2' ? 'B' : ($data['zone'] == '3' ? 'C' : 'N/A'))],
         ]);
     }
 
@@ -158,7 +158,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
-            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone'] == '1' ? 'A' : ($data['zone'] == '2' ? 'B' : ($data['zone'] == '3' ? 'C' : 'N/A'))],
         ]);
     }
 
@@ -205,13 +205,13 @@ trait AdvDetailsTraits
     {
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicationNo', 'value' => $data['application_no']],
-            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' =>Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
         ]);
     }
 
 
-    
+
 
     /**
      * |-----------------------------------------------
@@ -231,25 +231,27 @@ trait AdvDetailsTraits
         return new Collection([
             ['displayString' => 'Application No', 'key' => 'applicantionNo', 'value' => $data['application_no']],
             ['displayString' => 'License No', 'key' => 'LicenseNo', 'value' => $data['license_no']],
-            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' =>Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
+            ['displayString' => 'Application Date', 'key' => 'applicationDate', 'value' => Carbon::createFromFormat('Y-m-d',  $data['application_date'])->format('d-m-Y')],
             ['displayString' => 'Applicant Name', 'key' => 'applicantName', 'value' => $data['applicant']],
             ['displayString' => 'ULB Name', 'key' => 'ulbName', 'value' => $data['ulb_name']],
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residence Address', 'key' => 'residenceAddress', 'value' => $data['residence_address']],
-            ['displayString' => 'Father', 'key' => 'father', 'value' => $data['father']],
+            ['displayString' => 'Permanent Address', 'key' => 'permanentAddress', 'value' => $data['permanent_address']],
+            ['displayString' => 'Holding Number', 'key' => 'holdingNumber', 'value' => $data['holding_no']],
+            ['displayString' => 'Father Name', 'key' => 'father', 'value' => $data['father']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile_no']],
             ['displayString' => 'Aadhar No', 'key' => 'aadharNo', 'value' => $data['aadhar_no']],
             ['displayString' => 'Trade Licence No', 'key' => 'tradeLicenseNo', 'value' => $data['trade_license_no']],
-            ['displayString' => 'Licence From', 'key' => 'lLicenseFrom', 'value' => Carbon::createFromFormat('Y-m-d',$data['license_from'])->format('d-m-Y')],
-            ['displayString' => 'Licence To', 'key' => 'lLicenseTo', 'value' => Carbon::createFromFormat('Y-m-d',$data['license_to'])->format('d-m-Y')],
+            ['displayString' => 'Licence From', 'key' => 'lLicenseFrom', 'value' => Carbon::createFromFormat('Y-m-d', $data['license_from'])->format('d-m-Y')],
+            ['displayString' => 'Licence To', 'key' => 'lLicenseTo', 'value' => Carbon::createFromFormat('Y-m-d', $data['license_to'])->format('d-m-Y')],
             ['displayString' => 'No Of Hording', 'key' => 'noOfHording', 'value' => $data['no_of_hoardings']],
             ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
             ['displayString' => 'GST No', 'key' => 'gstNo', 'value' => $data['gst_no']],
             ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
-            ['displayString' => 'Display Area', 'key' => 'displayArea', 'value' => $data['display_area']],
+            ['displayString' => 'Display Area (sqft)', 'key' => 'displayArea', 'value' => $data['display_area']],
             ['displayString' => 'Brand Display Name', 'key' => 'brandDisplayName', 'value' => $data['brand_display_name']],
             ['displayString' => 'Brand Display Address', 'key' => 'brandDisplayAddress', 'value' => $data['brand_display_address']],
             ['displayString' => 'Resident Ward No', 'key' => 'residentWardNo', 'value' => $data['resident_ward_no']],
@@ -258,7 +260,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Display Type', 'key' => 'dispayType', 'value' => $data['dispayType']],
             ['displayString' => 'Installation Location', 'key' => 'installationLocation', 'value' => $data['installationLocation']],
             ['displayString' => 'Typology Type', 'key' => 'typologyType', 'value' => $data['typology']],
-            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':"N/A"))],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone'] == '1' ? 'A' : ($data['zone'] == '2' ? 'B' : ($data['zone'] == '3' ? 'C' : "N/A"))],
         ]);
     }
 
@@ -278,14 +280,14 @@ trait AdvDetailsTraits
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Holding No', 'key' => 'holdingNo', 'value' => $data['holding_no']],
-            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone']== '1'? 'A' :($data['zone']== '2'?'B' :($data['zone']== '3'?'C':'N/A'))],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone'] == '1' ? 'A' : ($data['zone'] == '2' ? 'B' : ($data['zone'] == '3' ? 'C' : 'N/A'))],
         ]);
     }
 
 
-    
 
-    
+
+
 
     /**
      * |-----------------------------------------------
@@ -324,9 +326,9 @@ trait AdvDetailsTraits
             ['displayString' => 'Latitude', 'key' => 'latitude', 'value' => $data['latitude']],
             ['displayString' => 'Longitude', 'key' => 'longitude', 'value' => $data['longitude']],
             ['displayString' => 'Hoarding Category', 'key' => 'hoardingCategory', 'value' => $data['hoardingCategory']],
-            ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination']?"Yes":"No"],
+            ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination'] ? "Yes" : "No"],
             ['displayString' => 'Indicate Facing', 'key' => 'indicateFacing', 'value' => $data['indicate_facing']],
-            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone_id']== '1'? 'A' :($data['zone_id']== '2'?'B' :($data['zone_id']== '3'?'C':'N/A'))],
+            ['displayString' => 'Zone', 'key' => 'zone', 'value' =>  $data['zone_id'] == '1' ? 'A' : ($data['zone_id'] == '2' ? 'B' : ($data['zone_id'] == '3' ? 'C' : 'N/A'))],
         ]);
     }
 
