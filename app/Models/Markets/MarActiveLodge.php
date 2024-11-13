@@ -219,6 +219,7 @@ class MarActiveLodge extends Model
                 'entity_name',
                 'entity_address',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -242,6 +243,7 @@ class MarActiveLodge extends Model
                 'entity_name',
                 'entity_address',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -429,33 +431,33 @@ class MarActiveLodge extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$Image, $docId)
+    public function reuploadDocument($req, $Image, $docId)
     {
-        try{
-        $data = [];
-        $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
-        $mWfActiveDocument = new WfActiveDocument();
-        $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
-        $user = collect(authUser($req));
-        $file = $Image;
-        $req->merge([
-            'document' => $file
-        ]);
-        $imageName = $docUpload->upload($req);
-        $metaReqs = [
-            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
-            'unique_id' => $imageName['data']['uniqueId'] ?? null,
-            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
-        ];
-         // Save document metadata in wfActiveDocuments
-         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
-         return $activeId;
- 
-         // return $data;
-     } catch (Exception $e) {
-         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-     }
+        try {
+            $data = [];
+            $docUpload = new DocumentUpload;
+            $docDetails = WfActiveDocument::find($req->id);
+            $mWfActiveDocument = new WfActiveDocument();
+            $relativePath = Config::get('constants.LODGE.RELATIVE_PATH');
+            $user = collect(authUser($req));
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 
 
@@ -465,7 +467,7 @@ class MarActiveLodge extends Model
     public function getApplicationDetailsForEdit($appId)
     {
         return MarActiveLodge::select(
-            'mar_active_lodges.*',
+            'mar_active_lodges.id',
             'mar_active_lodges.lodge_type as lodge_type_id',
             'mar_active_lodges.organization_type as organization_type_id',
             'mar_active_lodges.land_deed_type as land_deed_type_id',
@@ -473,8 +475,29 @@ class MarActiveLodge extends Model
             'mar_active_lodges.water_supply_type as water_supply_type_id',
             'mar_active_lodges.electricity_type as electricity_type_id',
             'mar_active_lodges.security_type as security_type_id',
-            'mar_active_lodges.no_of_rooms as noOfRooms',
+            'mar_active_lodges.father as father',
+            'mar_active_lodges.residential_address as residential_address',
+            'mar_active_lodges.permanent_address as permanent_address',
+            'mar_active_lodges.email',
+            'mar_active_lodges.application_no',
+            'mar_active_lodges.applicant',
+            'mar_active_lodges.application_date',
+            'mar_active_lodges.application_no',
+            'mar_active_lodges.entity_address',
+            'mar_active_lodges.mobile as mobile_no',
+            'mar_active_lodges.application_type',
+            'mar_active_lodges.holding_no',
+            'mar_active_lodges.aadhar_card',
+            'mar_active_lodges.four_wheelers_parking',
+            'mar_active_lodges.two_wheelers_parking',
+            'mar_active_lodges.entry_gate',
+            'mar_active_lodges.fire_extinguisher',
+            'mar_active_lodges.exit_gate',
+            'mar_active_lodges.cctv_camera',
             'mar_active_lodges.no_of_beds as noOfBeds',
+            'mar_active_lodges.exit_gate',
+            'mar_active_lodges.no_of_beds',
+            'mar_active_lodges.no_of_rooms',
             'ly.string_parameter as license_year_name',
             'lt.string_parameter as lodge_type_name',
             'ot.string_parameter as organization_type_name',
@@ -486,6 +509,7 @@ class MarActiveLodge extends Model
             'pw.ward_name as permanent_ward_name',
             'ew.ward_name as entity_ward_name',
             'rw.ward_name as residential_ward_name',
+            'wfr.role_name as current_role_name',
             'ulb.ulb_name',
             DB::raw("'Lodge' as headerTitle")
         )
@@ -501,6 +525,7 @@ class MarActiveLodge extends Model
             ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_active_lodges.entity_ward_id')
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_lodges.permanent_ward_id')
             ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_active_lodges.ulb_id')
+            ->leftJoin('wf_roles as wfr', 'wfr.id', '=', 'mar_active_lodges.current_role_id')
             ->where('mar_active_lodges.id', $appId)->first();
     }
 
@@ -558,15 +583,33 @@ class MarActiveLodge extends Model
             'mar_active_lodges.mobile as mobile_no',
             'mar_active_lodges.citizen_id',
             'mar_active_lodges.ulb_id',
-           'mar_active_lodges.user_id',
+            'mar_active_lodges.user_id',
             'mar_active_lodges.workflow_id',
             'mar_active_lodges.application_type',
             'um.ulb_name as ulb_name',
-            'entity_ward_id as ward_no',
+            'ulbw.ward_name as ward_no',
             'current_role_id',
             'holding_no',
             'father',
             'mar_active_lodges.email',
+            'mar_active_lodges.residential_address',
+            'mar_active_lodges.mobile',
+            'ly.string_parameter as license_year',
+            'mar_active_lodges.license_no',
+            'mar_active_lodges.application_type',
+            'mar_active_lodges.four_wheelers_parking',
+            'mar_active_lodges.two_wheelers_parking',
+            'mar_active_lodges.entry_gate',
+            'mar_active_lodges.fire_extinguisher',
+            'mar_active_lodges.exit_gate',
+            'mar_active_lodges.cctv_camera',
+            'st.string_parameter as security_type',
+            'et.string_parameter as electricity_type',
+            'mar_active_lodges.exit_gate',
+            'mar_active_lodges.no_of_beds',
+            'wt.string_parameter as water_supply_type',
+            'mar_active_lodges.no_of_rooms',
+            'mar_active_lodges.two_wheelers_parking',
             'mar_active_lodges.aadhar_card as aadhar_card',
             'permanent_ward_id as permanent_ward_no',
             'permanent_address',
@@ -574,6 +617,12 @@ class MarActiveLodge extends Model
             'doc_verify_status'
         )
             ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_active_lodges.ulb_id')
+            ->leftjoin('ulb_ward_masters as ulbw', 'ulbw.id', '=', 'mar_active_lodges.entity_ward_id')
+            ->join('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_active_lodges.license_year::int'))
+            ->join('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_active_lodges.security_type::int'))
+            ->join('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_active_lodges.electricity_type::int'))
+            ->join('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_active_lodges.water_supply_type::int'))
+            ->join('ref_adv_paramstrings as lt', 'lt.id', '=', DB::raw('mar_active_lodges.water_supply_type::int'))
             ->where('mar_active_lodges.id', $applicationId)
             ->orderByDesc('mar_active_lodges.id');
         //->get();

@@ -983,7 +983,7 @@ class BanquetMarriageHallController extends Controller
 
         $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mMarActiveBanquteHall->citizen_id;
-        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode,$citizenId);
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
         // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
         // if($mMarActiveBanquteHall->renew_no==NULL){
         //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
@@ -1580,7 +1580,7 @@ class BanquetMarriageHallController extends Controller
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
             }
-            
+
             $data = $data->paginate($req->perPage);
 
             $ap = $data->toArray();
@@ -2297,7 +2297,7 @@ class BanquetMarriageHallController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $activelodge->getDetailsByIdjsk($applicationId)->first();
+            $data = $activelodge->getApplicationDetailsForEdit($applicationId)->first();
             if (!$data) {
                 $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
             }

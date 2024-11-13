@@ -264,6 +264,7 @@ class AdvActiveAgency extends Model
                 'address',
                 'doc_upload_status',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -314,6 +315,7 @@ class AdvActiveAgency extends Model
                 'entity_name',
                 'address',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)

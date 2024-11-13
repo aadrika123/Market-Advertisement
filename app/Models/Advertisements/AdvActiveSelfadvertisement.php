@@ -337,6 +337,7 @@ class AdvActiveSelfadvertisement extends Model
                 'entity_address',
                 'payment_status',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -361,6 +362,7 @@ class AdvActiveSelfadvertisement extends Model
                 'entity_address',
                 'payment_status',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)

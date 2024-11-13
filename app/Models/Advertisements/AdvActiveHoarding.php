@@ -338,6 +338,7 @@ class AdvActiveHoarding extends Model
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
                 // 'bank_name',
                 // 'account_no',
                 // 'ifsc_code',
@@ -391,6 +392,7 @@ class AdvActiveHoarding extends Model
                 DB::raw("TO_CHAR(application_date, 'DD-MM-YYYY') as application_date"),
                 'license_no',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
                 // 'bank_name',
                 // 'account_no',
                 // 'ifsc_code',

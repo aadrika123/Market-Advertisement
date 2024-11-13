@@ -222,6 +222,7 @@ class MarActiveHostel extends Model
                 'entity_name',
                 'entity_address',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -245,6 +246,7 @@ class MarActiveHostel extends Model
                 'entity_name',
                 'entity_address',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)

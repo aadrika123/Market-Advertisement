@@ -198,6 +198,7 @@ class AdvActiveVehicle extends Model
                 'applicant',
                 'entity_name',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
@@ -276,6 +277,7 @@ class AdvActiveVehicle extends Model
                 'created_at as applied_date',
                 'doc_upload_status',
                 'application_type',
+                DB::raw("CASE WHEN citizen_id IS NULL THEN 'JSK' ELSE 'Citizen' END as applied_by")
             )
             ->orderByDesc('id')
             ->where('parked', NULL)
