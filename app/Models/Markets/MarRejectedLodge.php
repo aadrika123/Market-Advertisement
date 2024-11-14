@@ -89,7 +89,7 @@ class MarRejectedLodge extends Model
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_lodges.current_role_id');
     }
-
+     #data
     public function getDetailsById($applicationId)
     {
         return MarRejectedLodge::select(
