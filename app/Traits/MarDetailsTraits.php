@@ -22,6 +22,7 @@ trait MarDetailsTraits
             ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
             ['displayString' => 'Residential Address', 'key' => 'residentialAddress', 'value' => $data['residential_address']],
+            ['displayString' => 'Permanent Address', 'key' => 'residentialAddress', 'value' => $data['permanent_address']],
             ['displayString' => 'Licence Year', 'key' => 'licenceYear', 'value' => $data['licenseYear']],
             ['displayString' => 'Email', 'key' => 'email', 'value' => $data['email']],
             ['displayString' => 'Mobile No', 'key' => 'moibileNo', 'value' => $data['mobile']],
@@ -33,8 +34,8 @@ trait MarDetailsTraits
             ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
             ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
             ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
-            ['displayString' => 'Ward NO', 'key' => 'wardNo', 'value' => $data['ward_no']],
-            ['displayString' => 'Permanent Ward No', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
+            ['displayString' => 'Residence Ward NO', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Permanent Address Ward No', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
             ['displayString' => 'Hall Type', 'key' => 'hallType', 'value' => $data['halltype']],
             ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
@@ -45,6 +46,7 @@ trait MarDetailsTraits
             ['displayString' => 'No of Entry Gate', 'key' => 'entryGate', 'value' => $data['entry_gate']],
             ['displayString' => 'No of two Wheelers Parking', 'key' => 'twoWheelersParking', 'value' => $data['two_wheelers_parking']],
             ['displayString' => 'No of four Wheelers Parking', 'key' => 'fourWheelersParking', 'value' => $data['four_wheelers_parking']],
+            ['displayString' => 'No of four Exit Gate', 'key' => 'exitGate', 'value' => $data['exit_gate']],
             ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securitytype']],
             ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricitytype']],
             ['displayString' => 'Water Supply Type', 'key' => 'waterSupplyType', 'value' => $data['watersupplytype']],
@@ -52,9 +54,9 @@ trait MarDetailsTraits
         ]);
     }
 
-    
 
-       /**
+
+    /**
      * | Get Basic Details
      */
     public function generateBasicDetailsForHostel($data)
@@ -76,10 +78,10 @@ trait MarDetailsTraits
             ['displayString' => 'Latitude', 'key' => 'Latitude', 'value' => $data['latitude']],
             ['displayString' => 'No of Rooms', 'key' => 'noOfRooms', 'value' => $data['no_of_rooms']],
             ['displayString' => 'No of Beds', 'key' => 'noOfBeds', 'value' => $data['no_of_beds']],
-            ['displayString' => 'Aadhar Card', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
-            ['displayString' => 'Pan Card', 'key' => 'panCard', 'value' => $data['pan_card']],
+            ['displayString' => 'Aadhaar Card No', 'key' => 'aadharCard', 'value' => $data['aadhar_card']],
+            ['displayString' => 'Pan Card No', 'key' => 'panCard', 'value' => $data['pan_card']],
             ['displayString' => 'Application Type', 'key' => 'applicationType', 'value' => $data['application_type']],
-            ['displayString' => 'Ward No', 'key' => 'wardNo', 'value' => $data['ward_no']],
+            ['displayString' => 'Residence Ward No', 'key' => 'wardNo', 'value' => $data['ward_no']],
             ['displayString' => 'Permanent Ward No', 'key' => 'permanentwardNo', 'value' => $data['permanent_ward_no']],
             ['displayString' => 'Entity Ward No', 'key' => 'entitywardNo', 'value' => $data['entity_ward_no']],
             ['displayString' => 'Organization Type', 'key' => 'organizationType', 'value' => $data['organizationtype']],
@@ -95,17 +97,19 @@ trait MarDetailsTraits
             ['displayString' => 'Electricity Type', 'key' => 'electricityType', 'value' => $data['electricityType']],
             ['displayString' => 'Security Type', 'key' => 'securityType', 'value' => $data['securityType']],
             ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']],
-            ['displayString' => 'Approved By Govt', 'key' => 'isApproveByGovt', 'value' => $data['is_approve_by_govt']==true?'Yes':'No'],
+            ['displayString' => 'Approved By Govt', 'key' => 'isApproveByGovt', 'value' => $data['is_approve_by_govt'] == true ? 'Yes' : 'No'],
             ['displayString' => 'No of CCTV', 'key' => 'noOfCCTV', 'value' => $data['cctv_camera']],
             ['displayString' => 'No of Fire Extinguisher', 'key' => 'NoOfFireExtinguisher', 'value' => $data['fire_extinguisher']],
             ['displayString' => 'No of Entry Gate', 'key' => 'entryGate', 'value' => $data['entry_gate']],
             ['displayString' => 'No of Exit Gate', 'key' => 'exitGate', 'value' => $data['exit_gate']],
+            ['displayString' => 'No. of Two-Wheelers Parking Space', 'key' => 'twoWheelerParking', 'value' => $data['two_wheelers_parking']],
+            ['displayString' => 'No. of Four-Wheelers Parking Space ', 'key' => 'fourWheelerParking', 'value' => $data['four_wheelers_parking']],
         ]);
     }
 
 
-    
-       /**
+
+    /**
      * | Get Basic Details
      */
     public function generateBasicDetailsForLodge($data)
@@ -144,7 +148,7 @@ trait MarDetailsTraits
         ]);
     }
 
-        /**
+    /**
      * | Get Basic Details
      */
     public function generateBasicDetailsforDharamshala($data)
@@ -338,7 +342,7 @@ trait MarDetailsTraits
     }
 
 
-    
+
 
     /**
      * |-----------------------------------------------
@@ -401,9 +405,9 @@ trait MarDetailsTraits
     }
 
 
-    
 
-    
+
+
 
     /**
      * |-----------------------------------------------
@@ -446,7 +450,7 @@ trait MarDetailsTraits
             ['displayString' => 'Length', 'key' => 'length', 'value' => $data['length']],
             ['displayString' => 'Size', 'key' => 'size', 'value' => $data['size']],
             ['displayString' => 'Material', 'key' => 'material', 'value' => $data['material']],
-            ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination']?"Yes":"No"],
+            ['displayString' => 'Illumination', 'key' => 'illumination', 'value' => $data['illumination'] ? "Yes" : "No"],
             ['displayString' => 'Indicate_facing', 'key' => 'indicate_facing', 'value' => $data['indicate_facing']],
             ['displayString' => 'License No', 'key' => 'licenseNo', 'value' => $data['license_no']]
         ]);
