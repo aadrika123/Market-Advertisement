@@ -1351,7 +1351,7 @@ class LodgeController extends Controller
         try {
             // Variable initialization
             $mMarActiveLodge = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => authUser($req)->id];
             $req->request->add($citizenId);
 
             $mCalculateRate = new CalculateRate;
@@ -1650,7 +1650,7 @@ class LodgeController extends Controller
             }
             $data = $data->paginate($req->perPage);
             #=============================================================
-            return responseMsgs(true, "Application Fetched Successfully", $data, "050732", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050732", 1.0, "Sec", "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050732", 1.0, "271ms", "POST", "", "");
         }
