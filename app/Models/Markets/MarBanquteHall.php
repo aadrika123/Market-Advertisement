@@ -836,39 +836,38 @@ class MarBanquteHall extends Model
     public function getDetailsById($applicationId)
     {
         return MarBanquteHall::select(
-            'mar_banqute_halls.id',
-            'mar_banqute_halls.application_no',
-            'mar_banqute_halls.application_date',
-            'mar_banqute_halls.applicant',
-            'mar_banqute_halls.applicant as owner_name',
-            'mar_banqute_halls.entity_address',
-            'mar_banqute_halls.entity_name',
-            'mar_banqute_halls.mobile as mobile_no',
-            'mar_banqute_halls.payment_status',
-            'mar_banqute_halls.payment_amount',
-            'mar_banqute_halls.approve_date',
-            'mar_banqute_halls.citizen_id',
-            'mar_banqute_halls.user_id',
-            'mar_banqute_halls.ulb_id',
-            'mar_banqute_halls.application_type',
-            'mar_banqute_halls.valid_upto',
-            'mar_banqute_halls.workflow_id',
-            'mar_banqute_halls.license_no',
-            'mar_banqute_halls.payment_id',
-            DB::raw("'banquetMarriageHall' as type"),
-            'um.ulb_name as ulb_name',
-            'entity_ward_id as ward_no',
-            'holding_no',
-            'father',
-            'mar_banqute_halls.email',
-            'aadhar_card as aadhar_card',
-            'permanent_ward_id as permanent_ward_no',
-            'permanent_address',
-            'doc_upload_status'
+            'mar_banqute_halls.*',
+            'mar_banqute_halls.organization_type as organization_type_id',
+            'mar_banqute_halls.land_deed_type as land_deed_type_id',
+            'mar_banqute_halls.water_supply_type as water_supply_type_id',
+            'mar_banqute_halls.hall_type as hall_type_id',
+            'mar_banqute_halls.electricity_type as electricity_type_id',
+            'mar_banqute_halls.security_type as security_type_id',
+            'ly.string_parameter as license_year_name',
+            'rw.ward_name as resident_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'ldt.string_parameter as water_supply_type_name',
+            'ht.string_parameter as hall_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ulb.ulb_name',
+            DB::raw("'Banquet/Marriage Hall' as headerTitle")
         )
-            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
-            ->where('mar_banqute_halls.id', $applicationId)
-            ->orderByDesc('mar_banqute_halls.id');
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_banqute_halls.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_banqute_halls.entity_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_banqute_halls.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_banqute_halls.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ht', 'ht.id', '=', DB::raw('mar_banqute_halls.hall_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_banqute_halls.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_banqute_halls.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_banqute_halls.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_banqute_halls.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_banqute_halls.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_banqute_halls.ulb_id')
+            ->where('mar_banqute_halls.id', $applicationId);
         ////->get();
     }
 

@@ -2177,7 +2177,7 @@ class LodgeController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-           $data = $activelodge->getApplicationDetailsForEdit($applicationId);
+            $data = $activelodge->getApplicationDetailsForEdit($applicationId);
             if (!$data) {
                 $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
             }
