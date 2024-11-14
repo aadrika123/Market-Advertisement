@@ -667,7 +667,7 @@ class MarLodge extends Model
     public function getDetailsById($applicationId)
     {
         return MarLodge::select(
-            'mar_lodges.id',
+            'mar_lodges.*',
             'mar_lodges.lodge_type as lodge_type_id',
             'mar_lodges.organization_type as organization_type_id',
             'mar_lodges.land_deed_type as land_deed_type_id',

@@ -467,7 +467,7 @@ class MarActiveLodge extends Model
     public function getApplicationDetailsForEdit($appId)
     {
         return MarActiveLodge::select(
-            'mar_active_lodges.id',
+            'mar_active_lodges.*',
             'mar_active_lodges.lodge_type as lodge_type_id',
             'mar_active_lodges.organization_type as organization_type_id',
             'mar_active_lodges.land_deed_type as land_deed_type_id',
