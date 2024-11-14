@@ -2179,10 +2179,10 @@ class LodgeController extends Controller
             // Fetch details from the model
             $data = $activelodge->getApplicationDetailsForEdit($applicationId);
             if (!$data) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId);
             }
             if (!$data) {
-                $data = $rejectedlodge->getDetailsById($applicationId)->first();
+                $data = $rejectedlodge->getDetailsById($applicationId);
             }
 
 
