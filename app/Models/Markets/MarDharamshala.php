@@ -668,38 +668,37 @@ class MarDharamshala extends Model
     public function getDetailsById($applicationId)
     {
         return MarDharamshala::select(
-            'mar_dharamshalas.id',
-            'mar_dharamshalas.application_no',
-            'mar_dharamshalas.application_date',
-            'mar_dharamshalas.entity_address',
-            'mar_dharamshalas.payment_amount',
-            'mar_dharamshalas.entity_name',
-            'mar_dharamshalas.applicant',
-            'mar_dharamshalas.applicant as owner_name',
-            'mar_dharamshalas.mobile as mobile_no',
-            'mar_dharamshalas.approve_date',
-            'mar_dharamshalas.payment_status',
-            'mar_dharamshalas.citizen_id',
-            'mar_dharamshalas.ulb_id',
-            'mar_dharamshalas.valid_upto',
-            'mar_dharamshalas.workflow_id',
-            'mar_dharamshalas.license_no',
-            'mar_dharamshalas.application_type',
-            'mar_dharamshalas.payment_id',
-            DB::raw("'dharamshala' as type"),
-            'um.ulb_name as ulb_name',
-            'entity_ward_id as ward_no',
-            'holding_no',
-            'father',
-            'mar_dharamshalas.email',
-            'aadhar_card as aadhar_card',
-            'permanent_ward_id as permanent_ward_no',
-            'permanent_address',
-            'doc_upload_status'
+            'mar_dharamshalas.*',
+            'mar_dharamshalas.organization_type as organization_type_id',
+            'mar_dharamshalas.land_deed_type as land_deed_type_id',
+            'mar_dharamshalas.water_supply_type as water_supply_type_id',
+            'mar_dharamshalas.electricity_type as electricity_type_id',
+            'mar_dharamshalas.security_type as security_type_id',
+            'mar_dharamshalas.no_of_rooms as noOfRooms',
+            'mar_dharamshalas.no_of_beds as noOfBeds',
+            'ly.string_parameter as license_year_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'wt.string_parameter as water_supply_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'rw.ward_name as residential_ward_name',
+            'ulb.ulb_name',
+            DB::raw("'Dharamshala' as headerTitle")
         )
-            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_dharamshalas.ulb_id')
-            ->where('mar_dharamshalas.id', $applicationId)
-            ->orderByDesc('id');
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_dharamshalas.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_dharamshalas.residential_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_dharamshalas.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_dharamshalas.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_dharamshalas.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_dharamshalas.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_dharamshalas.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_dharamshalas.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_dharamshalas.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_dharamshalas.ulb_id')
+            ->where('mar_dharamshalas.id', $applicationId);
         //->get();
     }
 
