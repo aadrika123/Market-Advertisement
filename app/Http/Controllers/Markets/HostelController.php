@@ -2256,12 +2256,12 @@ class HostelController extends Controller
             $mtransaction = new AdvMarTransaction();
 
             // Fetch details from the model
-            $data = $activelodge->getDetailsByIdjsk($applicationId)->first();
+            $data = $activelodge->getApplicationDetailsForEdit($applicationId);
             if (!$data) {
-                $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId)->first();
+                $data = $mAdvActiveSelfadvertisement->getDetailsById($applicationId);
             }
             if (!$data) {
-                $data = $rejectedlodge->getDetailsById($applicationId)->first();
+                $data = $rejectedlodge->getDetailsById($applicationId);
             }
 
 

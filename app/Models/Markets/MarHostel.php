@@ -671,38 +671,47 @@ class MarHostel extends Model
     public function getDetailsById($applicationId)
     {
         return MarHostel::select(
-            'mar_hostels.id',
-            'mar_hostels.application_no',
-            'mar_hostels.application_date',
-            'mar_hostels.entity_address',
-            'mar_hostels.entity_name',
-            'mar_hostels.applicant',
-            'mar_hostels.applicant as owner_name',
-            'mar_hostels.mobile as mobile_no',
-            'mar_hostels.payment_status',
-            'mar_hostels.payment_amount',
-            'mar_hostels.approve_date',
-            'mar_hostels.citizen_id',
-            'mar_hostels.ulb_id',
-            'mar_hostels.valid_upto',
-            'mar_hostels.workflow_id',
-            'mar_hostels.license_no',
-            'mar_hostels.application_type',
-            'mar_hostels.payment_id',
-            DB::raw("'hostel' as type"),
-            'um.ulb_name as ulb_name',
-            'entity_ward_id as ward_no',
-            'holding_no',
-            'father',
-            'mar_hostels.email',
-            'aadhar_card as aadhar_card',
-            'permanent_ward_id as permanent_ward_no',
-            'permanent_address',
-            'doc_upload_status'
+            'mar_hostels.*',
+            'mar_hostels.hostel_type as hostel_type_id',
+            'mar_hostels.organization_type as organization_type_id',
+            'mar_hostels.land_deed_type as land_deed_type_id',
+            'mar_hostels.mess_type as mess_type_id',
+            'mar_hostels.water_supply_type as water_supply_type_id',
+            'mar_hostels.electricity_type as electricity_type_id',
+            'mar_hostels.security_type as security_type_id',
+            'mar_hostels.no_of_rooms as noOfRooms',
+            'mar_hostels.no_of_beds as noOfBeds',
+            'ly.string_parameter as license_year_name',
+            DB::raw("case when mar_hostels.is_approve_by_govt = true then 'Yes'
+                        else 'No' end as is_approve_by_govt_name"),
+            DB::raw("case when mar_hostels.is_approve_by_govt = true then 1
+                        else 0 end as is_approve_by_govt_id"),
+            'lt.string_parameter as hostel_type_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'mt.string_parameter as mess_type_name',
+            'wt.string_parameter as water_supply_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'rw.ward_name as residential_ward_name',
+            'ulb.ulb_name',
+            DB::raw("'Hostel' as headerTitle")
         )
-            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_hostels.ulb_id')
-            ->where('mar_hostels.id', $applicationId)
-            ->orderByDesc('mar_hostels.id');
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_hostels.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_hostels.residential_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', DB::raw('mar_hostels.hostel_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_hostels.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_hostels.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', DB::raw('mar_hostels.mess_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_hostels.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_hostels.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_hostels.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_hostels.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_hostels.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_hostels.ulb_id')
+            ->where('mar_hostels.id', $applicationId)->first();
         //->get();
     }
 

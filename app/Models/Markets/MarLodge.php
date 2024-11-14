@@ -668,36 +668,65 @@ class MarLodge extends Model
     {
         return MarLodge::select(
             'mar_lodges.id',
-            'mar_lodges.application_no',
-            'mar_lodges.application_date',
-            'mar_lodges.entity_address',
-            'mar_lodges.entity_name',
-            'mar_lodges.applicant',
-            'mar_lodges.applicant as owner_name',
-            'mar_lodges.mobile as mobile_no',
-            'mar_lodges.payment_amount',
-            'mar_lodges.payment_status',
-            'mar_lodges.approve_date',
-            'mar_lodges.citizen_id',
-            'mar_lodges.ulb_id',
-            'mar_lodges.valid_upto',
-            'mar_lodges.workflow_id',
-            'mar_lodges.license_no',
-            'mar_lodges.application_type',
-            'mar_lodges.payment_id',
-            'um.ulb_name as ulb_name',
-            'entity_ward_id as ward_no',
-            'holding_no',
-            'father',
+            'mar_lodges.lodge_type as lodge_type_id',
+            'mar_lodges.organization_type as organization_type_id',
+            'mar_lodges.land_deed_type as land_deed_type_id',
+            'mar_lodges.mess_type as mess_type_id',
+            'mar_lodges.water_supply_type as water_supply_type_id',
+            'mar_lodges.electricity_type as electricity_type_id',
+            'mar_lodges.security_type as security_type_id',
+            'mar_lodges.father as father',
+            'mar_lodges.residential_address as residential_address',
+            'mar_lodges.permanent_address as permanent_address',
             'mar_lodges.email',
-            'aadhar_card as aadhar_card',
-            'permanent_ward_id as permanent_ward_no',
-            'permanent_address',
-            'doc_upload_status'
+            'mar_lodges.application_no',
+            'mar_lodges.applicant',
+            'mar_lodges.application_date',
+            'mar_lodges.application_no',
+            'mar_lodges.entity_address',
+            'mar_lodges.mobile as mobile_no',
+            'mar_lodges.application_type',
+            'mar_lodges.holding_no',
+            'mar_lodges.aadhar_card',
+            'mar_lodges.four_wheelers_parking',
+            'mar_lodges.two_wheelers_parking',
+            'mar_lodges.entry_gate',
+            'mar_lodges.fire_extinguisher',
+            'mar_lodges.exit_gate',
+            'mar_lodges.cctv_camera',
+            'mar_lodges.no_of_beds as noOfBeds',
+            'mar_lodges.exit_gate',
+            'mar_lodges.no_of_beds',
+            'mar_lodges.no_of_rooms',
+            'ly.string_parameter as license_year_name',
+            'lt.string_parameter as lodge_type_name',
+            'ot.string_parameter as organization_type_name',
+            'ldt.string_parameter as land_deed_type_name',
+            'mt.string_parameter as mess_type_name',
+            'wt.string_parameter as water_supply_type_name',
+            'et.string_parameter as electricity_type_name',
+            'st.string_parameter as security_type_name',
+            'pw.ward_name as permanent_ward_name',
+            'ew.ward_name as entity_ward_name',
+            'rw.ward_name as residential_ward_name',
+            'wfr.role_name as current_role_name',
+            'ulb.ulb_name',
+            DB::raw("'Lodge' as headerTitle")
         )
-            ->leftjoin('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
-            ->where('mar_lodges.id', $applicationId)
-            ->orderByDesc('mar_lodges.id');
+            ->leftJoin('ref_adv_paramstrings as ly', 'ly.id', '=', DB::raw('mar_lodges.license_year::int'))
+            ->leftJoin('ulb_ward_masters as rw', 'rw.id', '=', DB::raw('mar_lodges.residential_ward_id::int'))
+            ->leftJoin('ref_adv_paramstrings as lt', 'lt.id', '=', DB::raw('mar_lodges.lodge_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ot', 'ot.id', '=', DB::raw('mar_lodges.organization_type::int'))
+            ->leftJoin('ref_adv_paramstrings as ldt', 'ldt.id', '=', DB::raw('mar_lodges.land_deed_type::int'))
+            ->leftJoin('ref_adv_paramstrings as mt', 'mt.id', '=', DB::raw('mar_lodges.mess_type::int'))
+            ->leftJoin('ref_adv_paramstrings as wt', 'wt.id', '=', DB::raw('mar_lodges.water_supply_type::int'))
+            ->leftJoin('ref_adv_paramstrings as et', 'et.id', '=', DB::raw('mar_lodges.electricity_type::int'))
+            ->leftJoin('ref_adv_paramstrings as st', 'st.id', '=', DB::raw('mar_lodges.security_type::int'))
+            ->leftJoin('ulb_ward_masters as ew', 'ew.id', '=', 'mar_lodges.entity_ward_id')
+            ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_lodges.permanent_ward_id')
+            ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_lodges.ulb_id')
+            ->leftJoin('wf_roles as wfr', 'wfr.id', '=', 'mar_lodges.current_role_id')
+            ->where('mar_lodges.id', $applicationId)->first();
         //->get();
     }
 
