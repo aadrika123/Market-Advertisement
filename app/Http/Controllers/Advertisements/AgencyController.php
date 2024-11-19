@@ -1867,7 +1867,7 @@ class AgencyController extends Controller
             // ->get();
 
             // Apply payment mode filter
-            if ($req->payMode != 'All') {
+            if ($req->payMode != null) {
                 if ($req->payMode == 'Cheque/DD') {
                     $approveListQuery->whereIn('adv_agency_renewals.payment_mode', ['CHEQUE', 'DD']);
                 } else {

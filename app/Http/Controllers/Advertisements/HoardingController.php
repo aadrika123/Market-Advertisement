@@ -1774,11 +1774,11 @@ class HoardingController extends Controller
         $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationType' => 'nullable',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'nullable',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1805,7 +1805,7 @@ class HoardingController extends Controller
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
-            if ($req->payMode == 'All') {
+            if ($req->payMode != null) {
                 $data = $approveList;
             }
             if ($req->payMode == 'Online') {
@@ -1816,6 +1816,9 @@ class HoardingController extends Controller
             }
             if ($req->payMode == 'Cheque/DD') {
                 $data = $approveList->where('payment_mode', $req->payMode);
+            }
+            if ($req->applicationType != null) {
+                $data = $approveList->where('adv_hoarding_renewals.application_type', $req->applicationType);
             }
             if ($req->paidBy != null) {
                 switch ($req->paidBy) {

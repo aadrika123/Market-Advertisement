@@ -1841,7 +1841,7 @@ class VehicleAdvetController extends Controller
                 ->whereBetween('adv_vehicle_renewals.payment_date', [$req->dateFrom, $req->dateUpto]);
 
             // Apply payment mode filter
-            if ($req->payMode != 'All') {
+            if ($req->payMode != null) {
                 if ($req->payMode == 'Cheque/DD') {
                     $approveListQuery->whereIn('adv_vehicle_renewals.payment_mode', ['CHEQUE', 'DD']);
                 } else {
