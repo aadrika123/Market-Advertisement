@@ -1862,12 +1862,12 @@ class SelfAdvetController extends Controller
             $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
-            'applicationStatus' => 'required|in:All,Approve,Reject',
-            'entityWard' => 'required|integer',
+            'applicationType' => 'nullable',
+            'applicationStatus' => 'nullable',
+            'entityWard' => 'nullable',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
-            'displayType' => 'required|integer',
+            'displayType' => 'nullable|integer',
             'perPage' => 'required|integer',
         ]);
         if ($validator->fails()) {
@@ -1879,17 +1879,49 @@ class SelfAdvetController extends Controller
             $mAdvSelfAdvertisement = new AdvSelfAdvertisement();
             $approveList = $mAdvSelfAdvertisement->approveListForReport();
 
-            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $approveList = $approveList->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $approveList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $approveList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $approveList->where('display_type', $req->displayType);
+            }
 
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $pendingList = $mAdvActiveSelfadvertisement->pendingListForReport();
 
-            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $pendingList = $pendingList->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $pendingList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $pendingList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $pendingList->where('display_type', $req->displayType);
+            }
+
 
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
             $rejectList = $mAdvRejectedSelfadvertisement->rejectListForReport();
 
-            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            $rejectList = $rejectList->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $rejectList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $rejectList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $rejectList->where('display_type', $req->displayType);
+            }
+
 
             $data = collect(array());
             if ($req->applicationStatus == 'All') {

@@ -1767,12 +1767,12 @@ class PrivateLandController extends Controller
             $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
-            'applicationStatus' => 'required|in:All,Approve,Reject',
-            'entityWard' => 'required|integer',
+            'applicationType' => 'nullable',
+            'applicationStatus' => 'nullable',
+            'entityWard' => 'nullable',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
-            'displayType' => 'required|integer',
+            'displayType' => 'nullable',
             'perPage' => 'required|integer',
         ]);
         if ($validator->fails()) {
@@ -1784,21 +1784,46 @@ class PrivateLandController extends Controller
             $mAdvPrivateland = new AdvPrivateland();
             $approveList = $mAdvPrivateland->approveListForReport();
 
-            $approveList = $approveList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $approveList = $approveList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $approveList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $approveList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $approveList->where('display_type', $req->displayType);
+            }
 
             $mAdvActivePrivateland = new AdvActivePrivateland();
             $pendingList = $mAdvActivePrivateland->pendingListForReport();
 
-            $pendingList = $pendingList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $pendingList = $pendingList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
-
+            if ($req->entityWard != null) {
+                $pendingList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $pendingList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $pendingList->where('display_type', $req->displayType);
+            }
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
             $rejectList = $mAdvRejectedPrivateland->rejectListForReport();
 
-            $rejectList = $rejectList->where('entity_ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $rejectList = $rejectList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
-
+            if ($req->entityWard != null) {
+                $rejectList->where('entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $rejectList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $rejectList->where('display_type', $req->displayType);
+            }
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
                 $data = $approveList->union($pendingList)->union($rejectList);

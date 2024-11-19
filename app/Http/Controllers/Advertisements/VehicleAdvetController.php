@@ -2206,12 +2206,12 @@ class VehicleAdvetController extends Controller
             $ulbId = $req->auth['ulb_id'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
-            'applicationStatus' => 'required|in:All,Approve,Reject',
-            'entityWard' => 'required|integer',
+            'applicationType' => 'nullable',
+            'applicationStatus' => 'nullable',
+            'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
-            'displayType' => 'required|integer',
+            'displayType' => 'nullable|integer',
             'perPage' => 'required|integer',
         ]);
         if ($validator->fails()) {
@@ -2223,21 +2223,47 @@ class VehicleAdvetController extends Controller
             $mAdvVehicle = new AdvVehicle();
             $approveList = $mAdvVehicle->approveListForReport();
 
-            $approveList = $approveList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $approveList = $approveList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $approveList = $approveList->where('ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $approveList = $approveList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $approveList = $approveList->where('display_type', $req->displayType);
+            }
 
             $mAdvActiveVehicle = new AdvActiveVehicle();
             $pendingList = $mAdvActiveVehicle->pendingListForReport();
 
-            $pendingList = $pendingList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $pendingList = $pendingList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+            if ($req->entityWard != null) {
+                $pendingList = $pendingList->where('ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $pendingList = $pendingList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $pendingList = $pendingList->where('display_type', $req->displayType);
+            }
 
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
             $rejectList = $mAdvRejectedVehicle->rejectListForReport();
 
-            $rejectList = $rejectList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+            $rejectList = $rejectList->where('ulb_id', $ulbId)
                 ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
-
+            if ($req->entityWard != null) {
+                $rejectList = $rejectList->where('ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $rejectList = $rejectList->where('application_type', $req->applicationType);
+            }
+            if ($req->displayType != null) {
+                $rejectList = $rejectList->where('display_type', $req->displayType);
+            }
             $data = collect(array());
             if ($req->applicationStatus == 'All') {
                 $data = $approveList->union($pendingList)->union($rejectList);
