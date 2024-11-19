@@ -1976,19 +1976,17 @@ class SelfAdvetController extends Controller
         $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationType' => 'nullbale|',
             'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,ONLINE,CASH,CHEQUE/DD',
+            'payMode' => 'nullable|',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            // Query initialization
-
             $selfAdvertisementworkflow = Config::get('workflow-constants.SELF-ADVERTISEMENT');
             $approveListQuery = DB::table('adv_selfadvet_renewals')
                 ->select(
@@ -2006,8 +2004,6 @@ class SelfAdvetController extends Controller
                     'adv_mar_transactions.transaction_no'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_selfadvet_renewals.id')
-
-                ->where('adv_selfadvet_renewals.application_type', $req->applicationType)
                 ->where('adv_selfadvet_renewals.payment_status', 1)
                 ->where('adv_selfadvet_renewals.ulb_id', $ulbId)
                 ->where('adv_mar_transactions.workflow_id', $selfAdvertisementworkflow)
@@ -2023,6 +2019,9 @@ class SelfAdvetController extends Controller
             }
             if ($req->entityWard != null) {
                 $approveListQuery->where('adv_selfadvet_renewals.entity_ward_id', $req->entityWard);
+            }
+            if ($req->applicationType != null) {
+                $approveListQuery->where('adv_selfadvet_renewals.application_type',  $req->applicationType);
             }
             if ($req->paidBy != null) {
                 switch ($req->paidBy) {

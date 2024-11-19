@@ -139,7 +139,7 @@ trait AdvDetailsTraits
             ['displayString' => 'Rear Area (sqft)', 'key' => 'rearArea', 'value' => $data['rear_area']],
             ['displayString' => 'Side Area (sqft)', 'key' => 'sideArea', 'value' => $data['side_area']],
             ['displayString' => 'Top Area (sqft)', 'key' => 'topArea', 'value' => $data['top_area']],
-            ['displayString' => 'Topology Type', 'key' => 'typology', 'value' => $data['typology']],
+            ['displayString' => 'Typology  Type', 'key' => 'typology', 'value' => $data['typology']],
             ['displayString' => 'Brand In vehicle', 'key' => 'brandInVehicle', 'value' => $data['brand_display']],
             ['displayString' => 'License From', 'key' => 'licenseFrom', 'value' =>  Carbon::createFromFormat('Y-m-d',  $data['license_from'])->format('d-m-Y')],
             ['displayString' => 'License Upto', 'key' => 'licenseUpto', 'value' => Carbon::createFromFormat('Y-m-d',  $data['license_to'])->format('d-m-Y')],
