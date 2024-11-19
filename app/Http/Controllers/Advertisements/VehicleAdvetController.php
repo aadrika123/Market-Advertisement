@@ -1839,9 +1839,8 @@ class VehicleAdvetController extends Controller
                 ->where('adv_mar_transactions.workflow_id', $movablevehicleWorkflow)
                 ->where('adv_mar_transactions.status', 1)
                 ->whereBetween('adv_vehicle_renewals.payment_date', [$req->dateFrom, $req->dateUpto]);
-
             // Apply payment mode filter
-            if ($req->payMode != null) {
+            if ($req->payMode == 'All' && $req->payMode != null) {
                 if ($req->payMode == 'Cheque/DD') {
                     $approveListQuery->whereIn('adv_vehicle_renewals.payment_mode', ['CHEQUE', 'DD']);
                 } else {

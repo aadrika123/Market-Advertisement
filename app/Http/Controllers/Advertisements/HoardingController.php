@@ -1805,7 +1805,7 @@ class HoardingController extends Controller
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
-            if ($req->payMode != null) {
+            if ($req->payMode == 'All' && $req->payMode != null) {
                 $data = $approveList;
             }
             if ($req->payMode == 'Online') {

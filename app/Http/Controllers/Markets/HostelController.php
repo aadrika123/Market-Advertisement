@@ -1647,7 +1647,7 @@ class HostelController extends Controller
                 ->whereBetween('payment_date', [$req->dateFrom, $req->dateUpto]);
 
             $data = collect(array());
-            if ($req->payMode == 'All') {
+            if ($req->payMode == 'All' && $req->payMode != null) {
                 $data = $approveList;
             }
             if ($req->payMode == 'Online') {
