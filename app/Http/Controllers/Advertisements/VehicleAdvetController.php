@@ -1808,11 +1808,11 @@ class VehicleAdvetController extends Controller
         $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationType' => 'nullable',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,ONLINE,Cash,Cheque/DD',
+            'payMode' => 'nullable',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1834,7 +1834,6 @@ class VehicleAdvetController extends Controller
                     'adv_vehicle_renewals.entity_name'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_vehicle_renewals.id')
-                ->where('adv_vehicle_renewals.application_type', $req->applicationType)
                 ->where('adv_vehicle_renewals.payment_status', 1)
                 ->where('adv_vehicle_renewals.ulb_id', $ulbId)
                 ->where('adv_mar_transactions.workflow_id', $movablevehicleWorkflow)
@@ -1848,6 +1847,9 @@ class VehicleAdvetController extends Controller
                 } else {
                     $approveListQuery->where('adv_vehicle_renewals.payment_mode', $req->payMode);
                 }
+            }
+            if ($req->applicationType != null) {
+                $approveListQuery->where('adv_vehicle_renewals.application_type',  $req->applicationType);
             }
             $paginator = $approveListQuery->paginate($req->perPage);
             // Clone the query for counts and sums

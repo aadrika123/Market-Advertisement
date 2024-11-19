@@ -1834,11 +1834,11 @@ class AgencyController extends Controller
         $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'nullable|in:New Apply,Renew',
+            'applicationType' => 'nullable',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
             'perPage' => 'required|integer',
-            'payMode' => 'required|in:All,Online,Cash,Cheque/DD',
+            'payMode' => 'nullable',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1859,7 +1859,6 @@ class AgencyController extends Controller
                     'adv_agency_renewals.payment_mode'
                 )
                 ->leftjoin('adv_mar_transactions', 'adv_mar_transactions.application_id', 'adv_agency_renewals.id')
-                ->where('adv_agency_renewals.application_type', $req->applicationType)
                 ->where('adv_agency_renewals.payment_status', 1)
                 ->where('adv_mar_transactions.ulb_id', $ulbId)
                 ->where('adv_mar_transactions.status', 1)
@@ -1874,6 +1873,9 @@ class AgencyController extends Controller
                 } else {
                     $approveListQuery->where('adv_agency_renewals.payment_mode', $req->payMode);
                 }
+            }
+            if ($req->applicationType != null) {
+                $approveListQuery->where('adv_agency_renewals.application_type',  $req->applicationType);
             }
             if ($req->paidBy != null) {
                 switch ($req->paidBy) {
