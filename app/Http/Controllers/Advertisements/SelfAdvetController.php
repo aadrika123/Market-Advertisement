@@ -1976,7 +1976,7 @@ class SelfAdvetController extends Controller
         $userType = $req->auth['user_type'];
 
         $validator = Validator::make($req->all(), [
-            'applicationType' => 'nullbale|',
+            'applicationType' => 'nullable|',
             'entityWard' => 'nullable|integer',
             'dateFrom' => 'required|date_format:Y-m-d',
             'dateUpto' => 'required|date_format:Y-m-d',
@@ -2010,7 +2010,7 @@ class SelfAdvetController extends Controller
                 ->where('adv_mar_transactions.status', 1)
                 ->whereBetween('adv_selfadvet_renewals.payment_date', [$req->dateFrom, $req->dateUpto]);
             // Apply payment mode filter
-            if ($req->payMode != 'All') {
+            if ($req->payMode != null) {
                 if ($req->payMode == 'Cheque/DD') {
                     $approveListQuery->whereIn('adv_selfadvet_renewals.payment_mode', ['CHEQUE', 'DD']);
                 } else {
