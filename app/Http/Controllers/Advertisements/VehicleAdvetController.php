@@ -2193,4 +2193,66 @@ class VehicleAdvetController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
+    /**
+     * | Get Application Display Wise
+     * | Function - 35
+     * | API - 32
+     */
+    public function getApplicationDisplayWise(Request $req)
+    {
+        if ($req->auth['ulb_id'] < 1)
+            return responseMsgs(false, "Not Allowed", 'You Are Not Authorized !!', "050432", 1.0, "271ms", "POST", "", "");
+        else
+            $ulbId = $req->auth['ulb_id'];
+
+        $validator = Validator::make($req->all(), [
+            'applicationType' => 'required|in:New Apply,Renew',
+            'applicationStatus' => 'required|in:All,Approve,Reject',
+            'entityWard' => 'required|integer',
+            'dateFrom' => 'required|date_format:Y-m-d',
+            'dateUpto' => 'required|date_format:Y-m-d',
+            'displayType' => 'required|integer',
+            'perPage' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+
+            $mAdvVehicle = new AdvVehicle();
+            $approveList = $mAdvVehicle->approveListForReport();
+
+            $approveList = $approveList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mAdvActiveVehicle = new AdvActiveVehicle();
+            $pendingList = $mAdvActiveVehicle->pendingListForReport();
+
+            $pendingList = $pendingList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $mAdvRejectedVehicle = new AdvRejectedVehicle();
+            $rejectList = $mAdvRejectedVehicle->rejectListForReport();
+
+            $rejectList = $rejectList->where('ward_id', $req->entityWard)->where('application_type', $req->applicationType)->where('display_type', $req->displayType)->where('ulb_id', $ulbId)
+                ->whereBetween('application_date', [$req->dateFrom, $req->dateUpto]);
+
+            $data = collect(array());
+            if ($req->applicationStatus == 'All') {
+                $data = $approveList->union($pendingList)->union($rejectList);
+            }
+            if ($req->applicationStatus == 'Reject') {
+                $data = $rejectList;
+            }
+            if ($req->applicationStatus == 'Approve') {
+                $data = $approveList;
+            }
+            $data = $data->paginate($req->perPage);
+
+            return responseMsgs(true, "Application Fetched Successfully", $data, "050432", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050432", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }

@@ -188,6 +188,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/vehicle/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('advert/vehicle/reupload-document', 'reuploadDocument');                                      // changes by Arshad      
         Route::post('advert/vehicle/forward-next-level-btc', 'forwardNextLevelBtc');
+        Route::post('advert/vehicle/get-application-display-wise', 'getApplicationDisplayWise');                   // 36 ( Get Application Financial Year Wise )
     });
 
     /**
