@@ -498,6 +498,7 @@ class MarActiveLodge extends Model
             'mar_active_lodges.exit_gate',
             'mar_active_lodges.no_of_beds',
             'mar_active_lodges.no_of_rooms',
+            'mar_active_lodges.no_of_rooms as noOfRooms',
             'ly.string_parameter as license_year_name',
             'lt.string_parameter as lodge_type_name',
             'ot.string_parameter as organization_type_name',

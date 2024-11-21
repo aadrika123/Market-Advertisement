@@ -184,7 +184,7 @@ class MarActiveHostel extends Model
                 'document' => $imageName,
                 'doc_category' => $req->docCategory,
                 'docCode' => $document['docCode'],
-                'ownerDtlId' => $document['ownerDtlId']??null,
+                'ownerDtlId' => $document['ownerDtlId'] ?? null,
                 'unique_id' => $imageName['data']['uniqueId'] ?? null,
                 'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
             ];
@@ -409,33 +409,33 @@ class MarActiveHostel extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$Image, $docId)
+    public function reuploadDocument($req, $Image, $docId)
     {
-        try{
-        $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
-        $data = [];
-        $mWfActiveDocument = new WfActiveDocument();
-        $user = collect(authUser($req));
-        $file = $Image;
-        $req->merge([
-            'document' => $file
-        ]);
-        $imageName = $docUpload->upload($req);
-        $metaReqs = [
-            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
-            'unique_id' => $imageName['data']['uniqueId'] ?? null,
-            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
-        ];
-         // Save document metadata in wfActiveDocuments
-         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
-         return $activeId;
- 
-         // return $data;
-     } catch (Exception $e) {
-         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-     }
+        try {
+            $docUpload = new DocumentUpload;
+            $docDetails = WfActiveDocument::find($req->id);
+            $relativePath = Config::get('constants.HOSTEL.RELATIVE_PATH');
+            $data = [];
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 
     /**
@@ -493,6 +493,11 @@ class MarActiveHostel extends Model
     public function updateApplication($req)
     {
         $MarActiveHostel = MarActiveHostel::findorfail($req->applicationId);
+        $hostelLogs = $MarActiveHostel->replicate();
+        $hostelLogs->setTable('mar_active_hostel_logs');
+        $hostelLogs->id = $MarActiveHostel->id;
+        $hostelLogs->save();
+
         $MarActiveHostel->remarks = $req->remarks;
         $MarActiveHostel->organization_type = $req->organizationType;
         $MarActiveHostel->land_deed_type = $req->landDeedType;
@@ -508,6 +513,7 @@ class MarActiveHostel extends Model
         $MarActiveHostel->no_of_beds = $req->noOfBeds;
         $MarActiveHostel->no_of_rooms = $req->noOfRooms;
         $MarActiveHostel->save();
+
         // dd($mMarActiveBanquteHall);
         return $MarActiveHostel;
     }
@@ -577,7 +583,7 @@ class MarActiveHostel extends Model
             'mar_active_hostels.mobile as mobile_no',
             'mar_active_hostels.citizen_id',
             'mar_active_hostels.ulb_id',
-           'mar_active_hostels.user_id',
+            'mar_active_hostels.user_id',
             'mar_active_hostels.workflow_id',
             'mar_active_hostels.application_type',
             'um.ulb_name as ulb_name',
