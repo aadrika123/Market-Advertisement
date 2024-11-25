@@ -360,7 +360,8 @@ class TollsController extends Controller
             return  $validator->errors();
         }
         try {
-            
+            $user = authUser($req);
+            $userName = $user->name;
             if ($req->dateFrom == NULL) {
                 $fromDate = date('Y-m-d');
                 $toDate = date('Y-m-d');
@@ -369,8 +370,26 @@ class TollsController extends Controller
                 $toDate = $req->dateTo;
             }
             $mMarTollPayment = new MarTollPayment();
-            $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
-            $list = paginator($list, $req);
+            $data = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            // Calculate counts
+            $cashCount    = $data->clone()->where('mar_toll_payments.pmt_mode', 'CASH')->count();
+            // $cashCount = $data->clone()->where('mar_shop_payments.pmt_mode', 'CASH')->where('')->count();
+            $onlineCount  = $data->clone()->where('mar_toll_payments.pmt_mode', 'ONLINE')->count();
+            $chequeCount  = $data->clone()->where('mar_toll_payments.pmt_mode', 'CHEQUE')->count();
+            $cashAmount   = $data->clone()->where('mar_toll_payments.pmt_mode', 'CASH')->sum('amount');
+            $onlineAmount = $data->clone()->where('mar_toll_payments.pmt_mode', 'ONLINE')->sum('amount');
+            $chequeAmount = $data->clone()->where('mar_toll_payments.pmt_mode', 'CHEQUE')->sum('amount');
+
+            $paginator = paginator($data, $req);
+
+            $list['collectAmount'] = $data->sum('amount');
+            $list['cashCount'] = $cashCount;
+            $list['onlineCount'] = $onlineCount;
+            $list['chequeCount'] = $chequeCount;
+            $list['cashAmount'] = $cashAmount;
+            $list['onlineAmount'] = $onlineAmount;
+            $list['chequeAmount'] = $chequeAmount;
+            $list['userName'] = $userName;
 
             $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate])->get()->sum('amount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055108", "1.0", responseTime(), "POST", $req->deviceId);
@@ -677,7 +696,7 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "050421", "1.0", "", 'POST', $request->deviceId ?? "");
         }
     }
-     /**
+    /**
      * | List shop Collection between two dates
      * | API - 35
      * | Function - 35
@@ -733,4 +752,3 @@ class TollsController extends Controller
         }
     }
 }
-

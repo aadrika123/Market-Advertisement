@@ -10,12 +10,12 @@ return [
     // "BASE_URL" => 'http://192.168.0.95:8005/',
     // "95_PAYMENT_URL" => 'http://192.168.0.95:8004/',  
     // "ULB_LOGO_URL" => 'http://203.129.217.246:8000/',                       // Property URL
-    "AUTH_URL" => env('AUTH_URL','http://localhost:8005/'),
-    "PAYMENT_URL" => env('PAYMENT_URL','http://localhost:8000/'),
-    "BASE_URL" => env('BASE_URL','http://localhost/'),
-    "95_PAYMENT_URL" => env('95_PAYMENT_URL','http://localhost:8000/'),    
+    "AUTH_URL" => env('AUTH_URL', 'http://localhost:8005/'),
+    "PAYMENT_URL" => env('PAYMENT_URL', 'http://localhost:8000/'),
+    "BASE_URL" => env('BASE_URL', 'http://localhost/'),
+    "95_PAYMENT_URL" => env('95_PAYMENT_URL', 'http://localhost:8000/'),
     //"ULB_LOGO_URL" => env('ULB_LOGO_URL','http://localhost/'),                       // Property URL
-    "DOC_URL" => env('DOC_URL','http://localhost/'),   
+    "DOC_URL" => env('DOC_URL', 'http://localhost/'),
     "ULB_LOGO_URL"    => env('ULB_LOGO_URL'),                    // Property URL
 
     "WHATSAPP_TOKEN"        => env("WHATSAPP_TOKEN", "xxx"),
@@ -98,5 +98,13 @@ return [
         'DD',
         'NEFT',
         'RTGS'
+    ],
+    "ROLE-LABEL" => [
+        "BO" => 11,
+        "DA" => 6,
+        "JE" => 12,     // 40
+        "SH" => 13,
+        "AE" => 14,
+        "EO" => 10
     ],
 ];

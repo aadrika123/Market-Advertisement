@@ -399,6 +399,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/get-application-by-lodge-type', 'getApplicationByLodgelType');                    // 33 ( Get Application hostel type Wise )
         #Arshad
         Route::post('market/lodge/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/lodge/list-ae-edited-application', 'geteEditedApplicationDetails');              // 19 ( Approved list for JSK)
 
         //Written by prity pandey
         Route::post('market/lodge/list-jsk-rejected-application', 'listJskRejectedApplication');
@@ -512,6 +513,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/hostel/get-application-by-hostel-type', 'getApplicationByHostelType');                  // 33 ( Get Application Hostel type Wise )
         #Arshad
         Route::post('market/hostel/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/hostel/list-ae-edited-application', 'geteEditedApplicationDetails');              // 19 ( Approved list for JSK)
+
 
         //Written by prity pandey
         Route::post('market/hostel/list-jsk-rejected-application', 'listJskRejectedApplication');

@@ -12,6 +12,7 @@ use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveLodge;
+use App\Models\Markets\MarActiveLodgeLog;
 use App\Models\Markets\MarBanquteHall;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarLodge;
@@ -1400,6 +1401,31 @@ class LodgeController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
         }
     }
+    /**
+     * | Get Application Details For Update Application
+     * | Function - 31
+     * | API - 27
+     */
+    public function geteEditedApplicationDetails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $mMarActiveLodge = new MarActiveLodgeLog();
+            $refRole                = Config::get("constants.ROLE-LABEL");
+            $returnData['aeData'] = $mMarActiveLodge->getEditedApplicationDetails($req->applicationId)
+                ->first();
+            return responseMsgs(true, "Ae Edited Details Successfully !!!", remove_null($returnData), "050727", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
+        }
+    }
+
     /**
      * | Update Application 
      * | Function - 32

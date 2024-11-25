@@ -162,7 +162,10 @@ class ShopController extends Controller
                 'electricity_no' => $req->electricityNo,
                 'water_consumer_no' => $req->waterConsumerNo,
                 'user_id' => $req->auth['id'] ?? 0,
-                'ulb_id' => $req->auth['ulb_id'] ?? 0
+                'ulb_id' => $req->auth['ulb_id'] ?? 0,
+                'ward_no' => $req->wardNo,
+                'last_payment_date' => $req->lastPayDt,
+                'last_payment_amount' => $req->lastPayAmt,
             ];
             // return $metaReqs;
             $tempId = $this->_mShops->create($metaReqs)->id;
@@ -1555,6 +1558,8 @@ class ShopController extends Controller
         // return $req->all();
         try {
             $paymentMode = null;
+            $user = authUser($req);
+            $userName = $user->name;
             if (!isset($req->dateFrom))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
@@ -1576,7 +1581,7 @@ class ShopController extends Controller
             if ($req->userId != 0)
                 $data = $data->where('mar_shop_payments.user_id', $req->userId);
             if ($req->marketId != 0)
-                $data = $data->where('t2.market_id', $req->marketId);
+                $data = $data->where('t2.market_id', $req->marketId);   
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             // Calculate counts
@@ -1596,6 +1601,7 @@ class ShopController extends Controller
             $list['cashAmount'] = $cashAmount;
             $list['onlineAmount'] = $onlineAmount;
             $list['chequeAmount'] = $chequeAmount;
+            $list['userName'] = $userName;
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);

@@ -536,6 +536,10 @@ class MarActiveLodge extends Model
     public function updateApplication($req)
     {
         $mMarActiveLodge = MarActiveLodge::findorfail($req->applicationId);
+        $hostelLogs = $mMarActiveLodge->replicate();
+        $hostelLogs->setTable('mar_active_lodge_logs');
+        $hostelLogs->id = $mMarActiveLodge->id;
+        $hostelLogs->save();
         $mMarActiveLodge->remarks = $req->remarks;
         $mMarActiveLodge->organization_type = $req->organizationType;
         $mMarActiveLodge->land_deed_type = $req->landDeedType;
