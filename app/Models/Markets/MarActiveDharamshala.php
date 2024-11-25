@@ -175,7 +175,7 @@ class MarActiveDharamshala extends Model
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId']??null;
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
             $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
             $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
@@ -391,34 +391,34 @@ class MarActiveDharamshala extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$Image, $docId)
+    public function reuploadDocument($req, $Image, $docId)
     {
-        try{
-        $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
+        try {
+            $docUpload = new DocumentUpload;
+            $docDetails = WfActiveDocument::find($req->id);
+            $relativePath = Config::get('constants.DHARAMSHALA.RELATIVE_PATH');
 
-        $data = [];
-        $mWfActiveDocument = new WfActiveDocument();
-        $user = collect(authUser($req));
-        $file = $Image;
-        $req->merge([
-            'document' => $file
-        ]);
-        $imageName = $docUpload->upload($req);
-        $metaReqs = [
-            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
-            'unique_id' => $imageName['data']['uniqueId'] ?? null,
-            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
-        ];
-         // Save document metadata in wfActiveDocuments
-         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
-         return $activeId;
- 
-         // return $data;
-     } catch (Exception $e) {
-         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-     }
+            $data = [];
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 
 
@@ -467,6 +467,10 @@ class MarActiveDharamshala extends Model
     public function updateApplication($req)
     {
         $mMarActiveDharamshala = MarActiveDharamshala::findorfail($req->applicationId);
+        $dharamshala = $mMarActiveDharamshala->replicate();
+        $dharamshala->setTable('mar_active_dharamshala_logs');
+        $dharamshala->application_id = $mMarActiveDharamshala->id;
+        $dharamshala->save();
         $mMarActiveDharamshala->remarks = $req->remarks;
         $mMarActiveDharamshala->organization_type = $req->organizationType;
         $mMarActiveDharamshala->land_deed_type = $req->landDeedType;
@@ -541,7 +545,7 @@ class MarActiveDharamshala extends Model
             'mar_active_dharamshalas.mobile as mobile_no',
             'mar_active_dharamshalas.citizen_id',
             'mar_active_dharamshalas.ulb_id',
-           'mar_active_dharamshalas.user_id',
+            'mar_active_dharamshalas.user_id',
             'mar_active_dharamshalas.workflow_id',
             'mar_active_dharamshalas.application_type',
             'um.ulb_name as ulb_name',

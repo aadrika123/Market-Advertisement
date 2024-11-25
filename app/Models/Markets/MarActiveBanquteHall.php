@@ -209,7 +209,7 @@ class MarActiveBanquteHall extends Model
             $metaReqs['relativePath'] = $relativePath;
             $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId']??null;
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
             $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
             $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
             $a = new Request($metaReqs);
@@ -431,34 +431,34 @@ class MarActiveBanquteHall extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$Image, $docId)
+    public function reuploadDocument($req, $Image, $docId)
     {
-        try{
-        $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
+        try {
+            $docUpload = new DocumentUpload;
+            $docDetails = WfActiveDocument::find($req->id);
+            $relativePath = Config::get('constants.BANQUTE_MARRIGE_HALL.RELATIVE_PATH');
 
-        $data = [];
-        $mWfActiveDocument = new WfActiveDocument();
-        $user = collect(authUser($req));
-        $file = $Image;
-        $req->merge([
-            'document' => $file
-        ]);
-        $imageName = $docUpload->upload($req);
-        $metaReqs = [
-            'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
-            'unique_id' => $imageName['data']['uniqueId'] ?? null,
-            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
-        ];
-         // Save document metadata in wfActiveDocuments
-         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
-         return $activeId;
- 
-         // return $data;
-     } catch (Exception $e) {
-         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-     }
+            $data = [];
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.MARKET_MODULE_ID') ?? 5,
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 
     /**
@@ -514,6 +514,10 @@ class MarActiveBanquteHall extends Model
     public function updateApplication($req)
     {
         $mMarActiveBanquteHall = MarActiveBanquteHall::findorfail($req->applicationId);
+        $banqutehall = $mMarActiveBanquteHall->replicate();
+        $banqutehall->setTable('mar_active_banqute_hall_logs');
+        $banqutehall->application_id = $mMarActiveBanquteHall->id;
+        $banqutehall->save();
         $mMarActiveBanquteHall->remarks = $req->remarks;
         $mMarActiveBanquteHall->hall_type = $req->hallType;
         $mMarActiveBanquteHall->organization_type = $req->organizationType;
@@ -585,7 +589,7 @@ class MarActiveBanquteHall extends Model
             'mar_active_banqute_halls.mobile as mobile_no',
             'mar_active_banqute_halls.citizen_id',
             'mar_active_banqute_halls.ulb_id',
-           'mar_active_banqute_halls.user_id',
+            'mar_active_banqute_halls.user_id',
             'mar_active_banqute_halls.workflow_id',
             'mar_active_banqute_halls.application_type',
             'um.ulb_name as ulb_name',

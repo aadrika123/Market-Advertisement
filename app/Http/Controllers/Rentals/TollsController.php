@@ -156,6 +156,7 @@ class TollsController extends Controller
                 'user_id'                 => $request->auth['id'],
                 'ulb_id'                  => $request->auth['ulb_id'],
                 'last_tran_id'            => $request->lastTranId,
+                'apply_date'              => Carbon::now(),
             ];
             $this->_mToll->create($marToll);
             return responseMsgs(true, "Successfully Saved", ['tollNo' => $tollNo], "055102", "1.0", responseTime(), "POST", $request->deviceId);

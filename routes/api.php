@@ -457,6 +457,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/get-application-by-organization-type', 'getApplicationByOrganizationType');     // 33 ( Get Application organization type Wise )
         #Arshad
         Route::post('market/bm-hall/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/bm-hall/list-ae-edited-application', 'geteEditedApplicationDetails');              // 19 ( Approved list for JSK)
 
         //Written by prity pandey
         Route::post('market/bm-hall/list-jsk-rejected-application', 'listJskRejectedApplication');
@@ -572,6 +573,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/dharamshala/get-application-by-organization-type', 'getApplicationByOrganizationType'); // 33 ( Get Application Organization type Wise )
         #ARSHAD
         Route::post('market/dharamshala/list-jsk-approved-application', 'listjskApprovedApplication');              // 19 ( Approved list for JSK)
+        Route::post('market/dharamshala/list-ae-edited-application', 'geteEditedApplicationDetails');              // 19 ( Approved list for JSK)
 
         //Written by prity pandey
         Route::post('market/dharamshala/list-jsk-rejected-application', 'listJskRejectedApplication');

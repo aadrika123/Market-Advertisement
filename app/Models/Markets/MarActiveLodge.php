@@ -538,7 +538,7 @@ class MarActiveLodge extends Model
         $mMarActiveLodge = MarActiveLodge::findorfail($req->applicationId);
         $hostelLogs = $mMarActiveLodge->replicate();
         $hostelLogs->setTable('mar_active_lodge_logs');
-        $hostelLogs->id = $mMarActiveLodge->id;
+        $hostelLogs->application_id = $mMarActiveLodge->id;
         $hostelLogs->save();
         $mMarActiveLodge->remarks = $req->remarks;
         $mMarActiveLodge->organization_type = $req->organizationType;

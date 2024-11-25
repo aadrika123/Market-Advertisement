@@ -495,7 +495,7 @@ class MarActiveHostel extends Model
         $MarActiveHostel = MarActiveHostel::findorfail($req->applicationId);
         $hostelLogs = $MarActiveHostel->replicate();
         $hostelLogs->setTable('mar_active_hostel_logs');
-        $hostelLogs->id = $MarActiveHostel->id;
+        $hostelLogs->application_id = $MarActiveHostel->id;
         $hostelLogs->save();
 
         $MarActiveHostel->remarks = $req->remarks;

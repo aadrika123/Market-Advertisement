@@ -12,6 +12,7 @@ use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\Advertisements\AdvChequeDtl;
 use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Markets\MarActiveDharamshala;
+use App\Models\Markets\MarActiveDharamshalaLog;
 use App\Models\Markets\MarDharamshala;
 use App\Models\Markets\MarketPriceMstr;
 use App\Models\Markets\MarRejectedDharamshala;
@@ -1355,7 +1356,7 @@ class DharamshalaController extends Controller
         try {
             // Variable initialization
             $mActiveDharamshala = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => authUser($req)->id];
             $req->request->add($citizenId);
 
             $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
@@ -2262,6 +2263,30 @@ class DharamshalaController extends Controller
         } catch (Exception $e) {
             // Handle exception and return error message
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+    /**
+     * | Get Application Details For Update Application
+     * | Function - 31
+     * | API - 27
+     */
+    public function geteEditedApplicationDetails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required|digits_between:1,9223372036854775807'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            // Variable initialization
+            $mMarActiveLodge = new MarActiveDharamshalaLog();
+            $refRole                = Config::get("constants.ROLE-LABEL");
+            $returnData['aeData'] = $mMarActiveLodge->getEditedApplicationDetails($req->applicationId)
+                ->first();
+            return responseMsgs(true, "Ae Edited Details Successfully !!!", remove_null($returnData), "050727", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
         }
     }
 }

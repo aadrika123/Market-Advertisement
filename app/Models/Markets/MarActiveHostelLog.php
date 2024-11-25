@@ -75,6 +75,6 @@ class MarActiveHostelLog extends Model
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'mar_active_hostel_logs.permanent_ward_id')
             ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'mar_active_hostel_logs.ulb_id')
             ->leftJoin('wf_roles as wfr', 'wfr.id', '=', 'mar_active_hostel_logs.current_role_id')
-            ->where('mar_active_hostel_logs.id', $appId);
+            ->where('mar_active_hostel_logs.application_id', $appId);
     }
 }
