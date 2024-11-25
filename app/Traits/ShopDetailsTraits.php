@@ -40,6 +40,7 @@ trait ShopDetailsTraits
             ['displayString' => 'Last Payment Date', 'key' => 'id', 'value' => $data['last_payment_date']],
             ['displayString' => 'Last Payment Amount', 'key' => 'id', 'value' => $data['last_payment_amount']],
             ['displayString' => 'Remarks', 'key' => 'id', 'value' => $data['remarks']],
+            ['displayString' => 'Apply Date', 'key' => 'id', 'value' => $data['apply_date']],
             // ['displayString' => 'Shop Type', 'key' => 'shopType', 'value' => $data['shop_type']],
         ]);
     }

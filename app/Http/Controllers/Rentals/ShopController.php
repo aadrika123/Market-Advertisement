@@ -166,6 +166,7 @@ class ShopController extends Controller
                 'ward_no' => $req->wardNo,
                 'last_payment_date' => $req->lastPayDt,
                 'last_payment_amount' => $req->lastPayAmt,
+                'apply_date' => Carbon::now(),
             ];
             // return $metaReqs;
             $tempId = $this->_mShops->create($metaReqs)->id;
@@ -1581,7 +1582,7 @@ class ShopController extends Controller
             if ($req->userId != 0)
                 $data = $data->where('mar_shop_payments.user_id', $req->userId);
             if ($req->marketId != 0)
-                $data = $data->where('t2.market_id', $req->marketId);   
+                $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             // Calculate counts
