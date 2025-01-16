@@ -28,6 +28,9 @@ use App\Models\Advertisements\WfActiveDocument;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Payment\TempTransaction;
 use App\Models\User;
+use App\Models\Workflows\MenuRole;
+use App\Models\Workflows\MenuRoleusermap;
+use App\Models\Workflows\WfRole;
 use App\Models\Workflows\WfRoleusermap;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -753,6 +756,7 @@ class AgencyController extends Controller
                     $msg = "Application Successfully Renewal !!";
                 }
                 $userId = $this->store($req, $mAdvActiveAgency);
+                $roleMaps = $this->setRoleMaps($userId);
 
                 // dd($userId);
             }
@@ -789,6 +793,33 @@ class AgencyController extends Controller
         return $mAdvAgencyAmount->getAgencyPrice($ulb_id, $application_type);
     }
 
+    // make user role mapping 
+
+    public function setRoleMaps($userId)
+    {
+        try {
+            $request = new Request();
+            $mWfRoleUserMap = new WfRoleusermap();
+            $mwfRole        = new WfRole();
+            $mMenuRole      = new MenuRole();
+            $mMenuRoleusermap      = new MenuRoleusermap();
+            $wfRoleId = $mwfRole->getWfRole();
+            $menuRoleId = $mMenuRole->getMenuRole();
+            $isSuspended = 0;
+            $request->merge([
+                'userId' => $userId,
+                'wfRoleId' => $wfRoleId->id,
+                'menuRoleId' => $menuRoleId->id,
+                'isSuspended' => $isSuspended
+            ]);
+            // create
+            $mWfRoleUserMap->addRoleUser($request);
+            $mMenuRoleusermap->addRoleUser($request);
+            return responseMsgs(true, "Successfully Saved", "", "120501", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "120501", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
 
     /**
      * | Approve Application List for Citzen

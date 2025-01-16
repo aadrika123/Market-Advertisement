@@ -5,9 +5,10 @@ namespace App\Models\Workflows;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WfRole extends Model
+class MenuRole extends Model
 {
     use HasFactory;
+
     protected $connection = 'pgsql_masters';
     protected $guarded = [];
 
@@ -17,10 +18,10 @@ class WfRole extends Model
     ];
 
     //role by id
-    public function getWfRole()
+    public function getMenuRole()
     {
-        return  WfRole::select('id', 'role_name')
-            ->where('role_name', 'ADVERTISEMENT AGENCY')
+        return  MenuRole::select('id', 'menu_role_name')
+            ->where('menu_role_name', 'Adv Agency')
             ->where('is_suspended', false)
             ->first();
     }

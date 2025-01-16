@@ -86,4 +86,14 @@ class WfRoleusermap extends Model
             ->where('w.is_suspended', false)
             ->first();
     }
+
+    public function addRoleUser($req)
+    {
+        $data = new WfRoleusermap;
+        $data->wf_role_id   = $req->wfRoleId;
+        $data->user_id      = $req->userId;
+        $data->is_suspended = $req->isSuspended ?? false;
+        $data->created_by   = $req->createdBy;
+        $data->save();
+    }
 }
