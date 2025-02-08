@@ -72,6 +72,9 @@ Route::group(['middleware' => ['json.response']], function () {
 
         //written by prity pandey
         Route::post('dashboard_details', 'petDashbordDtls');
+
+        //alok
+        Route::post('application/searh-pet-details', 'getPetDetailsInfo');  
     });
 
     /**

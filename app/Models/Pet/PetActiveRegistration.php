@@ -742,4 +742,31 @@ class PetActiveRegistration extends Model
      }
     }
 
+
+    // alok
+    public function getActivePetDetails($req, $key, $refNo)
+    {
+        return PetActiveRegistration::select(
+            'pet_active_registrations.id',
+            'pet_active_registrations.application_no',
+            'pet_active_registrations.holding_no',
+            'pet_active_applicants.applicant_name',
+            'pet_active_applicants.mobile_no',
+            'pet_active_registrations.address',
+            'ulb_masters.ulb_name',
+
+            DB::raw("CASE 
+            WHEN pet_active_applicants.status = '1' THEN 'Pending'
+            WHEN pet_active_applicants.status = '2' THEN 'Approve'
+            WHEN pet_active_applicants.status = '0' THEN 'Rejected'
+            END AS status"),
+        )
+            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'pet_active_registrations.ulb_id')
+            ->where('pet_active_registrations.' . $key, 'LIKE', '%' . $refNo . '%')
+            ->where('pet_active_registrations.status', 1)
+            ->where('pet_active_registrations.ulb_id', 2)
+            ->orderByDesc('pet_active_registrations.id');
+    }
+
 }

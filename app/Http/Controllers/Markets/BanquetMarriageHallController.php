@@ -2354,4 +2354,44 @@ class BanquetMarriageHallController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050727", 1.0, "", "POST", "", "");
         }
     }
+
+    /* 
+    * || Get Consumer Details Info Filtering By Application No
+    * || @param filterBy 
+    * || @param filterValue
+    * || # Added By Alok
+    */
+    public function searchApplicationNoForBanqute(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'filterValue' => 'required|string'
+            ]
+        );
+    
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+    
+        try {
+            $filterValue = $req->filterValue;
+    
+            $activeBanqute = new MarBanquteHall();
+    
+            // 🔹 Search by `application_no` explicitly
+            $data = $activeBanqute->getBanquteDtl('license_no', $filterValue);
+    
+            if ($data->isEmpty()) {
+                throw new Exception("Application Not Found");
+            }
+    
+            $approveApplicationDetails = $data;
+    
+            return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
+        }
+    }
+    
 }

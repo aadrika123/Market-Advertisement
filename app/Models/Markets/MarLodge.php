@@ -855,4 +855,24 @@ class MarLodge extends Model
             'total' => $data->total()
         ];
     }
+
+    //alok
+
+    public function getlodgeDtl($filterBy, $filterValue)
+    {
+        return MarLodge::select(
+            'mar_lodges.id',
+            'mar_lodges.application_no',
+            'mar_lodges.entity_ward_id',
+            'mar_lodges.applicant as owner_name',
+            'mar_lodges.mobile as mobile_no',
+            'mar_lodges.email',
+            'mar_lodges.permanent_address as address',
+            'um.ulb_name',
+        )
+        ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+        ->where("mar_lodges.$filterBy", 'LIKE', "%$filterValue%")
+        ->where('mar_lodges.ulb_id', 2) 
+        ->get(); 
+    }
 }

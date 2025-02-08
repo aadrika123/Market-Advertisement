@@ -2431,4 +2431,47 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "011901", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+    
+    /* 
+    * || Get Pet Details Info Filtering By Application No
+    * || @param filterBy 
+    * || @param filterValue
+    * || # Added By Alok
+    */
+    public function getPetDetailsInfo(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy' => 'required|in:applicationNo',
+                'filterValue' => 'required',
+            ]
+        );
+    
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+    
+        try {
+            $key = $request->filterBy;
+            $paramenter = $request->filterValue;
+            $refstring = Str::snake($key);
+            $msg = "Pet active application details!";
+    
+            $mPetActiveRegistration = new PetActiveRegistration();
+    
+            // Fetch active pet details based on filter
+            $activeApplication = $mPetActiveRegistration->getActivePetDetails($request, $refstring, $paramenter)->get();
+    
+            // Check if data exists
+            if ($activeApplication->isEmpty()) {
+                $msg = "No data found";
+            }
+    
+            return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+    
 }

@@ -412,6 +412,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/lodge/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/lodge/reupload-document', 'reuploadDocument');
         Route::post('market/lodge/forward-next-level-btc', 'forwardNextLevelBtc');
+
+        //alok
+        Route::post('market/lodge/searchApplicationNo', 'searchApplicationNo');
     });
 
     /**
@@ -470,6 +473,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('market/bm-hall/view-btc-document', 'getUploadDocumentsBtc');
         Route::post('market/bm-hall/reupload-document', 'reuploadDocument');
         Route::post('market/bm-hall/forward-next-level-btc', 'forwardNextLevelBtc');
+
+        //alok
+        Route::post('market/bm-hall/searchBanqute', 'searchApplicationNoForBanqute');
     });
 
     /**
