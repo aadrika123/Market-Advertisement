@@ -259,11 +259,13 @@ class MarriageRegistrationController extends Controller
                     "docVal" => ucwords($strReplace),
                     "uploadedDoc" => $uploadedDoc['doc_path'] ?? "",
                     "uploadedDocId" => $uploadedDoc['id'] ?? "",
-                    "verifyStatus'" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
+                    "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
                     "remarks" => $uploadedDoc['remarks'] ?? "",
+                    "docUploadStatus" => $refSafs->doc_upload_status ?? 0, // 👈 Added this line
                 ];
                 return $arr;
             });
+
             return $reqDoc;
         });
         return $filteredDocs;
