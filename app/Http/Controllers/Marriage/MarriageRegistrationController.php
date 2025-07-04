@@ -261,7 +261,7 @@ class MarriageRegistrationController extends Controller
                     "uploadedDocId" => $uploadedDoc['id'] ?? "",
                     "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
                     "remarks" => $uploadedDoc['remarks'] ?? "",
-                    "docUploadStatus" => $refSafs->doc_upload_status ?? 0, // 👈 Added this line
+                    "docUploadStatus" => $refSafs->doc_upload_status ?? 0,
                 ];
                 return $arr;
             });
