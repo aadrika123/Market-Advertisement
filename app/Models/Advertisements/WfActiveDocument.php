@@ -15,7 +15,7 @@ class WfActiveDocument extends Model
 
     public function getDocByRefIds($activeId, $workflowId, $moduleId)
     {
-        $docUrl  = Config::get("dms_constants.DMS_URL");
+        $docUrl = Config::get("dms_constants.DMS_URL");
         return WfActiveDocument::select(
             DB::raw("concat('$docUrl/',relative_path,'/',document) as doc_path"),
             '*',
@@ -35,19 +35,19 @@ class WfActiveDocument extends Model
     public function postDocuments($req, $auth)
     {
         $metaReqs = new WfActiveDocument();
-        $metaReqs->active_id            = $req->activeId;
-        $metaReqs->workflow_id          = $req->workflowId;
-        $metaReqs->ulb_id               = $req->ulbId;
-        $metaReqs->module_id            = $req->moduleId;
-        $metaReqs->relative_path        = $req->relativePath;
+        $metaReqs->active_id = $req->activeId;
+        $metaReqs->workflow_id = $req->workflowId;
+        $metaReqs->ulb_id = $req->ulbId;
+        $metaReqs->module_id = $req->moduleId;
+        $metaReqs->relative_path = $req->relativePath;
         // $metaReqs->document             = $req->document;
-        $metaReqs->uploaded_by          = $auth['id'];
-        $metaReqs->uploaded_by_type     = $auth['user_type'];
-        $metaReqs->remarks              = $req->remarks ?? null;
-        $metaReqs->doc_code             = $req->docCode;
-        $metaReqs->owner_dtl_id         = $req->ownerDtlId;
-        $metaReqs->unique_id            = $req->unique_id ?? null;
-        $metaReqs->reference_no         = $req->reference_no ?? null;
+        $metaReqs->uploaded_by = $auth['id'];
+        $metaReqs->uploaded_by_type = $auth['user_type'];
+        $metaReqs->remarks = $req->remarks ?? null;
+        $metaReqs->doc_code = $req->docCode;
+        $metaReqs->owner_dtl_id = $req->ownerDtlId;
+        $metaReqs->unique_id = $req->unique_id ?? null;
+        $metaReqs->reference_no = $req->reference_no ?? null;
 
         $metaReqs->save();
     }
@@ -59,20 +59,20 @@ class WfActiveDocument extends Model
     public function postPetDocuments($req)
     {
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->active_id         = $req->activeId;
-        $mWfActiveDocument->workflow_id       = $req->workflowId;
-        $mWfActiveDocument->ulb_id            = $req->ulbId;
-        $mWfActiveDocument->module_id         = $req->moduleId;
-        $mWfActiveDocument->relative_path     = $req->relativePath;
-        $mWfActiveDocument->document          = $req->document;
-        $mWfActiveDocument->uploaded_by       = authUser($req)->id;
-        $mWfActiveDocument->uploaded_by_type  = authUser($req)->user_type;
-        $mWfActiveDocument->remarks           = $req->remarks ?? null;
-        $mWfActiveDocument->doc_code          = $req->docCode;
-        $mWfActiveDocument->owner_dtl_id      = $req->ownerDtlId;
-        $mWfActiveDocument->doc_category      = $req->docCategory ?? null;
-        $mWfActiveDocument->unique_id         = $req->unique_id ?? null;
-        $mWfActiveDocument->reference_no      = $req->reference_no ?? null;
+        $mWfActiveDocument->active_id = $req->activeId;
+        $mWfActiveDocument->workflow_id = $req->workflowId;
+        $mWfActiveDocument->ulb_id = $req->ulbId;
+        $mWfActiveDocument->module_id = $req->moduleId;
+        $mWfActiveDocument->relative_path = $req->relativePath;
+        $mWfActiveDocument->document = $req->document;
+        $mWfActiveDocument->uploaded_by = authUser($req)->id;
+        $mWfActiveDocument->uploaded_by_type = authUser($req)->user_type;
+        $mWfActiveDocument->remarks = $req->remarks ?? null;
+        $mWfActiveDocument->doc_code = $req->docCode;
+        $mWfActiveDocument->owner_dtl_id = $req->ownerDtlId;
+        $mWfActiveDocument->doc_category = $req->docCategory ?? null;
+        $mWfActiveDocument->unique_id = $req->unique_id ?? null;
+        $mWfActiveDocument->reference_no = $req->reference_no ?? null;
         if (isset($req->verifyStatus)) {
             $mWfActiveDocument->verify_status = $req->verifyStatus;
         }
@@ -84,14 +84,14 @@ class WfActiveDocument extends Model
      */
     public function updateDocuments($req, $auth, $docId)
     {
-        $metaReqs =  WfActiveDocument::where('id', $docId)->first();
-        $metaReqs->module_id            = $req->moduleId;
-        $metaReqs->uploaded_by          = $auth['id'];
-        $metaReqs->uploaded_by_type     = $auth['user_type'];
-        $metaReqs->verify_status        = 0;
-        $metaReqs->unique_id            = $req->unique_id ?? null;
-        $metaReqs->reference_no         = $req->reference_no ?? null;
-        $metaReqs->relative_path         = $req->relative_path ?? null;
+        $metaReqs = WfActiveDocument::where('id', $docId)->first();
+        $metaReqs->module_id = $req->moduleId;
+        $metaReqs->uploaded_by = $auth['id'];
+        $metaReqs->uploaded_by_type = $auth['user_type'];
+        $metaReqs->verify_status = 0;
+        $metaReqs->unique_id = $req->unique_id ?? null;
+        $metaReqs->reference_no = $req->reference_no ?? null;
+        $metaReqs->relative_path = $req->relative_path ?? null;
 
         $metaReqs->save();
         return $metaReqs->active_id;
@@ -168,9 +168,24 @@ class WfActiveDocument extends Model
                 'verify_status'
             )
             ->where('workflow_id', $req->workflowId)
-            ->where('module_id',  $req->moduleId)
+            ->where('module_id', $req->moduleId)
             // ->where('verify_status', '!=', 2)
             ->where('verify_status', '=', 1)
+            ->where('status', 1)
+            ->get();
+    }
+    public function getDocsByActiveIdv1($req)
+    {
+        return WfActiveDocument::where('active_id', $req->activeId)
+            ->select(
+                'doc_code',
+                'owner_dtl_id',
+                'verify_status'
+            )
+            ->where('workflow_id', $req->workflowId)
+            ->where('module_id', $req->moduleId)
+            ->where('verify_status', '!=', 2)
+            // ->where('verify_status', '=', 1)
             ->where('status', 1)
             ->get();
     }
@@ -243,20 +258,20 @@ class WfActiveDocument extends Model
     public function editDocuments($wfActiveDocument, $req)
     {
         $wfActiveDocument->update([
-            'active_id'         => $req->activeId,
-            'workflow_id'       => $req->workflowId,
-            'ulb_id'            => $req->ulbId,
-            'module_id'         => $req->moduleId,
-            'relative_path'     => $req->relativePath,
-            'document'          => $req->document,
-            'uploaded_by'       => authUser($req)->id,
-            'uploaded_by_type'  => authUser($req)->user_type,
-            'remarks'           => $req->remarks ?? null,
-            'doc_code'          => $req->docCode,
-            'owner_dtl_id'      => $req->ownerDtlId,
-            'doc_category'      => $req->docCategory ?? null,
-            'unique_id'         => $req->unique_id,
-            'reference_no'      => $req->reference_no
+            'active_id' => $req->activeId,
+            'workflow_id' => $req->workflowId,
+            'ulb_id' => $req->ulbId,
+            'module_id' => $req->moduleId,
+            'relative_path' => $req->relativePath,
+            'document' => $req->document,
+            'uploaded_by' => authUser($req)->id,
+            'uploaded_by_type' => authUser($req)->user_type,
+            'remarks' => $req->remarks ?? null,
+            'doc_code' => $req->docCode,
+            'owner_dtl_id' => $req->ownerDtlId,
+            'doc_category' => $req->docCategory ?? null,
+            'unique_id' => $req->unique_id,
+            'reference_no' => $req->reference_no
 
         ]);
     }

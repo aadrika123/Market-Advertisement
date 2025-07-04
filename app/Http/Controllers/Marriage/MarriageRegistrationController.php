@@ -308,6 +308,7 @@ class MarriageRegistrationController extends Controller
             'document' => $extention == 'pdf' ? 'max:10240' : 'max:1024',
         ]);
 
+
         try {
             $user = collect(authUser($req));
 
@@ -369,7 +370,7 @@ class MarriageRegistrationController extends Controller
             'moduleId' => $this->_marriageModuleId
         ];
         $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $refDocList = $mWfActiveDocument->getDocsByActiveIdv1($req);
         return $this->isAllDocs($applicationId, $refDocList, $marriageRegitrationDtl);
     }
 
