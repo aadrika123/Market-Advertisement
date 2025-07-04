@@ -259,11 +259,13 @@ class MarriageRegistrationController extends Controller
                     "docVal" => ucwords($strReplace),
                     "uploadedDoc" => $uploadedDoc['doc_path'] ?? "",
                     "uploadedDocId" => $uploadedDoc['id'] ?? "",
-                    "verifyStatus'" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
+                    "verifyStatus" => $refSafs->payment_status == 1 ? ($uploadedDoc['verify_status'] ?? "") : 0,
                     "remarks" => $uploadedDoc['remarks'] ?? "",
+                    "docUploadStatus" => $refSafs->doc_upload_status ?? 0,
                 ];
                 return $arr;
             });
+
             return $reqDoc;
         });
         return $filteredDocs;
@@ -307,6 +309,7 @@ class MarriageRegistrationController extends Controller
         $req->validate([
             'document' => $extention == 'pdf' ? 'max:10240' : 'max:1024',
         ]);
+
 
         try {
             $user = collect(authUser($req));
@@ -369,7 +372,7 @@ class MarriageRegistrationController extends Controller
             'moduleId' => $this->_marriageModuleId
         ];
         $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $refDocList = $mWfActiveDocument->getDocsByActiveIdv1($req);
         return $this->isAllDocs($applicationId, $refDocList, $marriageRegitrationDtl);
     }
 
