@@ -126,7 +126,7 @@ class ShopController extends Controller
             //     $imageName2Absolute = $relativePath;
             // }
 
-            $shopNo = $this->shopIdGeneration($req->marketId);
+            // $shopNo = $this->shopIdGeneration($req->marketId);
 
             $metaReqs = [
                 'circle_id' => $req->circleId,
@@ -135,8 +135,10 @@ class ShopController extends Controller
                 'floor_id' => $req->floorId,
                 'floor_name' => $req->floorName,
                 'asset_name' => $req->assetName,
+
                 'allottee' => $req->allottee,
-                'shop_no' => $shopNo,
+                // 'shop_no' => $shopNo,
+                'shop_no' => $req->shopNo,
                 'address' => $req->address,
                 'rate' => $req->rate,
                 'arrear' => $req->arrear,
