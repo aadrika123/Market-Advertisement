@@ -95,14 +95,14 @@ class Shop extends Model
   {
     return Shop::select(
       'mar_shops.*',
-      'mc.circle_name',
-      'mm.market_name',
+      // 'mc.circle_name',
+      // 'mm.market_name',
       DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       DB::raw("CASE WHEN demand_genrated.shop_id IS NULL THEN TRUE ELSE FALSE END AS can_generate_demand"),
       'msp.amount as last_payment_amount'
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
-      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      // ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      // ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->leftJoin(DB::raw("
         (SELECT DISTINCT shop_id
