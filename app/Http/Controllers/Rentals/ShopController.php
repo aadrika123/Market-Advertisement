@@ -531,8 +531,11 @@ class ShopController extends Controller
         }
         try {
             $mShop = new Shop();
-            $list = $mShop->getShop($req->assetId)
-                ->where('floor_id', $req->floorId);
+            $list = $mShop->getShop($req->assetId);
+            if ($req->floorId) {
+                $list->where('floor_id', $req->floorId);
+            }
+
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
