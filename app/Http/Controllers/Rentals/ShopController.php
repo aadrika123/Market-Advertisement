@@ -191,7 +191,7 @@ class ShopController extends Controller
             $mDocuments = $req->documents;
             $this->uploadDocument($tempId, $mDocuments, $req->auth);
 
-            return responseMsgs(true, "Successfully Saved", ['shopNo' => $shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Saved", ['shopNo' => $req->shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
