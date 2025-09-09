@@ -129,8 +129,8 @@ class ShopController extends Controller
             // $shopNo = $this->shopIdGeneration($req->marketId);
 
             $metaReqs = [
-                'circle_id' => $req->circleId,
-                'market_id' => $req->marketId,
+                'circle_id' => $req->assetId,
+                'market_id' => $req->floorId,
                 'asset_id' => $req->assetId,
                 'floor_id' => $req->floorId,
                 'floor_name' => $req->floorName,
