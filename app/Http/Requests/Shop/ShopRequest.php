@@ -27,8 +27,12 @@ class ShopRequest extends FormRequest
     public function rules()
     {
         return [
-            'circleId'                 =>   'required|integer',
-            'marketId'                 =>   'required|string',
+            'circleId'                 =>   'nullable|integer',
+            'marketId'                 =>   'nullable|string',
+            'assetId'                  =>   'nullable|integer',
+            'floorId'                  =>   'nullable|integer',
+            'assetName'                =>   'nullable|string',
+            'floorName'                =>   'nullable|string',
             // 'lastPaymentDate'          =>   'required|date_format:Y-m-d|after_or_equal:'.date('Y-m-d'),
             // 'lastPaymentAmount'        =>   'required|numeric',
             'allottee'                 =>   'required|regex:/^[A-Za-z ]+$/',
@@ -48,9 +52,9 @@ class ShopRequest extends FormRequest
             'tradeLicense'             =>   'nullable|string',
             'construction'             =>   'required|integer',
             'electricity'              =>   'required|in:1,0',
-            'electricityNo'            =>   $this->electricity=='1'?'required|string':'nullable|string',
+            'electricityNo'            =>   $this->electricity == '1' ? 'required|string' : 'nullable|string',
             'water'                    =>   'required|in:1,0',
-            'waterConsumerNo'          =>   $this->water=='1'?'required|string':'nullable|string',
+            'waterConsumerNo'          =>   $this->water == '1' ? 'required|string' : 'nullable|string',
             'salePurchase'             =>   'nullable|string',
             'contactNo'                =>   'nullable|numeric|digits:10',
             'longitude'                =>   'nullable|string',

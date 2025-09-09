@@ -91,7 +91,7 @@ class Shop extends Model
   /**
    * | Get Shop List Market Wise
    */
-  public function getShop($marketid)
+  public function getShop($assetId)
   {
     return Shop::select(
       'mar_shops.*',
@@ -110,7 +110,7 @@ class Shop extends Model
          WHERE status = 1
          AND TO_CHAR(cast(monthly as date),'YYYY-MM') = TO_CHAR(CURRENT_DATE,'YYYY-MM')
         ) AS demand_genrated"), 'demand_genrated.shop_id', '=', 'mar_shops.id')
-      ->where('mar_shops.market_id', $marketid)
+      ->where('mar_shops.asset_id', $assetId)
       ->where('mar_shops.status', '1')
       ->orderByDesc('mar_shops.id');
   }

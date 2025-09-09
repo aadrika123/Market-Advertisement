@@ -131,6 +131,10 @@ class ShopController extends Controller
             $metaReqs = [
                 'circle_id' => $req->circleId,
                 'market_id' => $req->marketId,
+                'asset_id' => $req->assetId,
+                'floor_id' => $req->floorId,
+                'floor_name' => $req->floorName,
+                'asset_name' => $req->assetName,
                 'allottee' => $req->allottee,
                 'shop_no' => $shopNo,
                 'address' => $req->address,
@@ -515,7 +519,9 @@ class ShopController extends Controller
     public function listShopByMarketId(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'marketId' => 'required|integer'
+            // 'marketId' => 'required|integer'
+            'assetId' => 'required|integer',
+            'floorId' => 'nullable|integer'
         ]);
 
         if ($validator->fails()) {
@@ -523,7 +529,8 @@ class ShopController extends Controller
         }
         try {
             $mShop = new Shop();
-            $list = $mShop->getShop($req->marketId);
+            $list = $mShop->getShop($req->assetId)
+                ->where('floor_id', $req->floorId);
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
