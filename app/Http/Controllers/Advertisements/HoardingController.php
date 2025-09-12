@@ -254,6 +254,7 @@ class HoardingController extends Controller
                 throw new Exception("Application Id Not Passed");
             }
 
+
             if (!$data) {
                 throw new Exception("Application Details Not Found");
             }
