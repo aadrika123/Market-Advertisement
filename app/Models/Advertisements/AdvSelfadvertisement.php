@@ -152,6 +152,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.application_date as applyDate',
             'adv_selfadvertisements.trade_license_no',
             'adv_selfadvertisements.ulb_id',
+            'adv_selfadvertisements.entity_name as agencyName',
             'ulb_masters.toll_free_no',
             'ulb_masters.current_website as website',
             'ly.string_parameter as licenseYear',
@@ -295,6 +296,7 @@ class AdvSelfadvertisement extends Model
             'adv_selfadvertisements.application_no',
             'adv_selfadvertisements.license_no',
             'adv_selfadvertisements.payment_date as license_start_date',
+            'adv_selfadvertisements.entity_name as agencyName',
             DB::raw('case when adv_selfadvertisements.payment_date is NULL then adv_selfadvertisements.approve_date END as license_start_date'),
             DB::raw('CONCAT(application_date,id) AS reciept_no')
         )
