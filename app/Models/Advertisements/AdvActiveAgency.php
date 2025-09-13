@@ -94,7 +94,8 @@ class AdvActiveAgency extends Model
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
         // $ulbWorkflows = $ulbWorkflows['data'];
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
-            'workflow_id' => $ulbWorkflows['id'],
+            // 'workflow_id' => $ulbWorkflows['id'],
+            'workflow_id' => $ulbWorkflows['wf_master_id'],
             'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
             'last_role_id' => $ulbWorkflows['initiator_role_id'],
             'current_role_id' => $ulbWorkflows['initiator_role_id'],
@@ -444,34 +445,34 @@ class AdvActiveAgency extends Model
     /**
      * | Reupload Documents
      */
-    public function reuploadDocument($req,$Image, $docId)
+    public function reuploadDocument($req, $Image, $docId)
     {
-        try{
-        $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
-        $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+        try {
+            $docUpload = new DocumentUpload;
+            $docDetails = WfActiveDocument::find($req->id);
+            $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
 
-        $data = [];
-        $mWfActiveDocument = new WfActiveDocument();
-        $user = collect(authUser($req));
-        $file = $Image;
-        $req->merge([
-            'document' => $file
-        ]);
-        $imageName = $docUpload->upload($req);
-        $metaReqs = [
-            'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID') ?? 5,
-            'unique_id' => $imageName['data']['uniqueId'] ?? null,
-            'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
-        ];
-         // Save document metadata in wfActiveDocuments
-         $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
-         return $activeId;
- 
-         // return $data;
-     } catch (Exception $e) {
-         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
-     }
+            $data = [];
+            $mWfActiveDocument = new WfActiveDocument();
+            $user = collect(authUser($req));
+            $file = $Image;
+            $req->merge([
+                'document' => $file
+            ]);
+            $imageName = $docUpload->upload($req);
+            $metaReqs = [
+                'moduleId' => Config::get('workflow-constants.ADVERTISMENT_MODULE_ID') ?? 5,
+                'unique_id' => $imageName['data']['uniqueId'] ?? null,
+                'reference_no' => $imageName['data']['ReferenceNo'] ?? null,
+            ];
+            // Save document metadata in wfActiveDocuments
+            $activeId = $mWfActiveDocument->updateDocuments(new Request($metaReqs), $user, $docId);
+            return $activeId;
+
+            // return $data;
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
     }
 
     /**
@@ -564,7 +565,7 @@ class AdvActiveAgency extends Model
             'adv_active_agencies.mobile_no as mobile_no',
             'adv_active_agencies.citizen_id',
             'adv_active_agencies.ulb_id',
-           'adv_active_agencies.user_id',
+            'adv_active_agencies.user_id',
             'adv_active_agencies.workflow_id',
             'adv_active_agencies.application_type',
             'um.ulb_name as ulb_name',
