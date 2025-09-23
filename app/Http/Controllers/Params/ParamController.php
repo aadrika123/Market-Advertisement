@@ -110,7 +110,7 @@ class ParamController extends Controller
             $startTime = microtime(true);
             $mUlbId = $req->ulbId;
             $data = json_decode(Redis::get('adv_param_strings'));      // Get Value from Redis Cache Memory
-            // if (!$data) {                                                        // If Cache Memory is not available
+            if (!$data) {                                                        // If Cache Memory is not available
                 $data = array();
                 $mParamString = new RefAdvParamstring();
                 $strings = $mParamString->masters();
@@ -122,7 +122,7 @@ class ParamController extends Controller
                 // $data['paramCategories']['typology'] = $typologyList;
 
                 $redis->set('adv_param_strings' . $mUlbId, json_encode($data));      // Set Key on Param Strings
-            // }
+            }
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             return responseMsgs(true, "Param Strings", $data, "050201", "1.0", "$executionTime Sec", "POST", $req->deviceId ?? "");
