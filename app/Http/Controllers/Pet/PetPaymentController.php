@@ -138,6 +138,107 @@ class PetPaymentController extends Controller
         | Serial no :
         | Under construction 
      */
+    // public function offlinePayment(PetPaymentReq $req)
+    // {
+    //     $validated = Validator::make(
+    //         $req->all(),
+    //         ['remarks' => 'nullable',]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+
+    //     try {
+    //         # Variable declaration
+    //         $user                       = authUser($req);
+    //         $todayDate                  = Carbon::now();
+    //         $epoch                      = strtotime($todayDate);
+    //         $petParamId                 = $this->_petParamId;
+    //         $offlineVerificationModes   = $this->_offlineVerificationModes;
+    //         $mPetTran                   = new PetTran();
+
+    //         # Check the params for checking payment method
+    //         $payRelatedDetails  = $this->checkParamForPayment($req, $req->paymentMode);
+    //         $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'];
+    //         $wardId             = $payRelatedDetails['applicationDetails']['ward_id'];
+    //         $tranType           = $payRelatedDetails['applicationDetails']['application_type'];
+    //         $tranTypeId         = $payRelatedDetails['chargeCategory'];
+    //         $applicationNo      = $payRelatedDetails['applicationDetails']['application_no'];
+
+    //         $this->begin();
+    //         # Generate transaction no 
+    //         $idGeneration   = new PrefixIdGenerator($petParamId['TRANSACTION'], $ulbId);
+    //         $petTranNo      = $idGeneration->generate();
+
+    //         # Water Transactions
+    //         $req->merge([
+    //             'empId'         => $user->id,
+    //             'userType'      => $user->user_type,
+    //             'todayDate'     => $todayDate->format('Y-m-d'),
+    //             'tranNo'        => $petTranNo,
+    //             'ulbId'         => $ulbId,
+    //             'isJsk'         => true,
+    //             'wardId'        => $wardId,
+    //             'tranType'      => $tranType,                                                              // Static
+    //             'tranTypeId'    => $tranTypeId,
+    //             'amount'        => $payRelatedDetails['refRoundAmount'],
+    //             'roundAmount'   => $payRelatedDetails['regAmount'],
+    //             'tokenNo'       => $payRelatedDetails['applicationDetails']['ref_application_id'] . $epoch              // Here 
+    //         ]);
+
+    //         # Save the Details of the transaction
+    //         $petTrans = $mPetTran->saveTranDetails($req);
+
+    //         # Save the Details for the Cheque,DD,nfet
+    //         // if (in_array($req['paymentMode'], $offlineVerificationModes)) {
+    //         $req->merge([
+    //             // 'chequeDate'    => $req['chequeDate'],
+    //             'tranId'        => $petTrans['transactionId'],
+    //             'applicationNo' => $payRelatedDetails['applicationDetails']['chargeCategory'],
+    //             'workflowId'    => $payRelatedDetails['applicationDetails']['workflow_id'],
+    //             'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
+    //         ]);
+    //         $this->postOtherPaymentModes($req);
+    //         //}
+    //         $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+    //         // $payRelatedDetails['applicationDetails']->payment_status = 1;
+    //         // $payRelatedDetails['applicationDetails']->save();
+    //         $this->commit();
+    //         $returnData = [
+    //             "transactionNo" => $petTranNo
+    //         ];
+
+    //         #_Whatsaap Message
+    //         // if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
+    //         //     $Url = "https://aadrikainfomedia.com/pet/pet-payment-receipt/" . $petTranNo;
+    //         //     $whatsapp2 = (Whatsapp_Send(
+    //         //         $payRelatedDetails['applicationDetails']->mobile_no,
+    //         //         "all_module_payment_receipt",
+    //         //         [
+    //         //             "content_type" => "text",
+    //         //             [
+    //         //                 $payRelatedDetails['applicationDetails']->applicant_name ?? "",
+    //         //                 $req['amount'],
+    //         //                 "Application No.",
+    //         //                 $payRelatedDetails['applicationDetails']->application_no,
+    //         //                 $Url
+    //         //             ]
+    //         //         ]
+    //         //     ));
+    //         // }
+
+    //         return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         $this->rollback();
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+    //     }
+    // }
+
+    /**
+     * | Pay the registration charges in offline mode for CITIZEN applications
+     * | Forward citizen applications to DA role after payment
+        | Serial no : New
+        | Working 
+     */
     public function offlinePayment(PetPaymentReq $req)
     {
         $validated = Validator::make(
@@ -198,33 +299,14 @@ class PetPaymentController extends Controller
                 'ref_ward_id'   => $payRelatedDetails['applicationDetails']['ward_id']
             ]);
             $this->postOtherPaymentModes($req);
-            //}
-            $this->savePetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
-            // $payRelatedDetails['applicationDetails']->payment_status = 1;
-            // $payRelatedDetails['applicationDetails']->save();
+            
+            # Use citizen-specific status saving method
+            $this->saveCitizenPetRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['PetCharges'], $petTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+            
             $this->commit();
             $returnData = [
                 "transactionNo" => $petTranNo
             ];
-
-            #_Whatsaap Message
-            // if (strlen($payRelatedDetails['applicationDetails']->mobile_no) == 10) {
-            //     $Url = "https://aadrikainfomedia.com/pet/pet-payment-receipt/" . $petTranNo;
-            //     $whatsapp2 = (Whatsapp_Send(
-            //         $payRelatedDetails['applicationDetails']->mobile_no,
-            //         "all_module_payment_receipt",
-            //         [
-            //             "content_type" => "text",
-            //             [
-            //                 $payRelatedDetails['applicationDetails']->applicant_name ?? "",
-            //                 $req['amount'],
-            //                 "Application No.",
-            //                 $payRelatedDetails['applicationDetails']->application_no,
-            //                 $Url
-            //             ]
-            //         ]
-            //     ));
-            // }
 
             return responseMsgs(true, "Payment Done", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -262,6 +344,57 @@ class PetPaymentController extends Controller
                 "payment_status"    => 1,
                 "current_role_id"   => $activeConRequest->initiator_role_id
             ];
+            $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
+        }
+        $charges->save();                                                                   // ❕❕ Save Charges ❕❕
+
+        $refTranDetails = [
+            "id"            => $applicationId,
+            "refChargeId"   => $charges->id,
+            "roundAmount"   => $request->roundAmount,
+            "tranTypeId"    => $request->tranTypeId
+        ];
+        # Save Trans Details                                                   
+        $mPetTranDetail->saveTransDetails($waterTransId, $refTranDetails);
+    }
+
+    /**
+     * | Save status for citizen applications - Forward to DA role
+        | Serial No : New
+        | Working
+     */
+    public function saveCitizenPetRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
+    {
+        $mPetTranDetail         = new PetTranDetail();
+        $mPetActiveRegistration = new PetActiveRegistration();
+        $mPetTran               = new PetTran();
+        $petRoles               = $this->_petWfRoles;
+        $applicationId          = $activeConRequest->ref_application_id;
+
+        if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
+            $charges->paid_status = 2;                                                      // Static
+            $refReq = [
+                "payment_status" => 2,                                                      // Update Application Payment Status // Static
+            ];
+            $tranReq = [
+                "verify_status" => 2
+            ];                                                                              // Update Charges Paid Status // Static
+            $mPetTran->saveStatusInTrans($waterTransId, $tranReq);
+            $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
+        } else {
+            $charges->paid_status = 1;                                                      // Update Charges Paid Status // Static
+            # For citizen applications, forward to DA role
+            if (!is_null($activeConRequest->citizen_id)) {
+                $refReq = [
+                    "payment_status"    => 1,
+                    "current_role_id"   => $petRoles['DA']  // Set to DA role (6)
+                ];
+            } else {
+                $refReq = [
+                    "payment_status"    => 1,
+                    "current_role_id"   => $activeConRequest->initiator_role_id
+                ];
+            }
             $mPetActiveRegistration->saveApplicationStatus($applicationId, $refReq);
         }
         $charges->save();                                                                   // ❕❕ Save Charges ❕❕
