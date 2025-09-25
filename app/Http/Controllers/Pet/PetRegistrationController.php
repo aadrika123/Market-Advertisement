@@ -768,6 +768,7 @@ class PetRegistrationController extends Controller
                 'workflowId'    => $getPetDetails->workflow_id,
                 'ulbId'         => $getPetDetails->ulb_id,
                 'relativePath'  => $relativePath['REGISTRATION'],
+                'document'      => $docDetail['data']['ReferenceNo'],
                 'docCode'       => $req->docCode,
                 'ownerDtlId'    => $req->ownerId ?? null,
                 'docCategory'   => $req->docCategory,
@@ -783,13 +784,24 @@ class PetRegistrationController extends Controller
             }
 
             $this->begin();
-            $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);
+            
+            // Check for existing document by docCode and reference_no to prevent duplicates
+            $existingDoc = $mWfActiveDocument->where('active_id', $getPetDetails->ref_application_id)
+                ->where('workflow_id', $getPetDetails->workflow_id)
+                ->where('module_id', $refmoduleId)
+                ->where('doc_code', $req->docCode)
+                ->where('owner_dtl_id', $req->ownerId ?? null)
+                ->where('status', 1)
+                ->first();
+            
             $metaReqs = new Request($metaReqs);
-
-            if (collect($ifDocExist)->isEmpty()) {
-                $mWfActiveDocument->postPetDocuments($metaReqs);
+            
+            if ($existingDoc) {
+                // Update existing document
+                $mWfActiveDocument->updateDocument($existingDoc->id, $metaReqs);
             } else {
-                $mWfActiveDocument->editDocuments($ifDocExist, $metaReqs);
+                // Create new document
+                $mWfActiveDocument->postPetDocuments($metaReqs);
             }
 
             $refCheckDocument = $this->checkFullDocUpload($req);
@@ -911,11 +923,7 @@ class PetRegistrationController extends Controller
 
             $workflowId = $petDetails->workflow_id;
             $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
-                ->where('d.status', '!=', 0)                
-                ->where(function ($q) {
-                    $q->where('d.verify_status', 0)
-                    ->orWhere('d.verify_status', 1);
-                })
+                ->where('d.status', '!=', 0)
                 ->get();
             // $returnData = collect($documents)->map(function ($value) {
             //     $path =  $this->getDocUrl($value->refDocUpload);
