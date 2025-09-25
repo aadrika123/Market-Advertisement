@@ -277,6 +277,24 @@ class WfActiveDocument extends Model
     }
 
     /**
+     * | Update Document for Reupload - Production Ready
+     */
+    public function updateDocument($documentId, $req)
+    {
+        return WfActiveDocument::where('id', $documentId)
+            ->update([
+                'relative_path' => $req->relativePath,
+                'document' => $req->document,
+                'uploaded_by' => authUser($req)->id,
+                'uploaded_by_type' => authUser($req)->user_type,
+                'unique_id' => $req->unique_id,
+                'reference_no' => $req->reference_no,
+                'verify_status' => 0, // Reset verification status
+                'updated_at' => now()
+            ]);
+    }
+
+    /**
      * | Deactivate the Rejected Document 
      * | @param metaReqs
        | Use for deactivate the rejected document
