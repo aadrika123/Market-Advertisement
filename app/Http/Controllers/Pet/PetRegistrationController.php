@@ -911,8 +911,11 @@ class PetRegistrationController extends Controller
 
             $workflowId = $petDetails->workflow_id;
             $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
-                ->where('d.status', '!=', 0)
-                ->where('d.varify_status', '!=', 2)
+                ->where('d.status', '!=', 0)                
+                ->where(function ($q) {
+                    $q->where('d.verify_status', 0)
+                    ->orWhere('d.verify_status', 1);
+                })
                 ->get();
             // $returnData = collect($documents)->map(function ($value) {
             //     $path =  $this->getDocUrl($value->refDocUpload);
