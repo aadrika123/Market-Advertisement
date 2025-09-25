@@ -1440,6 +1440,7 @@ class PetWorkflowController extends Controller
                 if (!is_null($petApplication->citizen_id)) {
                     # Citizen application - send back to citizen (parked)
                     $petApplication->parked = true;
+                    $petApplication->doc_upload_status = false;  // Reset upload status
                     $receiverRoleId = null;
                     $msg = "Application sent back to citizen for document correction.";
                 } else {
