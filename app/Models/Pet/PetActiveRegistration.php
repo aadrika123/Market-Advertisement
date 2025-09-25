@@ -253,11 +253,11 @@ class PetActiveRegistration extends Model
     public function getAllApplicationDetails($value, $key)
     {
         return DB::table('pet_active_registrations')
-            ->leftJoin('wf_roles', 'wf_roles.id', 'pet_active_registrations.current_role_id')
-            ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
-            ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
-            ->where('pet_active_registrations.' . $key, $value)
-            ->where('pet_active_registrations.status', 1);
+        ->leftJoin('wf_roles', 'wf_roles.id', 'pet_active_registrations.current_role_id')
+        ->join('pet_active_applicants', 'pet_active_applicants.application_id', 'pet_active_registrations.id')
+        ->join('pet_active_details', 'pet_active_details.application_id', 'pet_active_registrations.id')
+        ->where('pet_active_registrations.' . $key, $value)
+        ->where('pet_active_registrations.status', 1);
     }
 
 

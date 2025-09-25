@@ -635,12 +635,105 @@ class PetRegistrationController extends Controller
 
 
     /**
-     * | Upload Application Documents 
+     * | Upload Application Documents - ORIGINAL VERSION
      * | @param req
         | Serial No :
         | Working 
         | Look on the concept of deactivation of the rejected documents 
         | Put the static "verify status" 2 in config  
+     */
+    // public function uploadPetDoc(Request $req)
+    // {
+    //     $extension = $req->document->getClientOriginalExtension();
+    //     $validated = Validator::make(
+    //         $req->all(),
+    //         [
+    //             "applicationId" => "required|numeric",
+    //             "document"      => "required|mimes:pdf,jpeg,png,jpg" . (strtolower($extension) == 'pdf' ? '|max:2048' : '|max:2048'),
+    //             "docCode"       => "required",
+    //             "docCategory"   => "required", // Make sure to verify if this rule is appropriate for your application
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
+
+    //     try {
+    //         $user                       = authUser($req);
+    //         $metaReqs                   = array();
+    //         $applicationId              = $req->applicationId;
+    //         $document                   = $req->document;
+    //         $refDocUpload               = new DocumentUpload;
+    //         $mWfActiveDocument          = new WfActiveDocument();
+    //         $mPetActiveRegistration     = new PetActiveRegistration();
+    //         $relativePath               = Config::get('pet.PET_RELATIVE_PATH');
+    //         $refmoduleId                = $this->_petModuleId;
+    //         $confUserType               = $this->_userType;
+
+    //         $getPetDetails  = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
+    //         $refImageName   = $req->docCode;
+    //         $refImageName   = $getPetDetails->ref_application_id . '-' . str_replace(' ', '_', $refImageName);
+    //         //$imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['REGISTRATION']);
+    //         $docDetail      = $refDocUpload->upload($req);
+    //         $metaReqs = [
+    //             'moduleId'      => $refmoduleId,
+    //             'activeId'      => $getPetDetails->ref_application_id,
+    //             'workflowId'    => $getPetDetails->workflow_id,
+    //             'ulbId'         => $getPetDetails->ulb_id,
+    //             'relativePath'  => $relativePath['REGISTRATION'],
+    //             //'document'      => $docDetail[],
+    //             'docCode'       => $req->docCode,
+    //             'ownerDtlId'    => $req->ownerId ?? null,
+    //             'docCategory'   => $req->docCategory,
+    //             'auth'          => $req->auth
+    //         ];
+
+
+    //         $metaReqs['unique_id'] = $docDetail['data']['uniqueId'];
+    //         $metaReqs['reference_no'] = $docDetail['data']['ReferenceNo'];
+    //         // $metaReqs['document'] = $docDetail['data']['document'];
+
+
+    //         if ($user->user_type == $confUserType['1']) {
+    //             $isCitizen = true;
+    //             $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+    //         } else {
+    //             $isCitizen = false;
+    //             $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+    //         }
+
+    //         $this->begin();
+    //         $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
+    //         $metaReqs = new Request($metaReqs);
+    //         if (collect($ifDocExist)->isEmpty()) {
+    //             $mWfActiveDocument->postPetDocuments($metaReqs);
+    //         }
+    //         if ($ifDocExist) {
+    //             $mWfActiveDocument->editDocuments($ifDocExist, $metaReqs);
+    //         }
+
+    //         #check full doc upload
+    //         $refCheckDocument = $this->checkFullDocUpload($req);
+    //         # Update the Doc Upload Satus in Application Table
+    //         if ($refCheckDocument->contains(false) && $getPetDetails->doc_upload_status == true) {
+    //             $mPetActiveRegistration->updateUploadStatus($applicationId, false);
+    //         }
+    //         if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
+    //             $mPetActiveRegistration->updateUploadStatus($req->applicationId, true);
+    //         }
+    //         $this->commit();
+    //         return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
+    //     } catch (Exception $e) {
+    //         $this->rollback();
+    //         return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
+    //     }
+    // }
+
+    /**
+     * | Upload Application Documents - FIXED VERSION
+     * | Handles parked status correctly for citizen uploads
+     * | @param req
+        | Serial No : NEW
+        | Production Ready
      */
     public function uploadPetDoc(Request $req)
     {
@@ -651,7 +744,7 @@ class PetRegistrationController extends Controller
                 "applicationId" => "required|numeric",
                 "document"      => "required|mimes:pdf,jpeg,png,jpg" . (strtolower($extension) == 'pdf' ? '|max:2048' : '|max:2048'),
                 "docCode"       => "required",
-                "docCategory"   => "required", // Make sure to verify if this rule is appropriate for your application
+                "docCategory"   => "required",
             ]
         );
         if ($validated->fails())
@@ -659,9 +752,7 @@ class PetRegistrationController extends Controller
 
         try {
             $user                       = authUser($req);
-            $metaReqs                   = array();
             $applicationId              = $req->applicationId;
-            $document                   = $req->document;
             $refDocUpload               = new DocumentUpload;
             $mWfActiveDocument          = new WfActiveDocument();
             $mPetActiveRegistration     = new PetActiveRegistration();
@@ -670,9 +761,6 @@ class PetRegistrationController extends Controller
             $confUserType               = $this->_userType;
 
             $getPetDetails  = $mPetActiveRegistration->getPetApplicationById($applicationId)->firstOrFail();
-            $refImageName   = $req->docCode;
-            $refImageName   = $getPetDetails->ref_application_id . '-' . str_replace(' ', '_', $refImageName);
-            //$imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['REGISTRATION']);
             $docDetail      = $refDocUpload->upload($req);
             $metaReqs = [
                 'moduleId'      => $refmoduleId,
@@ -680,54 +768,52 @@ class PetRegistrationController extends Controller
                 'workflowId'    => $getPetDetails->workflow_id,
                 'ulbId'         => $getPetDetails->ulb_id,
                 'relativePath'  => $relativePath['REGISTRATION'],
-                //'document'      => $docDetail[],
                 'docCode'       => $req->docCode,
                 'ownerDtlId'    => $req->ownerId ?? null,
                 'docCategory'   => $req->docCategory,
-                'auth'          => $req->auth
+                'auth'          => $req->auth,
+                'unique_id'     => $docDetail['data']['uniqueId'],
+                'reference_no'  => $docDetail['data']['ReferenceNo']
             ];
 
-
-            $metaReqs['unique_id'] = $docDetail['data']['uniqueId'];
-            $metaReqs['reference_no'] = $docDetail['data']['ReferenceNo'];
-            // $metaReqs['document'] = $docDetail['data']['document'];
-
-
             if ($user->user_type == $confUserType['1']) {
-                $isCitizen = true;
-                $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+                $this->checkParamForDocUpload(true, $getPetDetails, $user);
             } else {
-                $isCitizen = false;
-                $this->checkParamForDocUpload($isCitizen, $getPetDetails, $user);
+                $this->checkParamForDocUpload(false, $getPetDetails, $user);
             }
 
             $this->begin();
-            $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
+            $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getPetDetails->ref_application_id, $getPetDetails->workflow_id, $refmoduleId, $req->docCategory, $req->ownerId);
             $metaReqs = new Request($metaReqs);
+
             if (collect($ifDocExist)->isEmpty()) {
                 $mWfActiveDocument->postPetDocuments($metaReqs);
-            }
-            if ($ifDocExist) {
+            } else {
                 $mWfActiveDocument->editDocuments($ifDocExist, $metaReqs);
             }
 
-            #check full doc upload
             $refCheckDocument = $this->checkFullDocUpload($req);
-            # Update the Doc Upload Satus in Application Table
+
             if ($refCheckDocument->contains(false) && $getPetDetails->doc_upload_status == true) {
                 $mPetActiveRegistration->updateUploadStatus($applicationId, false);
             }
+
             if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
-                $mPetActiveRegistration->updateUploadStatus($req->applicationId, true);
+                $mPetActiveRegistration->updateUploadStatus($applicationId, true);
+
+                # FIX: Update parked status for citizen applications
+                if (!is_null($getPetDetails->citizen_id) && $getPetDetails->parked == true) {
+                    $mPetActiveRegistration->saveApplicationStatus($applicationId, ['parked' => false]);
+                }
             }
+
             $this->commit();
-            return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Document Upload Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             $this->rollback();
             return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
 
     /**
      * | Check if the params for document upload
@@ -826,6 +912,7 @@ class PetRegistrationController extends Controller
             $workflowId = $petDetails->workflow_id;
             $documents  = $mWfActiveDocument->getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
                 ->where('d.status', '!=', 0)
+                ->where('d.varify_status', '!=', 2)
                 ->get();
             // $returnData = collect($documents)->map(function ($value) {
             //     $path =  $this->getDocUrl($value->refDocUpload);
@@ -857,16 +944,30 @@ class PetRegistrationController extends Controller
             if ($user->user_type != $confUserType['1']) {                                       // If not a citizen
                 throw new Exception("You are not an autherised Citizen!");
             }
+
+            $moduleId             = Config::get('workflow-constants.PET_MODULE_ID');
+            $workflowId           = 31;
             # Collect querry Exceptions 
             try {
-                $refAppDetails = $mPetActiveRegistration->getAllApplicationDetails($user->id, $confDbKey['1'])
+                $refAppDetails = $mPetActiveRegistration->getAllApplicationDetails($user->id, $confDbKey['1'], $workflowId, $moduleId)
                     ->select(
                         DB::raw("REPLACE(pet_active_registrations.application_type, '_', ' ') AS ref_application_type"),
                         DB::raw("TO_CHAR(pet_active_registrations.application_apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
                         "pet_active_registrations.*",
                         "pet_active_applicants.applicant_name",
-                        "wf_roles.role_name"
+                        "wf_roles.role_name",
+                        "workflow_tracks.message as remarks"
                     )
+
+                    ->leftJoin('workflow_tracks', function ($join) use ($workflowId, $moduleId) {
+                        $join->on('workflow_tracks.ref_table_id_value', 'pet_active_registrations.id')
+                            ->where('workflow_tracks.status', true)
+                            ->where('workflow_tracks.message', '<>', null)
+                            ->where('workflow_tracks.verification_status', 0)
+                            ->where('workflow_tracks.workflow_id', $workflowId)
+                            ->where('workflow_tracks.module_id', $moduleId);
+                    })
+
                     ->orderByDesc('pet_active_registrations.id')
                     ->get();
             } catch (QueryException $q) {
@@ -1336,7 +1437,7 @@ class PetRegistrationController extends Controller
                 throw new Exception("Please select ulb");
 
             switch ($key) {
-                    # For Property
+                # For Property
                 case (1):
                     $application = collect($mPropProperty->getPropByHolding($request->id, $ulbId));
                     $checkExist = collect($application)->first();
@@ -1363,7 +1464,7 @@ class PetRegistrationController extends Controller
                     return responseMsgs(true, "related Details!", $details, "", "", "", "POST", "");
                     break;
 
-                    # For Saf
+                # For Saf
                 case (2):
                     $application = collect($mPropActiveSaf->getSafDtlBySafUlbNo($request->id, $ulbId));
                     $checkExist = collect($application)->first();
@@ -1967,8 +2068,9 @@ class PetRegistrationController extends Controller
                     'pet_approved_registrations.renewal',
                     'pet_approved_registrations.registration_id',
                     'pet_approve_applicants.mobile_no',
-                    'pet_approve_applicants.applicant_name',)
-                   // "pet_renewal_registrations.id as renewal_id",
+                    'pet_approve_applicants.applicant_name',
+                )
+                // "pet_renewal_registrations.id as renewal_id",
 
                 // ->leftJoin('pet_renewal_registrations', 'pet_renewal_registrations.registration_id', 'pet_approved_registrations.registration_id')
                 ->join('pet_approve_applicants', 'pet_approve_applicants.application_id', 'pet_approved_registrations.id')
@@ -2036,7 +2138,7 @@ class PetRegistrationController extends Controller
             $mPetTran                   = new PetTran();
 
             $approveApplicationDetails = $mPetApprovedRegistration->getPetApprovedApplicationById($applicationId)
-                ->where('pet_approved_registrations.status',1)                                                       
+                ->where('pet_approved_registrations.status', 1)
                 ->first();
             if (is_null($approveApplicationDetails)) {
                 throw new Exception("Application not found");
@@ -2431,7 +2533,7 @@ class PetRegistrationController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "011901", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-    
+
     /* 
     * || Get Pet Details Info Filtering By Application No
     * || @param filterBy 
@@ -2447,31 +2549,30 @@ class PetRegistrationController extends Controller
                 'filterValue' => 'required',
             ]
         );
-    
+
         if ($validated->fails()) {
             return validationError($validated);
         }
-    
+
         try {
             $key = $request->filterBy;
             $paramenter = $request->filterValue;
             $refstring = Str::snake($key);
             $msg = "Pet active application details!";
-    
+
             $mPetActiveRegistration = new PetActiveRegistration();
-    
+
             // Fetch active pet details based on filter
             $activeApplication = $mPetActiveRegistration->getActivePetDetails($request, $refstring, $paramenter)->get();
-    
+
             // Check if data exists
             if ($activeApplication->isEmpty()) {
                 $msg = "No data found";
             }
-    
+
             return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         }
     }
-    
 }
