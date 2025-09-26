@@ -257,85 +257,85 @@ class PetWorkflowController extends Controller
         | Working
         | Check for forward date and backward date
      */
-    public function postNextLevel(Request $req)
-    {
-        $wfLevels = $this->_petWfRoles;
-        $validated = Validator::make(
-            $req->all(),
-            [
-                'applicationId'     => 'required',
-                'senderRoleId'      => 'nullable',
-                'receiverRoleId'    => 'nullable',
-                'action'            => 'required|In:forward,backward',
-                'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
-            ]
-        );
-        if ($validated->fails())
-            return validationError($validated);
+    // public function postNextLevel(Request $req)
+    // {
+    //     $wfLevels = $this->_petWfRoles;
+    //     $validated = Validator::make(
+    //         $req->all(),
+    //         [
+    //             'applicationId'     => 'required',
+    //             'senderRoleId'      => 'nullable',
+    //             'receiverRoleId'    => 'nullable',
+    //             'action'            => 'required|In:forward,backward',
+    //             'comment'           => $req->senderRoleId == $wfLevels['BO'] ? 'nullable' : 'required',
+    //         ]
+    //     );
+    //     if ($validated->fails())
+    //         return validationError($validated);
 
-        try {
-            $mWfRoleMaps        = new WfWorkflowrolemap();
-            $wfLevels           = $wfLevels;
-            $petApplication     = PetActiveRegistration::findOrFail($req->applicationId);
+    //     try {
+    //         $mWfRoleMaps        = new WfWorkflowrolemap();
+    //         $wfLevels           = $wfLevels;
+    //         $petApplication     = PetActiveRegistration::findOrFail($req->applicationId);
 
-            # Derivative Assignments
-            $senderRoleId = $petApplication->current_role_id;
-            $ulbWorkflowId = $petApplication->workflow_id;
-            $ulbWorkflowMaps = WfWorkflow::findOrFail($ulbWorkflowId);
-            $roleMapsReqs = new Request([
-                'workflowId'    => $ulbWorkflowMaps->id,
-                'roleId'        => $senderRoleId
-            ]);
-            $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
+    //         # Derivative Assignments
+    //         $senderRoleId = $petApplication->current_role_id;
+    //         $ulbWorkflowId = $petApplication->workflow_id;
+    //         $ulbWorkflowMaps = WfWorkflow::findOrFail($ulbWorkflowId);
+    //         $roleMapsReqs = new Request([
+    //             'workflowId'    => $ulbWorkflowMaps->id,
+    //             'roleId'        => $senderRoleId
+    //         ]);
+    //         $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
 
-            $this->begin();
-            if ($req->action == 'forward') {
-                $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
-                $metaReqs['verificationStatus']     = 1;
-                $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
-                $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
-                $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
-                $msg = "Application Forwaded Succesfully.";
-            }
-            if ($req->action == 'backward') {
-                $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
-                $metaReqs['verificationStatus']     = 0;
-                $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
-                $msg = "Application has been sent back succesfully.";
-            }
-            $petApplication->save();
+    //         $this->begin();
+    //         if ($req->action == 'forward') {
+    //             $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);            // Check Post Next level condition
+    //             $metaReqs['verificationStatus']     = 1;
+    //             $metaReqs['receiverRoleId']         = $forwardBackwardIds->forward_role_id;
+    //             $petApplication->current_role_id    = $forwardBackwardIds->forward_role_id;
+    //             $petApplication->last_role_id       = $forwardBackwardIds->forward_role_id;                                      // Update Last Role Id
+    //             $msg = "Application Forwaded Succesfully.";
+    //         }
+    //         if ($req->action == 'backward') {
+    //             $petApplication->current_role_id    = $forwardBackwardIds->backward_role_id;
+    //             $metaReqs['verificationStatus']     = 0;
+    //             $metaReqs['receiverRoleId']         = $forwardBackwardIds->backward_role_id;
+    //             $msg = "Application has been sent back succesfully.";
+    //         }
+    //         $petApplication->save();
 
-            $metaReqs['moduleId']           = $this->_petModuleId;
-            $metaReqs['workflowId']         = $petApplication->workflow_id;
-            $metaReqs['refTableDotId']      = 'pet_active_registrations.id';                                                // Static
-            $metaReqs['refTableIdValue']    = $req->applicationId;
-            $metaReqs['user_id']            = authUser($req)->id;
-            $req->request->add($metaReqs);
+    //         $metaReqs['moduleId']           = $this->_petModuleId;
+    //         $metaReqs['workflowId']         = $petApplication->workflow_id;
+    //         $metaReqs['refTableDotId']      = 'pet_active_registrations.id';                                                // Static
+    //         $metaReqs['refTableIdValue']    = $req->applicationId;
+    //         $metaReqs['user_id']            = authUser($req)->id;
+    //         $req->request->add($metaReqs);
 
-            $workflowTrack = new WorkflowTrack();
-            $workflowTrack->saveTrack($req);
+    //         $workflowTrack = new WorkflowTrack();
+    //         $workflowTrack->saveTrack($req);
 
-            # Check in all the cases the data if entered in the track table 
-            # Updation of Received Date
-            // $preWorkflowReq = [
-            //     'workflowId'        => $petApplication->workflow_id,
-            //     'refTableDotId'     => "pet_active_registrations.id",
-            //     'refTableIdValue'   => $req->applicationId,
-            //     'receiverRoleId'    => $senderRoleId
-            // ];
+    //         # Check in all the cases the data if entered in the track table 
+    //         # Updation of Received Date
+    //         // $preWorkflowReq = [
+    //         //     'workflowId'        => $petApplication->workflow_id,
+    //         //     'refTableDotId'     => "pet_active_registrations.id",
+    //         //     'refTableIdValue'   => $req->applicationId,
+    //         //     'receiverRoleId'    => $senderRoleId
+    //         // ];
 
-            // $previousWorkflowTrack = $workflowTrack->getWfTrackByRefId($preWorkflowReq);
-            // $previousWorkflowTrack->update([
-            //     'forward_date' => $current->format('Y-m-d'),
-            //     'forward_time' => $current->format('H:i:s')
-            // ]);
-            $this->commit();
-            return responseMsgs(true, $msg, [], "", "", '01', responseTime(), 'Post', '');
-        } catch (Exception $e) {
-            $this->rollback();
-            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
-        }
-    }
+    //         // $previousWorkflowTrack = $workflowTrack->getWfTrackByRefId($preWorkflowReq);
+    //         // $previousWorkflowTrack->update([
+    //         //     'forward_date' => $current->format('Y-m-d'),
+    //         //     'forward_time' => $current->format('H:i:s')
+    //         // ]);
+    //         $this->commit();
+    //         return responseMsgs(true, $msg, [], "", "", '01', responseTime(), 'Post', '');
+    //     } catch (Exception $e) {
+    //         $this->rollback();
+    //         return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
+    //     }
+    // }
 
 
     /**
@@ -1377,6 +1377,105 @@ class PetWorkflowController extends Controller
             return responseMsgs(true, $msg, remove_null($inbox), '', '02', '', 'Post', '');
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $request->deviceId);
+        }
+    }
+
+    /**
+     * | Smart Post next level - Context aware workflow
+     * | Handles citizen vs JSK applications differently
+        | Serial No : New
+        | Production Ready
+     */
+    public function postNextLevel(Request $req)
+    {
+        $wfLevels = $this->_petWfRoles;
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId'     => 'required',
+                'action'            => 'required|In:forward,backward',
+                'comment'           => 'required',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfRoleMaps        = new WfWorkflowrolemap();
+            $mPetActiveRegistration = new PetActiveRegistration();
+            
+            # Use the same query method as other functions to ensure correct connection
+            $petApplication = $mPetActiveRegistration->where('id', $req->applicationId)
+                ->where('status', 1)
+                ->first();
+            
+            if (!$petApplication) {
+                throw new Exception("Application with ID {$req->applicationId} not found or inactive");
+            }
+            
+            $senderRoleId       = $petApplication->current_role_id;
+            $ulbWorkflowId      = $petApplication->workflow_id;
+            $ulbWorkflowMaps    = WfWorkflow::find($ulbWorkflowId);
+            
+            if (!$ulbWorkflowMaps) {
+                throw new Exception("Workflow configuration not found for this application");
+            }
+
+            $this->begin();
+            
+            if ($req->action == 'forward') {
+                $this->checkPostCondition($senderRoleId, $wfLevels, $petApplication);
+                $roleMapsReqs = new Request(['workflowId' => $ulbWorkflowMaps->id, 'roleId' => $senderRoleId]);
+                $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
+                
+                $petApplication->current_role_id = $forwardBackwardIds->forward_role_id;
+                $petApplication->last_role_id = $forwardBackwardIds->forward_role_id;
+                $receiverRoleId = $forwardBackwardIds->forward_role_id;
+                $verificationStatus = 1;
+                $msg = "Application Forwarded Successfully.";
+            }
+            
+            if ($req->action == 'backward') {
+                # Smart backward logic based on application source
+                if (!is_null($petApplication->citizen_id)) {
+                    # Citizen application - send back to citizen (parked)
+                    $petApplication->parked = true;
+                    $petApplication->doc_upload_status = false;  // Reset upload status
+                    $receiverRoleId = null;
+                    $msg = "Application sent back to citizen for document correction.";
+                } else {
+                    # JSK application - follow normal workflow
+                    $roleMapsReqs = new Request(['workflowId' => $ulbWorkflowMaps->id, 'roleId' => $senderRoleId]);
+                    $forwardBackwardIds = $mWfRoleMaps->getWfBackForwardIds($roleMapsReqs);
+                    $petApplication->current_role_id = $forwardBackwardIds->backward_role_id;
+                    $receiverRoleId = $forwardBackwardIds->backward_role_id;
+                    $msg = "Application sent back to previous role.";
+                }
+                $verificationStatus = 0;
+            }
+            
+            $petApplication->save();
+
+            # Save workflow track
+            $metaReqs = [
+                'moduleId'              => $this->_petModuleId,
+                'workflowId'            => $petApplication->workflow_id,
+                'refTableDotId'         => 'pet_active_registrations.id',
+                'refTableIdValue'       => $req->applicationId,
+                'user_id'               => authUser($req)->id,
+                'verificationStatus'    => $verificationStatus,
+                'receiverRoleId'        => $receiverRoleId
+            ];
+            $req->request->add($metaReqs);
+            
+            $workflowTrack = new WorkflowTrack();
+            $workflowTrack->saveTrack($req);
+            
+            $this->commit();
+            return responseMsgs(true, $msg, [], "", "", '01', responseTime(), 'Post', '');
+        } catch (Exception $e) {
+            $this->rollback();
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), "POST", $req->deviceId);
         }
     }
 }
