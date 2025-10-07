@@ -1013,9 +1013,10 @@ class SelfAdvetController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Pending application list";
             $userId = $request->auth['id'];
+            $ulbId = $request->auth['ulb_id'];
 
             $mAdvSelfadvertisements = new AdvSelfadvertisement();
-            $applications = $mAdvSelfadvertisements->listJskApprovedApplication();
+            $applications = $mAdvSelfadvertisements->listJskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
