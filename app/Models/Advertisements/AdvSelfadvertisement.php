@@ -82,7 +82,7 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listJskApprovedApplication()
+    public function listJskApprovedApplication($ulbId)
     {
         return AdvSelfadvertisement::select(
             'id',
@@ -102,6 +102,7 @@ class AdvSelfadvertisement extends Model
             'citizen_id',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->where('ulb_id', $ulbId)
             ->orderByDesc('id');
         //->get();
     }
