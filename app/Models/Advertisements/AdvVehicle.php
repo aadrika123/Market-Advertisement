@@ -80,7 +80,7 @@ class AdvVehicle extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return AdvVehicle::select(
             'adv_vehicles.id',
@@ -101,6 +101,7 @@ class AdvVehicle extends Model
             'adv_vehicles.user_id',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->where('adv_vehicles.ulb_id', $ulbId)
             ->orderByDesc('id');
         //->get();
     }

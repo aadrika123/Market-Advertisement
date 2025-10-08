@@ -474,7 +474,7 @@ class AdvActiveSelfadvertisement extends Model
         return AdvActiveSelfadvertisement::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'license_year', 'display_type','entity_name', DB::raw("'Active' as application_status"));
     }
 
-    public function listAppliedApplicationsJsk()
+    public function listAppliedApplicationsJsk($ulbId)
     { 
         return AdvActiveSelfadvertisement::select(
                 'adv_active_selfadvertisements.id',
@@ -497,6 +497,7 @@ class AdvActiveSelfadvertisement extends Model
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_selfadvertisements.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_selfadvertisements.ulb_id')
+            ->where('adv_active_selfadvertisements.ulb_id', $ulbId)
             ->orderByDesc('adv_active_selfadvertisements.id');
             //->get();
     }

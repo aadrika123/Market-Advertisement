@@ -917,7 +917,8 @@ class VehicleAdvetController extends Controller
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mAdvVehicle = new AdvVehicle();
-            $applications = $mAdvVehicle->listjskApprovedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvVehicle->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -982,7 +983,8 @@ class VehicleAdvetController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Rejected application list";
             $mAdvRejectedVehicle = new AdvRejectedVehicle();
-            $applications = $mAdvRejectedVehicle->listJskRejectedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvRejectedVehicle->listJskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1044,7 +1046,8 @@ class VehicleAdvetController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Applied application list";
             $mAdvActiveVehicle = new AdvActiveVehicle();
-            $applications = $mAdvActiveVehicle->listAppliedApplicationsJsk();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvActiveVehicle->listAppliedApplicationsJsk($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {

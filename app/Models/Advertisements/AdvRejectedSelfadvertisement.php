@@ -42,7 +42,7 @@ class AdvRejectedSelfadvertisement extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication()
+    public function listJskRejectedApplication($ulbId)
     {
         return AdvRejectedSelfadvertisement::select(
             'adv_rejected_selfadvertisements.id',
@@ -59,6 +59,7 @@ class AdvRejectedSelfadvertisement extends Model
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_selfadvertisements.current_role_id')
+            ->where('adv_rejected_selfadvertisements.ulb_id', $ulbId)
             ->orderByDesc('adv_rejected_selfadvertisements.id');
         //->get();
     }

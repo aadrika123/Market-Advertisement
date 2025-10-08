@@ -34,7 +34,7 @@ class AdvRejectedVehicle extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication()
+    public function listJskRejectedApplication($ulbId)
     {
         return AdvRejectedVehicle::select(
                 'adv_rejected_vehicles.id',
@@ -50,6 +50,7 @@ class AdvRejectedVehicle extends Model
                 DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_vehicles.current_roles')
+            ->where('adv_rejected_vehicles.ulb_id', $ulbId)
             ->orderByDesc('adv_rejected_vehicles.id');
             //->get();
     }
