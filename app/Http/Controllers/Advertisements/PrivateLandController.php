@@ -919,7 +919,8 @@ class PrivateLandController extends Controller
             $msg = "Pending application list";
             $userId = $request->auth['id'];
             $mAdvPrivateland = new AdvPrivateland();
-            $applications = $mAdvPrivateland->listjskApprovedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvPrivateland->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -984,7 +985,8 @@ class PrivateLandController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Rejected application list";
             $mAdvRejectedPrivateland = new AdvRejectedPrivateland();
-            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvRejectedPrivateland->listJskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1046,7 +1048,8 @@ class PrivateLandController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Applied application list";
             $mAdvRejectedPrivateland = new AdvActivePrivateland();
-            $applications = $mAdvRejectedPrivateland->listAppliedApplicationsjsk();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvRejectedPrivateland->listAppliedApplicationsjsk($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {

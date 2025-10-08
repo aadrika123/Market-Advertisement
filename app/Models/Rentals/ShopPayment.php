@@ -186,7 +186,7 @@ class ShopPayment extends Model
   /**
    * | List Uncleared cheque or DD
    */
-  public function listUnclearedCheckDD($req)
+  public function listUnclearedCheckDD($req, $ulbId)
   {
     return  DB::table('mar_shop_payments')
       ->select(
@@ -208,12 +208,13 @@ class ShopPayment extends Model
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
       ->join('users', 'users.id', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.ulb_id', $ulbId)
       ->where('cheque_date', '!=', NULL);
   }
   /** 
    * | Get Collection Report Tc Wise
    */
-  public function getListOfPayment()
+  public function getListOfPayment($ulbId)
   {
     return  DB::table('mar_shop_payments')
       ->select(
@@ -225,6 +226,7 @@ class ShopPayment extends Model
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
       ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.ulb_id', $ulbId)
       ->where('mar_shop_payments.pmt_mode', '=', "CASH")
       ->where('mar_shop_payments.deactive_date', '=', NULL)
       ->where('mar_shop_payments.is_verified', '=', "0");
@@ -332,7 +334,7 @@ class ShopPayment extends Model
   /**
    * | List of shop collection between two given date
    */
-  public function listShopCollection($fromDate, $toDate)
+  public function listShopCollection($fromDate, $toDate, $ulbId)
   {
     return DB::table('mar_shop_payments')
       ->select(
@@ -358,6 +360,7 @@ class ShopPayment extends Model
       ->leftjoin('m_circle as mc', 'mc.id', '=', 't2.circle_id')
       ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
       ->join('users', 'users.id', '=', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.ulb_id', $ulbId)
       ->where('mar_shop_payments.payment_date', '>=', $fromDate)
       ->where('mar_shop_payments.payment_date', '<=', $toDate)
       ->whereIn('mar_shop_payments.payment_status', [1, 2]);
@@ -401,7 +404,7 @@ class ShopPayment extends Model
       ->orderby('mar_shop_payments.id', 'Desc');
   }
   #search Transaction Number for Deactivation
-  public function searchTranasction($transactionNo)
+  public function searchTranasction($transactionNo, $ulbId)
   {
     return self::select(
       'mar_shop_payments.id',
@@ -415,6 +418,7 @@ class ShopPayment extends Model
       'mar_shop_payments.pmt_mode'
     )
       ->join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
+      ->where('mar_shop_payments.ulb_id', $ulbId)
       ->where('transaction_no', $transactionNo);
   }
 

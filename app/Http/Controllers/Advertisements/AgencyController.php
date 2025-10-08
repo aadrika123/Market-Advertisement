@@ -928,7 +928,8 @@ class AgencyController extends Controller
             $msg = "Pending application list";
 
             $mAdvAgency = new AdvAgency();
-            $applications = $mAdvAgency->listjskApprovedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvAgency->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Agency application details according to $key";
                 switch ($key) {
@@ -1025,7 +1026,8 @@ class AgencyController extends Controller
             // Variable initialization
             $userId = $req->auth['id'];
             $mAdvRejectedAgency = new AdvRejectedAgency();
-            $applications = $mAdvRejectedAgency->listJskRejectedApplication();
+            $ulbId = $req->auth['ulb_id'];
+            $applications = $mAdvRejectedAgency->listJskRejectedApplication($ulbId);
             $totalApplication = $applications->count();
             remove_null($applications);
             $data1['data'] = $applications;
@@ -2093,7 +2095,8 @@ class AgencyController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Applied application list";
             $mActiveAgency = new AdvActiveAgency();
-            $applications = $mActiveAgency->listAppliedApplicationsjsk();
+            $ulb_id = $request->auth['ulb_id'];
+            $applications = $mActiveAgency->listAppliedApplicationsjsk($ulb_id);
             if ($key && $parameter) {
                 $msg = "Agency application details according to $key";
                 switch ($key) {

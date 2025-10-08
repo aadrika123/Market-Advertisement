@@ -501,7 +501,7 @@ class AdvActiveVehicle extends Model
         return AdvActiveVehicle::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'ulb_id','entity_name', DB::raw("'Active' as application_status"));
     }
 
-    public function listAppliedApplicationsJsk()
+    public function listAppliedApplicationsJsk($ulbId)
     {
         return AdvActiveVehicle::select(
                 'adv_active_vehicles.id',
@@ -526,6 +526,7 @@ class AdvActiveVehicle extends Model
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_vehicles.current_roles')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_vehicles.ulb_id')
+            ->where('adv_active_vehicles.ulb_id', $ulbId)
             ->orderByDesc('adv_active_vehicles.id');
             //->get();
     }

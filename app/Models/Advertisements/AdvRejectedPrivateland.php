@@ -32,7 +32,7 @@ class AdvRejectedPrivateland extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication()
+    public function listJskRejectedApplication($ulbId)
     {
         return AdvRejectedPrivateland::select(
             'adv_rejected_privatelands.id',
@@ -50,6 +50,7 @@ class AdvRejectedPrivateland extends Model
 
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_privatelands.current_role_id')
+            ->where('adv_rejected_privatelands.ulb_id', $ulbId)
             ->orderByDesc('adv_rejected_privatelands.id');
         //->get();
     }

@@ -492,7 +492,7 @@ class AdvActiveAgency extends Model
         return AdvActiveAgency::select('id', 'application_no', 'entity_name', 'application_date', 'application_type', 'ulb_id', DB::raw("'Active' as application_status"));
     }
 
-    public function listAppliedApplicationsjsk()
+    public function listAppliedApplicationsjsk($ulb_id)
     {
         return AdvActiveAgency::select(
             'adv_active_agencies.id',
@@ -517,6 +517,7 @@ class AdvActiveAgency extends Model
             ->join('adv_active_agencydirectors as agd', 'agd.agency_id', '=', 'adv_active_agencies.id')
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_agencies.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_agencies.ulb_id')
+            ->where('adv_active_agencies.ulb_id', $ulb_id)
             ->groupBy(
                 'adv_active_agencies.id',
                 'adv_active_agencies.application_no',

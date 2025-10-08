@@ -158,7 +158,8 @@ class SelfAdvetController extends Controller
         try {
             // Variable initialization
             $mAdvSelfadvertisement = new AdvSelfadvertisement();
-            $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId);  // Get Renew Application Details
+            $ulbId = $req->auth['ulb_id'];
+            $details = $mAdvSelfadvertisement->applicationDetailsForRenew($req->applicationId, $ulbId);  // Get Renew Application Details
             if (!$details)
                 throw new Exception("Application Not Found !!!");
 
@@ -1083,7 +1084,8 @@ class SelfAdvetController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Rejected application list";
             $mAdvRejectedSelfadvertisement = new AdvRejectedSelfadvertisement();
-            $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvRejectedSelfadvertisement->listJskRejectedApplication($ulbId);
 
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
@@ -1147,7 +1149,8 @@ class SelfAdvetController extends Controller
             $pages = $request->perPage ?? 10;
             $msg = "Applied application list";
             $mAdvRejectedSelfadvertisement = new AdvActiveSelfadvertisement();
-            $applications = $mAdvRejectedSelfadvertisement->listAppliedApplicationsJsk();
+            $ulbId = $request->auth['ulb_id'];
+            $applications = $mAdvRejectedSelfadvertisement->listAppliedApplicationsJsk($ulbId);
 
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";

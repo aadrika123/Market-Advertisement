@@ -34,7 +34,7 @@ class AdvRejectedAgency extends Model
     /**
      * | Get Application Reject List by Login JSK
      */
-    public function listJskRejectedApplication()
+    public function listJskRejectedApplication($ulbId)
     {
         return AdvRejectedAgency::select(
                 'adv_rejected_agencies.id',
@@ -49,6 +49,7 @@ class AdvRejectedAgency extends Model
                 'remarks as reason',
             )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_rejected_agencies.current_role_id')
+            ->where('adv_rejected_agencies.ulb_id', $ulbId)
             ->orderByDesc('adv_rejected_agencies.id')
             ->get();
     }
