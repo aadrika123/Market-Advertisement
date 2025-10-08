@@ -639,7 +639,7 @@ class MarLodge extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return MarLodge::select(
             'mar_lodges.id',
@@ -660,6 +660,7 @@ class MarLodge extends Model
             'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->where('mar_lodges.ulb_id', $ulbId)
             ->orderByDesc('id');
         //->get();
     }
@@ -870,9 +871,9 @@ class MarLodge extends Model
             'mar_lodges.permanent_address as address',
             'um.ulb_name',
         )
-        ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
-        ->where("mar_lodges.$filterBy", 'LIKE', "%$filterValue%")
-        ->where('mar_lodges.ulb_id', 2) 
-        ->get(); 
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_lodges.ulb_id')
+            ->where("mar_lodges.$filterBy", 'LIKE', "%$filterValue%")
+            ->where('mar_lodges.ulb_id', 2)
+            ->get();
     }
 }

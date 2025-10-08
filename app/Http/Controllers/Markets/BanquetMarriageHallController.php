@@ -1805,10 +1805,12 @@ class BanquetMarriageHallController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
+
             //$userId = $request->auth['id'];
             $mMarBanquteHall = new MarBanquteHall();
-            $applications = $mMarBanquteHall->listjskApprovedApplication();
+            $applications = $mMarBanquteHall->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1866,10 +1868,11 @@ class BanquetMarriageHallController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mMarLodge = new MarRejectedBanquteHall();
-            $applications = $mMarLodge->listjskRejectedApplication();
+            $applications = $mMarLodge->listjskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Banquet Hall application details according to $key";
                 switch ($key) {
@@ -2369,29 +2372,28 @@ class BanquetMarriageHallController extends Controller
                 'filterValue' => 'required|string'
             ]
         );
-    
+
         if ($validated->fails()) {
             return validationError($validated);
         }
-    
+
         try {
             $filterValue = $req->filterValue;
-    
+
             $activeBanqute = new MarBanquteHall();
-    
+
             // 🔹 Search by `application_no` explicitly
             $data = $activeBanqute->getBanquteDtl('license_no', $filterValue);
-    
+
             if ($data->isEmpty()) {
                 throw new Exception("Application Not Found");
             }
-    
+
             $approveApplicationDetails = $data;
-    
+
             return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         }
     }
-    
 }

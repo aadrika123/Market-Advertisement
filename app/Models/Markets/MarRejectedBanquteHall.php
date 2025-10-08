@@ -64,7 +64,7 @@ class MarRejectedBanquteHall extends Model
         return MarRejectedBanquteHall::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'hall_type', 'ulb_id', 'license_year', 'organization_type', DB::raw("'Reject' as application_status"));
     }
 
-    public function listjskRejectedApplication()
+    public function listjskRejectedApplication($ulbId)
     {
         return MarRejectedBanquteHall::select(
             'mar_rejected_banqute_halls.id',
@@ -73,7 +73,8 @@ class MarRejectedBanquteHall extends Model
             DB::raw("TO_CHAR(mar_rejected_banqute_halls.application_date, 'DD-MM-YYYY') as application_date"),
             'application_type',
             'entity_ward_id',
-            'rule','entity_name',
+            'rule',
+            'entity_name',
             'license_year',
             'ulb_id',
             'mobile as mobile_no',
@@ -82,7 +83,8 @@ class MarRejectedBanquteHall extends Model
             'wr.role_name as rejected_by',
             'remarks as reason'
         )
-        ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_banqute_halls.current_role_id');
+            ->where('mar_rejected_banqute_halls.ulb_id', $ulbId)
+            ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_banqute_halls.current_role_id');
     }
 
     public function getDetailsById($applicationId)

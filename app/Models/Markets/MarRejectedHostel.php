@@ -72,7 +72,7 @@ class MarRejectedHostel extends Model
         return MarRejectedHostel::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'hostel_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"));
     }
 
-    public function listjskRejectedApplication()
+    public function listjskRejectedApplication($ulbId)
     {
         return MarRejectedHostel::select(
             'mar_rejected_hostels.id',
@@ -91,6 +91,7 @@ class MarRejectedHostel extends Model
             'wr.role_name as rejected_by',
             'remarks as reason'
         )
+            ->where('mar_rejected_hostels.ulb_id', $ulbId)
             ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_hostels.current_role_id');
     }
 

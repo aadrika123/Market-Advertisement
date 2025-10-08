@@ -68,7 +68,7 @@ class MarRejectedDharamshala extends Model
         return MarRejectedDharamshala::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'rule', 'organization_type', 'ulb_id', 'license_year', DB::raw("'Reject' as application_status"));
     }
 
-    public function listjskRejectedApplication()
+    public function listjskRejectedApplication($ulbId)
     {
         return MarRejectedDharamshala::select(
             'mar_rejected_dharamshalas.id',
@@ -86,6 +86,7 @@ class MarRejectedDharamshala extends Model
             'wr.role_name as rejected_by',
             'remarks as reason'
         )
+            ->where('mar_rejected_dharamshalas.ulb_id', $ulbId)
             ->join('wf_roles as wr', 'wr.id', '=', 'mar_rejected_dharamshalas.current_role_id');
     }
 

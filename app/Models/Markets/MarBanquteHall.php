@@ -808,7 +808,7 @@ class MarBanquteHall extends Model
     /** 
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return MarBanquteHall::select(
             'mar_banqute_halls.id',
@@ -829,6 +829,7 @@ class MarBanquteHall extends Model
             'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->where('mar_banqute_halls.ulb_id', $ulbId)
             ->orderByDesc('id');
         //->get();
     }
@@ -1021,10 +1022,10 @@ class MarBanquteHall extends Model
             'mar_banqute_halls.permanent_address as address',
             'um.ulb_name',
         )
-        ->join('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
-        ->where("mar_banqute_halls.$filterBy", 'LIKE', "%$filterValue%") 
-        ->where('mar_banqute_halls.status', 0)
-        ->where('mar_banqute_halls.ulb_id', 2) 
-        ->get(); 
+            ->join('ulb_masters as um', 'um.id', '=', 'mar_banqute_halls.ulb_id')
+            ->where("mar_banqute_halls.$filterBy", 'LIKE', "%$filterValue%")
+            ->where('mar_banqute_halls.status', 0)
+            ->where('mar_banqute_halls.ulb_id', 2)
+            ->get();
     }
 }

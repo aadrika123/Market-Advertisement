@@ -1744,10 +1744,11 @@ class DharamshalaController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mMarDharamshala = new MarDharamshala();
-            $applications = $mMarDharamshala->listjskApprovedApplication();
+            $applications = $mMarDharamshala->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1805,9 +1806,10 @@ class DharamshalaController extends Controller
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
             $msg = "Pending application list";
+            $ulbId = $request->auth['ulb_id'];
             //$userId = $request->auth['id'];
             $mMarLodge = new MarRejectedDharamshala();
-            $applications = $mMarLodge->listjskRejectedApplication();
+            $applications = $mMarLodge->listjskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Hostel application details according to $key";
                 switch ($key) {

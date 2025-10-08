@@ -643,7 +643,7 @@ class MarHostel extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return MarHostel::select(
             'mar_hostels.id',
@@ -664,6 +664,7 @@ class MarHostel extends Model
             'mobile as mobile_no',
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
+            ->where('mar_hostels.ulb_id', $ulbId)
             ->orderByDesc('id');
         //->get();
     }

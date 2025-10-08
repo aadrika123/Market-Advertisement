@@ -1764,9 +1764,10 @@ class LodgeController extends Controller
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
             $msg = "Pending application list";
+            $ulbId = $request->auth['ulb_id'];
             //$userId = $request->auth['id'];
             $mMarLodge = new MarLodge();
-            $applications = $mMarLodge->listjskApprovedApplication();
+            $applications = $mMarLodge->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1823,10 +1824,11 @@ class LodgeController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mMarLodge = new MarRejectedLodge();
-            $applications = $mMarLodge->listjskRejectedApplication();
+            $applications = $mMarLodge->listjskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Lodge application details according to $key";
                 switch ($key) {

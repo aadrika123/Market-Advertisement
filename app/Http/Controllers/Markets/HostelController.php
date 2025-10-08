@@ -1844,10 +1844,11 @@ class HostelController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mMarHostel = new MarHostel();
-            $applications = $mMarHostel->listjskApprovedApplication();
+            $applications = $mMarHostel->listjskApprovedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Self Advertisement application details according to $key";
                 switch ($key) {
@@ -1904,10 +1905,11 @@ class HostelController extends Controller
             $key = $request->filterBy;
             $parameter = $request->parameter;
             $pages = $request->perPage ?? 10;
+            $ulbId = $request->auth['ulb_id'];
             $msg = "Pending application list";
             //$userId = $request->auth['id'];
             $mMarLodge = new MarRejectedHostel();
-            $applications = $mMarLodge->listjskRejectedApplication();
+            $applications = $mMarLodge->listjskRejectedApplication($ulbId);
             if ($key && $parameter) {
                 $msg = "Hostel application details according to $key";
                 switch ($key) {
