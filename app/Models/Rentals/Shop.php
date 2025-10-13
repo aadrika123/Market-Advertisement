@@ -114,6 +114,32 @@ class Shop extends Model
       ->where('mar_shops.status', '1')
       ->orderByDesc('mar_shops.id');
   }
+  /**
+   * | Get Shop List Market Wise
+   */
+  public function getShopv1($marketId)
+  {
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      DB::raw("CASE WHEN demand_genrated.shop_id IS NULL THEN TRUE ELSE FALSE END AS can_generate_demand"),
+      'msp.amount as last_payment_amount'
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->leftJoin(DB::raw("
+        (SELECT DISTINCT shop_id
+         FROM mar_shop_demands
+         WHERE status = 1
+         AND TO_CHAR(cast(monthly as date),'YYYY-MM') = TO_CHAR(CURRENT_DATE,'YYYY-MM')
+        ) AS demand_genrated"), 'demand_genrated.shop_id', '=', 'mar_shops.id')
+      ->where('mar_shops.market_id', $marketId)
+      ->where('mar_shops.status', '1')
+      ->orderByDesc('mar_shops.id');
+  }
 
 
   /**
@@ -262,8 +288,8 @@ class Shop extends Model
       // ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
       ->leftjoin('m_circle as mc', 'mc.id', '=', 'mar_shops.circle_id')
       ->leftjoin('m_market as mkt', 'mkt.id', '=', 'mar_shops.market_id')
-      ->where('mar_shops.status',1)
-      ->where('mar_shops.ulb_id',$user->ulb_id)
-      ->orderBy('mar_shops','Desc');
+      ->where('mar_shops.status', 1)
+      ->where('mar_shops.ulb_id', $user->ulb_id)
+      ->orderBy('mar_shops', 'Desc');
   }
 }

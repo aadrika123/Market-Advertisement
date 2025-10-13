@@ -35,6 +35,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-ulb-wise-circle', 'listUlbWiseCircle');                                                    // 08  ( Get List ULB Wise Circle )
         Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                              // 09  ( Get List Circle wise Market )
         Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');                                                 // 10  ( Get Shop List By Market Id )
+        Route::post('rental/list-shop-by-market-id-v1', 'listShopByMarketIdv1');                                                 // 10  ( Get Shop List By Market Id )
         Route::post('rental/list-shop', 'listShop');                                                                        // 11  ( Get List All Shop )
         Route::post('rental/get-shop-detail-by-id', 'getShopDetailtId');                                                    // 12  ( Get Shop Details By Id)
         Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');                                      // 13  ( Get Shop Collection Summery )

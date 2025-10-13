@@ -199,7 +199,7 @@ class ShopController extends Controller
         }
     }
 
-    
+
 
     // public function store(ShopRequest $req)
     // {
@@ -642,6 +642,35 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->getShop($req->assetId);
+            if ($req->floorId) {
+                $list->where('floor_id', $req->floorId);
+            }
+
+            if ($req->key)
+                $list = searchShopRentalFilter($list, $req);
+            $list = paginator($list, $req);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, "055010", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055010", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | Get Shop list by Market Id
+     * | Function - 10
+     * | API - 10
+     */
+    public function listShopByMarketIdv1(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'marketId' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mShop = new Shop();
+            $list = $mShop->getShopv1($req->marketId);
             if ($req->floorId) {
                 $list->where('floor_id', $req->floorId);
             }
