@@ -187,6 +187,7 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
+    
     // public function store(ShopRequest $req)
     // {
     //     try {
