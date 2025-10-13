@@ -109,7 +109,17 @@ class ShopController extends Controller
             $currentMonth = Carbon::now()->startOfMonth();
 
             // Step 1: Create Circle and Market
-            $circleDetails = $mCircle->createCirlce($req);
+            $checkCircle = $mCircle->getCircleNameByUlbId($req->circleName, $req->auth['ulb_id'] ?? 0);
+
+            if ($checkCircle == null || $checkCircle->isEmpty()) {
+                // Circle does not exist, create new one
+                $circleDetails = $mCircle->createCirlce($req);
+            } else {
+                // Circle already exists, use existing details
+                $circleDetails = $checkCircle->first();
+            }
+
+            $checkMarket = $mMarket->getMarketNameByCircleId($req->marketName, $circleDetails->id);
             $marketDetails = $mMarket->createMarket($req, $circleDetails);
 
             // Step 2: Prepare Shop data
@@ -181,13 +191,16 @@ class ShopController extends Controller
                 $this->uploadDocument($shopId, $req->documents, $req->auth);
             }
 
+            // return responseMsgs(true, "Successfully Saved", ['shopNo' => $req->shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
             return responseMsgs(true, "Successfully Saved", ['shopNo' => $req->shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
+
     
+
     // public function store(ShopRequest $req)
     // {
     //     try {
