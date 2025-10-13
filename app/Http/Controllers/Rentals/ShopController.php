@@ -120,7 +120,23 @@ class ShopController extends Controller
             }
 
             $checkMarket = $mMarket->getMarketNameByCircleId($req->marketName, $circleDetails->id);
-            $marketDetails = $mMarket->createMarket($req, $circleDetails);
+            if ($checkMarket == null || $checkMarket->isEmpty()) {
+                // Market does not exist, create new one
+                $marketDetails = $mMarket->createMarket($req, $circleDetails);
+            } else {
+                // Market already exists, use existing details
+                $marketDetails = $checkMarket->first();
+            }
+            $existingShop = $this->_mShops
+                ->where('circle_id', $circleDetails->id)
+                ->where('ulb_id', $req->auth['ulb_id'] ?? 0)
+                ->where('market_id', $marketDetails->id)
+                ->where('shop_no', $req->shopNo)
+                ->first();
+
+            if ($existingShop) {
+                throw new Exception("A shop with the same Circle, Market, ULB, and Shop No already exists!");
+            }
 
             // Step 2: Prepare Shop data
             $metaReqs = [
