@@ -495,7 +495,7 @@ class AdvActivePrivateland extends Model
         return AdvActivePrivateland::select('id', 'application_no', 'applicant', 'application_date', 'application_type', 'entity_ward_id', 'ulb_id', 'display_type','entity_name', DB::raw("'Active' as application_status"));
     }
 
-    public function listAppliedApplicationsjsk()
+    public function listAppliedApplicationsjsk($ulbId)
     {
         return AdvActivePrivateland::select(
             'adv_active_privatelands.id',
@@ -518,6 +518,7 @@ class AdvActivePrivateland extends Model
         )
             ->join('wf_roles as wr', 'wr.id', '=', 'adv_active_privatelands.current_role_id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_active_privatelands.ulb_id')
+            ->where('adv_active_privatelands.ulb_id', $ulbId)
             ->orderByDesc('adv_active_privatelands.id');
         //->get();
     }

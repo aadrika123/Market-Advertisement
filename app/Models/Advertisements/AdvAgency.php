@@ -100,7 +100,7 @@ class AdvAgency extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return AdvAgency::select(
             'adv_agencies.id',
@@ -128,6 +128,7 @@ class AdvAgency extends Model
         )
             ->join('adv_active_agencydirectors as agd', 'agd.agency_id', '=', 'adv_agencies.id')
             ->join('ulb_masters as um', 'um.id', '=', 'adv_agencies.ulb_id')
+            ->where('adv_agencies.ulb_id', $ulbId)
             ->groupBy(
                 'adv_agencies.id',
                 'adv_agencies.application_no',

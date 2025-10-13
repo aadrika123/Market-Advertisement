@@ -1169,7 +1169,8 @@ class ShopController extends Controller
             $perPage = $req->perPage ? $req->perPage : 5;
             $page = $req->page && $req->page > 0 ? $req->page : 1;
             $mMarShopPayment = new ShopPayment();
-            $data = $mMarShopPayment->getListOfPayment();
+            $ulbId = $req->auth['ulb_id'];
+            $data = $mMarShopPayment->getListOfPayment($ulbId);
             if ($req->date != NULL)
                 $data = $data->where("mar_shop_payments.payment_date", $req->date);
             if ($req->reportType != NULL)
@@ -1285,7 +1286,8 @@ class ShopController extends Controller
         }
         try {
             $mMarShopPayment = new ShopPayment();
-            $data = $mMarShopPayment->listUnclearedCheckDD($req);                                                   // Get List of Cheque or DD
+            $ulbId = $req->auth['ulb_id'];
+            $data = $mMarShopPayment->listUnclearedCheckDD($req, $ulbId);                                                   // Get List of Cheque or DD
             if ($req->fromDate != NULL) {
                 $data = $data->whereBetween('mar_shop_payments.payment_date', [$req->fromDate, $req->toDate]);
             }
@@ -1682,7 +1684,8 @@ class ShopController extends Controller
                 $paymentMode = $req->paymentMode;
             }
             $mMarShopPayment = new ShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
+            $ulbId = $req->auth['ulb_id'];
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate, $ulbId);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.construction', $req->shopCategoryId);
             if ($req->paymentMode != 0)

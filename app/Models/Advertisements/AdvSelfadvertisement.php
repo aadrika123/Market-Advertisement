@@ -236,7 +236,7 @@ class AdvSelfadvertisement extends Model
     /**
      * | Get Application Details for Renew
      */
-    public function applicationDetailsForRenew($appId)
+    public function applicationDetailsForRenew($appId, $ulbId)
     {
         $details = AdvSelfadvertisement::select(
             'adv_selfadvertisements.*',
@@ -257,7 +257,9 @@ class AdvSelfadvertisement extends Model
             ->leftJoin('ulb_ward_masters as pw', 'pw.id', '=', 'adv_selfadvertisements.permanent_ward_id')
             ->leftJoin('ulb_masters as ulb', 'ulb.id', '=', 'adv_selfadvertisements.ulb_id')
             ->leftJoin('adv_selfadv_categories as cat', 'cat.id', '=', 'adv_selfadvertisements.advt_category')
-            ->where('adv_selfadvertisements.id', $appId)->first();
+            ->where('adv_selfadvertisements.ulb_id', $ulbId)
+            ->where('adv_selfadvertisements.id', $appId)
+            ->first();
         if (!empty($details)) {
             $mWfActiveDocument = new WfActiveDocument();
             $documents = $mWfActiveDocument->uploadDocumentsViewById($appId, $details->workflow_id);

@@ -355,9 +355,10 @@ class PaymentController extends Controller
         }
         try {
             $mShopPayment = new ShopPayment();
+            $ulbId = authUser($req)->ulb_id;
             // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
             DB::enableQueryLog();
-            $list = $mShopPayment->searchTranasction($req->transactionNo);                                       // Get List Shop FOr Payment
+            $list = $mShopPayment->searchTranasction($req->transactionNo, $ulbId);                                       // Get List Shop FOr Payment
             $list = paginator($list, $req);
             // Add the 'module' key with value 'Shop' to each item in the data list
             foreach ($list['data'] as &$item) {

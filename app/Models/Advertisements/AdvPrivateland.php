@@ -83,7 +83,7 @@ class AdvPrivateland extends Model
     /**
      * | Get Application Approve List by Role Ids
      */
-    public function listjskApprovedApplication()
+    public function listjskApprovedApplication($ulbId)
     {
         return AdvPrivateland::select(
             'adv_privatelands.id',
@@ -111,6 +111,7 @@ class AdvPrivateland extends Model
             DB::raw("CASE WHEN user_id IS NOT NULL THEN 'jsk' ELSE 'citizen' END AS applied_by")
         )
             ->join('ulb_masters as um', 'um.id', '=', 'adv_privatelands.ulb_id')
+            ->where('adv_privatelands.ulb_id', $ulbId)
             ->orderByDesc('adv_privatelands.id');
         //->get();
     }
