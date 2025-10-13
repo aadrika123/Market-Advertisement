@@ -51,4 +51,14 @@ class MCircle extends Model
             ->where('id', $id)
             ->first();
     }
+    public function createCirlce($req)
+    {
+        $circleData = [
+            'ulb_id' => $req->auth['ulb_id'] ?? 0,
+            'circle_name' => $req->circleName,
+            'created_by' => auth()->user()->id,
+        ];
+        $createCircle = MCircle::create($circleData);
+        return $createCircle;
+    }
 }

@@ -57,4 +57,16 @@ class MMarket extends Model
             ->where('m_market.id', $id)
             ->first();
     }
+
+    public function createMarket($req, $circleDetails)
+    {
+        $marketData = [
+            'ulb_id' => $req->auth['ulb_id'] ?? 0,
+            'circle_id' => $circleDetails->id,
+            'market_name' => $req->marketName,
+            'created_by' => auth()->user()->id,
+        ];
+        $createMarket = MMarket::create($marketData);
+        return $createMarket;
+    }
 }

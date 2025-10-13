@@ -98,98 +98,88 @@ class ShopController extends Controller
     public function store(ShopRequest $req)
     {
         try {
-            $docUpload = new DocumentUpload;
+            // Initialize models
+            $mCircle           = new MCircle();
+            $mMarket           = new MMarket();
             $mWfActiveDocument = new WfActiveDocument();
             $mMarShopDemand    = new MarShopDemand();
+            $docUpload         = new DocumentUpload();
+
             $relativePath = Config::get('constants.SHOP_PATH');
             $currentMonth = Carbon::now()->startOfMonth();
 
-            // if (isset($req->photo1Path)) {
-            //     $image = $req->file('photo1Path');
-            //     $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
-            //     $newRequest = new Request([
-            //         'document' => $image
-            //     ]);
-            //     $imageName1 = $docUpload->upload($newRequest);
-            //     // $absolutePath = $relativePath;
-            //     $imageName1Absolute = $relativePath;
-            // }
+            // Step 1: Create Circle and Market
+            $circleDetails = $mCircle->createCirlce($req);
+            $marketDetails = $mMarket->createMarket($req, $circleDetails);
 
-            // if (isset($req->photo2Path)) {
-            //     $image = $req->file('photo2Path');
-            //     $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
-            //     $newRequest = new Request([
-            //         'document' => $image
-            //     ]);
-            //     $imageName2 = $docUpload->upload($newRequest);
-            //     // $absolutePath = $relativePath;
-            //     $imageName2Absolute = $relativePath;
-            // }
-
-            // $shopNo = $this->shopIdGeneration($req->marketId);
-
+            // Step 2: Prepare Shop data
             $metaReqs = [
-                'circle_id' => $req->assetId,
-                'market_id' => $req->floorId,
-                'asset_id' => $req->assetId,
-                'floor_id' => $req->floorId,
-                'floor_name' => $req->floorName,
-                'asset_name' => $req->assetName,
-
-                'allottee' => $req->allottee,
-                // 'shop_no' => $shopNo,
-                'shop_no' => $req->shopNo,
-                'address' => $req->address,
-                'rate' => $req->rate,
-                'arrear' => $req->arrear,
-                'allotted_length' => $req->allottedLength,
-                'allotted_breadth' => $req->allottedBreadth,
-                'allotted_height' => $req->allottedHeight,
-                'area' => $req->area,
-                'present_length' => $req->presentLength,
-                'present_breadth' => $req->presentBreadth,
-                'present_height' => $req->presentHeight,
-                'no_of_floors' => $req->noOfFloors,
-                'present_occupier' => $req->presentOccupier,
-                'trade_license' => $req->tradeLicense,
-                'construction' => $req->construction,
-                'electricity' => $req->electricity,
-                'water' => $req->water,
-                'sale_purchase' => $req->salePurchase,
-                'contact_no' => $req->contactNo,
-                'longitude' => $req->longitude,
-                'latitude' => $req->latitude,
-                'photo1_path' => $imageName1 ?? "",
+                'circle_id'           => $circleDetails->id,
+                'market_id'           => $marketDetails->id,
+                'asset_id'            => $req->assetId,
+                'floor_id'            => $req->floorId,
+                'floor_name'          => $req->floorName,
+                'asset_name'          => $req->assetName,
+                'allottee'            => $req->allottee,
+                'shop_no'             => $req->shopNo,
+                'address'             => $req->address,
+                'rate'                => $req->rate,
+                'arrear'              => $req->arrear,
+                'allotted_length'     => $req->allottedLength,
+                'allotted_breadth'    => $req->allottedBreadth,
+                'allotted_height'     => $req->allottedHeight,
+                'area'                => $req->area,
+                'present_length'      => $req->presentLength,
+                'present_breadth'     => $req->presentBreadth,
+                'present_height'      => $req->presentHeight,
+                'no_of_floors'        => $req->noOfFloors,
+                'present_occupier'    => $req->presentOccupier,
+                'trade_license'       => $req->tradeLicense,
+                'construction'        => $req->construction,
+                'electricity'         => $req->electricity,
+                'water'               => $req->water,
+                'sale_purchase'       => $req->salePurchase,
+                'contact_no'          => $req->contactNo,
+                'longitude'           => $req->longitude,
+                'latitude'            => $req->latitude,
+                'photo1_path'         => $imageName1 ?? "",
                 'photo1_path_absolute' => $imageName1Absolute ?? "",
-                'photo2_path' => $imageName2 ?? "",
+                'photo2_path'         => $imageName2 ?? "",
                 'photo2_path_absolute' => $imageName2Absolute ?? "",
-                'remarks' => $req->remarks,
-                'last_tran_id' => $req->lastTranId,
-                'electricity_no' => $req->electricityNo,
-                'water_consumer_no' => $req->waterConsumerNo,
-                'user_id' => $req->auth['id'] ?? 0,
-                'ulb_id' => $req->auth['ulb_id'] ?? 0,
-                'ward_no' => $req->wardNo,
-                'last_payment_date' => $req->lastPayDt,
+                'remarks'             => $req->remarks,
+                'last_tran_id'        => $req->lastTranId,
+                'electricity_no'      => $req->electricityNo,
+                'water_consumer_no'   => $req->waterConsumerNo,
+                'user_id'             => $req->auth['id'] ?? 0,
+                'ulb_id'              => $req->auth['ulb_id'] ?? 0,
+                'ward_no'             => $req->wardNo,
+                'last_payment_date'   => $req->lastPayDt,
                 'last_payment_amount' => $req->lastPayAmt,
-                'apply_date' => Carbon::now(),
+                'apply_date'          => Carbon::now(),
             ];
-            // return $metaReqs;
-            $tempId = $this->_mShops->create($metaReqs)->id;
-            $month = $currentMonth->format('Y-m-d');
-            if ($req->arrear != null) {
+
+            // Step 3: Save Shop
+            $shop = $this->_mShops->create($metaReqs);
+            $shopId = $shop->id;
+
+            // Step 4: If arrear exists, create demand entry
+            if (!empty($req->arrear)) {
                 $demandReqs = [
-                    'shop_id' => $tempId,
-                    'amount' => $req->arrear,
-                    'monthly' => $month,
+                    'shop_id'      => $shopId,
+                    'amount'       => $req->arrear,
+                    'monthly'      => $currentMonth->format('Y-m-d'),
                     'payment_date' => Carbon::now(),
-                    'user_id' => $req->auth['id'] ?? 0,
-                    'ulb_id' => $req->auth['ulb_id'] ?? 0,
+                    'user_id'      => $req->auth['id'] ?? 0,
+                    'ulb_id'       => $req->auth['ulb_id'] ?? 0,
                 ];
-                $this->_mShopDemand::create($demandReqs);
+
+                $mMarShopDemand::create($demandReqs);
             }
-            $mDocuments = $req->documents;
-            $this->uploadDocument($tempId, $mDocuments, $req->auth);
+
+            // Step 5: Upload Documents (if provided)
+            if (!empty($req->documents)) {
+                $this->uploadDocument($shopId, $req->documents, $req->auth);
+            }
 
             return responseMsgs(true, "Successfully Saved", ['shopNo' => $req->shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -197,6 +187,112 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
+    // public function store(ShopRequest $req)
+    // {
+    //     try {
+    //         $docUpload = new DocumentUpload;
+    //         $mWfActiveDocument = new WfActiveDocument();
+    //         $mMarShopDemand    = new MarShopDemand();
+    //         $relativePath = Config::get('constants.SHOP_PATH');
+    //         $currentMonth = Carbon::now()->startOfMonth();
+
+    //         // if (isset($req->photo1Path)) {
+    //         //     $image = $req->file('photo1Path');
+    //         //     $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
+    //         //     $newRequest = new Request([
+    //         //         'document' => $image
+    //         //     ]);
+    //         //     $imageName1 = $docUpload->upload($newRequest);
+    //         //     // $absolutePath = $relativePath;
+    //         //     $imageName1Absolute = $relativePath;
+    //         // }
+
+    //         // if (isset($req->photo2Path)) {
+    //         //     $image = $req->file('photo2Path');
+    //         //     $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
+    //         //     $newRequest = new Request([
+    //         //         'document' => $image
+    //         //     ]);
+    //         //     $imageName2 = $docUpload->upload($newRequest);
+    //         //     // $absolutePath = $relativePath;
+    //         //     $imageName2Absolute = $relativePath;
+    //         // }
+
+    //         // $shopNo = $this->shopIdGeneration($req->marketId);
+    //         $Mcirlcle = new MCircle();
+    //         $circleDetails = $Mcirlcle->createCirlce($req);
+
+    //         $metaReqs = [
+    //             // 'circle_id' => $req->assetId,
+    //             // 'market_id' => $req->floorId,
+    //             'asset_id' => $req->assetId,
+    //             'floor_id' => $req->floorId,
+    //             'floor_name' => $req->floorName,
+    //             'asset_name' => $req->assetName,
+
+    //             'allottee' => $req->allottee,
+    //             // 'shop_no' => $shopNo,
+    //             'shop_no' => $req->shopNo,
+    //             'address' => $req->address,
+    //             'rate' => $req->rate,
+    //             'arrear' => $req->arrear,
+    //             'allotted_length' => $req->allottedLength,
+    //             'allotted_breadth' => $req->allottedBreadth,
+    //             'allotted_height' => $req->allottedHeight,
+    //             'area' => $req->area,
+    //             'present_length' => $req->presentLength,
+    //             'present_breadth' => $req->presentBreadth,
+    //             'present_height' => $req->presentHeight,
+    //             'no_of_floors' => $req->noOfFloors,
+    //             'present_occupier' => $req->presentOccupier,
+    //             'trade_license' => $req->tradeLicense,
+    //             'construction' => $req->construction,
+    //             'electricity' => $req->electricity,
+    //             'water' => $req->water,
+    //             'sale_purchase' => $req->salePurchase,
+    //             'contact_no' => $req->contactNo,
+    //             'longitude' => $req->longitude,
+    //             'latitude' => $req->latitude,
+    //             'photo1_path' => $imageName1 ?? "",
+    //             'photo1_path_absolute' => $imageName1Absolute ?? "",
+    //             'photo2_path' => $imageName2 ?? "",
+    //             'photo2_path_absolute' => $imageName2Absolute ?? "",
+    //             'remarks' => $req->remarks,
+    //             'last_tran_id' => $req->lastTranId,
+    //             'electricity_no' => $req->electricityNo,
+    //             'water_consumer_no' => $req->waterConsumerNo,
+    //             'user_id' => $req->auth['id'] ?? 0,
+    //             'ulb_id' => $req->auth['ulb_id'] ?? 0,
+    //             'ward_no' => $req->wardNo,
+    //             'last_payment_date' => $req->lastPayDt,
+    //             'last_payment_amount' => $req->lastPayAmt,
+    //             'apply_date' => Carbon::now(),
+    //         ];
+
+
+    //         // return $metaReqs;
+    //         $tempId = $this->_mShops->create($metaReqs)->id;
+    //         $month = $currentMonth->format('Y-m-d');
+    //         if ($req->arrear != null) {
+    //             $demandReqs = [
+    //                 'shop_id' => $tempId,
+    //                 'amount' => $req->arrear,
+    //                 'monthly' => $month,
+    //                 'payment_date' => Carbon::now(),
+    //                 'user_id' => $req->auth['id'] ?? 0,
+    //                 'ulb_id' => $req->auth['ulb_id'] ?? 0,
+    //             ];
+    //             $this->_mShopDemand::create($demandReqs);
+    //         }
+    //         $mDocuments = $req->documents;
+    //         $this->uploadDocument($tempId, $mDocuments, $req->auth);
+
+    //         return responseMsgs(true, "Successfully Saved", ['shopNo' => $req->shopNo], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+    //     } catch (Exception $e) {
+
+    //         return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+    //     }
+    // }
     public function uploadDocument($tempId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
