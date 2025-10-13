@@ -64,7 +64,7 @@ class MMarket extends Model
             'ulb_id' => $req->auth['ulb_id'] ?? 0,
             'circle_id' => $circleDetails->id,
             'market_name' => $req->marketName,
-            'created_by' => auth()->user()->id,
+            // 'created_by' => auth()->user()->id,
         ];
         $createMarket = MMarket::create($marketData);
         return $createMarket;
