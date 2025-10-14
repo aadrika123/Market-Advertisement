@@ -192,7 +192,7 @@ class ShopController extends Controller
             if (!empty($req->arrear)) {
                 $demandReqs = [
                     'shop_id'      => $shopId,
-                    'amount'       => $req->arrear,
+                    'amount'       => $req->rate,
                     'monthly'      => $currentMonth->format('Y-m-d'),
                     'payment_date' => Carbon::now(),
                     'user_id'      => $req->auth['id'] ?? 0,
