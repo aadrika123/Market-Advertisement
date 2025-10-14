@@ -166,7 +166,7 @@ class Shop extends Model
   /**
    * | Get Shop Reciept By Shop Id
    */
-  public function getShopReciept($tranId)
+  public function getShopReciept($tranId, $ulbId)
   {
     return Shop::select(
       'mar_shops.*',
@@ -197,6 +197,7 @@ class Shop extends Model
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.id', '=', 'msp.shop_id')
       ->join('users as usr', 'msp.user_id', '=', 'usr.id')
       ->join('ulb_masters as ulb', 'mar_shops.ulb_id', '=', 'ulb.id')
+      ->where('msp.ulb_id', $ulbId)
       ->where('msp.id', $tranId)
       ->first();
   }
