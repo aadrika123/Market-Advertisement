@@ -949,7 +949,8 @@ class ShopController extends Controller
         // Business Logics
         try {
             $mShop = new Shop();
-            $reciept = $mShop->getShopReciept($req->tranId);
+            $ulbId = $req->auth['ulb_id'];
+            $reciept = $mShop->getShopReciept($req->tranId, $ulbId);
             if (!$reciept)
                 throw new Exception("Reciept Data Not Fetched !!!");
             $reciept->inWords = getIndianCurrency($reciept->last_payment_amount) . " Only /-";
