@@ -178,4 +178,17 @@ class MarToll extends Model
             ->where('mar_tolls.ulb_id', $user->ulb_id)
             ->orderBy('mar_tolls', 'Desc');
     }
+
+    public static function getDashboardStats($ulbId)
+    {
+        return MarToll::selectRaw('
+                COUNT(mar_tolls.id) AS total_tolls,
+                COALESCE(SUM(mar_toll_payments.amount), 0) AS total_collection
+            ')
+            ->leftJoin('mar_toll_payments', 'mar_tolls.id', '=', 'mar_toll_payments.toll_id')
+            ->where('mar_tolls.ulb_id', $ulbId)
+            ->where('mar_tolls.status', 1)
+            ->first();
+    }
+
 }
