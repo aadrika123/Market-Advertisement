@@ -68,6 +68,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-shop-by-parameters', 'searchShopPipeline');                                               // 37  END Online Payment
         Route::post('rental/view-shop-documents', 'viewShopDocuments');
         Route::post('rental/view-shop-list', 'listShops');
+
+        Route::post('municipal-rental/dashboard-details', 'dashboardDetails');                                          // Dashboard Details
     });
 
     /**

@@ -15,6 +15,7 @@ use App\Models\Rentals\MarDailycollection;
 use App\Models\Rentals\MarDailycollectiondetail;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarShopLog;
+use App\Models\Rentals\MarToll;
 use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
@@ -34,6 +35,7 @@ use App\Traits\ShopDetailsTraits;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Mail;
 
 class ShopController extends Controller
 {
@@ -1936,4 +1938,42 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+  public function dashboardDetails(Request $request)
+{
+    try {
+        $user = authUser($request);
+        $ulbId = $user->ulb_id;
+
+        $mShop = new Shop();
+        $mMarToll = new MarToll();
+
+        // Get stats for shops and tolls
+        $shopStats = $mShop->getDashboardStats($ulbId);
+        $tollStats = $mMarToll->getDashboardStats($ulbId); // you can apply same logic for tolls
+
+        // Prepare response data
+        $data = [
+            'shops' => [
+                'totalShops' => $shopStats->total_shops ?? 0,
+                'totalDemand' => $shopStats->total_demand ?? 0,
+                'totalCollection' => $shopStats->total_collection ?? 0,
+                'balancePending' => $shopStats->balance_pending ?? 0,
+            ],
+            'tolls' => [
+                'totalTolls' => $tollStats->total_tolls ?? 0, 
+                'totalCollection' => $tollStats->total_collection ?? 0,
+            ],
+        ];
+
+        return responseMsgs(true, "Dashboard Details Fetched Successfully!", $data, "055018", "1.0", responseTime(), "POST", $request->deviceId);
+    
+    } catch (Exception $e) {
+        return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $request->deviceId);
+    }
+}
+
+
+
+    
 }

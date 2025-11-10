@@ -292,4 +292,22 @@ class Shop extends Model
       ->where('mar_shops.ulb_id', $user->ulb_id)
       ->orderBy('mar_shops', 'Desc');
   }
+
+public static function getDashboardStats($ulbId)
+{
+    return Shop::selectRaw('
+            COUNT(mar_shops.id) AS total_shops,
+            COALESCE(SUM(CASE WHEN mar_shop_demands.payment_status = 0 THEN mar_shop_demands.amount ELSE 0 END), 0) AS total_demand,
+            COALESCE(SUM(CASE WHEN mar_shop_demands.payment_status = 1 THEN mar_shop_demands.amount ELSE 0 END), 0) AS total_collection,
+            COALESCE(SUM(CASE WHEN mar_shop_demands.payment_status = 0 THEN mar_shop_demands.amount ELSE 0 END), 0) AS balance_pending
+        ')
+        ->leftJoin('mar_shop_demands', 'mar_shops.id', '=', 'mar_shop_demands.shop_id')
+        ->where('mar_shops.ulb_id', $ulbId)
+        ->where('mar_shops.status', 1)
+        ->first();
+}
+
+
+
+
 }
