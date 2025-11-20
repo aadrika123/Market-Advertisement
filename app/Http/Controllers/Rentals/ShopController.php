@@ -1950,7 +1950,7 @@ class ShopController extends Controller
 
         // Get stats for shops and tolls
         $shopStats = $mShop->getDashboardStats($ulbId);
-        $tollStats = $mMarToll->getDashboardStats($ulbId); // you can apply same logic for tolls
+        $tollStats = $mMarToll->getDashboardStats($ulbId);
 
         // Prepare response data
         $data = [
