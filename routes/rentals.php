@@ -15,6 +15,10 @@ use App\Http\Controllers\Rentals\TollsController;
 use App\Http\Controllers\Rentals\PaymentController;
 use Illuminate\Support\Facades\Route;
 
+  Route::get('/health-check', function () {
+      return response()->json(['status' => 'ok']);
+  });
+
 Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Shops (50)

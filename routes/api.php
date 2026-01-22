@@ -38,6 +38,11 @@ use SebastianBergmann\CodeCoverage\Report\Xml\Report;
  * | Module Id for Advetisements=05
  * | Status - Closed By Bikash on 25 Apr 2023  , Re-Open For Bandobastee on 26 Apr 2023
  */
+
+  Route::get('/health-check', function () {
+      return response()->json(['status' => 'ok']);
+  });
+  
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 Route::get('advert/get-payment-reciept/{tranId}/{workflowId}', [ParamController::class, 'getPaymentDetailsForReciept']);                                         // 08 ( Application Details For Payment Reciept )
 

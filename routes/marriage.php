@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Route;
  */
 // Route::group(['middleware' => ['auth.citizen', 'json.response']], function () {
 
+  Route::get('/health-check', function () {
+      return response()->json(['status' => 'ok']);
+  });
+
 #> Controller 01
 Route::controller(MarriageRegistrationController::class)->group(function () {
     Route::post('apply', 'apply');                                              #API_ID=100101
