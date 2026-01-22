@@ -27,6 +27,10 @@ use Illuminate\Support\Facades\Route;
  * | Created By- Sam kerketta
  */
 
+  Route::get('/health-check', function () {
+      return response()->json(['status' => 'ok']);
+  });
+
 Route::post('/pet-connection', function () {
     return ('Welcome to simple pet route file');                                                                // 00
 });
