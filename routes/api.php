@@ -42,7 +42,7 @@ use SebastianBergmann\CodeCoverage\Report\Xml\Report;
   Route::get('/health-check', function () {
       return response()->json(['status' => 'ok']);
   });
-  
+
 Route::post('advertisements/payment-success-failure', [ParamController::class, 'paymentSuccessFailure']);
 Route::get('advert/get-payment-reciept/{tranId}/{workflowId}', [ParamController::class, 'getPaymentDetailsForReciept']);                                         // 08 ( Application Details For Payment Reciept )
 
@@ -420,6 +420,9 @@ Route::group(['middleware' => ['checkToken']], function () {
 
         //alok
         Route::post('market/lodge/searchApplicationNo', 'searchApplicationNo');
+        Route::get('market/health-check', function () {
+                    return response()->json(['status' => 'ok']);
+                });
     });
 
     /**
@@ -755,6 +758,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/cheque-dtl-by-id', 'chequeDtlById');                                                     // Get Detail of Cheque Transaction
         Route::post('advert/cheque-clearance', 'chequeClearance');                                                   // clear or bounce cheque
         Route::post('advert/edit-cheque-dtls', 'editChequeNo');                                                   // clear or bounce cheque
+        Route::get('advert/health-check', function () {
+                    return response()->json(['status' => 'ok']);
+                });
     });
 });
 Route::controller(ParamController::class)->group(function () {
