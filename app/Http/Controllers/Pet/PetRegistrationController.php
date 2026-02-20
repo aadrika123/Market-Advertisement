@@ -255,10 +255,24 @@ class PetRegistrationController extends Controller
             }
 
             # Get the Initiator and Finisher details 
-            $refInitiatorRoleId = $this->getInitiatorId($ulbWorkflowId->id);
-            $refFinisherRoleId  = $this->getFinisherId($ulbWorkflowId->id);
-            $finisherRoleId     = collect(DB::select($refFinisherRoleId))->first()->role_id;
-            $initiatorRoleId    = collect(DB::select($refInitiatorRoleId))->first()->role_id;
+            $finisherRoleId = DB::table('wf_roles as r')
+                ->join('wf_workflowrolemaps as w', 'w.wf_role_id', '=', 'r.id')
+                ->where('w.workflow_id', $ulbWorkflowId->id)
+                ->where('w.is_finisher', true)
+                ->value('r.id');
+
+            $initiatorRoleId = DB::table('wf_roles as r')
+                ->join('wf_workflowrolemaps as w', 'w.wf_role_id', '=', 'r.id')
+                ->where('w.workflow_id', $ulbWorkflowId->id)
+                ->where('w.is_initiator', true)
+                ->value('r.id');
+
+            if (!$finisherRoleId) {
+                throw new Exception("Finisher role not found for workflow ID: " . $ulbWorkflowId->id);
+            }
+            if (!$initiatorRoleId) {
+                throw new Exception("Initiator role not found for workflow ID: " . $ulbWorkflowId->id);
+            }
 
             # check the proprty detials 
             $refValidatedDetails = $this->checkParamForRegister($req);
