@@ -104,7 +104,7 @@ class VehicleAdvetController extends Controller
                 $userId = ['userId' => $user->id];
                 $req->request->add($userId);
             } else {
-                $citizenId = ['citizenId' => $req->auth['id']];
+                $citizenId = ['citizenId' => $user->id];
                 $req->request->add($citizenId);
             }
             $req->request->add(['ulbId' => $ulbId]);
