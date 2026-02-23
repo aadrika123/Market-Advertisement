@@ -116,6 +116,9 @@ class AdvActiveVehicle extends Model
         // $workflowId = Config::get('workflow-constants.MOVABLE_VEHICLE');
         // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
         $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+        if (isset($ulbWorkflows['data'])) {
+            $ulbWorkflows = $ulbWorkflows['data'];
+        }
         $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
             // 'workflow_id' => $ulbWorkflows['id'],
             'workflow_id' => $ulbWorkflows['wf_master_id'],
