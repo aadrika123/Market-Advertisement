@@ -30,16 +30,16 @@ class StoreRequest extends FormRequest
             'father' => 'required',
             'email' => 'required|email',
             'residenceAddress' => 'required',
-            'wardId' => 'required|integer',
+            'wardId' => 'nullable|integer',
             'permanentAddress' => 'required',
-            'permanentWardId' => 'required|integer',
+            'permanentWardId' => 'nullable|integer',
             'mobile' => 'required|numeric|digits:10',
             'aadharNo' => 'required|numeric|digits:12',
             'licenseFrom' => 'required|date_format:Y-m-d',
             'licenseTo' => 'required|date_format:Y-m-d',
             'entityName' => 'required',
             'tradeLicenseNo' => 'nullable|string',
-            'gstNo' => 'required|string',
+            'gstNo' => 'nullable|string',
             'vehicleName' => 'required|string',
             'vehicleNo' => 'required|string',
             'vehicleType' => 'required|integer',
@@ -48,6 +48,7 @@ class StoreRequest extends FormRequest
             'brandDisplayed' => 'required|string',
             'frontArea' => 'required|numeric',
             'rearArea' => 'required|numeric',
+            'sideArea2' => 'nullable|numeric',
             'topArea' => 'required|numeric',
             'displayType' => 'required|integer',
             'typology' => 'required|integer',
@@ -64,7 +65,7 @@ class StoreRequest extends FormRequest
             // 'documents.*.relativeName' => 'required|string'
 
             'documents' => 'required|array',
-            'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+            'documents.*.image' => 'nullable|mimes:png,jpeg,pdf,jpg',
             'documents.*.docCode' => 'required|string',
             'documents.*.ownerDtlId' => 'nullable|integer'
         ];

@@ -230,13 +230,15 @@ class ParamController extends Controller
 
                 // Check if user_type is 'jsk' or 'JSK' to include 'Application_form'
                 if (strtolower($userType) == 'jsk') {
-                    $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+                    $docType = ($val['code'] == 'MOVABLE_VEHICLE' && in_array($arr[1], ['OWNERBOOK', 'INSURANCE', 'GST', 'APPLICATION_FORM'])) ? '' : $arr[0];
+                    $documentList[$val['code']][$kinn]['docType'] = $docType;
                     $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
                     $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
                     $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
                     $documentList[$val['code']][$kinn]['code'] = $val['code'];
                 } elseif ($arr[1] !== 'APPLICATION_FORM') {
-                    $documentList[$val['code']][$kinn]['docType'] = $arr[0];
+                    $docType = ($val['code'] == 'MOVABLE_VEHICLE' && in_array($arr[1], ['OWNERBOOK', 'INSURANCE', 'GST', 'APPLICATION_FORM'])) ? '' : $arr[0];
+                    $documentList[$val['code']][$kinn]['docType'] = $docType;
                     $documentList[$val['code']][$kinn]['docCode'] = $arr[1];
                     $documentList[$val['code']][$kinn]['docVal'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
                     $documentList[$val['code']][$kinn]['document_name'] = ucwords(strtolower(str_replace('_', ' ', $arr[1])));
