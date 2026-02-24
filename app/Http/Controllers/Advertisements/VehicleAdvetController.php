@@ -96,10 +96,22 @@ class VehicleAdvetController extends Controller
             //     $citizenId = ['citizenId' => $req->auth['id']];
             //     $req->request->add($citizenId);
             // }
-            $user = authUser($req);
-            $ulbId = $req->ulbId ?? $user->ulb_id;
-            if (!$ulbId)
-                throw new Exception("Ulb Not Found");
+            // Get user from auth middleware
+            $user = $req->auth ?? null;
+            if (!$user) {
+                throw new Exception("User authentication failed. Please check your token.");
+            }
+            
+            // Convert array to object if needed
+            if (is_array($user)) {
+                $user = (object) $user;
+            }
+            
+            $ulbId = $user->ulb_id;
+            if (!$ulbId) {
+                throw new Exception("ULB ID is required. Please provide ulbId in request or ensure user has ulb_id assigned. User ulb_id: " . ($user->ulb_id ?? 'null') . ", Request ulbId: " . ($req->ulbId ?? 'null'));
+            }
+            $ulbId = (int) $ulbId;
             if ($user->user_type == 'JSK') {
                 $userId = ['userId' => $user->id];
                 $req->request->add($userId);
@@ -111,7 +123,7 @@ class VehicleAdvetController extends Controller
 
             // $mCalculateRate = new CalculateRate;
             // $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $ulbId);
             $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
