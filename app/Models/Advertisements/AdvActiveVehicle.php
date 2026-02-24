@@ -219,7 +219,12 @@ class AdvActiveVehicle extends Model
     public function uploadDocument($tempId, $req)
     {
         $documents = $req->documents;
-        collect($documents)->each(function ($doc, $index) use ($tempId, $req) {
+        // Filter out documents that don't have actual files uploaded
+        $documentsWithFiles = collect($documents)->filter(function ($doc, $index) use ($req) {
+            return $req->hasFile("documents.{$index}.image");
+        });
+        
+        $documentsWithFiles->each(function ($doc, $index) use ($tempId, $req) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
