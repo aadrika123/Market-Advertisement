@@ -141,8 +141,7 @@ class AdvActiveVehicle extends Model
         );
         // return $metaReqs;
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
-        $mDocuments = $req->documents;
-        $this->uploadDocument($tempId, $mDocuments, $req->auth);
+        $this->uploadDocument($tempId, $req);
         return $req->application_no;
     }
 
@@ -184,8 +183,7 @@ class AdvActiveVehicle extends Model
         );
         // return $metaReqs;
         $tempId = AdvActiveVehicle::create($metaReqs)->id;
-        $mDocuments = $req->documents;
-        $this->uploadDocument($tempId, $mDocuments, $req->auth);
+        $this->uploadDocument($tempId, $req);
 
         return $mRenew['renew_no'];
     }
@@ -218,9 +216,10 @@ class AdvActiveVehicle extends Model
      * | Store Uploaded document after application store
      * //modified by prity pandey
      */
-    public function uploadDocument($tempId, $documents, $auth)
+    public function uploadDocument($tempId, $req)
     {
-        collect($documents)->map(function ($doc) use ($tempId, $auth) {
+        $documents = $req->documents;
+        collect($documents)->each(function ($doc, $index) use ($tempId, $req) {
             $metaReqs = array();
             $docUpload = new DocumentUpload;
             $mWfActiveDocument = new WfActiveDocument();
@@ -229,25 +228,35 @@ class AdvActiveVehicle extends Model
             $getApplicationDtls = $mAdvActiveVehicle->getApplicationDetails($tempId);
             $refImageName = $doc['docCode'];
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
-            $documentImg = $doc['image'];
+
+            // Access the uploaded file from the original request's files bag
+            $documentImg = $req->file("documents.{$index}.image");
+            if (!$documentImg) {
+                throw new Exception("Document image not found for index {$index}");
+            }
             $newRequest = new Request();
             $newRequest->files->set('document', $documentImg);
             $imageName = $docUpload->upload($newRequest);
+            
+            // Handle response from DocumentUpload service
+            if (is_object($imageName) && method_exists($imageName, 'getData')) {
+                $imageData = $imageName->getData(true); // Get array from JsonResponse
+            } elseif (is_array($imageName)) {
+                $imageData = $imageName;
+            } else {
+                throw new Exception("Invalid response from document upload service");
+            }
 
             $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
             $metaReqs['activeId'] = $getApplicationDtls->id;
             $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
             $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
             $metaReqs['relativePath'] = $relativePath;
-           // $metaReqs['document'] = $imageName;
             $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
-            $metaReqs['uniqueId'] = $imageName['data']['uniqueId'];
-            $metaReqs['referenceNo'] = $imageName['data']['ReferenceNo'];
-            // $a = new Request($metaReqs);
-            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'] ?? null;
+            $metaReqs['uniqueId'] = $imageData['data']['uniqueId'] ?? null;
+            $metaReqs['referenceNo'] = $imageData['data']['ReferenceNo'] ?? null;
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
-            // $mWfActiveDocument->create($metaReqs);
             foreach($metaReqs as $key=>$val)
             {
                 $mWfActiveDocument->$key = $val;
