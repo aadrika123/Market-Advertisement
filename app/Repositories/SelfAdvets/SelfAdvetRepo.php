@@ -197,8 +197,8 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                     $join->on("ref_adv_paramstrings.id", "=", $table . ".vehicle_type");
                 })
                 ->join('ref_adv_paramstrings as displayType', 'displayType.id', $table . ".display_type")
-                ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
-                ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
+                ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
+                ->leftjoin('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
                 ->join('adv_typology_mstrs', 'adv_typology_mstrs.id', $table . ".typology")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
                 //     $join->on("new_ward.id", "=", $table . ".new_ward_id");
@@ -275,8 +275,8 @@ class SelfAdvetRepo implements iSelfAdvetRepo
                 ->leftjoin("ulb_masters", function ($join) use ($table) {
                     $join->on("ulb_masters.id", "=", $table . ".ulb_id");
                 })
-                ->join('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
-                ->join('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
+                ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', $table . ".ward_id")
+                ->leftjoin('ulb_ward_masters as permanantWard', 'permanantWard.id', $table . ".permanent_ward_id")
                 ->join('ulb_ward_masters as entityWard', 'entityWard.id', $table . ".entity_ward_id")
                 ->join('adv_typology_mstrs', 'adv_typology_mstrs.id', $table . ".typology")
                 // ->leftjoin("ulb_ward_masters AS new_ward", function ($join) use ($table) {
