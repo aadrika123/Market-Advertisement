@@ -200,28 +200,37 @@ class DocumentUpload
        $data = collect();
 
        foreach ($documents as $document) {
-           $postData = [
-               'referenceNo' => $document->reference_no,
+           $key = [
+               'id' => $document->id,
+               'doc_code' => $document->doc_code,
+               'doc_category' => $document->doc_category ?? null,
+               'verify_status' => $document->verify_status,
+               'remarks' => $document->remarks,
            ];
+
            if ($document->reference_no) {
+               // Use DMS API for documents with reference_no
+               $postData = [
+                   'referenceNo' => $document->reference_no,
+               ];
                $response = Http::withHeaders([
                    "token" => "8Ufn6Jio6Obv9V7VXeP7gbzHSyRJcKluQOGorAD58qA1IQKYE0",
                ])->post($apiUrl, $postData);
 
                if ($response->successful()) {
                    $responseData = $response->json();
-                   $key['id'] =  $document->id;
-                   $key['doc_code'] =  $document->doc_code;
-                   $key['doc_category'] =  $document->doc_category??null;
-                   $key['verify_status'] =  $document->verify_status;
-                   //$key['owner_name'] =  $document->owner_name;
-                   $key['remarks'] =  $document->remarks;
-                   //$key['owner_dtl_id'] =  $document->owner_dtl_id ?? null;
                    $key['doc_path'] = $responseData['data']['fullPath'] ?? null;
                    $key['responseData'] = $responseData;
-                   $data->push($key);
+               } else {
+                   $key['doc_path'] = null;
                }
+           } else {
+               // Use old document path for documents without reference_no
+               $uploadUrl = Config::get('dms_constants.UPLOAD_URL') ?? Config::get('dms_constants.DMS_URL');
+               $key['doc_path'] = $document->doc_path ? "$uploadUrl/" . $document->doc_path : null;
            }
+           
+           $data->push($key);
        }
        return $data;
    }
