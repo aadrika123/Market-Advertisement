@@ -1480,31 +1480,22 @@ class VehicleAdvetController extends Controller
             'moduleId' =>  $this->_moduleIds
         ];
         $req = new Request($refReq);
-        
-        // Use getDocsByActiveIdv1 to get all documents (not just verified ones)
-        $refDocList = $mWfActiveDocument->getDocsByActiveIdv1($req);
-        $totalUploadedDocs = $refDocList->count();
-        $totalVerifiedDocs = $refDocList->where('verify_status', 1)->count();
-        $hasUnverifiedDocs = $refDocList->contains('verify_status', 0);
-        
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $totalApproveDoc = $refDocList->count();
+        $ifAdvDocUnverified = $refDocList->contains('verify_status', 0);
         $citizenId = $mAdvActiveVehicle->citizen_id;
-        $totalRequiredDocs = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
-        
-        // Debug logging
-        \Log::info('Document verification check:', [
-            'applicationId' => $applicationId,
-            'totalUploadedDocs' => $totalUploadedDocs,
-            'totalVerifiedDocs' => $totalVerifiedDocs,
-            'totalRequiredDocs' => $totalRequiredDocs,
-            'hasUnverifiedDocs' => $hasUnverifiedDocs,
-            'documents' => $refDocList->toArray()
-        ]);
-        
-        // Check if all required documents are uploaded and verified
-        if ($totalUploadedDocs == $totalRequiredDocs && $totalVerifiedDocs == $totalRequiredDocs && !$hasUnverifiedDocs) {
-            return 1; // All documents verified
+        $totalNoOfDoc = $mWfActiveDocument->totalNoOfDocs($this->_docCode, $citizenId);
+        // $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCodeRenew);
+        // if($mMarActiveBanquteHall->renew_no==NULL){
+        //     $totalNoOfDoc=$mWfActiveDocument->totalNoOfDocs($this->_docCode);
+        // }
+        if ($totalApproveDoc == $totalNoOfDoc) {
+            if ($ifAdvDocUnverified == 1)
+                return 0;
+            else
+                return 1;
         } else {
-            return 0; // Not all documents verified
+            return 0;
         }
     }
 
