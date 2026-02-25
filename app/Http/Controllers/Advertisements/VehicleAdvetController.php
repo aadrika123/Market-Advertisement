@@ -1449,9 +1449,9 @@ class VehicleAdvetController extends Controller
                 'action_taken_by' => $userId
             ];
             $mWfDocument->docVerifyReject($wfDocId, $reqs);
-            $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
-
-            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+            
+            // Check if any uploaded documents are verified
+            if ($req->docStatus == "Verified") {
                 $appDetails->doc_verify_status = 1;
                 $appDetails->save();
             }
