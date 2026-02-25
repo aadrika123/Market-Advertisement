@@ -2199,7 +2199,15 @@ class VehicleAdvetController extends Controller
             }
             $workflowId = $data->workflow_id;
             $docdetail = $mWfActiveDocument->uploadedActiveDocumentsViewById($req->applicationId, $workflowId);
+            
+            // Debug: Log what documents are fetched
+            \Log::info('Documents fetched from DB:', ['count' => count($docdetail), 'docs' => $docdetail->toArray()]);
+            
             $docdetail = $refDocUpload->getDocUrl($docdetail);
+            
+            // Debug: Log what documents are returned after URL processing
+            \Log::info('Documents after URL processing:', ['count' => count($docdetail), 'docs' => $docdetail->toArray()]);
+            
             $approveApplicationDetails['docdetail'] = $docdetail;
             return responseMsgs(true, "Application Details Found", $approveApplicationDetails, "", "01", responseTime(), $req->getMethod(), $req->deviceId);
         } catch (Exception $e) {
